@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+tsc-check.log
+tsc-final.log
+tsc.log
