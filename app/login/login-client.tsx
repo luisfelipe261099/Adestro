@@ -46,12 +46,6 @@ export function LoginClient() {
     router.replace(redirectTo);
   }
 
-  function handleDemoLogin(nextEmail: string, redirectTo: string) {
-    setEmail(nextEmail);
-    setPassword("123456");
-    void submitCredentials(nextEmail, "123456", redirectTo);
-  }
-
   return (
     <main className="mx-auto flex min-h-[calc(100dvh-76px)] w-full max-w-7xl items-start justify-center px-4 pb-16 pt-4 sm:min-h-[calc(100dvh-96px)] sm:items-center sm:px-6 sm:pb-10 sm:pt-6 lg:px-8">
       <section className="relative w-full max-w-md overflow-hidden rounded-[1.75rem] border border-[var(--border)] bg-[linear-gradient(180deg,_rgba(248,254,255,0.97),_rgba(238,249,255,0.99))] p-5 shadow-[var(--shadow)] sm:rounded-[2rem] sm:p-8">
@@ -103,36 +97,6 @@ export function LoginClient() {
             </div>
           ) : null}
         </form>
-
-        <div className="relative mt-5 rounded-2xl border border-[var(--border)] bg-white/80 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Entrar em modo demo</p>
-          <div className="mt-3 grid gap-2">
-            <button
-              type="button"
-              onClick={() => handleDemoLogin("adestrador@adestro.com.br", "/dashboard")}
-              disabled={loading}
-              className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] px-4 py-2 text-left text-sm font-semibold text-[#145a82] disabled:opacity-60"
-            >
-              Entrar como adestrador
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin("cliente@adestro.com.br", "/portal/cliente")}
-              disabled={loading}
-              className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] px-4 py-2 text-left text-sm font-semibold text-[#145a82] disabled:opacity-60"
-            >
-              Entrar como tutor
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin("admin@adestro.com.br", "/admin")}
-              disabled={loading}
-              className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] px-4 py-2 text-left text-sm font-semibold text-[#145a82] disabled:opacity-60"
-            >
-              Entrar como admin
-            </button>
-          </div>
-        </div>
 
         <p className="relative mt-6 text-center text-sm text-[var(--muted)]">
           Ainda nao tem conta?{" "}
