@@ -59,7 +59,7 @@ async function aggregateForMonth(trainerId: string, dogId: string, year: number,
   const nps = await prisma.npsResponse.findMany({
     where: {
       session: { trainerId, createdAt: { gte: start, lt: end } },
-    } as never,
+    },
     select: { score: true },
   });
 

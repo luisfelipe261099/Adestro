@@ -38,16 +38,15 @@ export default function IaPage() {
     [selectedClient, selectedDogId],
   );
 
-  const fourWeeksAgo = Date.now() - 4 * 7 * 24 * 60 * 60 * 1000;
-
   const dogTimeline = useMemo(() => {
     if (!selectedDog) return [];
+    const fourWeeksAgo = Date.now() - 4 * 7 * 24 * 60 * 60 * 1000;
     return sessions
       .filter((session) => session.dogId === selectedDog.id || session.dogName === selectedDog.name)
       .map((session) => ({ ...session, ts: parseBrazilianDate(session.date) }))
       .filter((session) => session.ts >= fourWeeksAgo)
       .sort((a, b) => b.ts - a.ts);
-  }, [sessions, selectedDog, fourWeeksAgo]);
+  }, [sessions, selectedDog]);
 
   function handleFakeTranscribe() {
     setIsRecording(true);

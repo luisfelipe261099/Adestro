@@ -164,16 +164,30 @@ export default function DashboardPage() {
   const events = useAppStore((state) => state.calendarEvents);
   const sessions = useAppStore((state) => state.trainingSessions);
   const trainerName = useAppStore((state) => state.trainerName);
-  const hydrated = useAppStore((state) => state.hydrated);
 
-  // Redireciona para o wizard de onboarding no primeiro acesso
+  // Redireciona para o wizard apenas no primeiro acesso. Usa a API
+  // /api/trainer/plan-status como fonte autoritativa em vez do zustand
+  // (que pode estar vazio enquanto o DB carrega).
   useEffect(() => {
-    if (!hydrated || typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
     if (window.localStorage.getItem("adestro-onboarding-done")) return;
-    if (clients.length === 0 && events.length === 0 && sessions.length === 0) {
-      router.replace("/bem-vindo");
-    }
-  }, [hydrated, clients.length, events.length, sessions.length, router]);
+    let cancelled = false;
+    fetch("/api/trainer/plan-status", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        if (data.usage?.clients === 0) {
+          router.replace("/bem-vindo");
+        } else {
+          // Já tem dados — marca onboarding como concluído pra não checar mais.
+          window.localStorage.setItem("adestro-onboarding-done", "1");
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
   const upcomingEvents = events.slice(0, 3);
 
   const totalDogs = clients.reduce((total, client) => total + client.dogs.length, 0);

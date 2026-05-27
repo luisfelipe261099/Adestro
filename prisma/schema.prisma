@@ -229,6 +229,7 @@ model NpsResponse {
   clientId   String
   client     ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
   sessionId  String
+  session    TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   score      Int
   comment    String?  @db.Text
   createdAt  DateTime @default(now())
@@ -311,6 +312,7 @@ model TrainingSession {
   createdAt   DateTime @default(now())
 
   dogSessions DogTrainingSession[]
+  npsResponses NpsResponse[]
 
   // Compatibilidade com histórico
   dogId       String?
