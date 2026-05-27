@@ -9,6 +9,7 @@ import Link from "next/link";
 import { PageShell } from "@/components/page-shell";
 import { GamificationPanel } from "@/components/gamification-panel";
 import { MonthlyReport } from "@/components/monthly-report";
+import { NpsPrompt } from "@/components/nps-prompt";
 import { useGamification } from "@/lib/gamification";
 
 type PortalTask = {
@@ -554,6 +555,16 @@ export function PortalPublicClient({ token }: { token: string }) {
               )}
             </div>
           </div>
+        ) : null}
+
+        {/* NPS após a última sessão registrada */}
+        {latestSession ? (
+          <NpsPrompt
+            sessionId={latestSession.id}
+            sessionTitle={latestSession.title}
+            token={token}
+            pinQuery={pinQuery}
+          />
         ) : null}
 
         {/* Banner de Onboarding/Atualização cadastral */}

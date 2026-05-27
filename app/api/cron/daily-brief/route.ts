@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { hashEndpoint, sendPush } from "@/lib/push";
 
 // Endpoint executado pelo Vercel Cron (config no vercel.json).
 // Roda diariamente e prepara o "brief" do dia para cada adestrador:
@@ -57,6 +58,28 @@ export async function GET(request: Request) {
       chargeWindowEnd.setDate(chargeWindowEnd.getDate() + (trainer.chargeReminderDaysBefore || 3));
       const chargeWindowEndStr = toDateString(chargeWindowEnd);
 
+      // Auto-encerrar contratos expirados (validade do pacote — módulo 6.2)
+      const todayStr = toDateString(now);
+      const activeContracts = await prisma.clientContract.findMany({
+        where: { trainerId: trainer.id, status: "Ativo" },
+        include: { servicePackage: { select: { validityDays: true } } },
+      });
+      const expiredIds: string[] = [];
+      for (const contract of activeContracts) {
+        const validityDays = contract.servicePackage?.validityDays ?? 60;
+        const start = new Date(contract.startDate);
+        if (Number.isNaN(start.getTime())) continue;
+        const expiresAt = new Date(start);
+        expiresAt.setDate(expiresAt.getDate() + validityDays);
+        if (expiresAt.getTime() < now.getTime()) expiredIds.push(contract.id);
+      }
+      if (expiredIds.length > 0) {
+        await prisma.clientContract.updateMany({
+          where: { id: { in: expiredIds } },
+          data: { status: "Encerrado" },
+        });
+      }
+
       const [events, invoices, awaitingApproval] = await Promise.all([
         prisma.calendarEvent.findMany({
           where: {
@@ -91,12 +114,36 @@ export async function GET(request: Request) {
         }),
       ]);
 
+      // Push notification ao adestrador (se inscrito) com o resumo do dia.
+      const totalToday = events.length + invoices.length + awaitingApproval.length;
+      if (totalToday > 0) {
+        const subs = await prisma.pushSubscription.findMany({ where: { trainerId: trainer.id } });
+        const body = `${events.length} aula(s), ${invoices.length} cobrança(s), ${awaitingApproval.length} resumo(s) p/ aprovar`;
+        for (const sub of subs) {
+          const result = await sendPush(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.authKey } },
+            { title: "☀️ Brief do dia — Adestro", body, url: "/dashboard", tag: "daily-brief" },
+          );
+          if (!result.ok && (result.status === 404 || result.status === 410)) {
+            await prisma.pushSubscription.deleteMany({
+              where: { trainerId: trainer.id, endpointHash: hashEndpoint(sub.endpoint) },
+            });
+          } else if (result.ok) {
+            await prisma.pushSubscription.update({
+              where: { id: sub.id },
+              data: { lastUsedAt: new Date() },
+            });
+          }
+        }
+      }
+
       return {
         trainerId: trainer.id,
         trainerName: trainer.name,
         date: toDateString(now),
         windowReminderHours: trainer.reminderHoursBefore,
         windowChargeDays: trainer.chargeReminderDaysBefore,
+        contractsExpired: expiredIds.length,
         reminders: events.map((event) => ({
           type: "reminder",
           eventId: event.id,

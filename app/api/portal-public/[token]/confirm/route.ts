@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 
+import { audit } from "@/lib/audit";
 import { hashPortalToken, isPortalPinValid, isPortalTokenActive } from "@/lib/portal-access";
 import { prisma } from "@/lib/prisma";
+import { requireRateLimit } from "@/lib/rate-limit";
+import { badRequest, confirmPresenceSchema } from "@/lib/validators";
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -32,6 +35,12 @@ async function resolveLink(rawToken: string, pin?: string) {
 }
 
 export async function POST(request: Request, { params }: Params) {
+  const limited = requireRateLimit(request, {
+    suffix: "portal-confirm",
+    config: { capacity: 10, refillIntervalMs: 60_000 },
+  });
+  if (limited) return limited;
+
   const { token } = await params;
   const url = new URL(request.url);
   const pin = url.searchParams.get("pin") ?? undefined;
@@ -44,15 +53,10 @@ export async function POST(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Link invalido ou expirado" }, { status: 404 });
   }
 
-  const body = (await request.json()) as {
-    eventId?: string;
-    confirmed?: boolean;
-    reason?: string;
-  };
-
-  if (!body.eventId || typeof body.confirmed !== "boolean") {
-    return NextResponse.json({ error: "Payload invalido" }, { status: 400 });
-  }
+  const rawBody = await request.json();
+  const parsed = confirmPresenceSchema.safeParse(rawBody);
+  if (!parsed.success) return badRequest("Payload invalido", parsed.error.flatten());
+  const body = parsed.data;
 
   const event = await prisma.calendarEvent.findFirst({
     where: {
@@ -74,7 +78,6 @@ export async function POST(request: Request, { params }: Params) {
     data: { status: nextStatus },
   });
 
-  // Registra um feedback do tutor narrando o resultado para o histórico.
   const reasonText = body.reason?.trim();
   const message = body.confirmed
     ? `✅ Presença confirmada pelo tutor para ${event.dog} em ${event.day} às ${event.time}.`
@@ -87,6 +90,14 @@ export async function POST(request: Request, { params }: Params) {
       author: "Tutor",
       message,
     },
+  });
+
+  await audit({
+    trainerId: link.trainerId,
+    action: body.confirmed ? "session.updated" : "session.updated",
+    resourceId: event.id,
+    detail: { source: "portal-confirm", confirmed: body.confirmed, reason: reasonText },
+    request,
   });
 
   return NextResponse.json({ ok: true, status: nextStatus });

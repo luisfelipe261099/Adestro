@@ -20,6 +20,26 @@
 	--shadow: 0 28px 70px rgba(11, 59, 90, 0.12);
 }
 
+/* Dark mode — ativado por <html data-theme="dark"> via ThemeBoot/Configurações */
+html[data-theme="dark"] {
+	--background: #0a1722;
+	--foreground: #e8f1f8;
+	--panel: rgba(15, 30, 44, 0.85);
+	--panel-strong: #102233;
+	--border: rgba(120, 180, 220, 0.18);
+	--muted: rgba(180, 205, 225, 0.7);
+	--shadow: 0 28px 70px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] body {
+	background:
+		radial-gradient(circle at top left, rgba(36, 140, 196, 0.18), transparent 24%),
+		radial-gradient(circle at top right, rgba(33, 152, 129, 0.14), transparent 22%),
+		linear-gradient(180deg, rgba(8, 18, 28, 0.85), transparent 28%),
+		linear-gradient(135deg, rgba(10, 23, 34, 0.92), rgba(14, 28, 42, 0.96)),
+		var(--background);
+}
+
 * {
 	box-sizing: border-box;
 }

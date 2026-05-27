@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { audit } from "@/lib/audit";
+import { checkLimit } from "@/lib/plan-limits";
 import { prisma } from "@/lib/prisma";
 
 const DOG_BREED_DEFAULTS: Array<{ keywords: string[]; url: string }> = [
@@ -105,6 +107,20 @@ export async function POST(request: Request) {
   const trainer = await prisma.trainer.findUnique({ where: { userId: session.user.id } });
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
+  // Enforcement de limite de clientes por plano (módulo 1 §SaaS)
+  const currentClientCount = await prisma.clientProfile.count({ where: { trainerId: trainer.id } });
+  const limitCheck = checkLimit({
+    plan: trainer.plan,
+    resource: "client",
+    currentCount: currentClientCount,
+  });
+  if (!limitCheck.ok) {
+    return NextResponse.json(
+      { error: limitCheck.reason, code: "PLAN_LIMIT", limit: limitCheck.limit, current: limitCheck.current },
+      { status: 402 },
+    );
+  }
+
   const body = await request.json() as {
     // Dados do Tutor
     clientName: string;
@@ -209,10 +225,19 @@ export async function POST(request: Request) {
         },
       },
     },
-    include: { 
+    include: {
       dogs: true,
       addresses: true,
     },
+  });
+
+  await audit({
+    trainerId: trainer.id,
+    action: "client.created",
+    resourceId: client.id,
+    detail: { name: client.name, dogName: body.dogName },
+    actorEmail: session.user.email ?? null,
+    request,
   });
 
   return NextResponse.json(client, { status: 201 });

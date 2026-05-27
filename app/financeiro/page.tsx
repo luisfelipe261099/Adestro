@@ -5,6 +5,8 @@ import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
 import { useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
+import { buildPixPayload, isPixKey } from "@/lib/pix";
+import { copyToClipboard } from "@/lib/native-share";
 
 type PackageInfo = {
   id: string;
@@ -45,8 +47,11 @@ type OverviewStats = {
 
 export default function FinanceiroPage() {
   const clients = useAppStore((state) => state.clients);
+  const trainerName = useAppStore((state) => state.trainerName);
+  const pixKey = useAppStore((state) => state.trainerPaymentProfile.pixKey);
 
   const [activeTab, setActiveTab] = useState<"dashboard" | "pacotes" | "cobrancas" | "recibos">("dashboard");
+  const [pixCopied, setPixCopied] = useState(false);
 
   // Estados carregados do Backend
   const [packages, setPackages] = useState<PackageInfo[]>([]);
@@ -782,6 +787,44 @@ export default function FinanceiroPage() {
                           <p>A importância líquida de <strong className="text-slate-900">R$ {receiptAmount.toFixed(2)}</strong> referente à prestação de serviços de adestramento comportamental canino: <span className="font-semibold text-[#145a82]">{receiptService}</span>.</p>
                           <p>Pagamento quitado via <strong className="text-slate-900">{receiptMethod}</strong> em {new Date().toLocaleDateString("pt-BR")}.</p>
                         </div>
+
+                        {receiptMethod === "Pix" && pixKey && isPixKey(pixKey) ? (
+                          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs">
+                            <p className="font-bold text-emerald-900">Pix Copia e Cola</p>
+                            <p className="mt-0.5 text-[10px] text-emerald-700">
+                              O tutor cola no banco e o pagamento já vem preenchido — sem gateway pago.
+                            </p>
+                            <code className="mt-2 block break-all rounded-lg bg-white px-2 py-1.5 text-[10px] text-emerald-950">
+                              {buildPixPayload({
+                                pixKey,
+                                merchantName: trainerName || "Adestrador",
+                                merchantCity: "BRASIL",
+                                amount: receiptAmount,
+                                txid: `ADESTRO${receiptNumber}`,
+                                description: receiptService.slice(0, 40),
+                              })}
+                            </code>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const payload = buildPixPayload({
+                                  pixKey,
+                                  merchantName: trainerName || "Adestrador",
+                                  merchantCity: "BRASIL",
+                                  amount: receiptAmount,
+                                  txid: `ADESTRO${receiptNumber}`,
+                                  description: receiptService.slice(0, 40),
+                                });
+                                const ok = await copyToClipboard(payload);
+                                setPixCopied(ok);
+                                window.setTimeout(() => setPixCopied(false), 2500);
+                              }}
+                              className="mt-2 rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-bold text-white"
+                            >
+                              {pixCopied ? "✓ Copiado!" : "Copiar Pix"}
+                            </button>
+                          </div>
+                        ) : null}
 
                         <div className="mt-8 border-t border-slate-100 pt-5 flex flex-col items-center justify-center text-[10px] text-[var(--muted)]">
                           <div className="h-0.5 w-36 bg-slate-200 mb-1" />

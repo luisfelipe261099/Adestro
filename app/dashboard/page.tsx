@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DailyBriefCard } from "@/components/daily-brief-card";
@@ -158,10 +159,21 @@ function statusLabel(status: string): string {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const clients = useAppStore((state) => state.clients);
   const events = useAppStore((state) => state.calendarEvents);
   const sessions = useAppStore((state) => state.trainingSessions);
   const trainerName = useAppStore((state) => state.trainerName);
+  const hydrated = useAppStore((state) => state.hydrated);
+
+  // Redireciona para o wizard de onboarding no primeiro acesso
+  useEffect(() => {
+    if (!hydrated || typeof window === "undefined") return;
+    if (window.localStorage.getItem("adestro-onboarding-done")) return;
+    if (clients.length === 0 && events.length === 0 && sessions.length === 0) {
+      router.replace("/bem-vindo");
+    }
+  }, [hydrated, clients.length, events.length, sessions.length, router]);
   const upcomingEvents = events.slice(0, 3);
 
   const totalDogs = clients.reduce((total, client) => total + client.dogs.length, 0);

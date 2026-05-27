@@ -96,6 +96,13 @@ model Trainer {
   defaultCommands           String? @db.Text
   defaultTutorTasks         String? @db.Text
 
+  // Templates WhatsApp customizáveis (texto livre por tipo de mensagem)
+  whatsappTemplates         String? @db.Text  // JSON: { agendamento: "...", lembrete: "...", ... }
+
+  // Relations
+  pushSubscriptions PushSubscription[]
+  auditLogs         AuditLog[]
+
   clients         ClientProfile[]
   trainingSessions TrainingSession[]
   calendarEvents  CalendarEvent[]
@@ -171,8 +178,64 @@ model ClientProfile {
   clientUserId String?
   clientUser   Client? @relation(fields: [clientUserId], references: [id])
 
+  // Tags livres para filtrar (ex: VIP, Inadimplente, Alta-complexidade)
+  tags         String? @db.Text   // JSON list
+
+  npsResponses NpsResponse[]
+
   @@index([trainerId])
   @@index([clientUserId])
+}
+
+// ─── Push Subscription (Web Push API) ────────────────────────────────────────
+
+model PushSubscription {
+  id           String   @id @default(cuid())
+  trainerId    String
+  trainer      Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  endpointHash String   @db.VarChar(64)  // sha256 do endpoint para unicidade
+  endpoint     String   @db.Text
+  p256dh       String   @db.Text
+  authKey      String   @db.Text
+  userAgent    String?  @db.Text
+  createdAt    DateTime @default(now())
+  lastUsedAt   DateTime?
+
+  @@unique([trainerId, endpointHash], map: "push_trainer_endpoint")
+  @@index([trainerId])
+}
+
+// ─── Audit log de ações importantes (módulo 10.2) ──────────────────────────
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  trainerId   String
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  action      String   // ex: "client.created", "session.deleted", "plan.upgraded"
+  resourceId  String?
+  detail      String?  @db.Text   // JSON ou texto livre
+  actorEmail  String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([trainerId])
+  @@index([createdAt])
+}
+
+// ─── NPS pós sessão ──────────────────────────────────────────────────────
+
+model NpsResponse {
+  id         String   @id @default(cuid())
+  clientId   String
+  client     ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  sessionId  String
+  score      Int
+  comment    String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@unique([sessionId, clientId])
+  @@index([clientId])
+  @@index([sessionId])
 }
 
 // ─── Endereços do Tutor ───────────────────────────────────────────────────────

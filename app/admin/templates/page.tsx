@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { AuthGuard } from "@/components/auth-guard";
 
 type ListKey = "defaultActivities" | "defaultCommands" | "defaultTutorTasks";
+type WaTemplateKey = "agendamento" | "lembrete" | "confirmacao" | "treinoRealizado" | "cobranca" | "relatorio";
 
 type SettingsState = {
   defaultActivities: string[];
@@ -18,6 +19,15 @@ const EMPTY: SettingsState = {
   defaultCommands: [],
   defaultTutorTasks: [],
 };
+
+const WA_TEMPLATE_FIELDS: Array<{ key: WaTemplateKey; label: string; placeholder: string }> = [
+  { key: "agendamento", label: "Agendamento criado", placeholder: "Olá {tutor}! Seu treino com {cao} foi agendado para {data} às {hora}." },
+  { key: "lembrete", label: "Lembrete de treino", placeholder: "Lembrete: treino do(a) {cao} amanhã às {hora}." },
+  { key: "confirmacao", label: "Pedido de confirmação", placeholder: "Por favor, confirme a presença do(a) {cao} em {data}: {link}" },
+  { key: "treinoRealizado", label: "Após o treino", placeholder: "Ótimo treino hoje com {cao}! Veja o resumo: {link}" },
+  { key: "cobranca", label: "Cobrança pendente", placeholder: "Olá {tutor}! Sua cobrança de R$ {valor} vence em {data}." },
+  { key: "relatorio", label: "Relatório mensal", placeholder: "O relatório de {cao} de {mes} já está disponível: {link}" },
+];
 
 const PANELS: Array<{
   key: ListKey;
@@ -82,6 +92,15 @@ export default function AdminTemplatesPage() {
   const [savingKey, setSavingKey] = useState<ListKey | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [waTemplates, setWaTemplates] = useState<Record<WaTemplateKey, string>>({
+    agendamento: "",
+    lembrete: "",
+    confirmacao: "",
+    treinoRealizado: "",
+    cobranca: "",
+    relatorio: "",
+  });
+  const [waSaving, setWaSaving] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,6 +115,12 @@ export default function AdminTemplatesPage() {
           defaultCommands: data.defaultCommands ?? [],
           defaultTutorTasks: data.defaultTutorTasks ?? [],
         });
+        // whatsappTemplates é serializado como JSON object {key: string}
+        const waResponse = await fetch("/api/trainer/whatsapp-templates", { cache: "no-store" });
+        if (waResponse.ok) {
+          const wa = await waResponse.json();
+          if (!cancelled) setWaTemplates({ agendamento: "", lembrete: "", confirmacao: "", treinoRealizado: "", cobranca: "", relatorio: "", ...wa });
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro inesperado");
       } finally {
@@ -107,6 +132,25 @@ export default function AdminTemplatesPage() {
       cancelled = true;
     };
   }, []);
+
+  async function saveWaTemplates() {
+    setWaSaving(true);
+    setError("");
+    try {
+      const response = await fetch("/api/trainer/whatsapp-templates", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(waTemplates),
+      });
+      if (!response.ok) throw new Error("Falha ao salvar templates de WhatsApp.");
+      setMessage("Templates de WhatsApp salvos.");
+      window.setTimeout(() => setMessage(""), 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro inesperado");
+    } finally {
+      setWaSaving(false);
+    }
+  }
 
   async function saveList(key: ListKey, nextList: string[]) {
     setSavingKey(key);
@@ -181,6 +225,42 @@ export default function AdminTemplatesPage() {
             <p className="mt-6 text-center text-xs text-[var(--muted)]">Carregando templates…</p>
           ) : (
             <div className="mt-4 grid gap-4">
+              {/* WhatsApp templates customizáveis */}
+              <article className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
+                <header>
+                  <h2 className="text-sm font-bold text-slate-900">💬 Templates de mensagem WhatsApp</h2>
+                  <p className="text-[11px] text-slate-700">
+                    Personalize o tom das mensagens enviadas via wa.me. Deixe em branco para usar o padrão do sistema.
+                    Variáveis disponíveis: <code className="rounded bg-white px-1 text-[10px]">{"{tutor} {cao} {data} {hora} {link} {valor} {mes}"}</code>
+                  </p>
+                </header>
+                <div className="mt-3 grid gap-3">
+                  {WA_TEMPLATE_FIELDS.map((field) => (
+                    <label key={field.key} className="grid gap-1 text-[10px] font-bold uppercase text-emerald-900">
+                      {field.label}
+                      <textarea
+                        value={waTemplates[field.key]}
+                        onChange={(event) =>
+                          setWaTemplates({ ...waTemplates, [field.key]: event.target.value })
+                        }
+                        rows={2}
+                        maxLength={400}
+                        placeholder={field.placeholder}
+                        className="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-normal normal-case text-slate-900 outline-none"
+                      />
+                    </label>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={saveWaTemplates}
+                  disabled={waSaving}
+                  className="mt-3 rounded-full bg-emerald-600 px-4 py-1.5 text-[11px] font-bold text-white disabled:opacity-50"
+                >
+                  {waSaving ? "Salvando…" : "Salvar templates de WhatsApp"}
+                </button>
+              </article>
+
               {PANELS.map((panel) => (
                 <article
                   key={panel.key}

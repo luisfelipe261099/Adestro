@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { isPortalPinValid, isPortalTokenActive, hashPortalToken } from "@/lib/portal-access";
 import { prisma } from "@/lib/prisma";
+import { requireRateLimit } from "@/lib/rate-limit";
+import { badRequest, portalFeedbackSchema, portalTaskUpdateSchema } from "@/lib/validators";
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -192,6 +194,12 @@ export async function GET(_request: Request, { params }: Params) {
 }
 
 export async function POST(request: Request, { params }: Params) {
+  const limited = requireRateLimit(request, {
+    suffix: "portal-feedback",
+    config: { capacity: 20, refillIntervalMs: 60_000 },
+  });
+  if (limited) return limited;
+
   const { token } = await params;
   const requestUrl = new URL(request.url);
   const pin = requestUrl.searchParams.get("pin") ?? undefined;
@@ -205,20 +213,16 @@ export async function POST(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Link invalido ou expirado" }, { status: 404 });
   }
 
-  const body = (await request.json()) as { message?: string; author?: string };
-  const message = body.message?.trim();
-  if (!message) {
-    return NextResponse.json({ error: "Mensagem obrigatoria" }, { status: 400 });
-  }
-
-  const author = body.author === "Adestrador" ? "Adestrador" : "Tutor";
+  const rawBody = await request.json();
+  const parsed = portalFeedbackSchema.safeParse(rawBody);
+  if (!parsed.success) return badRequest("Payload invalido", parsed.error.flatten());
 
   const feedback = await prisma.portalFeedback.create({
     data: {
       trainerId: link.trainerId,
       clientId: link.clientId,
-      author,
-      message,
+      author: parsed.data.author ?? "Tutor",
+      message: parsed.data.message,
     },
   });
 
@@ -226,6 +230,12 @@ export async function POST(request: Request, { params }: Params) {
 }
 
 export async function PATCH(request: Request, { params }: Params) {
+  const limited = requireRateLimit(request, {
+    suffix: "portal-task",
+    config: { capacity: 30, refillIntervalMs: 60_000 },
+  });
+  if (limited) return limited;
+
   const { token } = await params;
   const requestUrl = new URL(request.url);
   const pin = requestUrl.searchParams.get("pin") ?? undefined;
@@ -239,20 +249,19 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Link invalido ou expirado" }, { status: 404 });
   }
 
-  const body = (await request.json()) as { taskId?: string; completed?: boolean; evidenceUrl?: string | null };
-  if (!body.taskId || typeof body.completed !== "boolean") {
-    return NextResponse.json({ error: "Payload invalido" }, { status: 400 });
-  }
+  const rawBody = await request.json();
+  const parsed = portalTaskUpdateSchema.safeParse(rawBody);
+  if (!parsed.success) return badRequest("Payload invalido", parsed.error.flatten());
 
   const updated = await prisma.portalTask.updateMany({
     where: {
-      id: body.taskId,
+      id: parsed.data.taskId,
       trainerId: link.trainerId,
       clientId: link.clientId,
     },
     data: {
-      completed: body.completed,
-      ...(body.evidenceUrl !== undefined ? { evidenceUrl: body.evidenceUrl } : {}),
+      completed: parsed.data.completed,
+      ...(parsed.data.evidenceUrl !== undefined ? { evidenceUrl: parsed.data.evidenceUrl } : {}),
     },
   });
 

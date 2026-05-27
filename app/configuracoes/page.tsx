@@ -4,6 +4,8 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { PushPermissionCard } from "@/components/push-permission-card";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useAppStore } from "@/lib/app-store";
 
 type AlertSettings = {
@@ -34,6 +36,10 @@ export default function ConfiguracoesPage() {
   const [alertsLoading, setAlertsLoading] = useState(true);
   const [alertsSaving, setAlertsSaving] = useState(false);
   const [alertsError, setAlertsError] = useState("");
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvBusy, setCsvBusy] = useState(false);
+  const [csvResult, setCsvResult] = useState<{ created: number; skipped: number; total: number } | null>(null);
+  const [csvError, setCsvError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -65,6 +71,42 @@ export default function ConfiguracoesPage() {
     event.preventDefault();
     setSavedMessage("Preferências salvas neste dispositivo.");
     window.setTimeout(() => setSavedMessage(""), 3000);
+  }
+
+  async function handleImportCsv() {
+    if (!csvFile) return;
+    setCsvBusy(true);
+    setCsvError("");
+    setCsvResult(null);
+    try {
+      const text = await csvFile.text();
+      const response = await fetch("/api/clients/import-csv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ csv: text }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Falha ao importar");
+      setCsvResult({ created: data.created ?? 0, skipped: data.skipped?.length ?? 0, total: data.total ?? 0 });
+    } catch (err) {
+      setCsvError(err instanceof Error ? err.message : "Erro inesperado");
+    } finally {
+      setCsvBusy(false);
+    }
+  }
+
+  async function handleExportLgpd() {
+    const response = await fetch("/api/me/export");
+    if (!response.ok) return;
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `adestro-export-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   async function handleSaveAlerts() {
@@ -186,6 +228,73 @@ export default function ConfiguracoesPage() {
               </Link>
             </div>
           </form>
+
+          {/* ── Notificações Push + Tema ─────────────────────────────────────── */}
+          <section className="mt-5 rounded-2xl border border-sky-100 bg-sky-50/40 p-4 space-y-3">
+            <header>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-sky-700">Experiência</p>
+              <h2 className="text-base font-semibold text-sky-950">Aparência e notificações push</h2>
+            </header>
+            <PushPermissionCard />
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-100 bg-white p-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Tema do app</p>
+                <p className="text-[11px] text-[var(--muted)]">Alterna entre modo claro e escuro instantaneamente.</p>
+              </div>
+              <ThemeToggle />
+            </div>
+          </section>
+
+          {/* ── Import CSV + Export LGPD ─────────────────────────────────────── */}
+          <section className="mt-5 rounded-2xl border border-purple-100 bg-purple-50/40 p-4 space-y-3">
+            <header>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-purple-700">Dados</p>
+              <h2 className="text-base font-semibold text-purple-950">Importar clientes e exportar dados</h2>
+            </header>
+
+            <div className="rounded-2xl border border-purple-100 bg-white p-3">
+              <p className="text-sm font-semibold text-slate-900">Importar CSV</p>
+              <p className="mt-0.5 text-[11px] text-[var(--muted)]">
+                Cabeçalho esperado: <code className="rounded bg-slate-100 px-1">name,phone,email,dogName,dogBreed,notes</code>
+              </p>
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)}
+                className="mt-2 block w-full text-xs file:mr-2 file:rounded-lg file:border file:border-slate-200 file:bg-slate-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[#145a82]"
+              />
+              <button
+                type="button"
+                onClick={handleImportCsv}
+                disabled={!csvFile || csvBusy}
+                className="mt-2 rounded-full bg-purple-600 px-3 py-1.5 text-[11px] font-bold text-white disabled:opacity-50"
+              >
+                {csvBusy ? "Importando…" : "Importar"}
+              </button>
+              {csvResult ? (
+                <p className="mt-2 rounded-lg bg-emerald-50 px-2 py-1 text-[11px] text-emerald-800">
+                  ✓ {csvResult.created} criados de {csvResult.total} • {csvResult.skipped} pulados
+                </p>
+              ) : null}
+              {csvError ? (
+                <p className="mt-2 rounded-lg bg-rose-50 px-2 py-1 text-[11px] text-rose-700">{csvError}</p>
+              ) : null}
+            </div>
+
+            <div className="rounded-2xl border border-purple-100 bg-white p-3">
+              <p className="text-sm font-semibold text-slate-900">Exportar todos os meus dados (LGPD)</p>
+              <p className="mt-0.5 text-[11px] text-[var(--muted)]">
+                Baixa um JSON com clientes, cães, sessões, contratos, faturas e tudo associado à sua conta. Art. 18, §1º da LGPD.
+              </p>
+              <button
+                type="button"
+                onClick={handleExportLgpd}
+                className="mt-2 rounded-full bg-purple-600 px-3 py-1.5 text-[11px] font-bold text-white"
+              >
+                Baixar JSON
+              </button>
+            </div>
+          </section>
 
           {/* ── Configurações de Alertas (módulo 10.3 §8.5) ─────────────────── */}
           <section className="mt-5 rounded-2xl border border-amber-100 bg-amber-50/40 p-4">
