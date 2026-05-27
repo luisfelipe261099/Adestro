@@ -483,7 +483,7 @@ export default function SchedulePage() {
 
           {/* VIEW SWITCHER & NAVIGATION */}
           <nav className="mt-3 flex items-center justify-between gap-2">
-            <div className="inline-flex rounded-full border border-[#c9dfef] bg-white p-0.5 text-[11px] font-semibold">
+            <div data-tour="agenda-tabs" className="inline-flex rounded-full border border-[#c9dfef] bg-white p-0.5 text-[11px] font-semibold">
               {(["dia", "semana", "mes"] as const).map((mode) => (
                 <button
                   key={mode}

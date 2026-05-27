@@ -319,7 +319,7 @@ export default function ConfiguracoesPage() {
           </section>
 
           {/* ── Configurações de Alertas (módulo 10.3 §8.5) ─────────────────── */}
-          <section className="mt-5 rounded-2xl border border-amber-100 bg-amber-50/40 p-4">
+          <section data-tour="settings-alerts" className="mt-5 rounded-2xl border border-amber-100 bg-amber-50/40 p-4">
             <header className="flex items-center justify-between border-b border-amber-100 pb-2">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-700">Operacional</p>

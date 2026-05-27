@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/site-header";
 import { DataLoader } from "@/components/data-loader";
 import { MobileNavigation } from "@/components/mobile-navigation";
 import { CommandPalette } from "@/components/command-palette";
+import { ProductTour } from "@/components/product-tour";
 import { ThemeBoot } from "@/components/theme-boot";
 import { TrialBanner } from "@/components/trial-banner";
 import { WhatsAppTemplatesLoader } from "@/components/whatsapp-templates-loader";
@@ -78,6 +79,7 @@ export default function RootLayout({
             {children}
             <MobileNavigation />
             <CommandPalette />
+            <ProductTour />
           </div>
         </AppSessionProvider>
         <Analytics />

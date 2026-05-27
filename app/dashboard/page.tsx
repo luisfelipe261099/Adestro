@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DailyBriefCard } from "@/components/daily-brief-card";
+import { useTour } from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
 
 function getFirstName(name: string): string {
@@ -164,6 +165,13 @@ export default function DashboardPage() {
   const events = useAppStore((state) => state.calendarEvents);
   const sessions = useAppStore((state) => state.trainingSessions);
   const trainerName = useAppStore((state) => state.trainerName);
+  const startTour = useTour((s) => s.start);
+  const [tourDone, setTourDone] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setTourDone(window.localStorage.getItem("adestro-tour-done") === "1");
+    }
+  }, []);
 
   // Redireciona para o wizard apenas no primeiro acesso. Usa a API
   // /api/trainer/plan-status como fonte autoritativa em vez do zustand
@@ -282,6 +290,34 @@ export default function DashboardPage() {
               </Link>
             </div>
           </header>
+
+          {/* CTA de tour guiado — mais proeminente se ainda não fez */}
+          {!tourDone ? (
+            <section className="mt-4 overflow-hidden rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-600 to-indigo-600 p-3 text-white shadow-md">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-purple-100">✨ Novo por aqui?</p>
+                  <p className="mt-0.5 text-sm font-bold">Tour guiado em 2 minutos</p>
+                  <p className="text-[10.5px] text-purple-100">10 passos pelas funcionalidades principais</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => startTour()}
+                  className="rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-purple-700 shadow-sm hover:bg-purple-50"
+                >
+                  ▶ Iniciar
+                </button>
+              </div>
+            </section>
+          ) : (
+            <button
+              type="button"
+              onClick={() => startTour()}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-white px-3 py-1 text-[11px] font-semibold text-purple-700 hover:bg-purple-50"
+            >
+              ✨ Refazer tour guiado
+            </button>
+          )}
 
           <section className="mt-4 rounded-2xl border border-[#cfe4f3] bg-white p-3">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Próxima ação</p>
@@ -420,7 +456,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ☀️ Card 5: Brief do dia (Roxo) - automação preparada pelo cron daily-brief */}
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2" data-tour="brief">
               <DailyBriefCard />
             </div>
           </section>

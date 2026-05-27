@@ -307,7 +307,7 @@ export default function FinanceiroPage() {
           </header>
 
           {/* Abas */}
-          <nav className="mt-4 flex gap-1 rounded-2xl bg-slate-100/80 p-1 text-[11px] font-semibold">
+          <nav data-tour="finance-tabs" className="mt-4 flex gap-1 rounded-2xl bg-slate-100/80 p-1 text-[11px] font-semibold">
             {[
               { id: "dashboard", label: "Faturamento" },
               { id: "pacotes", label: "Pacotes" },

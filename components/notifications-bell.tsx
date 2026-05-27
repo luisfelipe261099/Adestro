@@ -38,7 +38,7 @@ export function NotificationsBell({ compact = false }: { compact?: boolean }) {
     : "h-10 w-10";
 
   return (
-    <div className="relative" ref={panelRef}>
+    <div className="relative" ref={panelRef} data-tour="bell">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}

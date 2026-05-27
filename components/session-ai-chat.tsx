@@ -64,6 +64,7 @@ export function SessionAiChat({ context }: { context: SessionContext }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
+        data-tour="ia-chat"
         className="fixed bottom-20 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 text-2xl text-white shadow-[0_10px_30px_rgba(99,102,241,0.4)] lg:bottom-6"
         aria-label="Assistente IA do treino"
         title="Conversar com a IA sobre essa sessão"

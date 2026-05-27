@@ -1093,7 +1093,7 @@ export default function ClientsPage() {
           )}
 
           {/* Listagem de Clientes */}
-          <section className="mt-3 space-y-2">
+          <section data-tour="clients-list" className="mt-3 space-y-2">
             {filteredClients.length === 0 ? (
               <article className="rounded-2xl border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
                 Nenhum {entityKind === "humanos" ? "tutor" : "cão"} encontrado com os filtros atuais.

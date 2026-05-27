@@ -1,76 +1,171 @@
 "use client";
 
+import Link from "next/link";
+
 import { PageShell } from "@/components/page-shell";
+import { useTour } from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
 
-const trainerFlow = [
+type FlowStep = {
+  title: string;
+  why: string;
+  how: string[];
+  shortcut?: string;
+};
+
+const trainerFlow: FlowStep[] = [
   {
-    title: "Cadastrar tutor e cão",
-    why: "Essa é a base de todo o acompanhamento.",
+    title: "1) Cadastrar tutor e cão",
+    why: "Base de todo o acompanhamento — todo registro futuro liga aqui.",
     how: [
-      "Registre nome do tutor, contato, ambiente onde o cão vive e plano combinado.",
-      "No cadastro do cão, inclua raça, idade, peso e principais objetivos de treino.",
-      "Use os focos de treino para deixar claro se o caso é guia, ansiedade, socialização, obediência ou outro tema.",
+      "Em /clientes toque em '+' e preencha tutor, endereços (com link pro Google Maps) e ficha completa do cão.",
+      "Vacinas têm alerta de vencimento automático. Temperamento, rotinas e objetivos viram contexto pra IA.",
+      "Use o link de onboarding pro próprio tutor preencher os dados antes da 1ª aula (modo rascunho até você aprovar).",
+      "Tags (VIP, Inadimplente, Filhote, Sênior, etc) ajudam a filtrar — pode editar inline no card.",
+    ],
+    shortcut: "Atalho: Ctrl+K → 'Novo tutor'",
+  },
+  {
+    title: "2) Agendar o treino",
+    why: "A agenda mostra cada atendimento, sincroniza com Google/Apple Calendar e organiza a confirmação de presença.",
+    how: [
+      "Em /agenda escolha Dia, Semana ou Mês. O '+' superior cria agendamento novo.",
+      "Cada card de evento tem 6 ações: ✅ Confirmação WhatsApp, 💬 WhatsApp geral, 📍 Mapa, 📆 Google Calendar, .ics (Apple), 📝 Registrar.",
+      "Recorrência semanal/quinzenal gera a série de eventos automaticamente.",
+      "Quando o tutor clica em ✅ pelo portal, o status muda pra 'Confirmado' e aparece no seu sininho.",
     ],
   },
   {
-    title: "Organizar a agenda",
-    why: "A agenda mostra quando o atendimento acontece e evita perda de histórico.",
+    title: "3) Registrar o treino realizado",
+    why: "Transforma a aula em histórico técnico — e vira insumo da IA, do relatório mensal e da nota do tutor.",
     how: [
-      "Associe cada aula ao tutor e ao cão corretos.",
-      "Defina horário, número da sessão e status do atendimento.",
-      "Use a agenda como referência para saber qual cão será atendido e em que etapa do plano ele está.",
+      "Em /treinos/registro escolha o cão e preencha as 9 seções (A-I).",
+      "🎙️ Grave nota por voz: a Web Speech API transcreve em tempo real (Chrome, Edge, Safari iOS).",
+      "Avalie comandos com estrelas 1-5 — vira o gráfico de evolução no relatório mensal.",
+      "Para sessões coletivas, cada cão tem sub-registro independente nas seções D, E, F e H.",
+      "No canto direito ✨ abre o Assistente IA contextual (chat com 6 tópicos especialistas).",
+    ],
+    shortcut: "Atalho: clique no ✨ flutuante no canto direito",
+  },
+  {
+    title: "4) Aprovar resumo IA + planejar próxima aula",
+    why: "A IA monta um rascunho, mas só o adestrador aprova o que o tutor vai ver.",
+    how: [
+      "Na Seção F após registrar, toque em 'Gerar análise IA' — o resumo aparece pra revisão.",
+      "Marque 'Aprovar e liberar para o tutor' só quando o texto refletir sua leitura técnica.",
+      "Na Seção H, defina foco da próxima sessão e tarefas pro tutor fazer em casa.",
+      "Notas confidenciais (Seção D) NUNCA são compartilhadas — só você vê.",
     ],
   },
   {
-    title: "Registrar a sessão de treino",
-    why: "O registro transforma a aula em histórico técnico.",
+    title: "5) Compartilhar o portal do tutor",
+    why: "O tutor acompanha tarefas, evolução e gamificação por um link único — sem login, com PIN opcional.",
     how: [
-      "Anote o que foi treinado, como o cão respondeu e quais dificuldades apareceram.",
-      "Use notas por bloco, como guia, foco, permanência, socialização ou manejo em casa.",
-      "Inclua evidências quando fizer sentido, como foto da postura, ambiente ou exercício concluído.",
+      "Em /portal gere/copie o link único do cliente e envie pelo WhatsApp (template já pronto).",
+      "O tutor vê: nível do cão, streak diário 🔥, tarefas de hoje (com upload de foto), histórico, badges.",
+      "Quando o tutor responde NPS após cada aula, você recebe a média no comparativo mensal.",
+      "Banner azul de 'Confirmar presença' aparece no portal quando há evento pendente.",
     ],
   },
   {
-    title: "Definir tarefa para casa",
-    why: "O tutor precisa saber exatamente o que repetir fora da aula.",
+    title: "6) Operar financeiro + emitir recibo",
+    why: "Pacote → contrato → cobranças automáticas → recibo com Pix Copia e Cola embutido.",
     how: [
-      "Escreva uma orientação curta, prática e possível de executar na rotina do tutor.",
-      "Explique frequência, duração e cuidado principal do exercício.",
-      "Evite passar muitas tarefas ao mesmo tempo; uma tarefa bem feita vale mais que várias confusas.",
+      "Em /financeiro cadastre pacotes (sessões, valor, fracionamento, validade).",
+      "Vender pacote gera contrato e cobranças automaticamente.",
+      "No recibo, se sua chave Pix estiver configurada, gera o BR Code Copia e Cola — o tutor cola no banco e pronto.",
+      "Botão 💬 Lembrar em cada cobrança abre WhatsApp com texto pronto (cobrança pendente ou em atraso).",
+      "Cron diário às 07h gera os lembretes do dia automaticamente.",
     ],
   },
   {
-    title: "Usar a IA como apoio técnico",
-    why: "A IA ajuda quando o adestrador precisa de ideia, estrutura ou próximo passo.",
+    title: "7) Aprovar e enviar relatório mensal",
+    why: "Cliente percebe valor quando vê o progresso documentado mês a mês.",
     how: [
-      "Informe o cão, raça, objetivo e dificuldade atual.",
-      "Descreva o problema como você falaria para outro profissional: exemplo, treinamento de guia para Pastor Alemão que puxa na rua.",
-      "Use a sugestão como roteiro inicial e ajuste conforme temperamento, ambiente e resposta do cão.",
+      "Em /relatorios o rascunho aparece automaticamente no início do mês.",
+      "Edite seções, selecione fotos, ajuste a análise gerada pela IA.",
+      "Toque 'Aprovar e Gerar PDF' → 'Imprimir / PDF' do browser.",
+      "Use 'Comparativo mês vs mês' pra mostrar evolução em sessões, comandos médios, % atividades e NPS.",
     ],
+  },
+];
+
+const featureHighlights = [
+  {
+    icon: "🔔",
+    title: "Sininho com badge dinâmico",
+    text: "Conta pendências reais (confirmações aguardando, treinos sem registro, mensagens novas, relatórios pra aprovar). Filtros por tipo.",
+  },
+  {
+    icon: "☀️",
+    title: "Brief do dia no Dashboard",
+    text: "Cron prepara lembretes wa.me prontos pra disparar. Você abre o app de manhã e dispara em 3-4 toques.",
+  },
+  {
+    icon: "✨",
+    title: "Assistente IA contextual",
+    text: "Chat dentro da página de sessão. Sabe o cão, raça, comandos e descrição. Atalhos: planejamento, ansiedade, recall, latido, socialização, análise.",
+  },
+  {
+    icon: "🎙️",
+    title: "Transcrição por voz nativa",
+    text: "Web Speech API. Aperta, fala, para. Texto aparece em tempo real. Áudio nunca sai do device.",
+  },
+  {
+    icon: "📋",
+    title: "Templates editáveis",
+    text: "Em /admin/templates você edita atividades, comandos padrão, tarefas do tutor e o texto de cada mensagem WhatsApp.",
+  },
+  {
+    icon: "🏷️",
+    title: "Tags + filtros",
+    text: "Adicione tags livres aos clientes (VIP, Inadimplente, Reativo, Filhote). Edita inline no card.",
+  },
+  {
+    icon: "💳",
+    title: "Pix Copia e Cola",
+    text: "BR Code EMV do Banco Central gerado no recibo. Sem gateway pago.",
+  },
+  {
+    icon: "📥",
+    title: "Importar clientes via CSV",
+    text: "Em /configuracoes envie o arquivo com cabeçalho name,phone,email,dogName,dogBreed,notes.",
+  },
+  {
+    icon: "📤",
+    title: "Export LGPD",
+    text: "Baixe um JSON com TODOS os dados da conta. Direito do titular (Art. 18 LGPD).",
+  },
+  {
+    icon: "🔍",
+    title: "Cmd+K busca global",
+    text: "Aperta Ctrl+K (ou ⌘K) em qualquer tela: busca tutor, cão, sessão ou tela.",
+  },
+  {
+    icon: "🌙",
+    title: "Dark mode",
+    text: "Toggle em /configuracoes. Sem flicker no carregamento.",
+  },
+  {
+    icon: "📜",
+    title: "Audit log",
+    text: "Histórico de quem fez o quê em /admin/audit. Essencial pra multi-adestrador.",
   },
 ];
 
 const assistantExamples = [
   {
     case: "Pastor Alemão puxando na guia",
-    suggestion: "A IA deve sugerir aquecimento de foco, reforço por andar ao lado, mudanças de direção, pausas de contato visual e aumento gradual de distrações.",
+    suggestion: "A IA sugere aquecimento de foco, reforço por andar ao lado, mudanças de direção, pausas de contato visual e aumento gradual de distrações.",
   },
   {
     case: "Filhote pulando nas visitas",
-    suggestion: "A IA deve propor manejo do ambiente, treino de senta para cumprimentar, recompensa por quatro patas no chão e prática com visitas controladas.",
+    suggestion: "Manejo do ambiente, treino de senta para cumprimentar, recompensa por quatro patas no chão e prática com visitas controladas.",
   },
   {
     case: "Cão ansioso ao ficar sozinho",
-    suggestion: "A IA deve montar passos curtos de dessensibilização, enriquecimento ambiental e registro de evolução sem forçar tempo excessivo.",
+    suggestion: "Passos curtos de dessensibilização, enriquecimento ambiental e registro de evolução sem forçar tempo excessivo.",
   },
-];
-
-const tutorGuidance = [
-  "O tutor recebe um portal simples para ver tarefas, evolução e orientações.",
-  "A linguagem das tarefas deve ser clara, sem termos técnicos demais.",
-  "O objetivo é fazer o tutor praticar corretamente em casa, não apenas visualizar informações.",
-  "Feedbacks do tutor ajudam a ajustar a próxima sessão.",
 ];
 
 const statusLabels = [
@@ -80,15 +175,15 @@ const statusLabels = [
   },
   {
     label: "Sessões registradas",
-    getValue: (_clients: number, _dogs: number, sessions: number) => `${sessions} sessão(ões)`,
+    getValue: (_c: number, _d: number, sessions: number) => `${sessions} sessão(ões)`,
   },
   {
     label: "Agendamentos ativos",
-    getValue: (_clients: number, _dogs: number, _sessions: number, events: number) => `${events} agendamento(s)`,
+    getValue: (_c: number, _d: number, _s: number, events: number) => `${events} agendamento(s)`,
   },
   {
     label: "Tarefas para tutores",
-    getValue: (_clients: number, _dogs: number, _sessions: number, _events: number, tasks: number) => `${tasks} tarefa(s)`,
+    getValue: (_c: number, _d: number, _s: number, _e: number, tasks: number) => `${tasks} tarefa(s)`,
   },
 ];
 
@@ -97,6 +192,7 @@ export default function TutorialPage() {
   const sessions = useAppStore((state) => state.trainingSessions);
   const events = useAppStore((state) => state.calendarEvents);
   const portalTasks = useAppStore((state) => state.portalTasks);
+  const startTour = useTour((s) => s.start);
 
   const totalDogs = clients.reduce((total, client) => total + client.dogs.length, 0);
 
@@ -104,16 +200,44 @@ export default function TutorialPage() {
     <PageShell
       kicker="Tutorial do adestrador"
       title="Como o Adestro organiza sua rotina"
-      description="Um guia explicativo para entender o fluxo de atendimento, o portal do tutor e o papel correto do Assistente de IA."
+      description="Guia completo do fluxo de atendimento, do portal do tutor, das integrações e da IA."
       requireAuth="trainer"
     >
-      <section className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Ideia principal</p>
+      {/* CTA do tour guiado */}
+      <section className="rounded-[1.5rem] border border-purple-200 bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-5 shadow-sm">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex-1">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-purple-700">✨ Tour guiado</p>
+            <h2 className="mt-1 font-display text-xl font-semibold text-slate-900">
+              Quer um tour de 2 minutos pelo sistema?
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-slate-700">
+              Em 10 passos eu te mostro o sininho, o brief do dia, a agenda, o registro de treino com IA, o
+              financeiro e o admin. O app navega sozinho — você só clica em Próximo.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => startTour()}
+            className="inline-flex items-center gap-1.5 rounded-full bg-purple-600 px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-purple-700"
+          >
+            ▶ Iniciar tour guiado
+          </button>
+        </div>
+      </section>
+
+      {/* Status atual da conta */}
+      <section className="mt-4 rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Sua conta</p>
         <div className="mt-2 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <h2 className="font-display text-2xl font-semibold text-[var(--foreground)]">O sistema acompanha o atendimento do começo ao pós-aula</h2>
+            <h2 className="font-display text-2xl font-semibold text-[var(--foreground)]">
+              O sistema acompanha do cadastro à confirmação de presença do tutor
+            </h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              O Adestro não é só uma lista de páginas. Ele funciona como uma rotina: primeiro você cadastra tutor e cão, depois agenda, registra o treino, orienta o tutor e usa a IA para preparar o próximo passo quando precisar de apoio técnico.
+              O Adestro funciona como uma rotina contínua: cadastrar tutor → agendar → registrar treino → aprovar
+              resumo IA → enviar tarefas pro tutor → emitir recibo → gerar relatório mensal. Em cada etapa há
+              automações para reduzir cliques e mensagens prontas pra WhatsApp.
             </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
@@ -129,71 +253,123 @@ export default function TutorialPage() {
         </div>
       </section>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Fluxo de atendimento</p>
-          <h2 className="mt-1 font-display text-2xl font-semibold text-[var(--foreground)]">Como deve ser feito</h2>
+      {/* Fluxo de atendimento detalhado */}
+      <section className="mt-4 rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Fluxo de atendimento</p>
+        <h2 className="mt-1 font-display text-2xl font-semibold text-[var(--foreground)]">
+          7 passos do cadastro ao relatório mensal
+        </h2>
 
-          <ol className="mt-5 grid gap-3">
-            {trainerFlow.map((step, index) => (
-              <li key={step.title} className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-4">
-                <div className="flex gap-3">
-                  <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#145a82] text-sm font-semibold text-white">
-                    {index + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-base font-semibold text-[var(--foreground)]">{step.title}</h3>
-                    <p className="mt-1 text-sm font-medium text-[#2d6f99]">{step.why}</p>
-                    <ul className="mt-3 grid gap-2">
-                      {step.how.map((item) => (
-                        <li key={item} className="flex gap-2 text-sm leading-6 text-[var(--muted)]">
-                          <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#1f8e80]" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </li>
+        <ol className="mt-5 grid gap-3">
+          {trainerFlow.map((step) => (
+            <li key={step.title} className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-4">
+              <h3 className="text-base font-semibold text-[var(--foreground)]">{step.title}</h3>
+              <p className="mt-1 text-sm font-medium text-[#2d6f99]">{step.why}</p>
+              <ul className="mt-3 grid gap-2">
+                {step.how.map((item) => (
+                  <li key={item} className="flex gap-2 text-sm leading-6 text-[var(--muted)]">
+                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#1f8e80]" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              {step.shortcut ? (
+                <p className="mt-3 inline-block rounded-full bg-slate-900/5 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+                  {step.shortcut}
+                </p>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* Galeria de features */}
+      <section className="mt-4 rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Funcionalidades em destaque</p>
+        <h2 className="mt-1 font-display text-2xl font-semibold text-[var(--foreground)]">
+          Recursos que reduzem cliques no dia a dia
+        </h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {featureHighlights.map((feature) => (
+            <article key={feature.title} className="rounded-2xl border border-slate-100 bg-slate-50/40 p-3">
+              <p className="text-sm font-bold text-slate-900">
+                <span aria-hidden className="mr-1.5">{feature.icon}</span>
+                {feature.title}
+              </p>
+              <p className="mt-1 text-[12px] leading-5 text-[var(--muted)]">{feature.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <section className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Assistente de IA</p>
+          <h2 className="mt-1 font-display text-2xl font-semibold text-[var(--foreground)]">
+            A IA sugere abordagem técnica — você decide
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+            O motor atual é determinístico (sem custo de API). Cobre os 6 tópicos mais frequentes do cotidiano:
+            planejamento, ansiedade, recall, latido, socialização e análise da sessão. Você pode plugar IA real
+            (Claude, Gemini, OpenAI) sem refatoração quando quiser.
+          </p>
+          <div className="mt-4 grid gap-3">
+            {assistantExamples.map((example) => (
+              <article key={example.case} className="rounded-2xl border border-[var(--border)] bg-white p-4">
+                <p className="text-sm font-semibold text-[var(--foreground)]">{example.case}</p>
+                <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{example.suggestion}</p>
+              </article>
             ))}
-          </ol>
+          </div>
         </section>
 
         <div className="grid gap-4">
-          <section className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Assistente de IA</p>
-            <h2 className="mt-1 font-display text-2xl font-semibold text-[var(--foreground)]">A IA sugere treino, não substitui o adestrador</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              A ideia correta é usar a IA quando você não lembra como estruturar um exercício, quer variar uma progressão ou precisa preparar uma próxima aula com base no caso do cão.
-            </p>
-            <div className="mt-4 grid gap-3">
-              {assistantExamples.map((example) => (
-                <article key={example.case} className="rounded-2xl border border-[var(--border)] bg-white p-4">
-                  <p className="text-sm font-semibold text-[var(--foreground)]">{example.case}</p>
-                  <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{example.suggestion}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
           <section className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Portal do tutor</p>
-            <h2 className="mt-1 font-display text-xl font-semibold text-[var(--foreground)]">Como orientar o cliente</h2>
-            <div className="mt-4 grid gap-2">
-              {tutorGuidance.map((item) => (
-                <div key={item} className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-3 text-sm leading-6 text-[var(--muted)]">
-                  {item}
-                </div>
-              ))}
+            <h2 className="mt-1 font-display text-xl font-semibold text-[var(--foreground)]">
+              Como orientar o cliente
+            </h2>
+            <div className="mt-4 grid gap-2 text-sm leading-6 text-[var(--muted)]">
+              <p className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-3">
+                Link único por cliente (token + PIN opcional). Sem login.
+              </p>
+              <p className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-3">
+                Tarefas com upload de foto, gamificação (9 níveis, streak, 8 badges), confirmação de presença e NPS.
+              </p>
+              <p className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-3">
+                Use linguagem clara. Uma tarefa bem feita vale mais que cinco mal explicadas.
+              </p>
+              <p className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-3">
+                Notas confidenciais NUNCA aparecem pro tutor — só na sua ficha de adestrador.
+              </p>
             </div>
+            <Link
+              href="/tutorial/cliente"
+              className="mt-3 inline-block text-xs font-semibold text-[#145a82] hover:underline"
+            >
+              Ver guia separado pro tutor →
+            </Link>
           </section>
 
           <section className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Regra prática</p>
-            <h2 className="mt-1 font-display text-xl font-semibold text-[var(--foreground)]">Cada aula deve terminar com clareza</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              Ao final da sessão, o adestrador precisa saber o que foi treinado, o tutor precisa saber o que praticar e o sistema precisa guardar histórico suficiente para apoiar a próxima decisão.
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Atalhos úteis</p>
+            <h2 className="mt-1 font-display text-xl font-semibold text-[var(--foreground)]">
+              Comandos de teclado
+            </h2>
+            <div className="mt-3 grid gap-2 text-sm">
+              <p>
+                <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-xs">Ctrl</kbd>
+                {" + "}
+                <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-xs">K</kbd>
+                {" — abre a busca global (tutor, cão, sessão, tela)"}
+              </p>
+              <p>
+                <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-xs">Esc</kbd>
+                {" — fecha modais e overlays"}
+              </p>
+              <p>Long-press no ícone do PWA: atalhos rápidos (nova sessão, agenda, novo tutor, financeiro)</p>
+              <p>Notificações push: ative em /configuracoes → toque "Ativar agora"</p>
+            </div>
           </section>
         </div>
       </div>
