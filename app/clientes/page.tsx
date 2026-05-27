@@ -5,7 +5,9 @@ import Link from "next/link";
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { TagsEditor } from "@/components/tags-editor";
 import { useAppStore } from "@/lib/app-store";
+import { googleMapsLink } from "@/lib/calendar-ics";
 
 type ClientStatus = "ativos" | "inativos" | "rascunho";
 type SortMode = "recentes" | "nome";
@@ -779,6 +781,22 @@ export default function ClientsPage() {
                         Endereço Padrão
                       </label>
                     </div>
+
+                    {/* Pré-visualização + botão mapa (módulo 2 §3.1) */}
+                    {(addrStreet || addrCity) ? (
+                      <a
+                        href={googleMapsLink(
+                          [addrStreet, addrNumber, addrNeighborhood, addrCity, addrState]
+                            .filter(Boolean)
+                            .join(", "),
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-700 hover:bg-rose-100"
+                      >
+                        📍 Ver no Google Maps
+                      </a>
+                    ) : null}
                   </div>
                 )}
 
@@ -1192,6 +1210,13 @@ export default function ClientsPage() {
                     <p>{item.client.propertyType || "Não informado"}</p>
                     <p>{item.client.phone || "Sem telefone"}</p>
                     <p>{item.client.dogs.length} cão(ões)</p>
+                  </div>
+
+                  <div className="mt-2 relative">
+                    <TagsEditor
+                      clientId={item.client.id}
+                      initialTags={item.client.tags ?? []}
+                    />
                   </div>
 
                   <div className="mt-3 flex items-center justify-between gap-2">

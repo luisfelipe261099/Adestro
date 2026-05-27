@@ -4,6 +4,32 @@
 
 export type WaMessageVars = Record<string, string | number | undefined>;
 
+// Overrides definidos pelo adestrador em /admin/templates.
+// As chaves seguem o naming de waTemplates ("agendamento", "lembrete", "confirmacao",
+// "treinoRealizado", "cobranca", "relatorio").
+let customTemplates: Record<string, string> = {};
+
+export function setCustomWaTemplates(templates: Record<string, string>): void {
+  customTemplates = templates ?? {};
+}
+
+export function getCustomWaTemplates(): Record<string, string> {
+  return customTemplates;
+}
+
+function applyVars(template: string, vars: WaMessageVars): string {
+  return template.replace(/\{(\w+)\}/g, (_, key) => {
+    const value = vars[key];
+    return value === undefined || value === null ? "" : String(value);
+  });
+}
+
+function resolveTemplate(key: string, fallback: string, vars: WaMessageVars): string {
+  const custom = customTemplates[key];
+  if (custom && custom.trim().length > 0) return applyVars(custom, vars);
+  return fallback;
+}
+
 export function normalizePhone(phone?: string | null): string {
   if (!phone) return "";
   const digits = phone.replace(/\D+/g, "");
@@ -21,38 +47,64 @@ export function buildWaUrl(phone: string | undefined | null, message: string): s
   return `https://wa.me/${e164}?text=${text}`;
 }
 
-// Templates de mensagem do documento (módulo 7 §8.1)
+// Templates de mensagem do documento (módulo 7 §8.1). Cada função verifica primeiro
+// se o adestrador definiu um template customizado (via /admin/templates) e usa esse;
+// caso contrário, cai no fallback padrão.
 export const waTemplates = {
-  agendamentoCriado: (vars: { tutor: string; cao: string; data: string; hora: string; link?: string }) =>
-    `Olá ${vars.tutor}! O treino do(a) ${vars.cao} foi agendado para ${vars.data} às ${vars.hora}.` +
-    (vars.link ? `\n\nConfirme a presença aqui: ${vars.link}` : ""),
+  agendamentoCriado: (vars: { tutor: string; cao: string; data: string; hora: string; link?: string }) => {
+    const fallback =
+      `Olá ${vars.tutor}! O treino do(a) ${vars.cao} foi agendado para ${vars.data} às ${vars.hora}.` +
+      (vars.link ? `\n\nConfirme a presença aqui: ${vars.link}` : "");
+    return resolveTemplate("agendamento", fallback, vars);
+  },
 
-  lembreteTreino: (vars: { cao: string; hora: string; adestrador: string }) =>
-    `Lembrete: treino do(a) ${vars.cao} amanhã às ${vars.hora} com ${vars.adestrador}. Até lá! 🐾`,
+  lembreteTreino: (vars: { cao: string; hora: string; adestrador: string }) => {
+    const fallback = `Lembrete: treino do(a) ${vars.cao} amanhã às ${vars.hora} com ${vars.adestrador}. Até lá! 🐾`;
+    return resolveTemplate("lembrete", fallback, vars);
+  },
 
-  confirmacaoSolicitada: (vars: { cao: string; data: string; link: string }) =>
-    `Por favor, confirme a presença do(a) ${vars.cao} no treino de ${vars.data}:\n${vars.link}`,
+  confirmacaoSolicitada: (vars: { cao: string; data: string; link: string }) => {
+    const fallback = `Por favor, confirme a presença do(a) ${vars.cao} no treino de ${vars.data}:\n${vars.link}`;
+    return resolveTemplate("confirmacao", fallback, vars);
+  },
 
-  treinoRealizado: (vars: { cao: string; link: string }) =>
-    `Ótimo treino hoje com o(a) ${vars.cao}! 🎉 Veja o resumo e as fotos: ${vars.link}`,
+  treinoRealizado: (vars: { cao: string; link: string }) => {
+    const fallback = `Ótimo treino hoje com o(a) ${vars.cao}! 🎉 Veja o resumo e as fotos: ${vars.link}`;
+    return resolveTemplate("treinoRealizado", fallback, vars);
+  },
 
-  tarefaDiaria: (vars: { cao: string; link: string }) =>
-    `${vars.cao} tem tarefas para hoje! 🐶 Confira no portal: ${vars.link}`,
+  tarefaDiaria: (vars: { cao: string; link: string }) => {
+    const fallback = `${vars.cao} tem tarefas para hoje! 🐶 Confira no portal: ${vars.link}`;
+    return resolveTemplate("tarefaDiaria", fallback, vars);
+  },
 
-  cobrancaPendente: (vars: { tutor: string; valor: string; data: string; pix?: string }) =>
-    `Olá ${vars.tutor}! Sua próxima cobrança de R$ ${vars.valor} vence em ${vars.data}.` +
-    (vars.pix ? `\n\nChave Pix: ${vars.pix}` : ""),
+  cobrancaPendente: (vars: { tutor: string; valor: string; data: string; pix?: string }) => {
+    const fallback =
+      `Olá ${vars.tutor}! Sua próxima cobrança de R$ ${vars.valor} vence em ${vars.data}.` +
+      (vars.pix ? `\n\nChave Pix: ${vars.pix}` : "");
+    return resolveTemplate("cobranca", fallback, vars);
+  },
 
-  cobrancaAtrasada: (vars: { tutor: string; valor: string; diasAtraso: number }) =>
-    `Olá ${vars.tutor}! A cobrança de R$ ${vars.valor} venceu há ${vars.diasAtraso} dia(s). Pode dar uma olhada? 🙏`,
+  cobrancaAtrasada: (vars: { tutor: string; valor: string; diasAtraso: number }) => {
+    const fallback = `Olá ${vars.tutor}! A cobrança de R$ ${vars.valor} venceu há ${vars.diasAtraso} dia(s). Pode dar uma olhada? 🙏`;
+    return resolveTemplate("cobrancaAtrasada", fallback, vars);
+  },
 
-  relatorioMensal: (vars: { cao: string; mes: string; link: string }) =>
-    `O relatório de evolução do(a) ${vars.cao} referente a ${vars.mes} já está disponível: ${vars.link}`,
+  relatorioMensal: (vars: { cao: string; mes: string; link: string }) => {
+    const fallback = `O relatório de evolução do(a) ${vars.cao} referente a ${vars.mes} já está disponível: ${vars.link}`;
+    return resolveTemplate("relatorio", fallback, vars);
+  },
 
-  reciboPagamento: (vars: { tutor: string; valor: string; servico: string; link?: string }) =>
-    `Olá ${vars.tutor}, segue o recibo do pagamento de R$ ${vars.valor} referente a ${vars.servico}.` +
-    (vars.link ? `\n\n${vars.link}` : ""),
+  reciboPagamento: (vars: { tutor: string; valor: string; servico: string; link?: string }) => {
+    const fallback =
+      `Olá ${vars.tutor}, segue o recibo do pagamento de R$ ${vars.valor} referente a ${vars.servico}.` +
+      (vars.link ? `\n\n${vars.link}` : "");
+    return resolveTemplate("recibo", fallback, vars);
+  },
 
-  portalDoCao: (vars: { cao: string; link: string }) =>
-    `Pronto, ${vars.cao} tem um portal exclusivo no Adestro! 🐾\n\nAcesse para ver tarefas, evolução e o último treino:\n${vars.link}`,
+  portalDoCao: (vars: { cao: string; link: string }) => {
+    const fallback =
+      `Pronto, ${vars.cao} tem um portal exclusivo no Adestro! 🐾\n\nAcesse para ver tarefas, evolução e o último treino:\n${vars.link}`;
+    return resolveTemplate("portal", fallback, vars);
+  },
 };

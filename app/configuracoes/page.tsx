@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { PlanUsageCard } from "@/components/plan-usage-card";
 import { PushPermissionCard } from "@/components/push-permission-card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAppStore } from "@/lib/app-store";
@@ -228,6 +229,27 @@ export default function ConfiguracoesPage() {
               </Link>
             </div>
           </form>
+
+          {/* ── Uso do plano ─────────────────────────────────────────────────── */}
+          <div className="mt-5">
+            <PlanUsageCard />
+          </div>
+
+          {/* ── Acessos rápidos a admin ─────────────────────────────────────── */}
+          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+            <Link
+              href="/admin/audit"
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-semibold text-[#145a82]"
+            >
+              📜 Histórico de atividade
+            </Link>
+            <Link
+              href="/admin/templates"
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-semibold text-[#145a82]"
+            >
+              📋 Templates do sistema
+            </Link>
+          </div>
 
           {/* ── Notificações Push + Tema ─────────────────────────────────────── */}
           <section className="mt-5 rounded-2xl border border-sky-100 bg-sky-50/40 p-4 space-y-3">

@@ -11,6 +11,7 @@ import { MobileNavigation } from "@/components/mobile-navigation";
 import { CommandPalette } from "@/components/command-palette";
 import { ThemeBoot } from "@/components/theme-boot";
 import { TrialBanner } from "@/components/trial-banner";
+import { WhatsAppTemplatesLoader } from "@/components/whatsapp-templates-loader";
 
 import "./globals.css";
 
@@ -66,6 +67,7 @@ export default function RootLayout({
         <ThemeBoot />
         <AppSessionProvider>
           <DataLoader />
+          <WhatsAppTemplatesLoader />
           <div className="relative isolate min-h-dvh overflow-x-hidden">
             <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 bg-[radial-gradient(circle_at_top,_rgba(36,140,196,0.2),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(31,154,138,0.16),_transparent_28%)] dark:opacity-30" />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-96 bg-[radial-gradient(circle_at_bottom_left,_rgba(33,152,129,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(245,186,86,0.12),_transparent_35%)] dark:opacity-30" />

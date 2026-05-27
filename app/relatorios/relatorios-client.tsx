@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
 import { useAppStore } from "@/lib/app-store";
+import { MonthlyComparison } from "@/components/monthly-comparison";
 import { MonthlyReport } from "@/components/monthly-report";
 
 type GeneratedReport = {
@@ -433,6 +434,16 @@ export default function RelatoriosClientPage() {
 
             </div>
           )}
+
+          {/* Comparativo mês vs mês — só faz sentido quando há um cão selecionado */}
+          {selectedDogId ? (
+            <div className="mt-4">
+              <MonthlyComparison
+                dogId={selectedDogId}
+                dogName={clientDogs.find((d) => d.id === selectedDogId)?.name ?? "Cão"}
+              />
+            </div>
+          ) : null}
 
         </section>
       </main>

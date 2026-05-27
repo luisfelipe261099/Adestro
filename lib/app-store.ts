@@ -30,6 +30,7 @@ export type ClientProfile = {
   plan: string;
   status: string;
   dogs: DogProfile[];
+  tags?: string[];
 };
 
 export type TrainingNote = {
@@ -906,6 +907,12 @@ export const useAppStore = create<AppState>()(
             environment:    String(c.environment ?? ""),
             plan:           String(c.plan ?? ""),
             status:         String(c.status ?? "Ativo"),
+            tags: (() => {
+              try {
+                const parsed = JSON.parse(String(c.tags ?? "[]"));
+                return Array.isArray(parsed) ? parsed.filter((t): t is string => typeof t === "string") : [];
+              } catch { return []; }
+            })(),
             dogs: ((c.dogs as Array<Record<string, unknown>>) ?? []).map((d) => ({
               id:            String(d.id),
               name:          String(d.name),

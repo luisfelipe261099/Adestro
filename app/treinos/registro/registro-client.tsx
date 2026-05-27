@@ -7,6 +7,7 @@ import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { AudioTranscriber } from "@/components/audio-transcriber";
+import { SessionAiChat } from "@/components/session-ai-chat";
 import { type TrainingMediaItem, useAppStore } from "@/lib/app-store";
 
 const MAX_IMAGES = 4;
@@ -815,6 +816,15 @@ export default function RegistroTreinoClientPage() {
             </button>
           </form>
         </section>
+        <SessionAiChat
+          context={{
+            dogName: selectedDog?.name,
+            dogBreed: selectedDog?.breed,
+            sessionDescription: description,
+            commandsWorked: commands.map((c) => ({ command: c.command, rating: c.rating, notes: c.notes })),
+            privateNotes: privateNotes,
+          }}
+        />
       </main>
     </AuthGuard>
   );
