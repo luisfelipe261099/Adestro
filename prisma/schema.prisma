@@ -546,9 +546,9 @@ model ClientGamification {
   successfulTrainings     Int      @default(0)
   videosShared            Int      @default(0)
   monthlyProgress         Int      @default(0)
-  watchedVideos           String   @db.Text
-  sessionRatings          String   @db.Text
-  techniquesUsed          String   @db.Text
+  watchedVideos           String?  @db.Text
+  sessionRatings          String?  @db.Text
+  techniquesUsed          String?  @db.Text
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
