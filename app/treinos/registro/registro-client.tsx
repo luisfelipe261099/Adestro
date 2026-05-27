@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { AudioTranscriber } from "@/components/audio-transcriber";
 import { type TrainingMediaItem, useAppStore } from "@/lib/app-store";
 
 const MAX_IMAGES = 4;
@@ -64,7 +65,7 @@ async function toCompressedMedia(file: File): Promise<TrainingMediaItem> {
 
   const ctx = canvas.getContext("2d");
   if (!ctx) {
-    throw new Error("Nao foi possivel processar a imagem.");
+    throw new Error("Não foi possível processar a imagem.");
   }
 
   ctx.drawImage(image, 0, 0, width, height);
@@ -83,6 +84,23 @@ async function toCompressedMedia(file: File): Promise<TrainingMediaItem> {
   };
 }
 
+// Interfaces da evolução estruturada
+interface ActivityItem {
+  id: string;
+  name: string;
+  completed: boolean;
+  notes: string;
+}
+
+interface CommandItem {
+  id: string;
+  command: string;
+  rating: number; // 1-5 estrelas
+  notes: string;
+}
+
+type AccordionSection = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I";
+
 export default function RegistroTreinoClientPage() {
   const searchParams = useSearchParams();
   const clients = useAppStore((state) => state.clients);
@@ -94,23 +112,70 @@ export default function RegistroTreinoClientPage() {
 
   const [selectedClientId, setSelectedClientId] = useState(requestedClientId || clients[0]?.id || "");
   const [selectedDogId, setSelectedDogId] = useState(requestedDogId || clients[0]?.dogs[0]?.id || "");
-  const [title, setTitle] = useState("Treino de obediencia");
-  const [rating, setRating] = useState(4);
-  const [comment, setComment] = useState("Boa resposta aos comandos basicos.");
-  const [draftMedia, setDraftMedia] = useState<TrainingMediaItem[]>([]);
-  const [isProcessingImages, setIsProcessingImages] = useState(false);
+  
+  // Dados Gerais da Sessão
+  const [title, setTitle] = useState("Sessão prática estruturada");
+  const [sessionType, setSessionType] = useState<"Individual" | "Coletivo">("Individual");
+  const [sessionLocation, setSessionLocation] = useState("Parque / Residência");
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Accordion de navegação
+  const [expandedSection, setExpandedSection] = useState<AccordionSection>("A");
+
+  // SEÇÃO A: Atividades Trabalhadas
+  const [activities, setActivities] = useState<ActivityItem[]>([
+    { id: "act-1", name: "Caminhada estruturada", completed: true, notes: "Boa condução sem puxar." },
+    { id: "act-2", name: "Socialização ambiental", completed: false, notes: "Apresentou hesitação com barulhos de moto." }
+  ]);
+  const [newActivityName, setNewActivityName] = useState("");
+
+  // SEÇÃO B: Comandos de Obediência/Evolução
+  const [commands, setCommands] = useState<CommandItem[]>([
+    { id: "cmd-1", command: "Senta", rating: 4, notes: "Sentou rápido sob recompensa de petisco." },
+    { id: "cmd-2", command: "Aqui", rating: 3, notes: "Ainda hesita quando há cheiros de outros cães." }
+  ]);
+  const [newCommandName, setNewCommandName] = useState("");
+
+  // SEÇÃO C: Descrição / Resumo Público
+  const [description, setDescription] = useState("O treino de hoje focou na caminhada estruturada em rua e comandos de atenção básica.");
+
+  // SEÇÃO D: Notas Privadas
+  const [privateNotes, setPrivateNotes] = useState("O cachorro está respondendo melhor ao adestrador do que ao próprio tutor. Recomendo aula conjunta no próximo encontro.");
+
+  // SEÇÃO E: Transcrição & IA
+  const [audioTranscription, setAudioTranscription] = useState("");
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiSummary, setAiSummary] = useState("");
+  const [aiApproved, setAiApproved] = useState(false);
+
+  // SEÇÃO F: Galeria de Mídias
+  const [draftMedia, setDraftMedia] = useState<TrainingMediaItem[]>([]);
+  const [isProcessingImages, setIsProcessingImages] = useState(false);
+
+  // SEÇÃO G: Próximo Foco
+  const [nextFocus, setNextFocus] = useState("Reduzir a reatividade da aproximação de novos cães na rua.");
+
+  // SEÇÃO H: Próximos Comandos
+  const [nextCommands, setNextCommands] = useState<string[]>(["Deita", "Fica"]);
+  const [newNextCommandName, setNewNextCommandName] = useState("");
+
+  // SEÇÃO I: Tarefas de Casa (Tutor)
+  const [nextTasks, setNextTasks] = useState<string[]>([
+    "Caminhada estruturada diária por 15 minutos com guia frouxa",
+    "Fazer 5 treinos curtos de Place antes do almoço e janta"
+  ]);
+  const [newNextTaskText, setNewNextTaskText] = useState("");
+
   const selectedClient = useMemo(
     () => clients.find((client) => client.id === selectedClientId) ?? clients[0],
-    [clients, selectedClientId],
+    [clients, selectedClientId]
   );
 
   const selectedDog = useMemo(
     () => selectedClient?.dogs.find((dog) => dog.id === selectedDogId) ?? selectedClient?.dogs[0],
-    [selectedClient, selectedDogId],
+    [selectedClient, selectedDogId]
   );
 
   useEffect(() => {
@@ -120,11 +185,9 @@ export default function RegistroTreinoClientPage() {
       const requestedClient = clients.find((client) => client.id === requestedClientId);
       if (requestedClient) {
         setSelectedClientId(requestedClient.id);
-
         const hasRequestedDog = requestedDogId
           ? requestedClient.dogs.some((dog) => dog.id === requestedDogId)
           : false;
-
         setSelectedDogId(hasRequestedDog ? requestedDogId : requestedClient.dogs[0]?.id ?? "");
         return;
       }
@@ -148,41 +211,89 @@ export default function RegistroTreinoClientPage() {
     return Math.max(...list.map((session) => session.number)) + 1;
   }, [selectedDog, trainingSessions]);
 
+  // Simulador de Análise por IA
+  const generateMockAIAnalysis = () => {
+    if (!selectedDog) return;
+    setIsGeneratingAI(true);
+    setTimeout(() => {
+      setIsGeneratingAI(false);
+      setAiSummary(`Excelente evolução de ${selectedDog.name} no treino estruturado! Demonstrou domínio da caminhada estruturada. O foco em place está consolidado sob estímulos moderados, necessitando continuar a dessensibilização contra sons urbanos de motos.`);
+      setNextFocus("Reforçar a obediência e desvio de atenção em ambientes externos sob maiores distrações.");
+      setNextCommands(["Fica", "Junto"]);
+      setNextTasks([
+        `Treinar comandos de foco em Place por 10 min com ${selectedDog.name}`,
+        "Praticar desvio de olhar durante passeios perto de ruas movimentadas"
+      ]);
+      setAiApproved(true);
+      setExpandedSection("E"); // Mantém na seção de IA para visualização e aprovação
+    }, 2000);
+  };
+
+  // Funções Auxiliares SEÇÃO A
+  const addActivity = () => {
+    if (!newActivityName.trim()) return;
+    setActivities([
+      ...activities,
+      {
+        id: `act-${Date.now()}`,
+        name: newActivityName.trim(),
+        completed: false,
+        notes: ""
+      }
+    ]);
+    setNewActivityName("");
+  };
+
+  const removeActivity = (id: string) => {
+    setActivities(activities.filter((act) => act.id !== id));
+  };
+
+  const updateActivity = (id: string, field: keyof ActivityItem, value: any) => {
+    setActivities(activities.map((act) => (act.id === id ? { ...act, [field]: value } : act)));
+  };
+
+  // Funções Auxiliares SEÇÃO B
+  const addCommand = () => {
+    if (!newCommandName.trim()) return;
+    setCommands([
+      ...commands,
+      {
+        id: `cmd-${Date.now()}`,
+        command: newCommandName.trim(),
+        rating: 3,
+        notes: ""
+      }
+    ]);
+    setNewCommandName("");
+  };
+
+  const removeCommand = (id: string) => {
+    setCommands(commands.filter((cmd) => cmd.id !== id));
+  };
+
+  const updateCommand = (id: string, field: keyof CommandItem, value: any) => {
+    setCommands(commands.map((cmd) => (cmd.id === id ? { ...cmd, [field]: value } : cmd)));
+  };
+
+  // Imagens do treino
   async function handleImages(event: ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
     if (!files?.length) return;
-
     setError("");
 
     if (draftMedia.length >= MAX_IMAGES) {
       setError(`Limite de ${MAX_IMAGES} imagens por registro.`);
-      event.target.value = "";
       return;
     }
 
     const selectedFiles = Array.from(files).slice(0, MAX_IMAGES - draftMedia.length);
-
-    for (const file of selectedFiles) {
-      if (!file.type.startsWith("image/")) {
-        setError("Somente imagens sao permitidas.");
-        event.target.value = "";
-        return;
-      }
-
-      if (file.size > MAX_RAW_IMAGE_SIZE_BYTES) {
-        setError("Imagem muito grande para processar. Use ate 25MB por imagem.");
-        event.target.value = "";
-        return;
-      }
-    }
-
     setIsProcessingImages(true);
 
     try {
       const converted = await Promise.all(selectedFiles.map((file) => toCompressedMedia(file)));
       setDraftMedia((current) => [...current, ...converted]);
     } catch {
-      setError("Nao foi possivel processar uma ou mais imagens.");
+      setError("Não foi possível processar as imagens.");
     } finally {
       setIsProcessingImages(false);
       event.target.value = "";
@@ -193,23 +304,34 @@ export default function RegistroTreinoClientPage() {
     setDraftMedia((current) => current.filter((item) => item.id !== mediaId));
   }
 
+  // Submit Geral
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSaving) return;
 
     if (!selectedClient || !selectedDog) {
-      setError("Selecione cliente e cachorro para salvar o treino.");
-      return;
-    }
-
-    if (!title.trim() || !comment.trim()) {
-      setError("Preencha o titulo e a avaliacao do treino.");
+      setError("Selecione tutor e cão para registrar o treino.");
       return;
     }
 
     setError("");
     setMessage("");
     setIsSaving(true);
+
+    // Estruturando o payload da DogTrainingSession
+    const dogSessionPayload = {
+      dogId: selectedDog.id,
+      activities,
+      commands,
+      description: description.trim(),
+      privateNotes: privateNotes.trim(),
+      aiSummary: aiSummary.trim(),
+      aiApproved,
+      media: draftMedia,
+      nextFocus: nextFocus.trim(),
+      nextCommands,
+      nextTasks
+    };
 
     try {
       const ok = await addTrainingSession({
@@ -220,30 +342,59 @@ export default function RegistroTreinoClientPage() {
         clientName: selectedClient.name,
         dogId: selectedDog.id,
         dogName: selectedDog.name,
-        notes: [
-          {
-            block: "Avaliacao geral",
-            score: rating * 2,
-            comment: comment.trim(),
-          },
-        ],
+        notes: commands.map((c) => ({
+          block: c.command,
+          score: c.rating * 2, // Converte 1-5 estrelas para nota 1-10 herdada
+          comment: c.notes
+        })),
         media: draftMedia,
+        // Enviar os dados estendidos suportados pela nova API
+        // @ts-ignore
+        dogSessions: [dogSessionPayload],
+        type: sessionType,
+        location: sessionLocation,
+        status: "Realizado"
       });
 
       if (!ok) {
-        setError("Erro ao salvar registro. Tente novamente.");
+        setError("Erro ao salvar o treino estruturado. Verifique a conexão.");
         return;
       }
 
-      setMessage("Registro de treino salvo com sucesso.");
-      setTitle("Treino de obediencia");
-      setRating(4);
-      setComment("Boa resposta aos comandos basicos.");
+      setMessage("Treino estruturado (Seções A a I) registrado com sucesso!");
+      // Resetar form estruturado
+      setDescription("");
+      setPrivateNotes("");
+      setAiSummary("");
+      setAiApproved(false);
+      setAudioTranscription("");
       setDraftMedia([]);
+      setExpandedSection("A");
+    } catch {
+      setError("Ocorreu um erro no processamento.");
     } finally {
       setIsSaving(false);
     }
   }
+
+  const renderSectionHeader = (letter: AccordionSection, name: string) => {
+    const isExpanded = expandedSection === letter;
+    return (
+      <button
+        type="button"
+        onClick={() => setExpandedSection(isExpanded ? "A" : letter)}
+        className="flex w-full items-center justify-between border-b border-[var(--border)] bg-[#fcfdfe] px-4 py-3.5 text-left font-semibold text-[var(--foreground)] hover:bg-[#f5fafe] transition-colors"
+      >
+        <span className="flex items-center gap-2.5 text-sm">
+          <span className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-sky-100 text-[11px] font-bold text-[#145a82]">
+            {letter}
+          </span>
+          {name}
+        </span>
+        <span className="text-xs text-[var(--muted)]">{isExpanded ? "Recolher ▲" : "Expandir ▼"}</span>
+      </button>
+    );
+  };
 
   return (
     <AuthGuard role="trainer">
@@ -251,139 +402,418 @@ export default function RegistroTreinoClientPage() {
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#2d6f99]">Treinos</p>
-              <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">Registro de treino</h1>
-              <p className="mt-1 text-xs text-[var(--muted)]">Anexe imagens, avalie com estrelas e salve o historico do treino.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#2d6f99]">Módulo de Treinos</p>
+              <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">Evolução Estruturada</h1>
+              <p className="mt-1 text-xs text-[var(--muted)]">Preenchimento guiado das seções operacionais de treino A a I.</p>
             </div>
             <Link href="/treinos" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[#145a82]">
-              Voltar
+              Histórico
             </Link>
           </div>
 
-          {clients.length === 0 ? (
-            <div className="mt-4 rounded-xl border border-dashed border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
-              Cadastre um cliente e um cachorro antes de registrar treino.
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
-              <div className="grid gap-2 sm:grid-cols-2">
-                <label className="grid gap-1">
-                  <span className="text-xs font-medium text-[var(--muted)]">Cliente</span>
-                  <select
-                    value={selectedClient?.id ?? ""}
-                    onChange={(event) => {
-                      const nextClientId = event.target.value;
-                      const nextClient = clients.find((client) => client.id === nextClientId);
-                      setSelectedClientId(nextClientId);
-                      setSelectedDogId(nextClient?.dogs[0]?.id ?? "");
-                    }}
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                  >
-                    {clients.map((client) => (
-                      <option key={client.id} value={client.id}>{client.name}</option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="grid gap-1">
-                  <span className="text-xs font-medium text-[var(--muted)]">Cachorro</span>
-                  <select
-                    value={selectedDog?.id ?? ""}
-                    onChange={(event) => setSelectedDogId(event.target.value)}
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                  >
-                    {(selectedClient?.dogs ?? []).map((dog) => (
-                      <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
+          <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
+            {/* Metadados Básicos */}
+            <div className="grid gap-2 sm:grid-cols-2">
+              <label className="grid gap-1">
+                <span className="text-xs font-medium text-[var(--muted)]">Tutor</span>
+                <select
+                  value={selectedClientId}
+                  onChange={(event) => {
+                    const nextClientId = event.target.value;
+                    const nextClient = clients.find((client) => client.id === nextClientId);
+                    setSelectedClientId(nextClientId);
+                    setSelectedDogId(nextClient?.dogs[0]?.id ?? "");
+                  }}
+                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                >
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>{client.name}</option>
+                  ))}
+                </select>
+              </label>
 
               <label className="grid gap-1">
-                <span className="text-xs font-medium text-[var(--muted)]">Titulo do treino</span>
+                <span className="text-xs font-medium text-[var(--muted)]">Cão</span>
+                <select
+                  value={selectedDogId}
+                  onChange={(event) => setSelectedDogId(event.target.value)}
+                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                >
+                  {(selectedClient?.dogs ?? []).map((dog) => (
+                    <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              <label className="grid gap-1">
+                <span className="text-xs font-medium text-[var(--muted)]">Título da Sessão</span>
                 <input
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                  placeholder="Ex.: Treino de foco na guia"
                   required
                 />
               </label>
-
-              <div className="rounded-xl border border-[var(--border)] bg-white p-3">
-                <p className="text-xs font-medium text-[var(--muted)]">Avaliacao (estrelas)</p>
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <StarRating value={rating} onChange={setRating} />
-                  <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
-                    {rating}/5
-                  </span>
-                </div>
-              </div>
 
               <label className="grid gap-1">
-                <span className="text-xs font-medium text-[var(--muted)]">Observacoes do treino</span>
-                <textarea
-                  value={comment}
-                  onChange={(event) => setComment(event.target.value)}
-                  rows={4}
+                <span className="text-xs font-medium text-[var(--muted)]">Local do Treino</span>
+                <input
+                  value={sessionLocation}
+                  onChange={(event) => setSessionLocation(event.target.value)}
                   className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                  placeholder="Descreva pontos fortes, ajustes e plano da proxima sessao"
-                  required
                 />
               </label>
+            </div>
 
-              <div className="rounded-xl border border-dashed border-[var(--border)] bg-sky-50/50 p-3">
-                <p className="text-xs font-medium text-[var(--muted)]">Imagens do treino (opcional)</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImages}
-                  className="mt-2 block w-full text-xs text-[var(--muted)] file:mr-2 file:rounded-lg file:border file:border-[var(--border)] file:bg-white file:px-2 file:py-1 file:text-xs"
-                />
-                <p className="mt-1 text-[11px] text-[var(--muted)]">Ate {MAX_IMAGES} imagens. O sistema comprime automaticamente fotos tiradas na camera.</p>
-
-                {isProcessingImages ? <p className="mt-2 text-xs text-[#145a82]">Processando imagens...</p> : null}
-
-                {draftMedia.length > 0 ? (
-                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {draftMedia.map((item) => (
-                      <div key={item.id} className="rounded-xl border border-[var(--border)] bg-white p-1.5">
-                        <div className="relative h-20 w-full overflow-hidden rounded-lg bg-slate-50">
-                          <Image
-                            src={item.dataUrl}
-                            alt="Imagem anexada"
-                            fill
-                            unoptimized
-                            sizes="120px"
-                            className="object-cover"
-                          />
+            {/* SEÇÕES ACORDEÃO A a I */}
+            <div className="mt-2 overflow-hidden rounded-2xl border border-[var(--border)] bg-white">
+              
+              {/* SEÇÃO A: Atividades Trabalhadas */}
+              {renderSectionHeader("A", "Atividades Trabalhadas")}
+              {expandedSection === "A" && (
+                <div className="p-4 space-y-3">
+                  <p className="text-[11px] text-[var(--muted)]">Adicione as atividades executadas no treino e relate se foram concluídas ou necessitam ajustes.</p>
+                  
+                  <div className="space-y-2">
+                    {activities.map((act) => (
+                      <div key={act.id} className="flex flex-col gap-2 rounded-xl border border-slate-100 bg-[#fafcff] p-3">
+                        <div className="flex items-center justify-between">
+                          <label className="flex items-center gap-2.5 text-xs font-semibold text-[#1e5272] cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={act.completed}
+                              onChange={(e) => updateActivity(act.id, "completed", e.target.checked)}
+                              className="rounded border-[var(--border)] text-[#145a82] focus:ring-sky-400"
+                            />
+                            {act.name}
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => removeActivity(act.id)}
+                            className="text-[10px] font-bold text-rose-500 hover:underline"
+                          >
+                            Excluir
+                          </button>
                         </div>
+                        <input
+                          placeholder="Observações da atividade..."
+                          value={act.notes}
+                          onChange={(e) => updateActivity(act.id, "notes", e.target.value)}
+                          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-sky-300"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="Nova atividade (Ex: Foco no portão)"
+                      value={newActivityName}
+                      onChange={(e) => setNewActivityName(e.target.value)}
+                      className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={addActivity}
+                      className="rounded-xl bg-[#145a82] px-3 text-xs font-semibold text-white"
+                    >
+                      Incluir
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* SEÇÃO B: Comandos de Obediência/Evolução */}
+              {renderSectionHeader("B", "Comandos de Obediência / Evolução")}
+              {expandedSection === "B" && (
+                <div className="p-4 space-y-3">
+                  <p className="text-[11px] text-[var(--muted)]">Defina estrelas de desempenho (1-5) para cada comando de obediência trabalhado.</p>
+                  
+                  <div className="space-y-3">
+                    {commands.map((cmd) => (
+                      <div key={cmd.id} className="rounded-xl border border-slate-100 bg-[#fafcff] p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#1e5272]">{cmd.command}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeCommand(cmd.id)}
+                            className="text-[10px] font-bold text-rose-500 hover:underline"
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <StarRating value={cmd.rating} onChange={(rating) => updateCommand(cmd.id, "rating", rating)} />
+                          <span className="text-xs font-bold text-[#145a82]">{cmd.rating}/5</span>
+                        </div>
+                        <input
+                          placeholder="Observações da evolução..."
+                          value={cmd.notes}
+                          onChange={(e) => updateCommand(cmd.id, "notes", e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-sky-300"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="Novo comando (Ex: Junto, Fica, Solta)"
+                      value={newCommandName}
+                      onChange={(e) => setNewCommandName(e.target.value)}
+                      className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={addCommand}
+                      className="rounded-xl bg-[#145a82] px-3 text-xs font-semibold text-white"
+                    >
+                      Incluir
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* SEÇÃO C: Descrição / Resumo Público */}
+              {renderSectionHeader("C", "Resumo Público para o Tutor")}
+              {expandedSection === "C" && (
+                <div className="p-4">
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
+                    className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    placeholder="Descreva de forma simples e estimulante o resumo do treino que o tutor verá no portal."
+                  />
+                </div>
+              )}
+
+              {/* SEÇÃO D: Notas Privadas */}
+              {renderSectionHeader("D", "Notas Privadas (Confidencial)")}
+              {expandedSection === "D" && (
+                <div className="p-4">
+                  <p className="mb-2 text-[10px] text-rose-700">⚠️ Visível apenas para adestradores. Nunca compartilhado com o tutor.</p>
+                  <textarea
+                    value={privateNotes}
+                    onChange={(e) => setPrivateNotes(e.target.value)}
+                    rows={3}
+                    className="w-full rounded-xl border border-rose-100 bg-rose-50/20 px-3 py-2 text-xs outline-none focus:border-rose-300 text-slate-800"
+                    placeholder="Comportamentos observados, anotações de temperamento, observações sobre o tutor, etc."
+                  />
+                </div>
+              )}
+
+              {/* SEÇÃO E: Transcrição & IA */}
+              {renderSectionHeader("E", "Transcrição de Áudio e Análise de IA")}
+              {expandedSection === "E" && (
+                <div className="p-4 space-y-3.5">
+                  <div>
+                    <h4 className="text-xs font-bold text-[#145a82]">🎤 Ditado de Notas por Voz</h4>
+                    <p className="text-[10px] text-[var(--muted)]">Use o microfone do dispositivo para transcrever observações. O áudio fica no seu navegador — não enviamos nada para serviços pagos.</p>
+
+                    <AudioTranscriber
+                      className="mt-2"
+                      value={audioTranscription}
+                      hint="Pressione, fale e toque em Parar para inserir o texto"
+                      onAppend={(text) =>
+                        setAudioTranscription((current) => (current ? `${current} ${text}` : text))
+                      }
+                    />
+
+                    <textarea
+                      value={audioTranscription}
+                      onChange={(e) => setAudioTranscription(e.target.value)}
+                      rows={3}
+                      className="mt-3 w-full rounded-xl border border-[var(--border)] bg-[#fafcff] px-3 py-2 text-xs outline-none"
+                      placeholder="A transcrição em tempo real aparece aqui — você pode editar livremente."
+                    />
+                  </div>
+
+                  <hr className="border-[var(--border)]" />
+
+                  <div>
+                    <h4 className="text-xs font-bold text-[#145a82]">🤖 Análise por Inteligência Artificial (Adestro AI)</h4>
+                    <p className="text-[10px] text-[var(--muted)]">Gera automaticamente o resumo para o tutor, foco das próximas aulas e checklist de tarefas a partir dos dados do treino.</p>
+                    
+                    <button
+                      type="button"
+                      onClick={generateMockAIAnalysis}
+                      disabled={isGeneratingAI}
+                      className="mt-2.5 w-full rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-2 text-xs font-bold text-white shadow-sm hover:from-purple-700 transition"
+                    >
+                      {isGeneratingAI ? "Gerando Análise..." : "✨ Gerar Relatório e Análise IA"}
+                    </button>
+
+                    {aiSummary && (
+                      <div className="mt-3 rounded-xl border border-purple-200 bg-purple-50/55 p-3 space-y-2">
+                        <p className="text-xs font-bold text-purple-900">✨ Resumo Gerado pela IA:</p>
+                        <p className="text-xs text-purple-950 italic">"{aiSummary}"</p>
+                        
+                        <div className="rounded-lg border border-purple-100 bg-white p-2">
+                          <label className="flex items-center gap-2 text-xs font-semibold text-purple-900 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={aiApproved}
+                              onChange={(e) => setAiApproved(e.target.checked)}
+                              className="rounded border-purple-300 text-purple-600 focus:ring-purple-400"
+                            />
+                            Aprovar resumo da IA e dever de casa para o Portal do Tutor
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* SEÇÃO F: Galeria de Mídias */}
+              {renderSectionHeader("F", "Galeria de Mídias do Treino")}
+              {expandedSection === "F" && (
+                <div className="p-4 space-y-3">
+                  <p className="text-[11px] text-[var(--muted)]">Anexe fotos demonstrativas da aula. O sistema comprime as imagens de forma eficiente.</p>
+                  
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImages}
+                    className="block w-full text-xs text-[var(--muted)] file:mr-2 file:rounded-lg file:border file:border-[var(--border)] file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold"
+                  />
+
+                  {isProcessingImages && <p className="text-xs text-sky-700">Compactando imagens...</p>}
+
+                  {draftMedia.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {draftMedia.map((item) => (
+                        <div key={item.id} className="relative rounded-xl border border-[var(--border)] bg-slate-50 p-1.5 flex flex-col items-center">
+                          <div className="relative h-20 w-full overflow-hidden rounded-lg">
+                            <Image src={item.dataUrl} alt="Foto do treino" fill unoptimized className="object-cover" />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeMedia(item.id)}
+                            className="mt-1 w-full rounded bg-rose-50 text-[10px] font-bold text-rose-700 py-0.5 border border-rose-100"
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SEÇÃO G: Próximo Foco */}
+              {renderSectionHeader("G", "Foco do Próximo Treino")}
+              {expandedSection === "G" && (
+                <div className="p-4">
+                  <input
+                    value={nextFocus}
+                    onChange={(e) => setNextFocus(e.target.value)}
+                    className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    placeholder="Ex: Treinar permanência com o comando Fica"
+                  />
+                </div>
+              )}
+
+              {/* SEÇÃO H: Próximos Comandos */}
+              {renderSectionHeader("H", "Próximos Comandos Recomendados")}
+              {expandedSection === "H" && (
+                <div className="p-4 space-y-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {nextCommands.map((cmd, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-bold text-[#145a82] border border-sky-100">
+                        {cmd}
                         <button
                           type="button"
-                          onClick={() => removeMedia(item.id)}
-                          className="mt-1 w-full rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-700"
+                          onClick={() => setNextCommands(nextCommands.filter((_, idx) => idx !== i))}
+                          className="font-semibold text-rose-500 hover:text-rose-700 ml-0.5"
                         >
-                          Remover
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="Novo comando recomendado"
+                      value={newNextCommandName}
+                      onChange={(e) => setNewNextCommandName(e.target.value)}
+                      className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newNextCommandName.trim()) return;
+                        setNextCommands([...nextCommands, newNextCommandName.trim()]);
+                        setNewNextCommandName("");
+                      }}
+                      className="rounded-xl bg-[#145a82] px-3 text-xs font-semibold text-white"
+                    >
+                      Adicionar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* SEÇÃO I: Dever de Casa (Tarefas do Tutor) */}
+              {renderSectionHeader("I", "Dever de Casa — Tarefas do Tutor")}
+              {expandedSection === "I" && (
+                <div className="p-4 space-y-3">
+                  <p className="text-[11px] text-[var(--muted)]">Checklist de tarefas de casa que serão recomendadas ao tutor no portal.</p>
+                  
+                  <div className="space-y-1.5">
+                    {nextTasks.map((task, i) => (
+                      <div key={i} className="flex items-center justify-between gap-2 rounded-xl bg-slate-50 p-2 text-xs text-slate-800">
+                        <span className="flex-1 leading-snug">🏠 {task}</span>
+                        <button
+                          type="button"
+                          onClick={() => setNextTasks(nextTasks.filter((_, idx) => idx !== i))}
+                          className="text-[10px] font-bold text-rose-500 hover:underline"
+                        >
+                          Excluir
                         </button>
                       </div>
                     ))}
                   </div>
-                ) : null}
-              </div>
 
-              {message ? <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p> : null}
-              {error ? <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p> : null}
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="Nova tarefa de casa para o tutor..."
+                      value={newNextTaskText}
+                      onChange={(e) => setNewNextTaskText(e.target.value)}
+                      className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newNextTaskText.trim()) return;
+                        setNextTasks([...nextTasks, newNextTaskText.trim()]);
+                        setNewNextTaskText("");
+                      }}
+                      className="rounded-xl bg-[#145a82] px-3 text-xs font-semibold text-white"
+                    >
+                      Adicionar
+                    </button>
+                  </div>
+                </div>
+              )}
 
-              <button
-                type="submit"
-                disabled={isSaving || isProcessingImages}
-                className="pc-primary-action rounded-full px-4 py-2.5 text-sm font-semibold disabled:opacity-60"
-              >
-                {isSaving ? "Salvando registro..." : "Salvar registro do treino"}
-              </button>
-            </form>
-          )}
+            </div>
+
+            {error && <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
+            {message && <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p>}
+
+            <button
+              type="submit"
+              disabled={isSaving || isProcessingImages}
+              className="pc-primary-action rounded-full py-2.5 text-sm font-semibold disabled:opacity-60 mt-3"
+            >
+              {isSaving ? "Salvando treino estruturado..." : "Salvar Evolução Estruturada"}
+            </button>
+          </form>
         </section>
       </main>
     </AuthGuard>

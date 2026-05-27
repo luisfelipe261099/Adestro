@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -6,8 +6,11 @@ import { FormEvent, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { useAppStore } from "@/lib/app-store";
+import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
+import { downloadIcs, googleCalendarUrl, googleMapsLink, type IcsEvent } from "@/lib/calendar-ics";
 
 type EventStatus = "Confirmado" | "Pendente" | "Cancelado" | "Aguardando" | "Recorrente";
+type ViewMode = "dia" | "semana" | "mes";
 
 type WeekDay = {
   short: string;
@@ -23,14 +26,6 @@ const weekDays: WeekDay[] = [
   { short: "SEX", full: "Sexta" },
   { short: "SAB", full: "Sábado" },
 ];
-
-function normalizeDay(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
 
 function statusBadge(status: EventStatus): string {
   if (status === "Confirmado") return "bg-sky-100 text-sky-800";
@@ -53,7 +48,7 @@ function timelineDot(status: EventStatus): string {
   return "bg-rose-500";
 }
 
-function TinyIcon({ name }: { name: "back" | "plus" | "filter" | "play" | "notes" | "whats" }) {
+function TinyIcon({ name }: { name: "back" | "plus" | "filter" | "play" | "notes" | "whats" | "export" | "calendar" }) {
   if (name === "back") {
     return (
       <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
@@ -95,6 +90,23 @@ function TinyIcon({ name }: { name: "back" | "plus" | "filter" | "play" | "notes
     );
   }
 
+  if (name === "export") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden>
+        <path d="M12 3v13M9 6l3-3 3 3M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (name === "calendar") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
+        <rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    );
+  }
+
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden>
       <path d="M7 18h10a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3h-1l-1.2-2H9.2L8 6H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3Z" stroke="currentColor" strokeWidth="1.7" />
@@ -103,15 +115,74 @@ function TinyIcon({ name }: { name: "back" | "plus" | "filter" | "play" | "notes
   );
 }
 
-function buildWeekDates(): number[] {
-  const now = new Date();
-  const sunday = new Date(now);
-  sunday.setDate(now.getDate() - now.getDay());
+// Helper to check if event matches date
+function isEventOnDate(eventDay: string, date: Date): boolean {
+  const clean = eventDay.trim();
+  
+  if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return clean === `${y}-${m}-${d}`;
+  }
+  
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(clean)) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return clean === `${d}/${m}/${y}`;
+  }
+  
+  const weekdayNames = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+  const eventDayLower = clean.toLowerCase();
+  const dateDayName = weekdayNames[date.getDay()].toLowerCase();
+  
+  return eventDayLower.includes(dateDayName);
+}
+
+// Generate weekly Date objects
+function buildWeekDates(baseDate: Date): Date[] {
+  const sunday = new Date(sundayOf(baseDate));
   return Array.from({ length: 7 }, (_, index) => {
     const day = new Date(sunday);
     day.setDate(sunday.getDate() + index);
-    return day.getDate();
+    return day;
   });
+}
+
+function sundayOf(date: Date): Date {
+  const d = new Date(date);
+  d.setDate(date.getDate() - date.getDay());
+  return d;
+}
+
+// Generate monthly 42 Date objects grid
+function buildMonthGrid(baseDate: Date): Date[] {
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const startDayOfWeek = firstDay.getDay();
+  
+  const gridStart = new Date(firstDay);
+  gridStart.setDate(firstDay.getDate() - startDayOfWeek);
+  
+  return Array.from({ length: 42 }, (_, index) => {
+    const d = new Date(gridStart);
+    d.setDate(gridStart.getDate() + index);
+    return d;
+  });
+}
+
+function formatMonthYear(date: Date): string {
+  const raw = date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+function formatISODate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 export default function SchedulePage() {
@@ -120,6 +191,9 @@ export default function SchedulePage() {
   const setEventStatus = useAppStore((state) => state.setEventStatus);
   const addCalendarEvent = useAppStore((state) => state.addCalendarEvent);
 
+  // States
+  const [viewMode, setViewMode] = useState<ViewMode>("dia");
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedClientId, setSelectedClientId] = useState(clients[0]?.id ?? "");
   const [selectedDogId, setSelectedDogId] = useState(clients[0]?.dogs[0]?.id ?? "");
   const [time, setTime] = useState("09:30");
@@ -129,8 +203,14 @@ export default function SchedulePage() {
   const [showForm, setShowForm] = useState(false);
   const [showStatusFilters, setShowStatusFilters] = useState(false);
   const [agendaMessage, setAgendaMessage] = useState("");
-  const [selectedDayIndex, setSelectedDayIndex] = useState(new Date().getDay());
   const [statusFilter, setStatusFilter] = useState<"Todos" | EventStatus>("Todos");
+
+  // Collective & Recurrence
+  const [isCollective, setIsCollective] = useState(false);
+  const [collectiveDogName, setCollectiveDogName] = useState("");
+  const [collectiveClientName, setCollectiveClientName] = useState("");
+  const [collectivePlanName, setCollectivePlanName] = useState("Aula Coletiva");
+  const [recurrence, setRecurrence] = useState("none");
 
   const selectedClient = useMemo(
     () => clients.find((client) => client.id === selectedClientId) ?? clients[0],
@@ -142,16 +222,18 @@ export default function SchedulePage() {
     [selectedClient, selectedDogId],
   );
 
-  const weekDates = useMemo(() => buildWeekDates(), []);
+  const weekDates = useMemo(() => buildWeekDates(currentDate), [currentDate]);
+  const monthGrid = useMemo(() => buildMonthGrid(currentDate), [currentDate]);
 
+  // Filter events for selected day
   const eventsForSelectedDay = useMemo(() => {
-    const selectedDayName = weekDays[selectedDayIndex]?.full ?? "";
     return [...events]
-      .filter((event) => normalizeDay(event.day) === normalizeDay(selectedDayName))
+      .filter((event) => isEventOnDate(event.day, currentDate))
       .filter((event) => statusFilter === "Todos" || event.status === statusFilter)
       .sort((left, right) => left.time.localeCompare(right.time));
-  }, [events, selectedDayIndex, statusFilter]);
+  }, [events, currentDate, statusFilter]);
 
+  // Summary statistics for selected day
   const totalConfirmed = useMemo(
     () => eventsForSelectedDay.filter((event) => event.status === "Confirmado").length,
     [eventsForSelectedDay],
@@ -191,7 +273,7 @@ export default function SchedulePage() {
     const map = new Map<string, { clientId: string; dogId: string; phone: string }>();
     clients.forEach((client) => {
       client.dogs.forEach((dog) => {
-        map.set(`${client.name}::${dog.name}`, { clientId: client.id, dogId: dog.id, phone: client.phone });
+        map.set(`${client.name}::${dog.name}`, { clientId: client.id, dogId: dog.id, phone: client.phone || "" });
       });
     });
     return map;
@@ -201,24 +283,89 @@ export default function SchedulePage() {
     const map = new Map<string, { clientId: string; dogId: string; phone: string }>();
     clients.forEach((client) => {
       client.dogs.forEach((dog) => {
-        map.set(`${client.id}::${dog.id}`, { clientId: client.id, dogId: dog.id, phone: client.phone });
+        map.set(`${client.id}::${dog.id}`, { clientId: client.id, dogId: dog.id, phone: client.phone || "" });
       });
     });
     return map;
   }, [clients]);
 
-  function handleOpenWhatsApp(phone?: string, dogName?: string) {
-    const normalizedPhone = (phone ?? "").replace(/\D/g, "");
-    if (!normalizedPhone) {
-      setAgendaMessage("Tutor sem telefone válido para abrir WhatsApp.");
+  function parseEventDate(day: string): string {
+    // Sempre retorna no formato YYYY-MM-DD usado pela lib ICS.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(day)) return day;
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(day)) {
+      const [d, m, y] = day.split("/");
+      return `${y}-${m}-${d}`;
+    }
+    // Fallback: dia da semana → próxima data correspondente
+    const weekdayNames = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+    const idx = weekdayNames.findIndex((name) => day.toLowerCase().includes(name));
+    const today = new Date();
+    if (idx >= 0) {
+      const diff = (idx - today.getDay() + 7) % 7;
+      today.setDate(today.getDate() + diff);
+    }
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function eventToIcs(event: { id: string; day: string; time: string; dog: string; client: string; plan?: string }): IcsEvent {
+    return {
+      uid: event.id,
+      title: `Adestramento: ${event.dog} (Tutor: ${event.client})`,
+      description: event.plan ? `Plano/foco: ${event.plan}` : undefined,
+      date: parseEventDate(event.day),
+      startTime: event.time || "09:00",
+      durationMinutes: 60,
+    };
+  }
+
+  function handleOpenWhatsApp(phone: string | undefined, dogName: string, event: { day: string; time: string }) {
+    if (!phone) {
+      setAgendaMessage("Tutor sem WhatsApp válido.");
       window.setTimeout(() => setAgendaMessage(""), 3000);
       return;
     }
+    const text = waTemplates.agendamentoCriado({
+      tutor: "",
+      cao: dogName,
+      data: event.day,
+      hora: event.time,
+    });
+    window.open(buildWaUrl(phone, text), "_blank", "noopener,noreferrer");
+  }
 
-    const message = encodeURIComponent(
-      `Oi! Estou iniciando${dogName ? ` a aula do ${dogName}` : " a aula"} agora.`,
-    );
-    window.open(`https://wa.me/55${normalizedPhone}?text=${message}`, "_blank", "noopener,noreferrer");
+  function handleSendConfirmation(phone: string | undefined, dogName: string, event: { day: string; time: string }) {
+    if (!phone) {
+      setAgendaMessage("Tutor sem WhatsApp válido para envio da confirmação.");
+      window.setTimeout(() => setAgendaMessage(""), 3000);
+      return;
+    }
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const text = waTemplates.confirmacaoSolicitada({
+      cao: dogName,
+      data: `${event.day} às ${event.time}`,
+      link: `${baseUrl}/portal/cliente`,
+    });
+    window.open(buildWaUrl(phone, text), "_blank", "noopener,noreferrer");
+  }
+
+  function handleOpenMap(event: { client: string; dog: string }) {
+    // Usa o nome do tutor + cão como termo de busca quando não há endereço estruturado.
+    const meta = clientDogMetaByNames.get(`${event.client}::${event.dog}`);
+    const client = meta ? clients.find((c) => c.id === meta.clientId) : null;
+    const address = client?.environment?.split("\n")[0] || `${event.client}`;
+    window.open(googleMapsLink(address), "_blank", "noopener,noreferrer");
+  }
+
+  // Export iCal .ics file
+  function handleExportICS(event: { id: string; day: string; time: string; dog: string; client: string; plan?: string }) {
+    downloadIcs(`evento-adestramento-${event.id}`, [eventToIcs(event)]);
+  }
+
+  function handleOpenGoogleCalendar(event: { id: string; day: string; time: string; dog: string; client: string; plan?: string }) {
+    window.open(googleCalendarUrl(eventToIcs(event)), "_blank", "noopener,noreferrer");
   }
 
   async function handleSetStatus(eventId: string, newStatus: EventStatus) {
@@ -227,7 +374,7 @@ export default function SchedulePage() {
     try {
       const ok = await setEventStatus(eventId, newStatus);
       if (!ok) {
-        setAgendaMessage("Nao foi possivel sincronizar o status agora.");
+        setAgendaMessage("Não foi possível sincronizar o status.");
         window.setTimeout(() => setAgendaMessage(""), 3000);
       }
     } finally {
@@ -235,31 +382,67 @@ export default function SchedulePage() {
     }
   }
 
+  // Navigate time
+  const handlePrev = () => {
+    const next = new Date(currentDate);
+    if (viewMode === "dia") next.setDate(currentDate.getDate() - 1);
+    else if (viewMode === "semana") next.setDate(currentDate.getDate() - 7);
+    else next.setMonth(currentDate.getMonth() - 1);
+    setCurrentDate(next);
+  };
+
+  const handleNext = () => {
+    const next = new Date(currentDate);
+    if (viewMode === "dia") next.setDate(currentDate.getDate() + 1);
+    else if (viewMode === "semana") next.setDate(currentDate.getDate() + 7);
+    else next.setMonth(currentDate.getMonth() + 1);
+    setCurrentDate(next);
+  };
+
+  const handleToday = () => {
+    setCurrentDate(new Date());
+  };
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedClient || !selectedDog || isCreating) return;
+    if (isCreating) return;
 
-    const dayName = weekDays[selectedDayIndex]?.full ?? "Segunda";
+    if (!isCollective && (!selectedClient || !selectedDog)) {
+      setAgendaMessage("Selecione um tutor e cão.");
+      return;
+    }
+    if (isCollective && !collectiveDogName.trim()) {
+      setAgendaMessage("Defina o nome da turma coletiva.");
+      return;
+    }
 
     setIsCreating(true);
+    const dayStr = formatISODate(currentDate);
+
     try {
       const ok = await addCalendarEvent({
-        clientId: selectedClient.id,
-        dogId: selectedDog.id,
-        day: dayName,
+        clientId: isCollective ? undefined : selectedClient.id,
+        dogId: isCollective ? undefined : selectedDog.id,
+        day: dayStr,
         time,
-        dog: selectedDog.name,
-        client: selectedClient.name,
-        plan: selectedClient.plan || "Sessao personalizada",
-        sessionNumber: events.length + 1,
+        dog: isCollective ? collectiveDogName.trim() : selectedDog.name,
+        client: isCollective ? collectiveClientName.trim() || "Coletivo" : selectedClient.name,
+        plan: isCollective ? collectivePlanName.trim() : (selectedClient.plan || "Plano personalizado"),
+        sessionNumber: events.filter(e => e.clientId === (isCollective ? undefined : selectedClient.id)).length + 1,
         status,
+        recurrence,
       });
 
       if (ok) {
         setStatus("Pendente");
+        setRecurrence("none");
+        setCollectiveDogName("");
+        setCollectiveClientName("");
         setShowForm(false);
+        setAgendaMessage("Agendamento cadastrado com sucesso!");
+        window.setTimeout(() => setAgendaMessage(""), 3000);
       } else {
-        setAgendaMessage("Nao foi possivel criar o agendamento agora.");
+        setAgendaMessage("Não foi possível criar o agendamento.");
         window.setTimeout(() => setAgendaMessage(""), 3500);
       }
     } finally {
@@ -267,46 +450,90 @@ export default function SchedulePage() {
     }
   }
 
+  // Check if date has events
+  const getEventsForGridDate = (d: Date) => {
+    return events.filter(e => isEventOnDate(e.day, d));
+  };
+
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-20 pt-3 sm:max-w-xl">
-        <section className="rounded-[2rem] border border-[var(--border)] bg-[#f7fbff] p-3.5 shadow-[var(--shadow)]">
-          <header className="flex items-center justify-between gap-3">
+      <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
+        <section className="rounded-[2.25rem] border border-[var(--border)] bg-[#f7fbff] p-4 shadow-[var(--shadow)]">
+          
+          {/* HEADER */}
+          <header className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <Link href="/dashboard" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[#145a82]">
+              <Link href="/dashboard" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[#145a82]" aria-label="Voltar ao início">
                 <TinyIcon name="back" />
               </Link>
               <div>
-                <p className="text-base font-semibold text-[var(--foreground)]">Agenda de aulas</p>
-                <p className="text-[11px] text-[var(--muted)]">Veja quando acontece cada aula e registre o treino ao final.</p>
+                <h1 className="text-base font-bold text-[var(--foreground)]">Calendário</h1>
+                <p className="text-[10px] text-[var(--muted)]">Agendamentos, turmas e recorrências.</p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setShowForm((value) => !value)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#145a82] text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#145a82] text-white shadow-sm"
               aria-label="Novo agendamento"
             >
               <TinyIcon name="plus" />
             </button>
           </header>
 
-          <section className="mt-3 flex items-center justify-between rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs text-[var(--muted)]">
-            <p>{eventsForSelectedDay.length} aulas do dia</p>
-            <button type="button" onClick={() => setShowStatusFilters((current) => !current)} className="inline-flex items-center gap-1 text-[#145a82]">
-              <TinyIcon name="filter" />
-              Filtros
-            </button>
-          </section>
+          {/* VIEW SWITCHER & NAVIGATION */}
+          <nav className="mt-3 flex items-center justify-between gap-2">
+            <div className="inline-flex rounded-full border border-[#c9dfef] bg-white p-0.5 text-[11px] font-semibold">
+              {(["dia", "semana", "mes"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setViewMode(mode)}
+                  className={`rounded-full px-3 py-1 transition ${
+                    viewMode === mode ? "bg-[#145a82] text-white shadow-sm" : "text-[var(--muted)]"
+                  }`}
+                >
+                  {mode === "dia" ? "Dia" : mode === "semana" ? "Semana" : "Mês"}
+                </button>
+              ))}
+            </div>
 
-          {showStatusFilters ? (
-            <section className="mt-2 flex gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-1.5">
+              <button onClick={handlePrev} className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border)] bg-white text-xs text-[#145a82]">
+                ◀
+              </button>
+              <button onClick={handleToday} className="rounded-full border border-[var(--border)] bg-white px-2.5 py-1 text-[10px] font-semibold text-[#145a82]">
+                Hoje
+              </button>
+              <button onClick={handleNext} className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border)] bg-white text-xs text-[#145a82]">
+                ▶
+              </button>
+            </div>
+          </nav>
+
+          {/* DATE HEADER CONTEXT */}
+          <header className="mt-3 flex items-center justify-between text-xs font-bold text-slate-700 bg-white/70 border border-slate-100 rounded-xl p-3">
+            <span className="flex items-center gap-1">
+              <TinyIcon name="calendar" />
+              {viewMode === "dia" ? currentDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }) :
+               viewMode === "semana" ? `Semana de ${weekDates[0]?.getDate()}/${weekDates[0]?.getMonth() + 1} a ${weekDates[6]?.getDate()}/${weekDates[6]?.getMonth() + 1}` :
+               formatMonthYear(currentDate)}
+            </span>
+            <button type="button" onClick={() => setShowStatusFilters(c => !c)} className="inline-flex items-center gap-1 text-[#145a82]">
+              <TinyIcon name="filter" />
+              Filtro ({statusFilter === "Todos" ? "Todos" : statusLabel(statusFilter)})
+            </button>
+          </header>
+
+          {/* STATUS FILTERS BAR */}
+          {showStatusFilters && (
+            <section className="mt-2.5 flex gap-1.5 overflow-x-auto pb-1 animate-in slide-in-from-top-2 duration-150">
               {(["Todos", "Confirmado", "Pendente", "Cancelado"] as const).map((filterValue) => (
                 <button
                   key={filterValue}
                   type="button"
                   onClick={() => setStatusFilter(filterValue)}
-                  className={`whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-semibold ${
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-semibold ${
                     statusFilter === filterValue
                       ? "bg-[#145a82] text-white"
                       : "border border-[var(--border)] bg-white text-[var(--muted)]"
@@ -316,247 +543,487 @@ export default function SchedulePage() {
                 </button>
               ))}
             </section>
-          ) : null}
+          )}
 
-          <section className="mt-3 grid grid-cols-7 gap-1.5">
-            {weekDays.map((day, index) => (
-              <button
-                key={day.short}
-                type="button"
-                onClick={() => setSelectedDayIndex(index)}
-                className={`rounded-xl px-1 py-2 text-center ${
-                  selectedDayIndex === index
-                    ? "bg-[#145a82] text-white"
-                    : "border border-[var(--border)] bg-white text-[var(--muted)]"
-                }`}
-              >
-                <p className="text-[9px] font-semibold uppercase">{day.short}</p>
-                <p className="mt-1 text-sm font-semibold">{weekDates[index]}</p>
-              </button>
-            ))}
-          </section>
-
-          <section className="mt-3 grid grid-cols-2 gap-2">
-            <article className="rounded-xl border border-[var(--border)] bg-white p-3">
-              <p className="text-2xl font-semibold text-[var(--foreground)]">{eventsForSelectedDay.length}</p>
-              <p className="text-xs text-[var(--muted)]">Aulas no dia</p>
-            </article>
-            <article className="rounded-xl border border-[var(--border)] bg-white p-3">
-              <p className="text-2xl font-semibold text-[var(--foreground)]">{totalInProgress}</p>
-              <p className="text-xs text-[var(--muted)]">Agendadas</p>
-            </article>
-            <article className="rounded-xl border border-[var(--border)] bg-white p-3">
-              <p className="text-2xl font-semibold text-[var(--foreground)]">{totalConfirmed}</p>
-              <p className="text-xs text-[var(--muted)]">Concluídas</p>
-            </article>
-            <article className="rounded-xl border border-[var(--border)] bg-white p-3">
-              <p className="text-2xl font-semibold text-[var(--foreground)]">{totalCancelled}</p>
-              <p className="text-xs text-[var(--muted)]">Canceladas</p>
-            </article>
-          </section>
-
-          {agendaMessage ? (
+          {agendaMessage && (
             <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">{agendaMessage}</p>
-          ) : null}
+          )}
 
-          <section className="mt-4 flex items-center justify-between">
-            <p className="text-sm font-semibold text-[var(--foreground)]">Aulas do dia</p>
-            <p className="text-[11px] text-[var(--muted)]">{weekDays[selectedDayIndex]?.full}</p>
-          </section>
+          {/* ======================================= */}
+          {/* VIEW: DAILY LIST */}
+          {/* ======================================= */}
+          {viewMode === "dia" && (
+            <section className="mt-3 space-y-2">
+              
+              {/* Daily Statistics */}
+              <div className="grid grid-cols-3 gap-2">
+                <article className="rounded-xl border border-[var(--border)] bg-white p-2.5 text-center">
+                  <p className="text-xl font-bold text-[var(--foreground)]">{eventsForSelectedDay.length}</p>
+                  <p className="text-[10px] text-[var(--muted)]">Aulas no dia</p>
+                </article>
+                <article className="rounded-xl border border-[var(--border)] bg-white p-2.5 text-center">
+                  <p className="text-xl font-bold text-amber-600">{totalInProgress}</p>
+                  <p className="text-[10px] text-[var(--muted)]">Agendadas</p>
+                </article>
+                <article className="rounded-xl border border-[var(--border)] bg-white p-2.5 text-center">
+                  <p className="text-xl font-bold text-sky-600">{totalConfirmed}</p>
+                  <p className="text-[10px] text-[var(--muted)]">Concluídas</p>
+                </article>
+              </div>
 
-          <section className="mt-2 space-y-2.5">
-            {eventsForSelectedDay.map((event) => {
-              const photo = (event.dogId ? dogPhotoById.get(event.dogId) : undefined) ?? dogPhotoByName.get(event.dog);
-              const relatedMeta =
-                (event.clientId && event.dogId
-                  ? clientDogMetaByIds.get(`${event.clientId}::${event.dogId}`)
-                  : undefined) ?? clientDogMetaByNames.get(`${event.client}::${event.dog}`);
-              return (
-                <article key={event.id} className="rounded-2xl border border-[var(--border)] bg-white p-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 pt-1 text-right">
-                      <p className="text-[11px] font-semibold text-[var(--muted)]">{event.time}</p>
-                      <span className={`mx-auto mt-1 block h-2.5 w-2.5 rounded-full ${timelineDot(event.status as EventStatus)}`} />
-                    </div>
+              {/* Event Cards */}
+              <div className="mt-3 space-y-2.5">
+                {eventsForSelectedDay.map((event) => {
+                  const photo = (event.dogId ? dogPhotoById.get(event.dogId) : undefined) ?? dogPhotoByName.get(event.dog);
+                  const relatedMeta =
+                    (event.clientId && event.dogId
+                      ? clientDogMetaByIds.get(`${event.clientId}::${event.dogId}`)
+                      : undefined) ?? clientDogMetaByNames.get(`${event.client}::${event.dog}`);
+                  
+                  return (
+                    <article key={event.id} className="rounded-2xl border border-[var(--border)] bg-white p-3 shadow-sm hover:border-[#145a82]/30 transition-all">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 pt-1 text-right">
+                          <p className="text-xs font-bold text-slate-800">{event.time}</p>
+                          <span className={`mx-auto mt-1 block h-2.5 w-2.5 rounded-full ${timelineDot(event.status as EventStatus)}`} />
+                        </div>
 
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-2.5">
-                          <div className="relative h-10 w-10 overflow-hidden rounded-full bg-sky-50">
-                            <Image
-                              src={photo || "/images/dog-default-bolt.svg"}
-                              alt={`Foto de ${event.dog}`}
-                              fill
-                              sizes="40px"
-                              unoptimized
-                              onError={(event) => {
-                                event.currentTarget.src = "/images/dog-default-bolt.svg";
-                              }}
-                              className="object-cover"
-                            />
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2">
+                              <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-sky-50">
+                                <Image
+                                  src={photo || "/images/dog-default-bolt.svg"}
+                                  alt={`Foto de ${event.dog}`}
+                                  fill
+                                  sizes="40px"
+                                  unoptimized
+                                  onError={(ev) => {
+                                    ev.currentTarget.src = "/images/dog-default-bolt.svg";
+                                  }}
+                                  className="object-cover"
+                                />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-slate-900">{event.dog}</p>
+                                <p className="text-[11px] text-[var(--muted)]">
+                                  {event.client} {event.sessionNumber ? `• Aula ${event.sessionNumber}` : ""}
+                                </p>
+                              </div>
+                            </div>
+                            <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase ${statusBadge(event.status as EventStatus)}`}>
+                              {statusLabel(event.status as EventStatus)}
+                            </span>
                           </div>
-                          <div>
-                            <p className="text-sm font-semibold text-[var(--foreground)]">{event.dog}</p>
-                            <p className="text-[11px] text-[var(--muted)]">{event.client} • Aula {event.sessionNumber}</p>
+
+                          {event.plan && (
+                            <p className="text-[10px] text-slate-500 bg-slate-50 rounded px-2 py-0.5 mt-2 inline-block">
+                              Plan/Foco: {event.plan}
+                            </p>
+                          )}
+
+                          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-[10px] font-semibold">
+                            <Link href={relatedMeta ? `/treinos/registro?clientId=${relatedMeta.clientId}&dogId=${relatedMeta.dogId}` : "/treinos/registro"} className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] py-1.5 text-[#145a82] hover:bg-sky-50">
+                              <TinyIcon name="notes" />
+                              Registrar
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => handleSendConfirmation(relatedMeta?.phone, event.dog, { day: event.day, time: event.time })}
+                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 py-1.5 text-emerald-700 hover:bg-emerald-100"
+                              title="Solicita confirmação de presença via WhatsApp"
+                            >
+                              ✅ Confirmação
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenWhatsApp(relatedMeta?.phone, event.dog, { day: event.day, time: event.time })}
+                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] py-1.5 text-emerald-700 hover:bg-emerald-50"
+                            >
+                              <TinyIcon name="whats" />
+                              WhatsApp
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenMap(event)}
+                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] py-1.5 text-rose-700 hover:bg-rose-50"
+                            >
+                              📍 Mapa
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenGoogleCalendar(event)}
+                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] py-1.5 text-blue-700 hover:bg-blue-50"
+                              title="Abrir no Google Calendar"
+                            >
+                              📆 Google
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleExportICS(event)}
+                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] py-1.5 text-indigo-700 hover:bg-indigo-50"
+                              title="Baixar .ics para Apple Calendar / Outlook"
+                            >
+                              <TinyIcon name="export" />
+                              .ics
+                            </button>
+                          </div>
+
+                          <div className="mt-2 flex flex-wrap gap-1.5 pt-1.5 border-t border-slate-50">
+                            <button
+                              type="button"
+                              onClick={() => handleSetStatus(event.id, "Confirmado")}
+                              disabled={busyEventId === event.id}
+                              className="rounded-full border border-sky-300 bg-sky-50 px-2 py-0.5 text-[9px] font-semibold text-sky-800 disabled:opacity-50"
+                            >
+                              Concluir
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSetStatus(event.id, "Pendente")}
+                              disabled={busyEventId === event.id}
+                              className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[9px] font-semibold text-amber-900 disabled:opacity-50"
+                            >
+                              Agendar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSetStatus(event.id, "Cancelado")}
+                              disabled={busyEventId === event.id}
+                              className="rounded-full border border-rose-300 bg-rose-50 px-2 py-0.5 text-[9px] font-semibold text-rose-800 disabled:opacity-50"
+                            >
+                              Cancelar
+                            </button>
                           </div>
                         </div>
-                        <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${statusBadge(event.status as EventStatus)}`}>
-                          {statusLabel(event.status as EventStatus)}
+                      </div>
+                    </article>
+                  );
+                })}
+
+                {eventsForSelectedDay.length === 0 ? (
+                  <article className="rounded-2xl border border-dashed border-[var(--border)] bg-white p-6 text-center text-xs text-[var(--muted)]">
+                    Nenhuma aula agendada para este dia.
+                  </article>
+                ) : null}
+              </div>
+            </section>
+          )}
+
+          {/* ======================================= */}
+          {/* VIEW: WEEKLY GRID LIST */}
+          {/* ======================================= */}
+          {viewMode === "semana" && (
+            <section className="mt-3 space-y-2.5">
+              {weekDates.map((dayDate) => {
+                const dayEvents = getEventsForGridDate(dayDate)
+                  .filter(e => statusFilter === "Todos" || e.status === statusFilter)
+                  .sort((a,b) => a.time.localeCompare(b.time));
+                const isSelected = currentDate.getDate() === dayDate.getDate() && currentDate.getMonth() === dayDate.getMonth();
+                const isToday = new Date().toDateString() === dayDate.toDateString();
+
+                return (
+                  <div
+                    key={dayDate.toDateString()}
+                    onClick={() => setCurrentDate(dayDate)}
+                    className={`rounded-2xl border p-3 cursor-pointer transition-all bg-white ${
+                      isSelected ? "border-[#145a82] ring-1 ring-[#145a82]" : "border-[var(--border)]"
+                    }`}
+                  >
+                    <header className="flex justify-between items-center pb-2 border-b border-slate-50">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold uppercase ${isSelected ? "text-[#145a82]" : "text-slate-500"}`}>
+                          {weekDays[dayDate.getDay()]?.full}
+                        </span>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          isToday ? "bg-amber-100 text-amber-900 font-bold" : "bg-slate-100 text-slate-700"
+                        }`}>
+                          Dia {dayDate.getDate()}
                         </span>
                       </div>
+                      <span className="text-[10px] font-bold text-slate-400">
+                        {dayEvents.length} {dayEvents.length === 1 ? "aula" : "aulas"}
+                      </span>
+                    </header>
 
-                      <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-                        <Link href={relatedMeta ? `/treinos/registro?clientId=${relatedMeta.clientId}&dogId=${relatedMeta.dogId}` : "/treinos/registro"} className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] px-2 py-1.5 text-[#145a82]">
-                          <TinyIcon name="notes" />
-                          Registrar aula
-                        </Link>
-                        <button type="button" onClick={() => handleOpenWhatsApp(relatedMeta?.phone, event.dog)} className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] px-2 py-1.5 text-[#145a82]">
-                          <TinyIcon name="whats" />
-                          WhatsApp
-                        </button>
-                      </div>
-
-                      <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
-                        <button
-                          type="button"
-                          onClick={() => handleSetStatus(event.id, "Confirmado")}
-                          disabled={busyEventId === event.id}
-                          className="rounded-full border border-sky-300 bg-sky-50 px-2.5 py-1 text-sky-800 disabled:opacity-50"
-                        >
-                          Concluir
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSetStatus(event.id, "Pendente")}
-                          disabled={busyEventId === event.id}
-                          className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-amber-900 disabled:opacity-50"
-                        >
-                          Agendada
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSetStatus(event.id, "Cancelado")}
-                          disabled={busyEventId === event.id}
-                          className="rounded-full border border-rose-300 bg-rose-50 px-2.5 py-1 text-rose-800 disabled:opacity-50"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
+                    <div className="mt-2 space-y-1.5">
+                      {dayEvents.map(e => (
+                        <div key={e.id} className="flex justify-between items-center text-xs p-1.5 bg-slate-50 rounded-xl">
+                          <div className="flex items-center gap-2 truncate">
+                            <span className="font-bold text-[#145a82]">{e.time}</span>
+                            <span className="truncate text-slate-800 font-medium">{e.dog} ({e.client})</span>
+                          </div>
+                          <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
+                            {statusLabel(e.status as EventStatus)}
+                          </span>
+                        </div>
+                      ))}
+                      {dayEvents.length === 0 && (
+                        <p className="text-[10px] text-slate-400 italic">Sem agendamentos.</p>
+                      )}
                     </div>
                   </div>
-                </article>
-              );
-            })}
+                );
+              })}
+            </section>
+          )}
 
-            {eventsForSelectedDay.length === 0 ? (
-              <article className="rounded-2xl border border-dashed border-[var(--border)] bg-white p-4 text-xs text-[var(--muted)]">
-                Nenhuma aula para este dia.
-              </article>
-            ) : null}
-          </section>
+          {/* ======================================= */}
+          {/* VIEW: MONTHLY GRID */}
+          {/* ======================================= */}
+          {viewMode === "mes" && (
+            <section className="mt-3 bg-white border border-[var(--border)] rounded-2xl p-2 shadow-sm animate-in fade-in duration-200">
+              
+              {/* Weekday headers */}
+              <div className="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-500 uppercase tracking-wider pb-1">
+                {weekDays.map(d => <span key={d.short}>{d.short}</span>)}
+              </div>
 
-          <section className="mt-4 rounded-2xl border border-[var(--border)] bg-sky-50 p-3">
+              {/* Monthly calendar cells */}
+              <div className="grid grid-cols-7 gap-1 mt-1">
+                {monthGrid.map((dayDate, idx) => {
+                  const dayEvents = getEventsForGridDate(dayDate);
+                  const isCurrentMonth = dayDate.getMonth() === currentDate.getMonth();
+                  const isToday = new Date().toDateString() === dayDate.toDateString();
+                  const isSelected = currentDate.getDate() === dayDate.getDate() && currentDate.getMonth() === dayDate.getMonth();
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setCurrentDate(dayDate)}
+                      className={`relative flex flex-col items-center justify-between h-10 py-1.5 rounded-xl border text-center transition-all ${
+                        !isCurrentMonth ? "bg-slate-50/40 text-slate-300 border-transparent" : "bg-white text-slate-800 border-slate-100"
+                      } ${
+                        isSelected ? "border-[#145a82] ring-1 ring-[#145a82] bg-sky-50/30" : ""
+                      } ${
+                        isToday ? "font-extrabold ring-1 ring-amber-400" : ""
+                      }`}
+                    >
+                      <span className={`text-[11px] leading-none ${isToday ? "text-amber-700" : ""}`}>{dayDate.getDate()}</span>
+                      
+                      {/* Event dots indicator */}
+                      <div className="flex gap-0.5 justify-center mt-1">
+                        {dayEvents.slice(0, 3).map((e, index) => (
+                          <span key={index} className={`h-1.5 w-1.5 rounded-full ${timelineDot(e.status as EventStatus)}`} />
+                        ))}
+                        {dayEvents.length > 3 && (
+                          <span className="text-[7px] text-slate-400 font-bold leading-none">+</span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Selected date events preview */}
+              <div className="mt-3.5 border-t border-slate-100 pt-3.5 px-1.5 pb-1">
+                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Aulas em {currentDate.toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}:
+                </h3>
+                <div className="mt-2 space-y-1.5">
+                  {eventsForSelectedDay.map(e => (
+                    <div key={e.id} className="flex justify-between items-center text-xs p-2 bg-slate-50 border border-slate-100 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-[#145a82]">{e.time}</span>
+                        <span className="text-slate-800 font-medium">{e.dog} • {e.client}</span>
+                      </div>
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
+                        {statusLabel(e.status as EventStatus)}
+                      </span>
+                    </div>
+                  ))}
+                  {eventsForSelectedDay.length === 0 && (
+                    <p className="text-xs text-[var(--muted)] italic">Nenhum evento para este dia.</p>
+                  )}
+                </div>
+              </div>
+
+            </section>
+          )}
+
+          {/* ======================================= */}
+          {/* SECTION: NEW EVENT BUTTON & FORM */}
+          {/* ======================================= */}
+          <section className="mt-4 rounded-2xl border border-[var(--border)] bg-sky-50/50 p-3 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-[var(--foreground)]">Agenda simples de atendimento</p>
-                <p className="text-xs text-[var(--muted)]">A agenda mostra horários. O registro da aula fica em Treinos.</p>
+                <p className="text-xs font-bold text-slate-800">Novo Agendamento</p>
+                <p className="text-[10px] text-[var(--muted)]">Agende para o dia selecionado ({currentDate.getDate()}/{currentDate.getMonth()+1})</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowForm((value) => !value)}
-                className="rounded-full bg-[#145a82] px-4 py-2 text-xs font-semibold text-white"
+                className="rounded-full bg-[#145a82] px-4 py-1.5 text-xs font-semibold text-white shadow-sm"
               >
                 {showForm ? "Fechar" : "Nova aula"}
               </button>
             </div>
           </section>
 
-          {showForm ? (
-            <section className="mt-3 rounded-2xl border border-[var(--border)] bg-white p-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Novo agendamento</p>
-              <form onSubmit={onSubmit} className="mt-3 grid gap-2.5 sm:grid-cols-2">
-                <label className="grid gap-1">
-                  <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
-                    Tutor
-                    <Link href="/clientes" className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#145a82]">+ Novo tutor</Link>
-                  </span>
-                  <select
-                    value={selectedClient?.id ?? ""}
-                    onChange={(event) => {
-                      const nextClient = clients.find((item) => item.id === event.target.value);
-                      setSelectedClientId(event.target.value);
-                      setSelectedDogId(nextClient?.dogs[0]?.id ?? "");
-                    }}
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+          {showForm && (
+            <section className="mt-3 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm animate-in slide-in-from-top-4 duration-200">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#145a82] border-b border-slate-100 pb-2">Agendar Aula</p>
+              
+              <form onSubmit={onSubmit} className="mt-3.5 space-y-3.5">
+                
+                {/* Individual vs Collective Toggle */}
+                <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setIsCollective(false)}
+                    className={`rounded-lg py-1.5 transition ${!isCollective ? "bg-white text-[#145a82] shadow-sm" : "text-[var(--muted)]"}`}
                   >
-                    {clients.map((client) => (
-                      <option key={client.id} value={client.id}>{client.name}</option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="grid gap-1">
-                  <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
-                    Cão
-                    <Link href="/clientes" className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#145a82]">+ Cadastrar cão</Link>
-                  </span>
-                  <select
-                    value={selectedDog?.id ?? ""}
-                    onChange={(event) => setSelectedDogId(event.target.value)}
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                    Individual
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCollective(true)}
+                    className={`rounded-lg py-1.5 transition ${isCollective ? "bg-white text-[#145a82] shadow-sm" : "text-[var(--muted)]"}`}
                   >
-                    {(selectedClient?.dogs ?? []).map((dog) => (
-                      <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
-                    ))}
-                  </select>
-                </label>
+                    Coletiva (Turma)
+                  </button>
+                </div>
 
-                <label className="grid gap-1">
-                  <span className="text-[11px] font-medium text-[var(--muted)]">Dia</span>
-                  <input
-                    value={weekDays[selectedDayIndex]?.full ?? "Segunda"}
-                    readOnly
-                    className="rounded-xl border border-[var(--border)] bg-[#f7fbff] px-3 py-2 text-sm text-[var(--foreground)]"
-                  />
-                </label>
+                {!isCollective ? (
+                  <div className="grid gap-3.5 sm:grid-cols-2">
+                    <label className="grid gap-1">
+                      <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
+                        Tutor
+                        <Link href="/clientes" className="text-[9px] font-semibold text-[#145a82] hover:underline">+ Criar Tutor</Link>
+                      </span>
+                      <select
+                        value={selectedClientId ?? ""}
+                        onChange={(event) => {
+                          const nextClient = clients.find((item) => item.id === event.target.value);
+                          setSelectedClientId(event.target.value);
+                          setSelectedDogId(nextClient?.dogs[0]?.id ?? "");
+                        }}
+                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      >
+                        {clients.length === 0 && <option value="">Sem clientes cadastrados</option>}
+                        {clients.map((client) => (
+                          <option key={client.id} value={client.id}>{client.name}</option>
+                        ))}
+                      </select>
+                    </label>
 
-                <label className="grid gap-1">
-                  <span className="text-[11px] font-medium text-[var(--muted)]">Horario</span>
-                  <input
-                    type="time"
-                    value={time}
-                    onChange={(event) => setTime(event.target.value)}
-                    className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                  />
-                </label>
+                    <label className="grid gap-1">
+                      <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
+                        Cão
+                        <Link href="/clientes" className="text-[9px] font-semibold text-[#145a82] hover:underline">+ Criar Cão</Link>
+                      </span>
+                      <select
+                        value={selectedDogId ?? ""}
+                        onChange={(event) => setSelectedDogId(event.target.value)}
+                        disabled={!selectedClient?.dogs.length}
+                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none disabled:opacity-60 focus:border-sky-400"
+                      >
+                        {!selectedClient?.dogs.length && <option value="">Sem cães</option>}
+                        {(selectedClient?.dogs ?? []).map((dog) => (
+                          <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                ) : (
+                  <div className="grid gap-3.5 sm:grid-cols-2 animate-in fade-in duration-200">
+                    <label className="grid gap-1">
+                      <span className="text-[11px] font-medium text-[var(--muted)]">Nome da Turma / Evento *</span>
+                      <input
+                        value={collectiveDogName}
+                        onChange={(e) => setCollectiveDogName(e.target.value)}
+                        placeholder="Ex: Turma do Parque, Socialização"
+                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                        required
+                      />
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="text-[11px] font-medium text-[var(--muted)]">Identificador do Grupo / Local</span>
+                      <input
+                        value={collectiveClientName}
+                        onChange={(e) => setCollectiveClientName(e.target.value)}
+                        placeholder="Ex: Sítio Cão Feliz, Praça central"
+                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      />
+                    </label>
+                    <label className="grid gap-1 sm:col-span-2">
+                      <span className="text-[11px] font-medium text-[var(--muted)]">Foco / Atividades Coletivas</span>
+                      <input
+                        value={collectivePlanName}
+                        onChange={(e) => setCollectivePlanName(e.target.value)}
+                        placeholder="Ex: Treino de foco, reatividade com outros cães"
+                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      />
+                    </label>
+                  </div>
+                )}
 
-                <label className="grid gap-1 sm:col-span-2">
-                  <span className="text-[11px] font-medium text-[var(--muted)]">Status inicial</span>
-                  <select
-                    value={status}
-                    onChange={(event) => setStatus(event.target.value as EventStatus)}
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                  >
-                    <option value="Pendente">Agendada</option>
-                    <option value="Confirmado">Concluída</option>
-                    <option value="Cancelado">Cancelado</option>
-                    <option value="Aguardando">Aguardando confirmação</option>
-                  </select>
-                </label>
+                <div className="grid gap-3.5 sm:grid-cols-2">
+                  <label className="grid gap-1">
+                    <span className="text-[11px] font-medium text-[var(--muted)]">Dia do Agendamento</span>
+                    <input
+                      value={currentDate.toLocaleDateString("pt-BR")}
+                      readOnly
+                      className="rounded-xl border border-[var(--border)] bg-slate-50 px-3 py-2 text-sm text-[var(--foreground)]"
+                    />
+                  </label>
+
+                  <label className="grid gap-1">
+                    <span className="text-[11px] font-medium text-[var(--muted)]">Horário</span>
+                    <input
+                      type="time"
+                      value={time}
+                      onChange={(event) => setTime(event.target.value)}
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      required
+                    />
+                  </label>
+                </div>
+
+                <div className="grid gap-3.5 sm:grid-cols-2">
+                  <label className="grid gap-1">
+                    <span className="text-[11px] font-medium text-[var(--muted)]">Status Inicial</span>
+                    <select
+                      value={status}
+                      onChange={(event) => setStatus(event.target.value as EventStatus)}
+                      className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                    >
+                      <option value="Pendente">Agendada</option>
+                      <option value="Confirmado">Concluída</option>
+                      <option value="Cancelado">Cancelado</option>
+                      <option value="Aguardando">Aguardando confirmação</option>
+                    </select>
+                  </label>
+
+                  <label className="grid gap-1">
+                    <span className="text-[11px] font-medium text-[var(--muted)]">Repetição (Recorrência)</span>
+                    <select
+                      value={recurrence}
+                      onChange={(event) => setRecurrence(event.target.value)}
+                      className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                    >
+                      <option value="none">Não repete</option>
+                      <option value="4weeks">Semanal (4 semanas)</option>
+                      <option value="8weeks">Semanal (8 semanas)</option>
+                      <option value="12weeks">Semanal (12 semanas)</option>
+                    </select>
+                  </label>
+                </div>
 
                 <button
                   type="submit"
-                  disabled={isCreating || clients.length === 0}
-                  className="rounded-full bg-[#145a82] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60 sm:col-span-2"
+                  disabled={isCreating || (!isCollective && clients.length === 0)}
+                  className="w-full rounded-full bg-[#145a82] py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-60 transition"
                 >
-                  {isCreating ? "Criando..." : "Criar agendamento"}
+                  {isCreating ? "Criando..." : "Criar Agendamento"}
                 </button>
               </form>
             </section>
-          ) : null}
+          )}
+
         </section>
       </main>
     </AuthGuard>
   );
 }
-

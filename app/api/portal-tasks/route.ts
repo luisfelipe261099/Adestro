@@ -79,3 +79,25 @@ export async function PATCH(request: Request) {
 
   return NextResponse.json({ ok: updated.count > 0 });
 }
+
+// DELETE /api/portal-tasks
+export async function DELETE(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+
+  const trainer = await prisma.trainer.findUnique({ where: { userId: session.user.id } });
+  if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json({ error: "ID obrigatório" }, { status: 400 });
+  }
+
+  const deleted = await prisma.portalTask.deleteMany({
+    where: { id, trainerId: trainer.id },
+  });
+
+  return NextResponse.json({ ok: deleted.count > 0 });
+}

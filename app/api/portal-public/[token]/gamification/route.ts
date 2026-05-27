@@ -64,6 +64,8 @@ async function loadOrCreateRaw(trainerId: string, clientId: string): Promise<{ r
         points: existing.points,
         streakDays: existing.streakDays,
         lastVisitDate: existing.lastVisitDate ?? "",
+        streakTolerance: existing.streakTolerance,
+        lastStreakUpdateDate: existing.lastStreakUpdateDate ?? "",
         trainerRating: existing.trainerRating,
         totalTasksCompleted: existing.totalTasksCompleted,
         totalFeedbacks: existing.totalFeedbacks,
@@ -89,6 +91,8 @@ async function persistRaw(trainerId: string, clientId: string, raw: RawGamificat
     points: raw.points,
     streakDays: raw.streakDays,
     lastVisitDate: raw.lastVisitDate || null,
+    streakTolerance: raw.streakTolerance ?? 100,
+    lastStreakUpdateDate: raw.lastStreakUpdateDate || "",
     trainerRating: raw.trainerRating,
     totalTasksCompleted: raw.totalTasksCompleted,
     totalFeedbacks: raw.totalFeedbacks,
@@ -213,6 +217,50 @@ function syncFeedbackTotals(raw: RawGamification, actualFeedbacks: number): { ra
   };
 }
 
+async function evaluateStreak(raw: RawGamification, trainerId: string, clientId: string): Promise<{ raw: RawGamification; earned: number; reason: string }> {
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().slice(0, 10);
+
+  const tasks = await prisma.portalTask.findMany({
+    where: { trainerId, clientId },
+  });
+
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.completed).length;
+  const streakTolerance = raw.streakTolerance ?? 100;
+  const lastStreakUpdateDate = raw.lastStreakUpdateDate ?? "";
+
+  const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 100;
+
+  let nextRaw = { ...raw };
+  let earned = 0;
+  let reason = "";
+
+  if (completionRate >= streakTolerance) {
+    if (lastStreakUpdateDate === yesterday) {
+      nextRaw.streakDays += 1;
+      nextRaw.lastStreakUpdateDate = today;
+      earned = 5;
+      reason = `Meta diária batida! Sequência: ${nextRaw.streakDays} dias`;
+      nextRaw.points += earned;
+    } else if (lastStreakUpdateDate === today) {
+      // already updated today
+    } else {
+      nextRaw.streakDays = 1;
+      nextRaw.lastStreakUpdateDate = today;
+      earned = 5;
+      reason = "Meta diária batida! Nova sequência iniciada";
+      nextRaw.points += earned;
+    }
+  } else {
+    if (lastStreakUpdateDate !== today && lastStreakUpdateDate !== yesterday && lastStreakUpdateDate !== "") {
+      nextRaw.streakDays = 0;
+    }
+  }
+
+  return { raw: nextRaw, earned, reason };
+}
+
 export async function GET(request: Request, { params }: Params) {
   const { token } = await params;
   const url = new URL(request.url);
@@ -228,14 +276,24 @@ export async function GET(request: Request, { params }: Params) {
 
   const { raw, existed } = await loadOrCreateRaw(link.trainerId, link.clientId);
   const visit = maybeApplyDailyVisit(raw);
-  if (visit.earned > 0 || !existed) {
-    await persistRaw(link.trainerId, link.clientId, visit.raw, existed);
+  const streak = await evaluateStreak(visit.raw, link.trainerId, link.clientId);
+  
+  if (visit.earned > 0 || streak.earned > 0 || !existed) {
+    await persistRaw(link.trainerId, link.clientId, streak.raw, existed);
   }
 
-  const state = buildPublicState(visit.raw);
+  const state = buildPublicState(streak.raw);
+  
+  let earnedAlert = null;
+  if (visit.earned > 0) {
+    earnedAlert = { points: visit.earned, reason: visit.reason };
+  } else if (streak.earned > 0) {
+    earnedAlert = { points: streak.earned, reason: streak.reason };
+  }
+
   return NextResponse.json({
     state,
-    earned: visit.earned > 0 ? { points: visit.earned, reason: visit.reason } : null,
+    earned: earnedAlert,
   });
 }
 
@@ -269,6 +327,9 @@ export async function POST(request: Request, { params }: Params) {
   if ((body.action === "task_completed" || body.action === "task_uncompleted") && !body.taskId) {
     return NextResponse.json({ error: "taskId obrigatorio" }, { status: 400 });
   }
+  if (body.action === "task_evidence_uploaded" && !body.taskId) {
+    return NextResponse.json({ error: "taskId obrigatorio" }, { status: 400 });
+  }
 
   const allowed: ApplyActionInput["action"][] = [
     "task_completed",
@@ -277,6 +338,7 @@ export async function POST(request: Request, { params }: Params) {
     "trainer_rated",
     "session_rated",
     "video_watched",
+    "task_evidence_uploaded",
   ];
   if (!allowed.includes(body.action as ApplyActionInput["action"])) {
     return NextResponse.json({ error: "Acao nao suportada" }, { status: 400 });
@@ -307,15 +369,32 @@ export async function POST(request: Request, { params }: Params) {
       return NextResponse.json({ error: "Midia nao encontrada para este portal" }, { status: 404 });
     }
     result = applyAction(raw, body as ApplyActionInput);
+  } else if (body.action === "task_evidence_uploaded") {
+    const task = await prisma.portalTask.findFirst({
+      where: { id: body.taskId, trainerId: link.trainerId, clientId: link.clientId },
+    });
+    if (!task) {
+      return NextResponse.json({ error: "Tarefa nao encontrada" }, { status: 404 });
+    }
+    result = applyAction(raw, body as ApplyActionInput);
   } else {
     result = applyAction(raw, body as ApplyActionInput);
   }
 
-  await persistRaw(link.trainerId, link.clientId, result.raw, existed);
+  const streak = await evaluateStreak(result.raw, link.trainerId, link.clientId);
+  await persistRaw(link.trainerId, link.clientId, streak.raw, existed);
 
-  const state = buildPublicState(result.raw);
+  const state = buildPublicState(streak.raw);
+  
+  let earnedAlert = null;
+  if (result.earned > 0) {
+    earnedAlert = { points: result.earned, reason: result.reason };
+  } else if (streak.earned > 0) {
+    earnedAlert = { points: streak.earned, reason: streak.reason };
+  }
+
   return NextResponse.json({
     state,
-    earned: result.earned > 0 ? { points: result.earned, reason: result.reason } : null,
+    earned: earnedAlert,
   });
 }

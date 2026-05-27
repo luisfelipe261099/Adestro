@@ -28,6 +28,7 @@ export type ClientProfile = {
   propertyType: string;
   environment: string;
   plan: string;
+  status: string;
   dogs: DogProfile[];
 };
 
@@ -49,6 +50,27 @@ export type TrainingMediaItem = {
   createdAt: string;
 };
 
+export type DogTrainingSession = {
+  id: string;
+  sessionId: string;
+  dogId: string;
+  activities: Array<{ name: string; completed: boolean; notes: string }>;
+  commands: Array<{ command: string; rating: number; notes: string }>;
+  description?: string;
+  privateNotes?: string;
+  aiSummary?: string;
+  aiApproved: boolean;
+  media: TrainingMediaItem[];
+  nextFocus?: string;
+  nextCommands: string[];
+  nextTasks: string[];
+  dog?: {
+    name: string;
+    breed: string;
+    photoUrl?: string;
+  };
+};
+
 export type TrainingSession = {
   id: string;
   number: number;
@@ -60,6 +82,10 @@ export type TrainingSession = {
   dogName?: string;
   notes: TrainingNote[];
   media: TrainingMediaItem[];
+  dogSessions?: DogTrainingSession[];
+  type?: string;
+  location?: string;
+  status?: string;
 };
 
 export type CalendarEvent = {
@@ -159,19 +185,7 @@ type AppState = {
   }) => void;
   setTrainerPaymentProfile: (payload: Partial<TrainerPaymentProfile>) => void;
   renewTrainerSubscription: () => Promise<boolean>;
-  addClientWithDog: (payload: {
-    clientName: string;
-    phone: string;
-    propertyType: string;
-    environment: string;
-    plan: string;
-    dogName: string;
-    breed: string;
-    age: string;
-    weight: string;
-    photoUrl?: string;
-    trainingTypes: string[];
-  }) => Promise<boolean>;
+  addClientWithDog: (payload: any) => Promise<boolean>;
   addTrainingSession: (payload: {
     number?: number;
     title: string;
@@ -189,16 +203,18 @@ type AppState = {
   setEventStatus: (eventId: string, status: SessionStatus) => Promise<boolean>;
   toggleEventStatus: (eventId: string) => void;
   addCalendarEvent: (payload: {
-    clientId: string;
-    dogId: string;
+    clientId?: string;
+    dogId?: string;
     day: string;
     time: string;
-    dog: string;
-    client: string;
-    plan: string;
-    sessionNumber: number;
+    dog?: string;
+    client?: string;
+    plan?: string;
+    sessionNumber?: number;
     status?: SessionStatus;
+    recurrence?: string;
   }) => Promise<boolean>;
+  approveClient: (clientId: string) => Promise<boolean>;
   clearAppData: () => void;
   loadFromDB: () => Promise<void>;
 };
@@ -267,6 +283,7 @@ function buildDemoData(): DemoData {
       propertyType: "Apartamento",
       environment: "Mora com duas criancas e recebe visitas aos finais de semana",
       plan: "Plano Pro - 8 aulas",
+      status: "Ativo",
       dogs: [
         {
           id: "demo-dog-nina",
@@ -286,6 +303,7 @@ function buildDemoData(): DemoData {
       propertyType: "Casa",
       environment: "Quintal amplo e rotina com outro cao adulto",
       plan: "Plano Starter - 4 aulas",
+      status: "Ativo",
       dogs: [
         {
           id: "demo-dog-thor",
@@ -722,23 +740,26 @@ export const useAppStore = create<AppState>()(
       },
       addCalendarEvent: async (payload) => {
         const tempId = createId("evt");
-        const tempEvent: CalendarEvent = {
-          id:            tempId,
-          clientId:      payload.clientId,
-          dogId:         payload.dogId,
-          day:           payload.day,
-          time:          payload.time,
-          dog:           payload.dog,
-          client:        payload.client,
-          plan:          payload.plan,
-          sessionNumber: payload.sessionNumber,
-          status:        payload.status ?? "Pendente",
-        };
+        const isRecurring = payload.recurrence && payload.recurrence !== "none";
 
-        // Optimistic add — shows immediately in the list
-        set((state) => ({
-          calendarEvents: [tempEvent, ...state.calendarEvents],
-        }));
+        // Optimistic add only if not recurring
+        if (!isRecurring) {
+          const tempEvent: CalendarEvent = {
+            id:            tempId,
+            clientId:      payload.clientId,
+            dogId:         payload.dogId,
+            day:           payload.day,
+            time:          payload.time,
+            dog:           payload.dog ?? "Turma",
+            client:        payload.client ?? "Coletivo",
+            plan:          payload.plan ?? "Aula Coletiva",
+            sessionNumber: payload.sessionNumber ?? 1,
+            status:        payload.status ?? "Pendente",
+          };
+          set((state) => ({
+            calendarEvents: [tempEvent, ...state.calendarEvents],
+          }));
+        }
 
         try {
           const response = await fetch("/api/events", {
@@ -748,7 +769,18 @@ export const useAppStore = create<AppState>()(
           });
 
           if (!response.ok) {
+            if (!isRecurring) {
+              set((state) => ({
+                calendarEvents: state.calendarEvents.filter((e) => e.id !== tempId),
+              }));
+            }
             return false;
+          }
+
+          // Se for recorrente, recarrega tudo do banco
+          if (isRecurring) {
+            await get().loadFromDB();
+            return true;
           }
 
           const created = await response.json() as {
@@ -770,19 +802,39 @@ export const useAppStore = create<AppState>()(
               event.id === tempId
                 ? {
                     id: created.id,
-                  clientId: created.clientId ?? payload.clientId,
-                  dogId: created.dogId ?? payload.dogId,
+                    clientId: created.clientId ?? payload.clientId,
+                    dogId: created.dogId ?? payload.dogId,
                     day: created.day,
                     time: created.time,
                     dog: created.dog,
                     client: created.client,
                     plan: created.plan ?? "",
-                    sessionNumber: Number(created.sessionNumber ?? payload.sessionNumber),
+                    sessionNumber: Number(created.sessionNumber ?? payload.sessionNumber ?? 1),
                     status: (created.status ?? payload.status ?? "Pendente") as SessionStatus,
                   }
                 : event,
             ),
           }));
+          return true;
+        } catch {
+          if (!isRecurring) {
+            set((state) => ({
+              calendarEvents: state.calendarEvents.filter((e) => e.id !== tempId),
+            }));
+          }
+          return false;
+        }
+      },
+      approveClient: async (clientId) => {
+        try {
+          const response = await fetch("/api/clients", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ clientId, status: "Ativo" }),
+          });
+
+          if (!response.ok) return false;
+          await get().loadFromDB();
           return true;
         } catch {
           return false;
@@ -853,6 +905,7 @@ export const useAppStore = create<AppState>()(
             propertyType:   String(c.propertyType ?? ""),
             environment:    String(c.environment ?? ""),
             plan:           String(c.plan ?? ""),
+            status:         String(c.status ?? "Ativo"),
             dogs: ((c.dogs as Array<Record<string, unknown>>) ?? []).map((d) => ({
               id:            String(d.id),
               name:          String(d.name),

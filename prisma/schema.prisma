@@ -85,6 +85,17 @@ model Trainer {
   trialEndsAt DateTime?
   createdAt   DateTime  @default(now())
 
+  // Configurações de alertas (módulo 10.3 - configurações operacionais)
+  reminderHoursBefore       Int @default(24)
+  chargeReminderDaysBefore  Int @default(3)
+  morningBriefHour          Int @default(7)
+  defaultStreakTolerance    Int @default(100)
+
+  // Templates operacionais (módulo 10.3) - JSON serializado
+  defaultActivities         String? @db.Text
+  defaultCommands           String? @db.Text
+  defaultTutorTasks         String? @db.Text
+
   clients         ClientProfile[]
   trainingSessions TrainingSession[]
   calendarEvents  CalendarEvent[]
@@ -94,6 +105,11 @@ model Trainer {
   portalAccessLinks PortalAccessLink[]
   clientGamifications ClientGamification[]
   renewals        SubscriptionRenewal[]
+  
+  // Financeiro de clientes
+  servicePackages  ServicePackage[]
+  clientContracts  ClientContract[]
+  clientInvoices   ClientInvoice[]
 
   @@index([userId])
 }
@@ -132,23 +148,51 @@ model ClientProfile {
   trainer        Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
   name           String
   phone          String?
+  email          String?
+  birthDate      String?
+  cpf            String?
+  photoUrl       String?
+  privateNotes   String?  @db.Text
+  status         String   @default("Ativo") // Ativo / Inativo
   propertyType   String?
   environment    String?  @db.Text
   plan           String?
   createdAt      DateTime @default(now())
 
   dogs     Dog[]
+  addresses Address[]
   calendarEvents CalendarEvent[]
   portalTasks     PortalTask[]
   portalFeedbacks PortalFeedback[]
   portalAccessLink PortalAccessLink?
   gamification    ClientGamification?
+  clientContracts ClientContract[]
 
   clientUserId String?
   clientUser   Client? @relation(fields: [clientUserId], references: [id])
 
   @@index([trainerId])
   @@index([clientUserId])
+}
+
+// ─── Endereços do Tutor ───────────────────────────────────────────────────────
+
+model Address {
+  id              String        @id @default(cuid())
+  clientProfileId String
+  clientProfile   ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+  nickname        String        // Ex: Casa, Trabalho, Sítio
+  zipCode         String?
+  street          String
+  number          String?
+  complement      String?
+  neighborhood    String?
+  city            String?
+  state           String?
+  isDefault       Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+
+  @@index([clientProfileId])
 }
 
 // ─── Cão ──────────────────────────────────────────────────────────────────────
@@ -164,8 +208,26 @@ model Dog {
   photoUrl      String?
   trainingTypes String        @db.Text // JSON serializado
 
+  // Novos campos estruturados
+  sex                    String?       // Macho / Fêmea
+  castrated              Boolean       @default(false)
+  microchip              String?
+  color                  String?
+  photos                 String?       @db.Text // JSON list de URLs de fotos
+  videos                 String?       @db.Text // JSON list de URLs de vídeos
+  vaccines               String?       @db.LongText // JSON serializado
+  dietRestrictions       String?       @db.Text
+  healthConditions       String?       @db.Text
+  veterinarian           String?       @db.Text // Nome + Telefone
+  temperament            String?       @db.Text // JSON de categorias
+  routine                String?       @db.LongText // JSON de rotinas
+  trainingGoals          String?       @db.Text // JSON de objetivos
+  environmentalAnalysis  String?       @db.LongText // JSON de análise ambiental
+
   sessions TrainingSession[]
+  dogSessions DogTrainingSession[]
   calendarEvents CalendarEvent[]
+  clientContracts ClientContract[]
 
   @@index([clientId])
 }
@@ -176,18 +238,53 @@ model TrainingSession {
   id          String   @id @default(cuid())
   trainerId   String
   trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  title       String
+  date        String
+  time        String?
+  duration    String?
+  location    String?
+  type        String   @default("Individual") // Individual / Coletivo
+  status      String   @default("Realizado")  // Agendado / Realizado / Cancelado / Remarcado
+  createdAt   DateTime @default(now())
+
+  dogSessions DogTrainingSession[]
+
+  // Compatibilidade com histórico
   dogId       String?
   dog         Dog?     @relation(fields: [dogId], references: [id])
   clientName  String?
   dogName     String?
   number      Int      @default(1)
-  title       String
-  date        String
-  notes       String   @db.LongText // JSON serializado
+  notes       String?  @db.LongText // JSON serializado
   media       String?  @db.LongText // JSON serializado de imagens comprimidas
-  createdAt   DateTime @default(now())
 
   @@index([trainerId])
+  @@index([dogId])
+}
+
+// ─── Registro Individual na Sessão (Turma/Grupo) ──────────────────────────────
+
+model DogTrainingSession {
+  id          String          @id @default(cuid())
+  sessionId   String
+  session     TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  dogId       String
+  dog         Dog             @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  
+  activities  String?         @db.LongText // JSON list de atividades (realizado? / notas)
+  commands    String?         @db.LongText // JSON list de comandos (obediência / evolução / notas)
+  description String?         @db.LongText // Compartilhado com o dono
+  privateNotes String?        @db.Text     // Somente adestrador
+  aiSummary   String?         @db.LongText // Resumo IA
+  aiApproved  Boolean         @default(false)
+  media       String?         @db.LongText // JSON list de fotos/vídeos
+  nextFocus   String?         @db.Text
+  nextCommands String?        @db.Text     // JSON list
+  nextTasks   String?         @db.Text     // JSON list
+
+  createdAt   DateTime        @default(now())
+
+  @@index([sessionId])
   @@index([dogId])
 }
 
@@ -215,7 +312,7 @@ model CalendarEvent {
   @@index([dogId])
 }
 
-// ─── Pagamento ────────────────────────────────────────────────────────────────
+// ─── Pagamento do Adestrador (SaaS) ───────────────────────────────────────────
 
 model Payment {
   id            String   @id @default(cuid())
@@ -232,6 +329,79 @@ model Payment {
   @@index([trainerId])
 }
 
+// ─── Pacotes de Serviço ───────────────────────────────────────────────────────
+
+model ServicePackage {
+  id              String   @id @default(cuid())
+  trainerId       String
+  trainer         Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  name            String
+  type            String   @default("Pacote") // Pacote / Avulsa
+  sessionsCount   Int      @default(1)
+  amount          Float
+  isFractioned    Boolean  @default(false)
+  fractionSessions Int     @default(1) // Cobrar a cada X sessões
+  validityDays    Int      @default(60)
+  description     String?  @db.Text
+  status          String   @default("Ativo") // Ativo / Inativo
+  createdAt       DateTime @default(now())
+
+  clientContracts ClientContract[]
+
+  @@index([trainerId])
+}
+
+// ─── Venda / Contratação de Pacotes ──────────────────────────────────────────
+
+model ClientContract {
+  id              String        @id @default(cuid())
+  trainerId       String
+  trainer         Trainer       @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  clientId        String
+  client          ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dogId           String?
+  dog             Dog?          @relation(fields: [dogId], references: [id], onDelete: SetNull)
+  packageId       String?
+  servicePackage  ServicePackage? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  name            String        // Nome do pacote no momento da venda
+  sessionsCount   Int           // Total de sessões
+  amount          Float         // Valor total cobrado
+  isFractioned    Boolean       @default(false)
+  fractionSessions Int          @default(1)
+  startDate       String        // YYYY-MM-DD
+  status          String        @default("Ativo") // Ativo / Encerrado
+  notes           String?       @db.Text
+  createdAt       DateTime      @default(now())
+
+  invoices        ClientInvoice[]
+
+  @@index([trainerId])
+  @@index([clientId])
+  @@index([dogId])
+  @@index([packageId])
+}
+
+// ─── Cobranças e Recibos do Tutor ────────────────────────────────────────────
+
+model ClientInvoice {
+  id              String          @id @default(cuid())
+  trainerId       String
+  trainer         Trainer         @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  contractId      String
+  contract        ClientContract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  description     String
+  amount          Float
+  status          String          @default("Pendente") // Pendente / Pago / Atrasado
+  paymentMethod   String?         // PIX / Dinheiro / Cartao / Transferencia / Outro
+  dueDate         String?         // Atrelada às sessões ou data
+  paidAt          String?         // YYYY-MM-DD
+  invoiceNumber   Int?            // Sequência para recibo
+  createdAt       DateTime        @default(now())
+
+  @@index([trainerId])
+  @@index([contractId])
+}
+
 // ─── Tarefa do portal ─────────────────────────────────────────────────────────
 
 model PortalTask {
@@ -243,6 +413,7 @@ model PortalTask {
   title       String
   description String?  @db.Text
   completed   Boolean  @default(false)
+  evidenceUrl String?  @db.Text
   createdAt   DateTime @default(now())
 
   @@index([trainerId])
@@ -298,6 +469,8 @@ model ClientGamification {
   points                  Int      @default(0)
   streakDays              Int      @default(0)
   lastVisitDate           String?  // YYYY-MM-DD
+  streakTolerance         Int      @default(100)
+  lastStreakUpdateDate    String?  @default("")
   trainerRating           Int      @default(0)
   totalTasksCompleted     Int      @default(0)
   totalFeedbacks          Int      @default(0)
@@ -310,7 +483,7 @@ model ClientGamification {
   monthlyProgress         Int      @default(0)
   watchedVideos           String   @db.Text
   sessionRatings          String   @db.Text
-  techniquesUsed          String   @db.Text @default("[]")
+  techniquesUsed          String   @db.Text
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 

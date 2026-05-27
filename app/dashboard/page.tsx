@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { DailyBriefCard } from "@/components/daily-brief-card";
 import { useAppStore } from "@/lib/app-store";
 
 function getFirstName(name: string): string {
@@ -148,6 +150,13 @@ function statusBadge(status: string): string {
   return "bg-amber-100 text-amber-900";
 }
 
+function statusLabel(status: string): string {
+  if (status === "Confirmado") return "Concluída";
+  if (status === "Pendente" || status === "Aguardando") return "Agendada";
+  if (status === "Recorrente") return "Recorrente";
+  return "Cancelada";
+}
+
 export default function DashboardPage() {
   const clients = useAppStore((state) => state.clients);
   const events = useAppStore((state) => state.calendarEvents);
@@ -176,12 +185,17 @@ export default function DashboardPage() {
   const dogName = todayEvent?.dog ?? heroDog?.name ?? "Sem atendimento";
   const heroPlan = todayEvent?.plan || "Operação";
 
-  const quickStats = [
-    { value: String(events.length), label: "Atendimentos", link: "/agenda" },
-    { value: String(sessions.length), label: "Treinos", link: "/treinos" },
-    { value: String(totalDogs), label: "Cães ativos", link: "/clientes" },
-    { value: String(pendingEvents), label: "Pendências", link: "/agenda" },
-  ];
+  const [checklist, setChecklist] = useState([
+    { id: "c1", label: "Confirmar treinos de amanhã", done: false },
+    { id: "c2", label: "Aprovar relatório mensal da Nina", done: true },
+    { id: "c3", label: "Registrar aula de Thor das 15:30", done: false },
+  ]);
+
+  const toggleChecklistItem = (id: string) => {
+    setChecklist((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
+    );
+  };
 
   const nextAction = (() => {
     if (!clients.length) {
@@ -312,41 +326,94 @@ export default function DashboardPage() {
             ) : null}
           </article>
 
-          <section className="mt-4 grid grid-cols-2 gap-3">
-            {quickStats.map((item) => (
-              <Link key={item.label} href={item.link} className="rounded-2xl border border-[var(--border)] bg-white p-3">
-                <p className="text-2xl font-semibold text-[var(--foreground)]">{item.value}</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">{item.label}</p>
+          <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* 📅 Card 1: Agenda do Dia (Azul) - Spans 2 cols */}
+            <article className="rounded-3xl border border-sky-100 bg-sky-50 p-4 shadow-xs text-sky-900 sm:col-span-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#1e5272]">📅 Agenda do Dia</span>
+                <span className="rounded-full bg-sky-200/60 px-2 py-0.5 text-[10px] font-semibold">{upcomingEvents.length} aulas hoje</span>
+              </div>
+              <div className="mt-3 space-y-2.5">
+                {upcomingEvents.length === 0 ? (
+                  <p className="text-xs text-[#2b5d7d]">Sem atendimentos marcados para hoje.</p>
+                ) : (
+                  upcomingEvents.map((event) => (
+                    <div key={event.id} className="flex items-center justify-between border-t border-sky-100/50 pt-2.5">
+                      <div>
+                        <span className="text-xs font-bold text-sky-950">{event.time} • {event.dog}</span>
+                        <span className="ml-1 text-[10px] text-sky-800">({event.client})</span>
+                      </div>
+                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.05em] ${statusBadge(event.status)}`}>
+                        {statusLabel(event.status)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+              <Link href="/agenda" className="mt-3.5 inline-block text-xs font-semibold text-[#145a82] hover:underline">
+                Ver agenda de hoje →
               </Link>
-            ))}
+            </article>
+
+            {/* 📅 Card 2: Agenda da Semana (Azul Claro) */}
+            <Link href="/agenda" className="rounded-3xl border border-cyan-100 bg-cyan-50/70 p-4 shadow-xs text-cyan-900 hover:bg-cyan-50 transition">
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#1c647c]">📅 Agenda da Semana</span>
+              <p className="mt-2 text-2xl font-bold text-cyan-950">{events.length}</p>
+              <p className="text-[10px] text-cyan-800 mt-1">Aulas agendadas na semana</p>
+            </Link>
+
+            {/* 💰 Card 3: Financeiro (Verde) */}
+            <Link href="/financeiro" className="rounded-3xl border border-emerald-100 bg-emerald-50 p-4 shadow-xs text-emerald-900 hover:bg-emerald-50/80 transition">
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#175c40]">💰 Financeiro</span>
+              <div className="mt-2 space-y-1 text-xs">
+                <p className="flex justify-between font-semibold text-emerald-950">
+                  <span>Recebido:</span> <span>R$ 1.280</span>
+                </p>
+                <p className="flex justify-between text-emerald-800 text-[10.5px]">
+                  <span>A receber:</span> <span>R$ 640</span>
+                </p>
+                <p className="flex justify-between text-rose-600 font-semibold text-[10.5px]">
+                  <span>Em atraso:</span> <span>R$ 120</span>
+                </p>
+              </div>
+            </Link>
+
+            {/* 🔔 Card 4: Pendências (Laranja) */}
+            <div className="rounded-3xl border border-orange-100 bg-orange-50 p-4 shadow-xs text-orange-950">
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#6d3e15]">🔔 Pendências</span>
+              <div className="mt-2 space-y-1.5 text-xs text-orange-900">
+                <Link href="/portal" className="flex items-center gap-1.5 hover:underline">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  <span>2 relatórios p/ aprovar</span>
+                </Link>
+                <Link href="/treinos" className="flex items-center gap-1.5 hover:underline">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  <span>{pendingEvents} treinos sem registro</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* ☀️ Card 5: Brief do dia (Roxo) - automação preparada pelo cron daily-brief */}
+            <div className="sm:col-span-2">
+              <DailyBriefCard />
+            </div>
           </section>
 
-          <section className="mt-5">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-[var(--foreground)]">Atendimentos de hoje</p>
-              <Link href="/agenda" className="text-xs font-semibold text-[#145a82]">Ver agenda</Link>
-            </div>
-            <div className="mt-3 space-y-2">
-              {upcomingEvents.length === 0 ? (
-                <div className="rounded-2xl border border-[var(--border)] bg-white p-3 text-sm text-[var(--muted)]">
-                  Sem atendimentos para hoje.
-                </div>
-              ) : null}
-              {upcomingEvents.map((event) => (
-                <article key={event.id} className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-white p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-50 text-[#145a82]">
-                      <Icon name="paw" className="h-4.5 w-4.5" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--foreground)]">{event.dog}</p>
-                      <p className="text-xs text-[var(--muted)]">{event.time} • {event.client}</p>
-                    </div>
-                  </div>
-                  <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${statusBadge(event.status)}`}>
-                    {event.status}
+          <section className="mt-5 rounded-2xl border border-[var(--border)] bg-white p-3">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#4d2d6c]">📋 Checklist do dia</p>
+            <div className="mt-2.5 space-y-2">
+              {checklist.map((item) => (
+                <label key={item.id} className="flex items-start gap-2.5 text-xs text-slate-800 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={item.done}
+                    onChange={() => toggleChecklistItem(item.id)}
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-[#145a82] focus:ring-sky-400"
+                  />
+                  <span className={item.done ? "line-through text-slate-400" : "font-medium"}>
+                    {item.label}
                   </span>
-                </article>
+                </label>
               ))}
             </div>
           </section>

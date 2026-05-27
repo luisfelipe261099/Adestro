@@ -14,7 +14,8 @@ export type GamificationAction =
   | "training_completed"
   | "feedback_received"
   | "invite_tutor"
-  | "multiple_techniques";
+  | "multiple_techniques"
+  | "task_evidence_uploaded";
 
 export const POINTS: Record<GamificationAction, number> = {
   task_completed: 20,
@@ -28,6 +29,7 @@ export const POINTS: Record<GamificationAction, number> = {
   feedback_received: 15,
   invite_tutor: 50,
   multiple_techniques: 60,
+  task_evidence_uploaded: 15,
 };
 
 export type Badge = {
@@ -69,6 +71,8 @@ export type RawGamification = {
   points: number;
   streakDays: number;
   lastVisitDate: string;
+  streakTolerance: number;
+  lastStreakUpdateDate: string;
   watchedVideos: string[];
   trainerRating: number;
   sessionRatings: Record<string, number>;
@@ -90,6 +94,7 @@ export type GamificationState = RawGamification & {
   xpInLevel: number;
   xpToNext: number;
   badges: Badge[];
+  dogRank: string;
 };
 
 export function emptyRawGamification(): RawGamification {
@@ -97,6 +102,8 @@ export function emptyRawGamification(): RawGamification {
     points: 0,
     streakDays: 0,
     lastVisitDate: "",
+    streakTolerance: 100,
+    lastStreakUpdateDate: "",
     watchedVideos: [],
     trainerRating: 0,
     sessionRatings: {},
@@ -153,6 +160,14 @@ function computeBadges(raw: RawGamification, level: number): Badge[] {
   });
 }
 
+export function getDogRank(level: number): string {
+  if (level >= 10) return "Super Cão Canino 🏆";
+  if (level >= 7) return "Cão Graduado 🎓";
+  if (level >= 5) return "Bom Cidadão Canino 🎖️";
+  if (level >= 3) return "Cão Aprendiz 🎒";
+  return "Recruta Canino 🐾";
+}
+
 export function buildPublicState(raw: RawGamification): GamificationState {
   const points = Math.max(0, raw.points);
   const level = Math.floor(points / XP_PER_LEVEL) + 1;
@@ -165,6 +180,7 @@ export function buildPublicState(raw: RawGamification): GamificationState {
     xpInLevel,
     xpToNext,
     badges: computeBadges(raw, level),
+    dogRank: getDogRank(level),
   };
 }
 
@@ -178,7 +194,8 @@ export type ApplyActionInput =
   | { action: "training_completed" }
   | { action: "feedback_received" }
   | { action: "invite_tutor"; count?: number }
-  | { action: "multiple_techniques"; technique: string };
+  | { action: "multiple_techniques"; technique: string }
+  | { action: "task_evidence_uploaded"; taskId: string };
 
 export type ApplyActionResult = {
   raw: RawGamification;
@@ -270,6 +287,12 @@ export function applyAction(current: RawGamification, input: ApplyActionInput): 
         next.points += earned;
         next.techniquesUsed.push(input.technique);
       }
+      break;
+    }
+    case "task_evidence_uploaded": {
+      earned = POINTS.task_evidence_uploaded;
+      reason = "Evidência de tarefa enviada";
+      next.points += earned;
       break;
     }
   }

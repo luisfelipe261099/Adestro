@@ -6,6 +6,7 @@ import { DataStatusBanner } from "@/components/data-status-banner";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
 import { SiteHeader } from "@/components/site-header";
 import { DataLoader } from "@/components/data-loader";
+import { MobileNavigation } from "@/components/mobile-navigation";
 
 import "./globals.css";
 
@@ -67,6 +68,7 @@ export default function RootLayout({
             <PwaInstallBanner />
             <DataStatusBanner />
             {children}
+            <MobileNavigation />
           </div>
         </AppSessionProvider>
       </body>

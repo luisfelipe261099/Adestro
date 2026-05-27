@@ -106,17 +106,51 @@ export async function POST(request: Request) {
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
   const body = await request.json() as {
+    // Dados do Tutor
     clientName: string;
     phone?: string;
+    email?: string;
+    birthDate?: string;
+    cpf?: string;
+    clientPhotoUrl?: string;
+    privateNotes?: string;
+    status?: string;
     propertyType?: string;
     environment?: string;
     plan?: string;
+    addresses?: Array<{
+      nickname: string;
+      zipCode?: string;
+      street: string;
+      number?: string;
+      complement?: string;
+      neighborhood?: string;
+      city?: string;
+      state?: string;
+      isDefault?: boolean;
+    }>;
+
+    // Dados do Cão
     dogName: string;
     breed?: string;
     age?: string;
     weight?: string;
     photoUrl?: string;
     trainingTypes?: string[];
+    sex?: string;
+    castrated?: boolean;
+    microchip?: string;
+    color?: string;
+    photos?: string[];
+    videos?: string[];
+    vaccines?: any[];
+    dietRestrictions?: string;
+    healthConditions?: string;
+    veterinarian?: string;
+    temperament?: any;
+    routine?: any;
+    trainingGoals?: any;
+    environmentalAnalysis?: any;
   };
 
   const resolvedDogPhotoUrl = sanitizePhotoUrl(body.photoUrl) ?? getDefaultDogPhotoByBreed(body.breed);
@@ -126,22 +160,86 @@ export async function POST(request: Request) {
       trainerId:      trainer.id,
       name:           body.clientName,
       phone:          body.phone          ?? "",
+      email:          body.email          ?? "",
+      birthDate:      body.birthDate      ?? "",
+      cpf:            body.cpf            ?? "",
+      photoUrl:       body.clientPhotoUrl ?? "",
+      privateNotes:   body.privateNotes   ?? "",
+      status:         body.status         ?? "Ativo",
       propertyType:   body.propertyType   ?? "",
       environment:    body.environment    ?? "",
       plan:           body.plan           ?? "",
+      
+      addresses: {
+        create: (body.addresses ?? []).map(addr => ({
+          nickname:     addr.nickname,
+          zipCode:      addr.zipCode      ?? "",
+          street:       addr.street,
+          number:       addr.number       ?? "",
+          complement:   addr.complement   ?? "",
+          neighborhood: addr.neighborhood ?? "",
+          city:         addr.city         ?? "",
+          state:        addr.state        ?? "",
+          isDefault:    !!addr.isDefault,
+        }))
+      },
+
       dogs: {
         create: {
-          name:          body.dogName,
-          breed:         body.breed         ?? "",
-          age:           body.age           ?? "",
-          weight:        body.weight        ?? "",
-          photoUrl:      resolvedDogPhotoUrl,
-          trainingTypes: JSON.stringify(body.trainingTypes ?? []),
+          name:                  body.dogName,
+          breed:                 body.breed                 ?? "",
+          age:                   body.age                   ?? "",
+          weight:                body.weight                ?? "",
+          photoUrl:              resolvedDogPhotoUrl,
+          trainingTypes:         JSON.stringify(body.trainingTypes ?? []),
+          sex:                   body.sex                   ?? "",
+          castrated:             !!body.castrated,
+          microchip:             body.microchip             ?? "",
+          color:                 body.color                 ?? "",
+          photos:                JSON.stringify(body.photos ?? []),
+          videos:                JSON.stringify(body.videos ?? []),
+          vaccines:              JSON.stringify(body.vaccines ?? []),
+          dietRestrictions:      body.dietRestrictions      ?? "",
+          healthConditions:      body.healthConditions      ?? "",
+          veterinarian:          body.veterinarian          ?? "",
+          temperament:           JSON.stringify(body.temperament           ?? {}),
+          routine:               JSON.stringify(body.routine               ?? {}),
+          trainingGoals:         JSON.stringify(body.trainingGoals         ?? {}),
+          environmentalAnalysis: JSON.stringify(body.environmentalAnalysis ?? {}),
         },
       },
     },
-    include: { dogs: true },
+    include: { 
+      dogs: true,
+      addresses: true,
+    },
   });
 
   return NextResponse.json(client, { status: 201 });
 }
+
+// PATCH /api/clients
+export async function PATCH(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  const role = ((session.user as { role?: string }).role ?? "").toLowerCase();
+  if (role !== "trainer") return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+
+  const trainer = await prisma.trainer.findUnique({ where: { userId: session.user.id } });
+  if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
+
+  const body = await request.json() as { clientId: string; status?: string };
+  if (!body.clientId) {
+    return NextResponse.json({ error: "clientId é obrigatório" }, { status: 400 });
+  }
+
+  const updatedClient = await prisma.clientProfile.update({
+    where: { id: body.clientId, trainerId: trainer.id },
+    data: {
+      status: body.status ?? "Ativo",
+    },
+  });
+
+  return NextResponse.json(updatedClient);
+}
+

@@ -46,15 +46,25 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
     <article className="rounded-[1.5rem] border border-[var(--border)] bg-gradient-to-br from-sky-50 via-white to-indigo-50 p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Sua jornada</p>
-          <h3 className="mt-1 text-lg font-semibold text-[var(--foreground)]">Engajamento e progresso</h3>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Jornada de Treino</p>
+          <h3 className="mt-1 text-lg font-semibold text-[var(--foreground)]">Nível e Patente do Cão</h3>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            Quanto mais você participa, mais rápido seu cão evolui. Concluir tarefas, assistir vídeos e dar feedback geram pontos.
+            Seu cão está progredindo! Complete tarefas com fotos/vídeos de prova, assista aos vídeos de aula e interaja para subir de nível e desbloquear novas patentes.
           </p>
         </div>
-        <div className="rounded-2xl border border-sky-200 bg-white px-3 py-2 text-center">
+        <div className="rounded-2xl border border-sky-200 bg-white px-3.5 py-2 text-center min-w-[70px]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#2d6f99]">Nível</p>
-          <p className="text-2xl font-semibold text-[#145a82]">{state.level}</p>
+          <p className="text-2xl font-bold text-[#145a82]">{state.level}</p>
+        </div>
+      </div>
+
+      <div className="mt-3.5 rounded-xl bg-[#145a82]/5 border border-[#145a82]/10 p-3.5 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] uppercase font-bold tracking-[0.12em] text-[#145a82]">Patente Canina Atual</p>
+          <p className="text-base font-bold text-slate-800 mt-0.5">{state.dogRank}</p>
+        </div>
+        <div className="text-3xl">
+          {state.level >= 10 ? "🏆" : state.level >= 7 ? "🎓" : state.level >= 5 ? "🎖️" : state.level >= 3 ? "🎒" : "🐾"}
         </div>
       </div>
 
@@ -136,8 +146,7 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
       </div>
 
       <div className="mt-4 rounded-xl border border-sky-100 bg-white/80 px-3 py-2 text-[11px] text-[#245d84]">
-        <strong>Como pontuar:</strong> concluir tarefa (+20) • assistir vídeo do treino (+15) • avaliar aula (+15) •
-        avaliar adestrador (+25) • enviar comentário (+10) • visita diária (+5).
+        <strong>Como pontuar:</strong> concluir tarefa (+20) • enviar evidência de tarefa (+15) • assistir vídeo do treino (+15) • avaliar aula (+15) • avaliar adestrador (+25) • enviar comentário (+10) • visita diária (+5).
       </div>
     </article>
   );

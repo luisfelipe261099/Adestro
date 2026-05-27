@@ -41,6 +41,34 @@ export async function GET() {
   return NextResponse.json(events);
 }
 
+function addWeeksToDate(dateStr: string, weeks: number): string {
+  // Se for YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() + weeks * 7);
+    
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  
+  // Se for DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+    const [day, month, year] = dateStr.split("/").map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() + weeks * 7);
+    
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${d}/${m}/${y}`;
+  }
+
+  return dateStr;
+}
+
 // POST /api/events
 export async function POST(request: Request) {
   const session = await auth();
@@ -61,57 +89,81 @@ export async function POST(request: Request) {
     plan?: string;
     sessionNumber?: number;
     status?: "Confirmado" | "Pendente" | "Aguardando" | "Recorrente" | "Cancelado";
+    recurrence?: "none" | "4weeks" | "8weeks" | "12weeks";
   };
 
-  const clientId = (body.clientId ?? "").trim();
-  const dogId = (body.dogId ?? "").trim();
+  const clientId = body.clientId ? String(body.clientId).trim() : null;
+  const dogId = body.dogId ? String(body.dogId).trim() : null;
 
-  if (!clientId || !dogId) {
-    return NextResponse.json({ error: "clientId e dogId são obrigatórios" }, { status: 400 });
-  }
+  let dogName = body.dog ? String(body.dog).trim() : "Turma";
+  let clientName = body.client ? String(body.client).trim() : "Coletivo";
+  let planName = body.plan ? String(body.plan).trim() : "Aula Coletiva";
 
-  const dog = await prisma.dog.findFirst({
-    where: {
-      id: dogId,
-      clientId,
-      client: {
-        trainerId: trainer.id,
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-      client: {
-        select: {
-          id: true,
-          name: true,
-          plan: true,
+  if (clientId && dogId) {
+    const dog = await prisma.dog.findFirst({
+      where: {
+        id: dogId,
+        clientId,
+        client: {
+          trainerId: trainer.id,
         },
       },
-    },
-  });
+      select: {
+        id: true,
+        name: true,
+        client: {
+          select: {
+            id: true,
+            name: true,
+            plan: true,
+          },
+        },
+      },
+    });
 
-  if (!dog) {
-    return NextResponse.json({ error: "Cliente ou cão inválido para este adestrador" }, { status: 404 });
+    if (!dog) {
+      return NextResponse.json({ error: "Cliente ou cão inválido para este adestrador" }, { status: 404 });
+    }
+
+    dogName = dog.name;
+    clientName = dog.client.name;
+    planName = body.plan?.trim() || dog.client.plan || "";
+  } else {
+    // Para agendamentos coletivos, precisamos do nome do evento/turma
+    if (!body.dog) {
+      return NextResponse.json({ error: "Nome da turma/evento é obrigatório para agendamento coletivo" }, { status: 400 });
+    }
   }
 
-  const created = await prisma.calendarEvent.create({
-    data: {
-      trainerId:     trainer.id,
-      clientId:      dog.client.id,
-      dogId:         dog.id,
-      day:           body.day,
-      time:          body.time,
-      dog:           dog.name,
-      client:        dog.client.name,
-      plan:          body.plan?.trim() || dog.client.plan || "",
-      sessionNumber: body.sessionNumber ?? 1,
-      status:        body.status        ?? "Pendente",
-    },
-  });
+  let repeatCount = 1;
+  if (body.recurrence === "4weeks") repeatCount = 4;
+  else if (body.recurrence === "8weeks") repeatCount = 8;
+  else if (body.recurrence === "12weeks") repeatCount = 12;
 
-  return NextResponse.json(created, { status: 201 });
+  const eventsData = [];
+  for (let i = 0; i < repeatCount; i++) {
+    const eventDay = addWeeksToDate(body.day, i);
+    eventsData.push({
+      trainerId:     trainer.id,
+      clientId,
+      dogId,
+      day:           eventDay,
+      time:          body.time,
+      dog:           dogName,
+      client:        clientName,
+      plan:          planName,
+      sessionNumber: (body.sessionNumber ?? 1) + i,
+      status:        body.status        ?? "Pendente",
+    });
+  }
+
+  const createdEvents = await Promise.all(
+    eventsData.map((data) => prisma.calendarEvent.create({ data }))
+  );
+
+  return NextResponse.json(createdEvents[0], { status: 201 });
 }
+
 
 // PATCH /api/events – atualiza status de um evento
 export async function PATCH(request: Request) {

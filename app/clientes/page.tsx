@@ -7,7 +7,7 @@ import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { AuthGuard } from "@/components/auth-guard";
 import { useAppStore } from "@/lib/app-store";
 
-type ClientStatus = "ativos" | "inativos";
+type ClientStatus = "ativos" | "inativos" | "rascunho";
 type SortMode = "recentes" | "nome";
 type EntityKind = "humanos" | "caes";
 
@@ -31,11 +31,13 @@ function getClientStatus(params: { hasRecentSession: boolean }): ClientStatus {
 
 function statusStyle(status: ClientStatus): string {
   if (status === "ativos") return "bg-sky-100 text-sky-800";
+  if (status === "rascunho") return "bg-amber-100 text-amber-800 border border-amber-200/50";
   return "bg-slate-100 text-slate-700";
 }
 
 function statusLabel(status: ClientStatus): string {
   if (status === "ativos") return "Ativo";
+  if (status === "rascunho") return "Rascunho";
   return "Inativo";
 }
 
@@ -98,6 +100,7 @@ export default function ClientsPage() {
   const sessions = useAppStore((state) => state.trainingSessions);
   const events = useAppStore((state) => state.calendarEvents);
   const addClientWithDog = useAppStore((state) => state.addClientWithDog);
+  const approveClient = useAppStore((state) => state.approveClient);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"todos" | ClientStatus>("todos");
@@ -106,33 +109,137 @@ export default function ClientsPage() {
   const [sortMode, setSortMode] = useState<SortMode>("recentes");
   const [showForm, setShowForm] = useState(false);
 
+  // ─── ESTADO DE GERENCIAMENTO DE TAREFAS (PORTAL) ──────────────────────
+  const [activeTaskIdForManagement, setActiveTaskIdForManagement] = useState<string | null>(null);
+  const [clientTasks, setClientTasks] = useState<any[]>([]);
+  const [loadingTasks, setLoadingTasks] = useState(false);
+  const [newPortalTaskTitle, setNewPortalTaskTitle] = useState("");
+  const [newPortalTaskDesc, setNewPortalTaskDesc] = useState("");
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [crmEvidenceLightbox, setCrmEvidenceLightbox] = useState<{ src: string; title: string } | null>(null);
+
+  const activeClientForTasks = clients.find((c) => c.id === activeTaskIdForManagement);
+
+  // ─── ESTADO DO FORMULÁRIO EM 5 ETAPAS ────────────────────────────────
+  const [formStep, setFormStep] = useState(1);
+
+  // Etapa 1: Dados do Tutor
   const [clientName, setClientName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [privateNotes, setPrivateNotes] = useState("");
+
+  // Etapa 2: Endereço do Tutor
+  const [addrNickname, setAddrNickname] = useState("Casa");
+  const [addrZipCode, setAddrZipCode] = useState("");
+  const [addrStreet, setAddrStreet] = useState("");
+  const [addrNumber, setAddrNumber] = useState("");
+  const [addrComplement, setAddrComplement] = useState("");
+  const [addrNeighborhood, setAddrNeighborhood] = useState("");
+  const [addrCity, setAddrCity] = useState("");
+  const [addrState, setAddrState] = useState("");
+  const [addrIsDefault, setAddrIsDefault] = useState(true);
+  const [isCEPLoading, setIsCEPLoading] = useState(false);
+
+  // Etapa 3: Identificação do Cão
   const [dogName, setDogName] = useState("");
   const [breed, setBreed] = useState("");
   const [age, setAge] = useState("");
   const [weight, setWeight] = useState("");
+  const [dogSex, setDogSex] = useState("Macho");
+  const [dogCastrated, setDogCastrated] = useState(false);
+  const [dogMicrochip, setDogMicrochip] = useState("");
+  const [dogColor, setDogColor] = useState("");
   const [dogPhotoUrl, setDogPhotoUrl] = useState("");
   const [dogPhotoPreview, setDogPhotoPreview] = useState("");
+
+  // Etapa 4: Saúde e Vacinas
+  const [vaccines, setVaccines] = useState<Array<{ name: string; date: string; validity: string; alert: boolean }>>([]);
+  const [newVacName, setNewVacName] = useState("");
+  const [newVacDate, setNewVacDate] = useState("");
+  const [newVacValidity, setNewVacValidity] = useState("");
+  const [newVacAlert, setNewVacAlert] = useState(true);
+  const [dietRestrictions, setDietRestrictions] = useState("");
+  const [healthConditions, setHealthConditions] = useState("");
+  const [veterinarian, setVeterinarian] = useState("");
+
+  // Etapa 5: Temperamento, Rotinas e Objetivos
+  const [tempEnergy, setTempEnergy] = useState("Energia moderada");
+  const [tempSocial, setTempSocial] = useState("Sociável com pessoas");
+  const [tempDogs, setTempDogs] = useState("Sociável com outros cães");
+  const [tempBehavior, setTempBehavior] = useState("");
+  const [tempPositive, setTempPositive] = useState("");
+  const [rotAlimentation, setRotAlimentation] = useState("");
+  const [rotSleep, setRotSleep] = useState("");
+  const [rotWalks, setRotWalks] = useState("");
+  const [rotPlays, setRotPlays] = useState("");
+  const [goalsObediencia, setGoalsObediencia] = useState(true);
+  const [goalsComportamento, setGoalsComportamento] = useState(false);
+  const [goalsPasseio, setGoalsPasseio] = useState(false);
+  const [goalsAvancado, setGoalsAvancado] = useState(false);
+  const [goalsReab, setGoalsReab] = useState(false);
   const [propertyType, setPropertyType] = useState("Apartamento");
+  const [envConvive, setEnvConvive] = useState("");
+  const [envAloneTime, setEnvAloneTime] = useState("2–4h");
+  const [envHistory, setEnvHistory] = useState("Nunca foi adestrado");
+  const [planLabel, setPlanLabel] = useState("Plano Pro - 8 aulas");
   const [trainingTypesRaw, setTrainingTypesRaw] = useState("");
-  const [planLabel, setPlanLabel] = useState("");
+
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
+
+  // Busca Automática de CEP
+  const handleLookupCEP = async () => {
+    const cleanCEP = addrZipCode.replace(/\D/g, "");
+    if (cleanCEP.length !== 8) return;
+    setIsCEPLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setAddrStreet(data.logradouro || "");
+        setAddrNeighborhood(data.bairro || "");
+        setAddrCity(data.localidade || "");
+        setAddrState(data.uf || "");
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsCEPLoading(false);
+    }
+  };
+
+  const handleAddVaccine = () => {
+    if (!newVacName || !newVacDate) return;
+    setVaccines([
+      ...vaccines,
+      { name: newVacName, date: newVacDate, validity: newVacValidity, alert: newVacAlert }
+    ]);
+    setNewVacName("");
+    setNewVacDate("");
+    setNewVacValidity("");
+    setNewVacAlert(true);
+  };
+
+  const handleRemoveVaccine = (idx: number) => {
+    setVaccines(vaccines.filter((_, i) => i !== idx));
+  };
 
   async function handleDogPhotoFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setSaveError("Selecione um arquivo de imagem valido.");
+      setSaveError("Selecione um arquivo de imagem válido.");
       event.target.value = "";
       return;
     }
 
     if (file.size > 1_500_000) {
-      setSaveError("Imagem muito grande. Use um arquivo de ate 1.5MB.");
+      setSaveError("Imagem muito grande. Use um arquivo de até 1.5MB.");
       event.target.value = "";
       return;
     }
@@ -145,7 +252,7 @@ export default function ClientsPage() {
     }).catch(() => "");
 
     if (!dataUrl) {
-      setSaveError("Nao foi possivel carregar a imagem.");
+      setSaveError("Não foi possível carregar a imagem.");
       event.target.value = "";
       return;
     }
@@ -163,7 +270,7 @@ export default function ClientsPage() {
         .sort((a, b) => b - a)[0] ?? 0;
 
       const hasRecentSession = lastSessionDate > 0;
-      const status = getClientStatus({ hasRecentSession });
+      const status = client.status === "Rascunho" ? "rascunho" : getClientStatus({ hasRecentSession });
 
       return {
         client,
@@ -221,11 +328,68 @@ export default function ClientsPage() {
   const activeClients = clientsWithMeta.filter((item) => item.status === "ativos").length;
   const adherenceRate = clients.length ? Math.round((activeClients / clients.length) * 100) : 0;
 
+  const fetchClientTasks = async (clientId: string) => {
+    setLoadingTasks(true);
+    try {
+      const res = await fetch(`/api/portal-tasks?clientId=${clientId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setClientTasks(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingTasks(false);
+    }
+  };
+
+  const handleCreateTask = async (clientId: string) => {
+    if (!newPortalTaskTitle.trim() || isCreatingTask) return;
+    setIsCreatingTask(true);
+    try {
+      const res = await fetch("/api/portal-tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newPortalTaskTitle.trim(),
+          description: newPortalTaskDesc.trim(),
+          clientId,
+        }),
+      });
+      if (res.ok) {
+        setNewPortalTaskTitle("");
+        setNewPortalTaskDesc("");
+        await fetchClientTasks(clientId);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsCreatingTask(false);
+    }
+  };
+
+  const handleDeleteTask = async (clientId: string, taskId: string) => {
+    if (!window.confirm("Deseja realmente excluir esta tarefa?")) return;
+    try {
+      const res = await fetch(`/api/portal-tasks?id=${taskId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        await fetchClientTasks(clientId);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSaving) return;
 
-    if (!clientName.trim() || !dogName.trim()) return;
+    if (!clientName.trim() || !dogName.trim()) {
+      setSaveError("Nome do tutor e nome do cão são obrigatórios.");
+      return;
+    }
 
     const trainingTypes = trainingTypesRaw
       .split(",")
@@ -235,39 +399,88 @@ export default function ClientsPage() {
     setSaveError("");
     setIsSaving(true);
 
+    const payload = {
+      clientName: clientName.trim(),
+      phone: phone.trim() || "(00) 00000-0000",
+      email: email.trim(),
+      birthDate,
+      cpf: cpf.trim(),
+      privateNotes,
+      status: "Ativo",
+      propertyType,
+      environment: envConvive,
+      plan: planLabel.trim() || "Plano personalizado",
+      addresses: [
+        {
+          nickname: addrNickname,
+          zipCode: addrZipCode,
+          street: addrStreet,
+          number: addrNumber,
+          complement: addrComplement,
+          neighborhood: addrNeighborhood,
+          city: addrCity,
+          state: addrState,
+          isDefault: addrIsDefault
+        }
+      ],
+      dogName: dogName.trim(),
+      breed: breed.trim() || "SRD",
+      age: age.trim() || "Não informado",
+      weight: weight.trim() || "Não informado",
+      photoUrl: dogPhotoPreview || dogPhotoUrl.trim() || undefined,
+      trainingTypes: trainingTypes.length ? trainingTypes : ["Obediência básica"],
+      sex: dogSex,
+      castrated: dogCastrated,
+      microchip: dogMicrochip,
+      color: dogColor,
+      vaccines,
+      dietRestrictions,
+      healthConditions,
+      veterinarian,
+      temperament: { energy: tempEnergy, social: tempSocial, dogs: tempDogs, behavior: tempBehavior, positive: tempPositive },
+      routine: { alimentation: rotAlimentation, sleep: rotSleep, walks: rotWalks, plays: rotPlays },
+      trainingGoals: { obediencia: goalsObediencia, comportamento: goalsComportamento, passeio: goalsPasseio, avancado: goalsAvancado, reabilitacao: goalsReab },
+      environmentalAnalysis: { convive: envConvive, aloneTime: envAloneTime, history: envHistory }
+    };
+
     try {
-      const ok = await addClientWithDog({
-        clientName: clientName.trim(),
-        phone: phone.trim() || "(00) 00000-0000",
-        propertyType: propertyType || "Apartamento",
-        environment: "",
-        plan: planLabel.trim() || "Plano personalizado",
-        dogName: dogName.trim(),
-        breed: breed.trim() || "SRD",
-        age: age.trim() || "Nao informado",
-        weight: weight.trim() || "Nao informado",
-        photoUrl: dogPhotoPreview || dogPhotoUrl.trim() || undefined,
-        trainingTypes: trainingTypes.length ? trainingTypes : [],
-      });
+      const ok = await addClientWithDog(payload);
 
       if (!ok) {
-        setSaveError("Erro ao cadastrar. Verifique sua conexao e tente novamente.");
+        setSaveError("Erro ao cadastrar. Verifique sua conexão e tente novamente.");
         window.setTimeout(() => setSaveError(""), 4000);
         return;
       }
 
+      // Limpar campos
       setClientName("");
       setPhone("");
+      setEmail("");
+      setBirthDate("");
+      setCpf("");
+      setPrivateNotes("");
+      setAddrNickname("Casa");
+      setAddrZipCode("");
+      setAddrStreet("");
+      setAddrNumber("");
+      setAddrComplement("");
+      setAddrNeighborhood("");
+      setAddrCity("");
+      setAddrState("");
       setDogName("");
       setBreed("");
       setAge("");
       setWeight("");
+      setDogMicrochip("");
+      setDogColor("");
       setDogPhotoUrl("");
       setDogPhotoPreview("");
-      setPropertyType("Apartamento");
-      setTrainingTypesRaw("");
-      setPlanLabel("");
+      setVaccines([]);
+      setDietRestrictions("");
+      setHealthConditions("");
+      setVeterinarian("");
       setShowForm(false);
+      setFormStep(1);
       setSaveMessage("Tutor e cão cadastrados com sucesso.");
       window.setTimeout(() => setSaveMessage(""), 3000);
     } finally {
@@ -277,17 +490,20 @@ export default function ClientsPage() {
 
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-10 pt-3 sm:max-w-xl">
+      <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
         <section className="rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-[var(--shadow)]">
           <header className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Painel de tutores</p>
               <h1 className="font-display text-2xl font-semibold leading-tight text-[var(--foreground)]">Tutores e cães</h1>
-              <p className="mt-1 text-xs text-[var(--muted)]">Cadastre o tutor responsável, o cão e o objetivo do treino.</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">Gerencie a ficha completa dos clientes e seus animais.</p>
             </div>
             <button
               type="button"
-              onClick={() => setShowForm((current) => !current)}
+              onClick={() => {
+                setShowForm((current) => !current);
+                setFormStep(1);
+              }}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-[#145a82] text-white shadow-[0_10px_24px_rgba(20,90,130,0.28)]"
               aria-label="Abrir cadastro"
             >
@@ -295,26 +511,34 @@ export default function ClientsPage() {
             </button>
           </header>
 
+          {/* Atalhos Rápidos */}
           <div className="mt-3 flex flex-wrap gap-2">
             <Link href="/agenda" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#145a82]">
               Agenda
             </Link>
             <button
               type="button"
-              onClick={() => setShowForm(true)}
+              onClick={() => {
+                setShowForm(true);
+                setFormStep(1);
+              }}
               className="rounded-full border border-[#145a82] bg-[#145a82] px-3 py-1.5 text-[11px] font-semibold text-white"
             >
               + Novo tutor
             </button>
             <button
               type="button"
-              onClick={() => setShowForm(true)}
+              onClick={() => {
+                setShowForm(true);
+                setFormStep(3); // Salta para a etapa do cão
+              }}
               className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#145a82]"
             >
               + Cadastrar cão
             </button>
           </div>
 
+          {/* Alternar Visualização */}
           <div className="mt-3 inline-flex rounded-full border border-[#c9dfef] bg-white p-0.5 text-[11px] font-semibold">
             <button
               type="button"
@@ -332,6 +556,7 @@ export default function ClientsPage() {
             </button>
           </div>
 
+          {/* Filtros e Busca */}
           <div className="mt-4 flex items-center gap-2">
             <label className="flex flex-1 items-center gap-2 rounded-xl border border-[#c9dfef] bg-white px-3 py-2 text-[var(--muted)] shadow-[0_6px_18px_rgba(17,73,110,0.08)]">
               <SmallIcon name="search" />
@@ -346,33 +571,37 @@ export default function ClientsPage() {
               type="button"
               onClick={() => setShowQuickFilters((current) => !current)}
               className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#c9dfef] bg-white text-[#145a82] shadow-[0_6px_18px_rgba(17,73,110,0.08)]"
-              aria-label="Opcoes"
+              aria-label="Opções"
             >
               <SmallIcon name="filter" />
             </button>
           </div>
 
-          <div className={`mt-4 flex gap-2 overflow-x-auto pb-1 ${showQuickFilters ? "" : "hidden"}`}>
-            {[
-              { value: "todos", label: "Todos" },
-              { value: "ativos", label: "Ativos" },
-              { value: "inativos", label: "Inativos" },
-            ].map((item) => (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => setStatusFilter(item.value as "todos" | ClientStatus)}
-                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-semibold ${
-                  statusFilter === item.value
-                    ? "bg-[#145a82] text-white shadow-[0_8px_18px_rgba(20,90,130,0.25)]"
-                    : "border border-[#c9dfef] bg-white text-[var(--muted)]"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+          {showQuickFilters && (
+            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+              {[
+                { value: "todos", label: "Todos" },
+                { value: "ativos", label: "Ativos" },
+                { value: "rascunho", label: "Rascunhos" },
+                { value: "inativos", label: "Inativos" },
+              ].map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => setStatusFilter(item.value as "todos" | ClientStatus)}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-semibold ${
+                    statusFilter === item.value
+                      ? "bg-[#145a82] text-white shadow-[0_8px_18px_rgba(20,90,130,0.25)]"
+                      : "border border-[#c9dfef] bg-white text-[var(--muted)]"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
 
+          {/* Cards Estatísticos */}
           <section className="mt-4 grid grid-cols-2 gap-2">
             <article className="rounded-xl border border-[var(--border)] bg-white p-3">
               <p className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#2d6f99]"><SmallIcon name="plus" /> Tutores</p>
@@ -384,37 +613,468 @@ export default function ClientsPage() {
               <p className="text-2xl font-semibold text-[var(--foreground)]">{totalDogs}</p>
               <p className="mt-1 text-xs text-[var(--muted)]">Total atendido</p>
             </article>
-            <article className="rounded-xl border border-[var(--border)] bg-white p-3">
-              <p className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#2d6f99]"><SmallIcon name="calendar" /> Agenda</p>
-              <p className="text-2xl font-semibold text-[var(--foreground)]">{events.length}</p>
-              <p className="mt-1 text-xs text-[var(--muted)]">Atendimentos</p>
-            </article>
-            <article className="rounded-xl border border-[var(--border)] bg-white p-3">
-              <p className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#2d6f99]"><SmallIcon name="money" /> Financeiro</p>
-              <p className="text-2xl font-semibold text-[var(--foreground)]">{adherenceRate}%</p>
-              <p className="mt-1 text-xs text-[var(--muted)]">Adesao ativa</p>
-            </article>
           </section>
 
-          <section className="mt-4 flex items-center justify-between rounded-xl border border-[#c9dfef] bg-white px-3 py-2 text-xs text-[var(--muted)]">
-            <p>{entityKind === "humanos" ? filteredClients.length : filteredDogs.length} {entityKind === "humanos" ? "tutores" : "cães"} encontrados</p>
-            <label className="flex items-center gap-1.5">
-              Ordenar:
-              <select
-                value={sortMode}
-                onChange={(event) => setSortMode(event.target.value as SortMode)}
-                className="rounded-md border border-[var(--border)] bg-white px-2 py-1 text-xs text-[var(--foreground)] outline-none"
-              >
-                <option value="recentes">Recentes</option>
-                <option value="nome">Nome</option>
-              </select>
-            </label>
-          </section>
+          {/* Mensagens de Feedback */}
+          {saveMessage && (
+            <p className="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800">{saveMessage}</p>
+          )}
 
-          <section className="mt-2 rounded-xl border border-[#d7e8f4] bg-[#eef6fc] px-3 py-2 text-xs text-[#245d84]">
-            {clients.length} tutor(es) e {totalDogs} cão(ões) cadastrados.
-          </section>
+          {/* ─── CADASTRO EM 5 ETAPAS (WIZARD) ────────────────────────────────── */}
+          {showForm && (
+            <section className="mt-4 rounded-3xl border border-[var(--border)] bg-white p-4 shadow-sm animate-in slide-in-from-top-4 duration-200">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="text-xs font-bold text-[#145a82]">Cadastro em Etapas (Etapa {formStep}/5)</span>
+                <span className="text-[10px] font-semibold text-[var(--muted)]">
+                  {formStep === 1 ? "Dados do Tutor" :
+                   formStep === 2 ? "Endereços" :
+                   formStep === 3 ? "Dados do Cão" :
+                   formStep === 4 ? "Saúde e Vacinas" :
+                   "Temperamento & Objetivos"}
+                </span>
+              </div>
 
+              {/* Barra de Progresso Visual */}
+              <div className="mt-2.5 flex h-1.5 w-full gap-1.5 rounded-full bg-slate-100 overflow-hidden">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <span
+                    key={s}
+                    className={`h-full flex-1 rounded-full transition-all ${
+                      s <= formStep ? "bg-[#145a82]" : "bg-slate-200"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <form onSubmit={onSubmit} className="mt-4 space-y-3">
+
+                {/* ETAPA 1: Dados do Tutor */}
+                {formStep === 1 && (
+                  <div className="grid gap-2.5 animate-in fade-in duration-200">
+                    <input
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      placeholder="Nome completo do tutor *"
+                      required
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+                    <input
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="WhatsApp (com DDD) *"
+                      required
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+                    <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      type="email"
+                      placeholder="E-mail (opcional)"
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        value={birthDate}
+                        onChange={(e) => setBirthDate(e.target.value)}
+                        placeholder="Nascimento (DD/MM/AAAA)"
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                      <input
+                        value={cpf}
+                        onChange={(e) => setCpf(e.target.value)}
+                        placeholder="CPF (opcional)"
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                    </div>
+                    <textarea
+                      value={privateNotes}
+                      onChange={(e) => setPrivateNotes(e.target.value)}
+                      placeholder="Observações confidenciais do adestrador (não visíveis ao tutor)..."
+                      rows={3}
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+                  </div>
+                )}
+
+                {/* ETAPA 2: Endereço do Tutor */}
+                {formStep === 2 && (
+                  <div className="grid gap-2.5 animate-in fade-in duration-200">
+                    <div className="flex gap-2">
+                      <input
+                        value={addrZipCode}
+                        onChange={(e) => setAddrZipCode(e.target.value)}
+                        placeholder="CEP (somente números)"
+                        className="flex-1 rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleLookupCEP}
+                        disabled={isCEPLoading}
+                        className="rounded-xl bg-sky-100 px-3 text-xs font-semibold text-[#145a82] hover:bg-sky-200"
+                      >
+                        {isCEPLoading ? "Buscando..." : "Buscar CEP"}
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-[1.5fr_1fr] gap-2">
+                      <input
+                        value={addrStreet}
+                        onChange={(e) => setAddrStreet(e.target.value)}
+                        placeholder="Logradouro / Rua"
+                        required
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                      <input
+                        value={addrNumber}
+                        onChange={(e) => setAddrNumber(e.target.value)}
+                        placeholder="Número"
+                        required
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                    </div>
+
+                    <input
+                      value={addrComplement}
+                      onChange={(e) => setAddrComplement(e.target.value)}
+                      placeholder="Complemento (Apto, bloco, etc.)"
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+
+                    <div className="grid grid-cols-[1.2fr_1fr_0.6fr] gap-2">
+                      <input
+                        value={addrNeighborhood}
+                        onChange={(e) => setAddrNeighborhood(e.target.value)}
+                        placeholder="Bairro"
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                      <input
+                        value={addrCity}
+                        onChange={(e) => setAddrCity(e.target.value)}
+                        placeholder="Cidade"
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                      <input
+                        value={addrState}
+                        onChange={(e) => setAddrState(e.target.value)}
+                        placeholder="UF"
+                        maxLength={2}
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none text-center focus:border-sky-400"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        value={addrNickname}
+                        onChange={(e) => setAddrNickname(e.target.value)}
+                        placeholder="Apelido (ex: Casa, Sítio)"
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                      <label className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-slate-50 text-xs text-[var(--muted)] cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={addrIsDefault}
+                          onChange={(e) => setAddrIsDefault(e.target.checked)}
+                          className="h-4 w-4"
+                        />
+                        Endereço Padrão
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* ETAPA 3: Dados do Cão */}
+                {formStep === 3 && (
+                  <div className="grid gap-2.5 animate-in fade-in duration-200">
+                    <input
+                      value={dogName}
+                      onChange={(e) => setDogName(e.target.value)}
+                      placeholder="Nome do cão *"
+                      required
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+                    <input
+                      value={breed}
+                      onChange={(e) => setBreed(e.target.value)}
+                      placeholder="Raça (opcional)"
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                        placeholder="Idade (ex: 2 anos)"
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                      <input
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                        placeholder="Peso (ex: 20kg)"
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <select
+                        value={dogSex}
+                        onChange={(e) => setDogSex(e.target.value)}
+                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      >
+                        <option value="Macho">Macho</option>
+                        <option value="Fêmea">Fêmea</option>
+                      </select>
+                      <label className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-slate-50 text-xs text-[var(--muted)] cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={dogCastrated}
+                          onChange={(e) => setDogCastrated(e.target.checked)}
+                          className="h-4 w-4"
+                        />
+                        Castrado(a)
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        value={dogMicrochip}
+                        onChange={(e) => setDogMicrochip(e.target.value)}
+                        placeholder="Microchip (opcional)"
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                      <input
+                        value={dogColor}
+                        onChange={(e) => setDogColor(e.target.value)}
+                        placeholder="Cor / Marcações"
+                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                    </div>
+
+                    <label className="rounded-xl border border-dashed border-[var(--border)] bg-sky-50/40 px-3 py-2 text-xs text-[var(--muted)] cursor-pointer">
+                      Foto do Cão (upload ou url)
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleDogPhotoFileChange}
+                        className="mt-1 block w-full text-[10px] file:mr-2 file:rounded-lg file:border file:bg-white file:px-2 file:py-1"
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {/* ETAPA 4: Saúde e Vacinas */}
+                {formStep === 4 && (
+                  <div className="grid gap-2.5 animate-in fade-in duration-200">
+                    
+                    {/* Lista de Vacinas Adicionadas */}
+                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Vacinas do Animal</span>
+                      {vaccines.length === 0 ? (
+                        <p className="mt-1 text-[11px] text-[var(--muted)]">Nenhuma vacina registrada.</p>
+                      ) : (
+                        <div className="mt-2 space-y-1">
+                          {vaccines.map((v, i) => (
+                            <div key={i} className="flex items-center justify-between rounded-lg bg-white p-2 text-[11px]">
+                              <div>
+                                <p className="font-semibold text-slate-900">{v.name}</p>
+                                <p className="text-[9px] text-[var(--muted)]">Aplicada: {v.date} {v.validity && `• Validade: ${v.validity}`}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveVaccine(i)}
+                                className="text-[10px] font-semibold text-rose-600 hover:underline"
+                              >
+                                Excluir
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Editor de Vacinas */}
+                    <div className="grid gap-2 rounded-2xl border border-sky-100 bg-sky-50/30 p-3">
+                      <span className="text-[10px] font-bold uppercase text-[#145a82] tracking-wider">Adicionar Vacina</span>
+                      <input
+                        value={newVacName}
+                        onChange={e => setNewVacName(e.target.value)}
+                        placeholder="Nome da vacina (ex: V10, Antirrábica)"
+                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="grid gap-1 text-[9px] font-bold text-[var(--muted)] uppercase">
+                          Aplicação
+                          <input
+                            type="text"
+                            placeholder="DD/MM/AAAA"
+                            value={newVacDate}
+                            onChange={e => setNewVacDate(e.target.value)}
+                            className="rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                          />
+                        </label>
+                        <label className="grid gap-1 text-[9px] font-bold text-[var(--muted)] uppercase">
+                          Validade
+                          <input
+                            type="text"
+                            placeholder="DD/MM/AAAA"
+                            value={newVacValidity}
+                            onChange={e => setNewVacValidity(e.target.value)}
+                            className="rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                          />
+                        </label>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddVaccine}
+                        className="rounded-xl bg-[#145a82] py-2 text-xs font-semibold text-white hover:bg-[#1b719d]"
+                      >
+                        + Adicionar na lista
+                      </button>
+                    </div>
+
+                    <input
+                      value={dietRestrictions}
+                      onChange={(e) => setDietRestrictions(e.target.value)}
+                      placeholder="Restrições alimentares (ex: Frango, Grãos)"
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+                    <input
+                      value={healthConditions}
+                      onChange={(e) => setHealthConditions(e.target.value)}
+                      placeholder="Condições de saúde relevante (ex: Displasia)"
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+                    <input
+                      value={veterinarian}
+                      onChange={(e) => setVeterinarian(e.target.value)}
+                      placeholder="Veterinário de referência (Nome e Telefone)"
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+                  </div>
+                )}
+
+                {/* ETAPA 5: Temperamento, Rotinas e Objetivos */}
+                {formStep === 5 && (
+                  <div className="grid gap-2.5 animate-in fade-in duration-200">
+                    
+                    {/* Temperamento básico */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <label className="grid gap-1 text-[9px] font-bold uppercase text-[var(--muted)]">
+                        Energia
+                        <select
+                          value={tempEnergy}
+                          onChange={e => setTempEnergy(e.target.value)}
+                          className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-[11px] outline-none"
+                        >
+                          <option value="Alta energia">Alta</option>
+                          <option value="Energia moderada">Moderada</option>
+                          <option value="Baixa energia">Baixa</option>
+                          <option value="Hiperativo">Hiperativo</option>
+                        </select>
+                      </label>
+                      <label className="grid gap-1 text-[9px] font-bold uppercase text-[var(--muted)]">
+                        Pessoas
+                        <select
+                          value={tempSocial}
+                          onChange={e => setTempSocial(e.target.value)}
+                          className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-[11px] outline-none"
+                        >
+                          <option value="Sociável com pessoas">Sociável</option>
+                          <option value="Tímido/reservado">Tímido</option>
+                          <option value="Agressivo com estranhos">Reativo</option>
+                          <option value="Carente/dependente">Carente</option>
+                        </select>
+                      </label>
+                      <label className="grid gap-1 text-[9px] font-bold uppercase text-[var(--muted)]">
+                        Outros cães
+                        <select
+                          value={tempDogs}
+                          onChange={e => setTempDogs(e.target.value)}
+                          className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-[11px] outline-none"
+                        >
+                          <option value="Sociável com outros cães">Sociável</option>
+                          <option value="Reativo a outros cães">Reativo</option>
+                          <option value="Dominante">Dominante</option>
+                          <option value="Submisso">Submisso</option>
+                        </select>
+                      </label>
+                    </div>
+
+                    <input
+                      value={rotAlimentation}
+                      onChange={(e) => setRotAlimentation(e.target.value)}
+                      placeholder="Alimentação: ração, horários, tipos"
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+                    
+                    <input
+                      value={planLabel}
+                      onChange={(e) => setPlanLabel(e.target.value)}
+                      placeholder="Plano / Pacote de aulas atrelado"
+                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
+
+                    {/* Focos / Objetivos checkboxes */}
+                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Focos do Adestramento</span>
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input type="checkbox" checked={goalsObediencia} onChange={e => setGoalsObediencia(e.target.checked)} />
+                          Obediência Básica
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input type="checkbox" checked={goalsComportamento} onChange={e => setGoalsComportamento(e.target.checked)} />
+                          Problemas Comportamentais
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input type="checkbox" checked={goalsPasseio} onChange={e => setGoalsPasseio(e.target.checked)} />
+                          Passeio Estruturado
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input type="checkbox" checked={goalsAvancado} onChange={e => setGoalsAvancado(e.target.checked)} />
+                          Comandos Avançados
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {saveError && (
+                  <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{saveError}</p>
+                )}
+
+                {/* Controles do Wizard */}
+                <div className="flex gap-2 border-t border-slate-100 pt-3">
+                  {formStep > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setFormStep(formStep - 1)}
+                      className="rounded-xl border border-[var(--border)] bg-white px-4 py-2.5 text-xs font-semibold text-[var(--muted)]"
+                    >
+                      Anterior
+                    </button>
+                  )}
+                  
+                  {formStep < 5 ? (
+                    <button
+                      type="button"
+                      onClick={() => setFormStep(formStep + 1)}
+                      className="flex-1 rounded-xl bg-[#145a82] py-2.5 text-xs font-semibold text-white"
+                    >
+                      Próximo
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className="flex-1 pc-primary-action rounded-xl py-2.5 text-xs font-semibold disabled:opacity-60"
+                    >
+                      {isSaving ? "Salvando..." : "Finalizar Cadastro"}
+                    </button>
+                  )}
+                </div>
+              </form>
+            </section>
+          )}
+
+          {/* Listagem de Clientes */}
           <section className="mt-3 space-y-2">
             {filteredClients.length === 0 ? (
               <article className="rounded-2xl border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
@@ -456,23 +1116,42 @@ export default function ClientsPage() {
                   <p>{client.phone || "Sem telefone"}</p>
                 </div>
 
-                <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-semibold uppercase text-[var(--muted)]">
-                  {(dog.trainingTypes.length ? dog.trainingTypes : ["Treino geral"]).slice(0, 3).map((type) => (
-                    <span key={type} className="inline-flex items-center gap-1 rounded-full border border-sky-100 bg-sky-50 px-2 py-1 text-[#145a82]">
-                      <SmallIcon name="dog" />
-                      {type}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="mt-3 flex items-center justify-between">
-                  <Link
-                    href={`/treinos?clientId=${client.id}&dogId=${dog.id}`}
-                    className="rounded-full border border-[var(--border)] bg-[#145a82] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white"
-                  >
-                    Ver histórico
-                  </Link>
-                  <Link href="/agenda" className="text-xs font-semibold text-[#145a82]">Agendar aula</Link>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  {status === "rascunho" ? (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const ok = await approveClient(client.id);
+                        if (ok) {
+                          setSaveMessage("Ficha de onboarding de " + client.name + " aprovada com sucesso!");
+                          window.setTimeout(() => setSaveMessage(""), 4000);
+                        }
+                      }}
+                      className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-amber-700 hover:bg-amber-100 transition-colors"
+                    >
+                      Revisar e Aprovar
+                    </button>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={`/treinos?clientId=${client.id}&dogId=${dog.id}`}
+                        className="rounded-full border border-[var(--border)] bg-[#145a82] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white whitespace-nowrap"
+                      >
+                        Ver histórico
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTaskIdForManagement(client.id);
+                          fetchClientTasks(client.id);
+                        }}
+                        className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#145a82] hover:bg-slate-50 transition whitespace-nowrap"
+                      >
+                        📋 Tarefas
+                      </button>
+                    </div>
+                  )}
+                  <Link href="/agenda" className="text-xs font-semibold text-[#145a82] whitespace-nowrap">Agendar</Link>
                 </div>
               </article>
             )) : filteredClients.map((item) => {
@@ -510,171 +1189,212 @@ export default function ClientsPage() {
 
                   <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-[var(--muted)]">
                     <p>Plano: {item.client.plan || "Personalizado"}</p>
-                    <p>{item.client.propertyType || "Nao informado"}</p>
+                    <p>{item.client.propertyType || "Não informado"}</p>
                     <p>{item.client.phone || "Sem telefone"}</p>
                     <p>{item.client.dogs.length} cão(ões)</p>
                   </div>
 
-                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-semibold uppercase text-[var(--muted)]">
-                    <span className="inline-flex items-center gap-1 rounded-full border border-sky-100 bg-sky-50 px-2 py-1 text-[#145a82]">
-                      <SmallIcon name="calendar" />
-                      Agenda
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-sky-100 bg-sky-50 px-2 py-1 text-[#145a82]">
-                      <SmallIcon name="dog" />
-                      Treino
-                    </span>
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between">
-                    <Link
-                      href={firstDogId ? `/treinos?clientId=${item.client.id}&dogId=${firstDogId}` : "/treinos"}
-                      className="rounded-full border border-[var(--border)] bg-[#145a82] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white"
-                    >
-                      Ver histórico
-                    </Link>
-                    <Link href="/portal" className="text-xs font-semibold text-[#145a82]">Portal</Link>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    {item.status === "rascunho" ? (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const ok = await approveClient(item.client.id);
+                          if (ok) {
+                            setSaveMessage("Ficha de onboarding de " + item.client.name + " aprovada com sucesso!");
+                            window.setTimeout(() => setSaveMessage(""), 4000);
+                          }
+                        }}
+                        className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-amber-700 hover:bg-amber-100 transition-colors"
+                      >
+                        Revisar e Aprovar
+                      </button>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          href={firstDogId ? `/treinos?clientId=${item.client.id}&dogId=${firstDogId}` : "/treinos"}
+                          className="rounded-full border border-[var(--border)] bg-[#145a82] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white whitespace-nowrap"
+                        >
+                          Ver histórico
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTaskIdForManagement(item.client.id);
+                            fetchClientTasks(item.client.id);
+                          }}
+                          className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#145a82] hover:bg-slate-50 transition whitespace-nowrap"
+                        >
+                          📋 Tarefas
+                        </button>
+                      </div>
+                    )}
+                    <Link href="/portal" className="text-xs font-semibold text-[#145a82] whitespace-nowrap">Portal</Link>
                   </div>
                 </article>
               );
             })}
           </section>
+        </section>
+      </main>
 
-          <section className="mt-4 rounded-2xl border border-[var(--border)] bg-[#f1f8fe] p-3">
-            <div className="flex items-center justify-between gap-3">
+      {/* Modal de Gerenciamento de Tarefas */}
+      {activeTaskIdForManagement && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default"
+            onClick={() => setActiveTaskIdForManagement(null)}
+          />
+          <div className="relative w-full max-w-lg rounded-3xl border border-[var(--border)] bg-white p-5 shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+            <header className="flex items-center justify-between border-b border-slate-100 pb-3 flex-shrink-0">
               <div>
-                <p className="text-sm font-semibold text-[var(--foreground)]">Novo tutor e cão</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">Cadastre a dupla atendida e siga para agenda ou treino.</p>
+                <h3 className="font-display text-lg font-bold text-slate-900">Tarefas de Casa</h3>
+                <p className="text-xs text-[var(--muted)]">
+                  Tutor: {activeClientForTasks?.name}
+                </p>
               </div>
               <button
                 type="button"
-                onClick={() => setShowForm((current) => !current)}
-                className="rounded-full bg-[#145a82] px-4 py-2 text-xs font-semibold text-white"
+                onClick={() => setActiveTaskIdForManagement(null)}
+                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
               >
-                {showForm ? "Fechar" : "Cadastrar"}
+                Fechar
+              </button>
+            </header>
+
+            {/* Listagem de Tarefas */}
+            <div className="flex-1 overflow-y-auto py-4 space-y-3">
+              {loadingTasks ? (
+                <p className="text-center text-xs text-[var(--muted)] py-6">Carregando tarefas...</p>
+              ) : clientTasks.length === 0 ? (
+                <p className="text-center text-xs text-[var(--muted)] py-8">Nenhuma tarefa cadastrada para este tutor.</p>
+              ) : (
+                clientTasks.map((task) => (
+                  <div key={task.id} className="rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`h-2 w-2 rounded-full ${task.completed ? "bg-emerald-500" : "bg-slate-300"}`} />
+                          <h4 className={`font-semibold text-xs text-slate-800 ${task.completed ? "line-through text-slate-400" : ""}`}>
+                            {task.title}
+                          </h4>
+                        </div>
+                        {task.description && (
+                          <p className="text-[11px] text-[var(--muted)] mt-1 ml-4 leading-relaxed">
+                            {task.description}
+                          </p>
+                        )}
+                      </div>
+                      
+                      {/* Excluir Tarefa */}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTask(activeTaskIdForManagement, task.id)}
+                        className="text-rose-600 hover:text-rose-700 text-[10px] font-bold uppercase transition flex-shrink-0"
+                        aria-label="Excluir tarefa"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+
+                    {/* Evidência se houver */}
+                    {task.evidenceUrl && (
+                      <div className="ml-4 border-t border-slate-100 pt-2.5 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setCrmEvidenceLightbox({ src: task.evidenceUrl, title: task.title })}
+                            className="relative h-10 w-10 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 flex-shrink-0 hover:opacity-85 transition"
+                          >
+                            {task.evidenceUrl.startsWith("data:video") ? (
+                              <div className="h-full w-full flex items-center justify-center bg-slate-900 text-white text-[8px] font-bold">
+                                🎥 Vídeo
+                              </div>
+                            ) : (
+                              <Image
+                                src={task.evidenceUrl}
+                                alt="Evidência do Tutor"
+                                fill
+                                unoptimized
+                                className="object-cover"
+                              />
+                            )}
+                          </button>
+                          <div>
+                            <p className="text-[10px] font-bold text-emerald-700">Evidência enviada pelo tutor</p>
+                            <p className="text-[9px] text-[var(--muted)]">Clique na miniatura para expandir</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Form para Nova Tarefa */}
+            <div className="border-t border-slate-100 pt-3.5 flex-shrink-0 space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Nova Tarefa</span>
+              <div className="grid gap-2">
+                <input
+                  type="text"
+                  placeholder="Título da tarefa (ex: Treinar o senta antes de comer)"
+                  value={newPortalTaskTitle}
+                  onChange={(e) => setNewPortalTaskTitle(e.target.value)}
+                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full"
+                />
+                <textarea
+                  placeholder="Instruções adicionais para o tutor (opcional)"
+                  value={newPortalTaskDesc}
+                  onChange={(e) => setNewPortalTaskDesc(e.target.value)}
+                  rows={2}
+                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full resize-none"
+                />
+                <button
+                  type="button"
+                  disabled={isCreatingTask || !newPortalTaskTitle.trim()}
+                  onClick={() => handleCreateTask(activeTaskIdForManagement)}
+                  className="rounded-xl bg-[#145a82] text-white py-2 text-xs font-bold transition hover:bg-[#1c719d] disabled:opacity-50"
+                >
+                  {isCreatingTask ? "Criando..." : "+ Cadastrar Tarefa"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox de Evidência no CRM */}
+      {crmEvidenceLightbox && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default"
+            onClick={() => setCrmEvidenceLightbox(null)}
+          />
+          <div className="relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-2">
+              <p className="text-sm font-semibold text-[var(--foreground)]">Evidência: {crmEvidenceLightbox.title}</p>
+              <button
+                type="button"
+                onClick={() => setCrmEvidenceLightbox(null)}
+                className="rounded-full border border-[var(--border)] bg-white px-3 py-1 text-xs font-semibold"
+              >
+                Fechar
               </button>
             </div>
-          </section>
-
-          {showForm ? (
-            <section className="mt-4 rounded-2xl border border-[var(--border)] bg-white p-4">
-              <p className="text-sm font-semibold text-[var(--foreground)]">Cadastro de tutor e cão</p>
-              <form onSubmit={onSubmit} className="mt-3 grid gap-2 sm:grid-cols-2">
-                <input
-                  value={clientName}
-                  onChange={(event) => setClientName(event.target.value)}
-                  placeholder="Nome do tutor"
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                  required
-                />
-                <input
-                  value={phone}
-                  onChange={(event) => setPhone(event.target.value)}
-                  placeholder="Telefone"
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-                <input
-                  value={dogName}
-                  onChange={(event) => setDogName(event.target.value)}
-                  placeholder="Nome do cão"
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                  required
-                />
-                <input
-                  value={breed}
-                  onChange={(event) => setBreed(event.target.value)}
-                  placeholder="Raça"
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-                <input
-                  value={age}
-                  onChange={(event) => setAge(event.target.value)}
-                  placeholder="Idade"
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-                <input
-                  value={weight}
-                  onChange={(event) => setWeight(event.target.value)}
-                  placeholder="Peso"
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-                <input
-                  value={dogPhotoUrl}
-                  onChange={(event) => {
-                    setDogPhotoUrl(event.target.value);
-                    if (event.target.value.trim()) setDogPhotoPreview("");
-                  }}
-                  placeholder="URL da foto (opcional)"
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400 sm:col-span-2"
-                />
-                <label className="sm:col-span-2 rounded-xl border border-dashed border-[var(--border)] bg-sky-50/40 px-3 py-2 text-xs text-[var(--muted)]">
-                  Enviar foto do cão (opcional)
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleDogPhotoFileChange}
-                    className="mt-1 block w-full text-xs text-[var(--muted)] file:mr-2 file:rounded-lg file:border file:border-[var(--border)] file:bg-white file:px-2 file:py-1 file:text-xs"
-                  />
-                </label>
-                {dogPhotoPreview || dogPhotoUrl.trim() ? (
-                  <div className="sm:col-span-2 flex items-center gap-3 rounded-xl border border-[var(--border)] bg-sky-50/40 px-3 py-2">
-                    <div className="relative h-12 w-12 overflow-hidden rounded-full bg-white">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={dogPhotoPreview || dogPhotoUrl.trim()}
-                        alt="Preview da foto do cão"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <p className="text-xs text-[var(--muted)]">Preview da foto que sera usada no cadastro.</p>
-                  </div>
-                ) : null}
-                <p className="sm:col-span-2 text-[11px] text-[var(--muted)]">
-                  Se nao enviar foto, o sistema aplica uma imagem padrao conforme a raca (ex.: Golden Retriever).
-                </p>
-                <input
-                  value={trainingTypesRaw}
-                  onChange={(event) => setTrainingTypesRaw(event.target.value)}
-                  placeholder="Focos (Guia, Place, Reatividade)"
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400 sm:col-span-2"
-                />
-                <select
-                  value={propertyType}
-                  onChange={(event) => setPropertyType(event.target.value)}
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                >
-                  <option value="Apartamento">Apartamento</option>
-                  <option value="Casa">Casa</option>
-                  <option value="Casa com quintal">Casa com quintal</option>
-                  <option value="Condomínio">Condominio</option>
-                  <option value="Outro">Outro</option>
-                </select>
-                <input
-                  value={planLabel}
-                  onChange={(event) => setPlanLabel(event.target.value)}
-                  placeholder="Nome do plano (ex.: Mensal 4 aulas)"
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400 sm:col-span-2"
-                />
-
-                {saveMessage ? (
-                  <p className="sm:col-span-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800">{saveMessage}</p>
-                ) : null}
-                {saveError ? (
-                  <p className="sm:col-span-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{saveError}</p>
-                ) : null}
-
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="pc-primary-action sm:col-span-2 rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-60"
-                >
-                  {isSaving ? "Salvando..." : "Salvar cadastro"}
-                </button>
-              </form>
-            </section>
-          ) : null}
-        </section>
-      </main>
+            <div className="relative flex h-[60vh] items-center justify-center bg-black">
+              {crmEvidenceLightbox.src.startsWith("data:video") ? (
+                <video src={crmEvidenceLightbox.src} controls className="max-h-full max-w-full object-contain" autoPlay />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={crmEvidenceLightbox.src} alt={crmEvidenceLightbox.title} className="max-h-full max-w-full object-contain" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </AuthGuard>
   );
 }

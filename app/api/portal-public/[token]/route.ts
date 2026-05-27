@@ -36,7 +36,7 @@ async function resolveLink(rawToken: string, pin?: string) {
   return link;
 }
 
-function mapSessionNotes(rawNotes: string) {
+function mapSessionNotes(rawNotes: string | null) {
   try {
     const parsed = JSON.parse(rawNotes || "[]");
     return Array.isArray(parsed) ? parsed : [];
@@ -92,6 +92,18 @@ export async function GET(_request: Request, { params }: Params) {
           },
         ],
       },
+      include: {
+        dogSessions: {
+          include: {
+            dog: {
+              select: {
+                name: true,
+                breed: true,
+              },
+            },
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
       take: 30,
     }),
@@ -146,11 +158,30 @@ export async function GET(_request: Request, { params }: Params) {
       dogs: link.client.dogs,
     },
     events: filteredEvents,
-    sessions: sessions.map((session) => ({
-      ...session,
-      notes: mapSessionNotes(session.notes),
-      media: mapSessionMedia(session.media),
-    })),
+    sessions: sessions.map((session) => {
+      const tutorDogIds = new Set(link.client.dogs.map((d) => d.id));
+      const filteredDogSessions = (session.dogSessions || [])
+        .filter((ds) => tutorDogIds.has(ds.dogId))
+        .map((ds) => {
+          const approved = ds.aiApproved;
+          return {
+            ...ds,
+            activities: mapSessionNotes(ds.activities),
+            commands: mapSessionNotes(ds.commands),
+            media: mapSessionMedia(ds.media),
+            nextCommands: mapSessionNotes(ds.nextCommands),
+            aiSummary: approved ? ds.aiSummary : null,
+            nextTasks: approved ? mapSessionNotes(ds.nextTasks) : [],
+          };
+        });
+
+      return {
+        ...session,
+        notes: mapSessionNotes(session.notes),
+        media: mapSessionMedia(session.media),
+        dogSessions: filteredDogSessions,
+      };
+    }),
     tasks,
     feedbacks,
     linkMeta: {
@@ -208,7 +239,7 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Link invalido ou expirado" }, { status: 404 });
   }
 
-  const body = (await request.json()) as { taskId?: string; completed?: boolean };
+  const body = (await request.json()) as { taskId?: string; completed?: boolean; evidenceUrl?: string | null };
   if (!body.taskId || typeof body.completed !== "boolean") {
     return NextResponse.json({ error: "Payload invalido" }, { status: 400 });
   }
@@ -221,6 +252,7 @@ export async function PATCH(request: Request, { params }: Params) {
     },
     data: {
       completed: body.completed,
+      ...(body.evidenceUrl !== undefined ? { evidenceUrl: body.evidenceUrl } : {}),
     },
   });
 

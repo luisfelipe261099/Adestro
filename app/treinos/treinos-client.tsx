@@ -236,6 +236,7 @@ export default function TrainingPage() {
   const [mediaError, setMediaError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
 
   const selectedClient = useMemo(
     () => clients.find((client) => client.id === selectedClientId) ?? clients[0],
@@ -626,6 +627,9 @@ export default function TrainingPage() {
                 const breed = dogMeta?.breed || "Sem raca";
                 const clientName = session.clientName || dogMeta?.clientName || "Tutor";
                 const firstNote = session.notes[0];
+                const isExpanded = expandedSessionId === session.id;
+                // @ts-ignore
+                const hasDetailedSessions = Array.isArray(session.dogSessions) && session.dogSessions.length > 0;
 
                 return (
                   <article key={session.id} className="rounded-2xl border border-[var(--border)] bg-white p-3">
@@ -657,13 +661,139 @@ export default function TrainingPage() {
                       </span>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                    {isExpanded && (
+                      <div className="mt-3.5 border-t border-slate-100 pt-3 space-y-3 text-xs text-slate-700 animate-in fade-in duration-200">
+                        {hasDetailedSessions ? (
+                          // @ts-ignore
+                          session.dogSessions.map((ds, index) => (
+                            <div key={ds.id || index} className="space-y-3">
+                              {/* Seção A: Atividades */}
+                              {ds.activities && ds.activities.length > 0 && (
+                                <div>
+                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">A. Atividades Trabalhadas</p>
+                                  <ul className="mt-1 space-y-1 pl-1">
+                                    {ds.activities.map((act: any, idx: number) => (
+                                      <li key={idx} className="flex items-start gap-1.5">
+                                        <span>{act.completed ? "✅" : "❌"}</span>
+                                        <div>
+                                          <span className="font-semibold text-slate-800">{act.name}</span>
+                                          {act.notes && <p className="text-[10px] text-slate-500 italic mt-0.5">{act.notes}</p>}
+                                        </div>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* Seção B: Comandos */}
+                              {ds.commands && ds.commands.length > 0 && (
+                                <div>
+                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">B. Comandos & Evolução</p>
+                                  <ul className="mt-1 space-y-1.5 pl-1">
+                                    {ds.commands.map((cmd: any, idx: number) => (
+                                      <li key={idx}>
+                                        <div className="flex items-center gap-1.5 justify-between">
+                                          <span className="font-semibold text-slate-800">{cmd.command}</span>
+                                          <span className="text-amber-500">{"★".repeat(cmd.rating || 0)}</span>
+                                        </div>
+                                        {cmd.notes && <p className="text-[10px] text-slate-500 italic mt-0.5">{cmd.notes}</p>}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* Seção C: Resumo Público */}
+                              {ds.description && (
+                                <div>
+                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">C. Resumo do Tutor</p>
+                                  <p className="mt-1 text-slate-600 bg-slate-50 p-2 rounded-lg leading-relaxed">{ds.description}</p>
+                                </div>
+                              )}
+
+                              {/* Seção D: Notas Privadas */}
+                              {ds.privateNotes && (
+                                <div>
+                                  <p className="font-bold text-rose-700 uppercase tracking-[0.08em] text-[10px]">D. Notas Privadas (Confidencial)</p>
+                                  <p className="mt-1 text-rose-950 bg-rose-50/50 p-2 rounded-lg leading-relaxed border border-rose-100">{ds.privateNotes}</p>
+                                </div>
+                              )}
+
+                              {/* Seção E: IA Resumo */}
+                              {ds.aiSummary && (
+                                <div>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="font-bold text-purple-800 uppercase tracking-[0.08em] text-[10px]">E. Análise e Resumo da IA</p>
+                                    <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold ${ds.aiApproved ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}>
+                                      {ds.aiApproved ? "Aprovado p/ Portal" : "Não Aprovado"}
+                                    </span>
+                                  </div>
+                                  <p className="mt-1 text-purple-950 bg-purple-50/50 p-2 rounded-lg leading-relaxed border border-purple-100 italic">"{ds.aiSummary}"</p>
+                                </div>
+                              )}
+
+                              {/* Seção G: Próximo Foco */}
+                              {ds.nextFocus && (
+                                <div>
+                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">G. Próximo Foco</p>
+                                  <p className="mt-1 text-slate-700 leading-relaxed font-semibold">🎯 {ds.nextFocus}</p>
+                                </div>
+                              )}
+
+                              {/* Seção H: Próximos Comandos */}
+                              {ds.nextCommands && ds.nextCommands.length > 0 && (
+                                <div>
+                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">H. Próximos Comandos Recomendados</p>
+                                  <div className="mt-1 flex flex-wrap gap-1">
+                                    {ds.nextCommands.map((nc: string, idx: number) => (
+                                      <span key={idx} className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-800 border border-slate-200">{nc}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Seção I: Dever de Casa */}
+                              {ds.nextTasks && ds.nextTasks.length > 0 && (
+                                <div>
+                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">I. Dever de Casa para o Tutor</p>
+                                  <ul className="mt-1 space-y-1 pl-1">
+                                    {ds.nextTasks.map((t: string, idx: number) => (
+                                      <li key={idx} className="text-slate-700">🏠 {t}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          // Fallback para treino simples antigo
+                          <div className="space-y-2">
+                            <p className="font-bold text-slate-500 uppercase tracking-[0.08em] text-[10px]">Evolução do Treino</p>
+                            {session.notes.map((n, idx) => (
+                              <div key={idx} className="bg-slate-50 p-2 rounded-lg">
+                                <p className="font-semibold text-slate-800">{n.block} (Nota: {n.score}/10)</p>
+                                <p className="text-slate-600 mt-0.5">{n.comment}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedSessionId(isExpanded ? null : session.id)}
+                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] px-2 py-1.5 text-[#145a82] font-semibold"
+                      >
+                        {isExpanded ? "Fechar" : "Detalhes"}
+                      </button>
                       <Link
                         href={session.clientId && session.dogId ? `/treinos/registro?clientId=${session.clientId}&dogId=${session.dogId}` : "/treinos/registro"}
                         className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] px-2 py-1.5 text-[#145a82]"
                       >
                         <TinyIcon name="list" />
-                        Registrar aula
+                        Registrar
                       </Link>
                       <button
                         type="button"

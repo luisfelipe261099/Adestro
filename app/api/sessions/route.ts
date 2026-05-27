@@ -13,15 +13,39 @@ export async function GET() {
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
   const sessions = await prisma.trainingSession.findMany({
-    where:   { trainerId: trainer.id },
+    where: { trainerId: trainer.id },
+    include: {
+      dogSessions: {
+        include: {
+          dog: {
+            select: {
+              name: true,
+              breed: true,
+              photoUrl: true,
+              clientId: true,
+            },
+          },
+        },
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(sessions.map((s) => ({
-    ...s,
-    notes: JSON.parse(s.notes || "[]"),
-    media: JSON.parse(s.media || "[]"),
-  })));
+  return NextResponse.json(
+    sessions.map((s) => ({
+      ...s,
+      notes: JSON.parse(s.notes || "[]"),
+      media: JSON.parse(s.media || "[]"),
+      dogSessions: s.dogSessions.map((ds) => ({
+        ...ds,
+        activities: JSON.parse(ds.activities || "[]"),
+        commands: JSON.parse(ds.commands || "[]"),
+        media: JSON.parse(ds.media || "[]"),
+        nextCommands: JSON.parse(ds.nextCommands || "[]"),
+        nextTasks: JSON.parse(ds.nextTasks || "[]"),
+      })),
+    }))
+  );
 }
 
 // POST /api/sessions
@@ -34,32 +58,125 @@ export async function POST(request: Request) {
   const trainer = await prisma.trainer.findUnique({ where: { userId: session.user.id } });
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
-  const body = await request.json() as {
+  const body = (await request.json()) as {
     number?: number;
     title: string;
     date: string;
+    time?: string;
+    duration?: string;
+    location?: string;
+    type?: string; // Individual / Coletivo
+    status?: string;
+    clientId?: string;
     clientName?: string;
     dogId?: string;
     dogName?: string;
     notes?: unknown[];
     media?: unknown[];
+    dogSessions?: Array<{
+      dogId: string;
+      activities?: unknown[];
+      commands?: unknown[];
+      description?: string;
+      privateNotes?: string;
+      aiSummary?: string;
+      aiApproved?: boolean;
+      media?: unknown[];
+      nextFocus?: string;
+      nextCommands?: string[];
+      nextTasks?: string[];
+    }>;
   };
 
   const safeMedia = Array.isArray(body.media) ? body.media.slice(0, 5) : [];
 
   const created = await prisma.trainingSession.create({
     data: {
-      trainerId:  trainer.id,
-      number:     body.number    ?? 1,
-      title:      body.title,
-      date:       body.date,
+      trainerId: trainer.id,
+      number: body.number ?? 1,
+      title: body.title,
+      date: body.date,
+      time: body.time ?? null,
+      duration: body.duration ?? null,
+      location: body.location ?? null,
+      type: body.type ?? "Individual",
+      status: body.status ?? "Realizado",
       clientName: body.clientName ?? "",
-      dogId:      body.dogId,
-      dogName:    body.dogName    ?? "",
-      notes:      JSON.stringify(body.notes ?? []),
-      media:      JSON.stringify(safeMedia),
+      dogId: body.dogId ?? null,
+      dogName: body.dogName ?? "",
+      notes: JSON.stringify(body.notes ?? []),
+      media: JSON.stringify(safeMedia),
     },
   });
+
+  // Criar registros filhos de cães na sessão
+  if (Array.isArray(body.dogSessions) && body.dogSessions.length > 0) {
+    for (const ds of body.dogSessions) {
+      await prisma.dogTrainingSession.create({
+        data: {
+          sessionId: created.id,
+          dogId: ds.dogId,
+          activities: JSON.stringify(ds.activities ?? []),
+          commands: JSON.stringify(ds.commands ?? []),
+          description: ds.description ?? "",
+          privateNotes: ds.privateNotes ?? "",
+          aiSummary: ds.aiSummary ?? "",
+          aiApproved: ds.aiApproved ?? false,
+          media: JSON.stringify(ds.media ?? []),
+          nextFocus: ds.nextFocus ?? "",
+          nextCommands: JSON.stringify(ds.nextCommands ?? []),
+          nextTasks: JSON.stringify(ds.nextTasks ?? []),
+        },
+      });
+
+      // Criar tarefas de dever de casa automaticamente se aprovado
+      if (ds.aiApproved && Array.isArray(ds.nextTasks) && ds.nextTasks.length > 0) {
+        const dog = await prisma.dog.findUnique({
+          where: { id: ds.dogId },
+          select: { clientId: true },
+        });
+        if (dog?.clientId) {
+          for (const taskText of ds.nextTasks) {
+            const textStr = typeof taskText === "string" ? taskText : "";
+            if (textStr.trim()) {
+              const existingTask = await prisma.portalTask.findFirst({
+                where: {
+                  trainerId: trainer.id,
+                  clientId: dog.clientId,
+                  title: textStr.trim(),
+                  completed: false,
+                },
+              });
+              if (!existingTask) {
+                await prisma.portalTask.create({
+                  data: {
+                    trainerId: trainer.id,
+                    clientId: dog.clientId,
+                    title: textStr.trim(),
+                    description: "Tarefa recomendada de dever de casa.",
+                    completed: false,
+                  },
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+  } else if (body.dogId) {
+    // Fallback de compatibilidade
+    await prisma.dogTrainingSession.create({
+      data: {
+        sessionId: created.id,
+        dogId: body.dogId,
+        activities: "[]",
+        commands: JSON.stringify(body.notes ?? []),
+        description: body.notes?.[0] && typeof body.notes[0] === "object" ? (body.notes[0] as { comment?: string }).comment ?? "" : "",
+        aiApproved: false,
+        media: JSON.stringify(safeMedia),
+      },
+    });
+  }
 
   return NextResponse.json({ ...created, notes: body.notes ?? [], media: safeMedia }, { status: 201 });
 }
