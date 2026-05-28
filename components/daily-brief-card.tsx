@@ -2,12 +2,12 @@
 
 import { useMemo } from "react";
 
+import { IconChevronRight, IconWhatsApp } from "@/components/icons";
 import { useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
 
 type BriefItem =
   | { kind: "reminder"; key: string; label: string; sublabel: string; waUrl: string }
-  | { kind: "charge"; key: string; label: string; sublabel: string; waUrl: string }
   | { kind: "approval"; key: string; label: string; sublabel: string; href: string };
 
 function getTomorrowDateString(): string {
@@ -37,7 +37,6 @@ export function DailyBriefCard() {
     const tomorrowStr = getTomorrowDateString();
     const tomorrowName = getTomorrowWeekdayPt();
 
-    // 1) Aulas de amanhã → lembrete WhatsApp para cada tutor
     const eventsForTomorrow = events.filter((event) => {
       const day = event.day.trim();
       if (day === tomorrowStr) return true;
@@ -55,13 +54,12 @@ export function DailyBriefCard() {
       list.push({
         kind: "reminder",
         key: `reminder-${event.id}`,
-        label: `Lembrete: ${event.dog} amanhã ${event.time}`,
-        sublabel: `Tutor: ${event.client}${client?.phone ? "" : " • Sem WhatsApp"}`,
+        label: `${event.dog} • ${event.time}`,
+        sublabel: `${event.client}${client?.phone ? "" : " — sem WhatsApp cadastrado"}`,
         waUrl: buildWaUrl(client?.phone, message),
       });
     }
 
-    // 2) Treinos sem registro (relatórios aguardando aprovação no fluxo de IA)
     const sessionDogIds = new Set(sessions.map((s) => s.dogId).filter(Boolean) as string[]);
     const eventosSemRegistro = events.filter(
       (event) => event.status === "Confirmado" && event.dogId && !sessionDogIds.has(event.dogId),
@@ -70,8 +68,8 @@ export function DailyBriefCard() {
       list.push({
         kind: "approval",
         key: `approval-${event.id}`,
-        label: `Registrar aula de ${event.dog}`,
-        sublabel: `Aula de ${event.day} ainda sem registro`,
+        label: `Registrar treino de ${event.dog}`,
+        sublabel: `Aula de ${event.day} sem registro`,
         href: `/treinos/registro?clientId=${event.clientId ?? ""}&dogId=${event.dogId ?? ""}`,
       });
     }
@@ -81,55 +79,55 @@ export function DailyBriefCard() {
 
   if (items.length === 0) {
     return (
-      <article className="rounded-3xl border border-emerald-100 bg-emerald-50/40 p-4">
-        <span className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-800">☀️ Brief do dia</span>
-        <p className="mt-2 text-xs text-emerald-900">
-          Nada urgente para preparar. Amanhã não há aulas confirmadas e os registros estão em dia.
+      <div className="card p-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[13px] font-semibold text-[var(--foreground)]">Brief do dia</h2>
+          <span className="text-[11px] text-[var(--success)]">Tudo em dia</span>
+        </div>
+        <p className="mt-2 text-[12px] text-[var(--muted)]">
+          Nenhum lembrete pendente. Os próximos atendimentos aparecerão aqui.
         </p>
-      </article>
+      </div>
     );
   }
 
   return (
-    <article className="rounded-3xl border border-purple-100 bg-purple-50/60 p-4">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#4d2d6c]">☀️ Brief do dia</span>
-        <span className="rounded-full bg-purple-200/70 px-2 py-0.5 text-[10px] font-bold text-purple-900">
-          {items.length} item(s)
-        </span>
+    <div className="card p-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-[13px] font-semibold text-[var(--foreground)]">Brief do dia</h2>
+        <span className="text-[11px] font-medium text-[var(--muted)]">{items.length} {items.length === 1 ? "item" : "itens"}</span>
       </div>
-      <p className="mt-1 text-[10px] text-purple-800">
-        Lembretes e tarefas que valem disparar agora. Toque para abrir o WhatsApp ou ir direto ao registro.
+      <p className="mt-0.5 text-[11.5px] text-[var(--muted)]">
+        Lembretes e ações sugeridas para hoje.
       </p>
 
-      <ul className="mt-3 space-y-1.5">
+      <ul className="mt-3 divide-y divide-[var(--border)]">
         {items.map((item) => (
           <li key={item.key}>
             {item.kind === "approval" ? (
               <a
                 href={item.href}
-                className="flex items-center justify-between gap-3 rounded-xl border border-purple-200 bg-white px-3 py-2"
+                className="-mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-2.5 text-[13px] transition-colors hover:bg-[var(--surface-2)]"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-semibold text-slate-900">📝 {item.label}</p>
-                  <p className="truncate text-[10px] text-[var(--muted)]">{item.sublabel}</p>
+                  <p className="truncate font-medium text-[var(--foreground)]">{item.label}</p>
+                  <p className="truncate text-[11.5px] text-[var(--muted)]">{item.sublabel}</p>
                 </div>
-                <span className="text-[#145a82]">→</span>
+                <IconChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-[var(--muted)]" />
               </a>
             ) : (
               <a
                 href={item.waUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between gap-3 rounded-xl border border-purple-200 bg-white px-3 py-2"
+                className="-mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-[var(--surface-2)]"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-semibold text-slate-900">
-                    {item.kind === "reminder" ? "💬" : "💰"} {item.label}
-                  </p>
-                  <p className="truncate text-[10px] text-[var(--muted)]">{item.sublabel}</p>
+                  <p className="truncate text-[13px] font-medium text-[var(--foreground)]">{item.label}</p>
+                  <p className="truncate text-[11.5px] text-[var(--muted)]">{item.sublabel}</p>
                 </div>
-                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800">
+                <span className="flex h-7 items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 text-[11px] font-medium text-[var(--muted)]">
+                  <IconWhatsApp className="h-3.5 w-3.5" />
                   Enviar
                 </span>
               </a>
@@ -137,6 +135,6 @@ export function DailyBriefCard() {
           </li>
         ))}
       </ul>
-    </article>
+    </div>
   );
 }

@@ -10,10 +10,10 @@ export function LoginClient() {
   const router = useRouter();
   const { status } = useSession();
 
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const next = params.get("next") ?? "/dashboard";
   const safNext = next.startsWith("/") ? next : "/dashboard";
@@ -24,16 +24,12 @@ export function LoginClient() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await submitCredentials(email, password);
-  }
-
-  async function submitCredentials(nextEmail: string, nextPassword: string, redirectTo = safNext) {
     setError("");
     setLoading(true);
 
     const result = await signIn("credentials", {
-      email:    nextEmail.trim().toLowerCase(),
-      password: nextPassword,
+      email: email.trim().toLowerCase(),
+      password,
       redirect: false,
     });
 
@@ -43,68 +39,89 @@ export function LoginClient() {
       return;
     }
 
-    router.replace(redirectTo);
+    router.replace(safNext);
   }
 
   return (
-    <main className="mx-auto flex min-h-[calc(100dvh-76px)] w-full max-w-7xl items-start justify-center px-4 pb-16 pt-4 sm:min-h-[calc(100dvh-96px)] sm:items-center sm:px-6 sm:pb-10 sm:pt-6 lg:px-8">
-      <section className="relative w-full max-w-md overflow-hidden rounded-[1.75rem] border border-[var(--border)] bg-[linear-gradient(180deg,_rgba(248,254,255,0.97),_rgba(238,249,255,0.99))] p-5 shadow-[var(--shadow)] sm:rounded-[2rem] sm:p-8">
-        <div className="pointer-events-none absolute -right-10 top-0 h-36 w-36 rounded-full bg-[rgba(34,137,190,0.14)] blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 left-0 h-32 w-32 rounded-full bg-[rgba(31,154,138,0.12)] blur-3xl" />
+    <main className="mx-auto flex min-h-[calc(100dvh-56px)] w-full max-w-md flex-col justify-center px-4 py-12 sm:px-6">
+      <div className="w-full">
+        <div className="mb-8 flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--accent)] text-xs font-semibold text-white">
+            A
+          </span>
+          <span className="text-base font-semibold tracking-tight text-[var(--foreground)]">Adestro</span>
+        </div>
 
-        <p className="relative text-xs font-semibold uppercase tracking-[0.22em] text-[rgba(20,90,130,0.8)]">Adestro</p>
-        <h2 className="relative mt-2 font-display text-2xl font-semibold text-[var(--foreground)] sm:text-3xl">Entrar</h2>
-        <p className="relative mt-2 text-sm text-[var(--muted)]">Acesse sua conta para continuar.</p>
+        <h1 className="text-[26px] font-semibold tracking-tight text-[var(--foreground)]">Entrar na sua conta</h1>
+        <p className="mt-1.5 text-[14px] text-[var(--muted)]">
+          Bem-vindo de volta. Acesse para continuar gerenciando sua rotina.
+        </p>
 
-        <form onSubmit={handleSubmit} className="relative mt-6 space-y-4">
-          <label className="block">
-            <span className="text-sm font-medium text-[var(--muted)]">E-mail</span>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <div className="space-y-1.5">
+            <label htmlFor="email" className="text-[12.5px] font-medium text-[var(--foreground)]">
+              E-mail
+            </label>
             <input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-2 w-full rounded-2xl border border-[var(--border)] bg-[rgba(250,255,255,0.94)] px-4 py-3 text-base outline-none transition focus:border-[#1b719d] sm:text-sm"
+              className="input-field"
               placeholder="voce@adestrador.com"
               required
               autoComplete="email"
             />
-          </label>
+          </div>
 
-          <label className="block">
-            <span className="text-sm font-medium text-[var(--muted)]">Senha</span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-[var(--border)] bg-[rgba(250,255,255,0.94)] px-4 py-3 text-base outline-none transition focus:border-[#1b719d] sm:text-sm"
-                placeholder="------"
-                required
-                autoComplete="current-password"
-              />
-          </label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="text-[12.5px] font-medium text-[var(--foreground)]">
+                Senha
+              </label>
+              <Link href="#" className="text-[11.5px] text-[var(--muted)] hover:text-[var(--foreground)]">
+                Esqueceu?
+              </Link>
+            </div>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field"
+              placeholder="Sua senha"
+              required
+              autoComplete="current-password"
+            />
+          </div>
+
+          {error ? (
+            <div className="rounded-md border border-[var(--danger)]/30 bg-[var(--danger-bg)] px-3 py-2 text-[12.5px] text-[var(--danger)]">
+              {error}
+            </div>
+          ) : null}
 
           <button
             type="submit"
             disabled={loading}
-            className="pc-primary-action w-full rounded-2xl px-5 py-3 text-sm font-semibold disabled:opacity-60"
+            className="btn-primary h-10 w-full text-[13.5px]"
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? "Entrando…" : "Entrar"}
           </button>
-
-          {error ? (
-            <div className="rounded-2xl border border-[rgba(176,116,32,0.3)] bg-[rgba(245,186,86,0.16)] px-4 py-3 text-sm font-medium text-[#8a5b1a]">
-              {error}
-            </div>
-          ) : null}
         </form>
 
-        <p className="relative mt-6 text-center text-sm text-[var(--muted)]">
-          Ainda nao tem conta?{" "}
-          <Link href="/cadastro" className="font-semibold text-[#145a82] hover:underline">
-            Criar conta gratis
+        <p className="mt-8 text-center text-[13px] text-[var(--muted)]">
+          Ainda não tem conta?{" "}
+          <Link href="/cadastro" className="font-medium text-[var(--foreground)] underline-offset-4 hover:underline">
+            Criar conta gratuita
           </Link>
         </p>
-      </section>
+
+        <div className="mt-12 grid gap-2 border-t border-[var(--border)] pt-6 text-[11.5px] text-[var(--muted)]">
+          <p className="font-medium text-[var(--muted-strong)]">Para adestradores profissionais</p>
+          <p>CRM completo · agenda mobile-first · cobrança com Pix · portal do tutor incluído</p>
+        </div>
+      </div>
     </main>
   );
 }

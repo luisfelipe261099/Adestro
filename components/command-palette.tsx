@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
+import { IconSearch } from "@/components/icons";
 import { useAppStore } from "@/lib/app-store";
 
 type PaletteItem = {
@@ -12,23 +13,31 @@ type PaletteItem = {
   label: string;
   detail?: string;
   href: string;
-  icon: string;
 };
 
 const ROUTE_ITEMS: PaletteItem[] = [
-  { id: "route-dashboard", kind: "route", label: "Dashboard", href: "/dashboard", icon: "🏠" },
-  { id: "route-agenda", kind: "route", label: "Agenda", href: "/agenda", icon: "📅" },
-  { id: "route-clientes", kind: "route", label: "Tutores e cães", href: "/clientes", icon: "👥" },
-  { id: "route-treinos", kind: "route", label: "Treinos", href: "/treinos", icon: "🎯" },
-  { id: "route-registro", kind: "route", label: "Registrar treino", href: "/treinos/registro", icon: "📝" },
-  { id: "route-financeiro", kind: "route", label: "Financeiro", href: "/financeiro", icon: "💰" },
-  { id: "route-relatorios", kind: "route", label: "Relatórios", href: "/relatorios", icon: "📊" },
-  { id: "route-portal", kind: "route", label: "Portal do tutor", href: "/portal", icon: "🔗" },
-  { id: "route-config", kind: "route", label: "Configurações", href: "/configuracoes", icon: "⚙️" },
-  { id: "route-templates", kind: "route", label: "Templates do sistema", href: "/admin/templates", icon: "📋" },
-  { id: "action-new-event", kind: "action", label: "Novo agendamento", href: "/agenda?new=true", icon: "➕" },
-  { id: "action-new-client", kind: "action", label: "Novo tutor", href: "/clientes?new=true", icon: "➕" },
+  { id: "route-dashboard", kind: "route", label: "Início", href: "/dashboard" },
+  { id: "route-agenda", kind: "route", label: "Agenda", href: "/agenda" },
+  { id: "route-clientes", kind: "route", label: "Clientes", href: "/clientes" },
+  { id: "route-treinos", kind: "route", label: "Treinos", href: "/treinos" },
+  { id: "route-registro", kind: "route", label: "Registrar treino", href: "/treinos/registro" },
+  { id: "route-financeiro", kind: "route", label: "Financeiro", href: "/financeiro" },
+  { id: "route-relatorios", kind: "route", label: "Relatórios", href: "/relatorios" },
+  { id: "route-portal", kind: "route", label: "Portal do tutor", href: "/portal" },
+  { id: "route-config", kind: "route", label: "Configurações", href: "/configuracoes" },
+  { id: "route-templates", kind: "route", label: "Templates do sistema", href: "/admin/templates" },
+  { id: "route-audit", kind: "route", label: "Atividade", href: "/admin/audit" },
+  { id: "action-new-event", kind: "action", label: "Novo agendamento", href: "/agenda?new=true" },
+  { id: "action-new-client", kind: "action", label: "Novo cliente", href: "/clientes?new=true" },
 ];
+
+const KIND_LABEL: Record<PaletteItem["kind"], string> = {
+  route: "Página",
+  client: "Cliente",
+  dog: "Cão",
+  session: "Sessão",
+  action: "Ação",
+};
 
 function normalize(text: string): string {
   return text
@@ -68,18 +77,16 @@ export function CommandPalette() {
         id: `client-${client.id}`,
         kind: "client",
         label: client.name,
-        detail: `Tutor • ${client.dogs.length} cão${client.dogs.length === 1 ? "" : "s"}`,
+        detail: `${client.dogs.length} ${client.dogs.length === 1 ? "cão" : "cães"}`,
         href: `/clientes?clientId=${client.id}`,
-        icon: "👤",
       });
       for (const dog of client.dogs.slice(0, 5)) {
         dynamic.push({
           id: `dog-${dog.id}`,
           kind: "dog",
           label: dog.name,
-          detail: `${dog.breed || "Cão"} • ${client.name}`,
+          detail: `${dog.breed || "Sem raça"} · ${client.name}`,
           href: `/treinos?clientId=${client.id}&dogId=${dog.id}`,
-          icon: "🐶",
         });
       }
     }
@@ -88,9 +95,8 @@ export function CommandPalette() {
         id: `session-${session.id}`,
         kind: "session",
         label: session.title,
-        detail: `${session.date} • ${session.clientName || ""} ${session.dogName ? `• ${session.dogName}` : ""}`.trim(),
+        detail: `${session.date}${session.clientName ? ` · ${session.clientName}` : ""}`,
         href: `/treinos?clientId=${session.clientId ?? ""}&dogId=${session.dogId ?? ""}`,
-        icon: "📌",
       });
     }
     const all = [...ROUTE_ITEMS, ...dynamic];
@@ -125,17 +131,17 @@ export function CommandPalette() {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[80] flex items-start justify-center px-3 pt-16"
+      className="fixed inset-0 z-[80] flex items-start justify-center px-4 pt-20"
     >
       <button
         type="button"
-        aria-label="Fechar busca"
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+        aria-label="Fechar"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={() => setOpen(false)}
       />
-      <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-2xl">
-        <header className="flex items-center gap-2 border-b border-slate-100 px-3 py-2">
-          <span className="text-[#145a82]" aria-hidden>🔍</span>
+      <div className="relative w-full max-w-lg overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-2xl">
+        <header className="flex items-center gap-2 border-b border-[var(--border)] px-3 py-2.5">
+          <IconSearch className="h-4 w-4 text-[var(--muted)]" />
           <input
             autoFocus
             type="text"
@@ -157,14 +163,16 @@ export function CommandPalette() {
                 if (target) go(target);
               }
             }}
-            placeholder="Buscar tutor, cão, sessão ou tela…"
-            className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+            placeholder="Buscar cliente, cão, sessão ou tela…"
+            className="flex-1 bg-transparent text-[14px] outline-none placeholder:text-[var(--muted)]"
           />
-          <kbd className="hidden rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 sm:inline">ESC</kbd>
+          <kbd className="kbd">ESC</kbd>
         </header>
-        <ul className="max-h-80 overflow-y-auto p-1.5">
+        <ul className="max-h-80 overflow-y-auto py-1">
           {items.length === 0 ? (
-            <li className="px-3 py-6 text-center text-xs text-[var(--muted)]">Nenhum resultado.</li>
+            <li className="px-4 py-10 text-center text-[12px] text-[var(--muted)]">
+              Nenhum resultado.
+            </li>
           ) : (
             items.map((item, index) => (
               <li key={item.id}>
@@ -172,27 +180,27 @@ export function CommandPalette() {
                   type="button"
                   onClick={() => go(item)}
                   onMouseEnter={() => setActiveIndex(index)}
-                  className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left transition ${
-                    index === activeIndex ? "bg-sky-50 text-[#145a82]" : "hover:bg-slate-50"
+                  className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left transition-colors ${
+                    index === activeIndex ? "bg-[var(--surface-2)]" : ""
                   }`}
                 >
-                  <span aria-hidden>{item.icon}</span>
-                  <span className="flex-1">
-                    <span className="block text-sm font-semibold">{item.label}</span>
+                  <div className="min-w-0">
+                    <span className="block text-[13px] font-medium text-[var(--foreground)]">{item.label}</span>
                     {item.detail ? (
                       <span className="block text-[11px] text-[var(--muted)]">{item.detail}</span>
                     ) : null}
-                  </span>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold uppercase text-slate-500">
-                    {item.kind}
+                  </div>
+                  <span className="rounded-md bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--muted)]">
+                    {KIND_LABEL[item.kind]}
                   </span>
                 </button>
               </li>
             ))
           )}
         </ul>
-        <footer className="border-t border-slate-100 bg-slate-50/60 px-3 py-1.5 text-[10px] text-[var(--muted)]">
-          ⌘K / Ctrl+K • Setas para navegar • Enter para abrir
+        <footer className="flex items-center justify-between border-t border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-1.5 text-[11px] text-[var(--muted)]">
+          <span><kbd className="kbd">↑↓</kbd> navegar · <kbd className="kbd">↵</kbd> abrir</span>
+          <span><kbd className="kbd">⌘K</kbd> alternar</span>
         </footer>
       </div>
     </div>

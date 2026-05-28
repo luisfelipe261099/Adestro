@@ -1,12 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DailyBriefCard } from "@/components/daily-brief-card";
+import {
+  IconAlert,
+  IconArrowRight,
+  IconCalendar,
+  IconChevronRight,
+  IconClock,
+  IconDog,
+  IconDollar,
+  IconPlus,
+  IconReport,
+  IconSparkle,
+  IconUsers,
+} from "@/components/icons";
 import { useTour } from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
 
@@ -22,141 +34,18 @@ function getGreeting(): string {
   return "Boa noite";
 }
 
-type IconName =
-  | "bell"
-  | "chat"
-  | "paw"
-  | "user"
-  | "train"
-  | "money"
-  | "portal"
-  | "home"
-  | "calendar"
-  | "plus"
-  | "users"
-  | "more";
-
-function Icon({ name, className = "h-5 w-5" }: { name: IconName; className?: string }) {
-  if (name === "bell") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <path d="M15.5 17h-7a2 2 0 0 1-2-2v-2.2c0-.8.3-1.6.9-2.2l.3-.3V8a4.3 4.3 0 1 1 8.6 0v2.3l.3.3c.6.6.9 1.4.9 2.2V15a2 2 0 0 1-2 2Z" stroke="currentColor" strokeWidth="1.7" />
-        <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (name === "chat") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <rect x="4" y="5" width="16" height="12" rx="3" stroke="currentColor" strokeWidth="1.7" />
-        <path d="m9 17-3.2 2.6c-.4.3-.8-.1-.8-.5V17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (name === "paw") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <circle cx="8" cy="8.5" r="1.7" stroke="currentColor" strokeWidth="1.6" />
-        <circle cx="12" cy="7" r="1.7" stroke="currentColor" strokeWidth="1.6" />
-        <circle cx="16" cy="8.5" r="1.7" stroke="currentColor" strokeWidth="1.6" />
-        <path d="M12 18.8c2.8 0 5-1.8 5-4.1 0-2-2.1-3.6-5-3.6s-5 1.6-5 3.6c0 2.3 2.2 4.1 5 4.1Z" stroke="currentColor" strokeWidth="1.6" />
-      </svg>
-    );
-  }
-
-  if (name === "user") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <circle cx="12" cy="8" r="3" stroke="currentColor" strokeWidth="1.7" />
-        <path d="M5.5 18a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (name === "train") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <path d="M6 14h12M8 17h8M9 6h6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-        <rect x="5" y="4" width="14" height="14" rx="3" stroke="currentColor" strokeWidth="1.7" />
-      </svg>
-    );
-  }
-
-  if (name === "money") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <rect x="4" y="6" width="16" height="12" rx="3" stroke="currentColor" strokeWidth="1.7" />
-        <circle cx="12" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.7" />
-      </svg>
-    );
-  }
-
-  if (name === "portal") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <path d="M12 5v10m0 0 3-3m-3 3-3-3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-        <rect x="5" y="15" width="14" height="4" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
-      </svg>
-    );
-  }
-
-  if (name === "home") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <path d="m4 11 8-6 8 6v8a1 1 0 0 1-1 1h-4.5v-5h-5V20H5a1 1 0 0 1-1-1z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-
-  if (name === "calendar") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <rect x="4" y="5" width="16" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.7" />
-        <path d="M8 3.8v3.5M16 3.8v3.5M4 9h16" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (name === "plus") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (name === "users") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-        <circle cx="9" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.7" />
-        <circle cx="16" cy="10" r="2" stroke="currentColor" strokeWidth="1.7" />
-        <path d="M4.5 18a4.5 4.5 0 0 1 9 0M13.5 18a3.5 3.5 0 0 1 5 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <circle cx="6" cy="12" r="1.5" fill="currentColor" />
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-      <circle cx="18" cy="12" r="1.5" fill="currentColor" />
-    </svg>
-  );
-}
-
-function statusBadge(status: string): string {
-  if (status === "Confirmado") return "bg-sky-100 text-sky-800";
-  if (status === "Cancelado") return "bg-rose-100 text-rose-800";
-  return "bg-amber-100 text-amber-900";
+function statusTone(status: string): string {
+  if (status === "Confirmado") return "bg-[var(--success-bg)] text-[var(--success)] border-[var(--success)]/20";
+  if (status === "Cancelado") return "bg-[var(--danger-bg)] text-[var(--danger)] border-[var(--danger)]/20";
+  if (status === "Recorrente") return "bg-[var(--info-bg)] text-[var(--info)] border-[var(--info)]/20";
+  return "bg-[var(--warning-bg)] text-[var(--warning)] border-[var(--warning)]/20";
 }
 
 function statusLabel(status: string): string {
-  if (status === "Confirmado") return "Concluída";
-  if (status === "Pendente" || status === "Aguardando") return "Agendada";
+  if (status === "Confirmado") return "Confirmado";
+  if (status === "Pendente" || status === "Aguardando") return "Aguardando";
   if (status === "Recorrente") return "Recorrente";
-  return "Cancelada";
+  return "Cancelado";
 }
 
 export default function DashboardPage() {
@@ -166,16 +55,15 @@ export default function DashboardPage() {
   const sessions = useAppStore((state) => state.trainingSessions);
   const trainerName = useAppStore((state) => state.trainerName);
   const startTour = useTour((s) => s.start);
+
   const [tourDone, setTourDone] = useState(false);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setTourDone(window.localStorage.getItem("adestro-tour-done") === "1");
     }
   }, []);
 
-  // Redireciona para o wizard apenas no primeiro acesso. Usa a API
-  // /api/trainer/plan-status como fonte autoritativa em vez do zustand
-  // (que pode estar vazio enquanto o DB carrega).
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.localStorage.getItem("adestro-onboarding-done")) return;
@@ -187,7 +75,6 @@ export default function DashboardPage() {
         if (data.usage?.clients === 0) {
           router.replace("/bem-vindo");
         } else {
-          // Já tem dados — marca onboarding como concluído pra não checar mais.
           window.localStorage.setItem("adestro-onboarding-done", "1");
         }
       })
@@ -196,384 +83,245 @@ export default function DashboardPage() {
       cancelled = true;
     };
   }, [router]);
-  const upcomingEvents = events.slice(0, 3);
 
+  const upcomingEvents = events.slice(0, 5);
   const totalDogs = clients.reduce((total, client) => total + client.dogs.length, 0);
-  const pendingEvents = events.filter((event) => event.status === "Pendente" || event.status === "Aguardando").length;
-  const todayEvent = upcomingEvents[0];
+  const pendingEvents = events.filter((e) => e.status === "Pendente" || e.status === "Aguardando").length;
+  const confirmedToday = events.filter((e) => e.status === "Confirmado").length;
+  const sessionsThisMonth = sessions.length;
 
-  const heroClient = clients.find((client) => client.name === todayEvent?.client) ?? clients[0];
-  const heroDog = heroClient?.dogs.find((dog) => dog.name === todayEvent?.dog) ?? heroClient?.dogs[0];
-
-  const lastSessionForDog = (() => {
-    if (!heroDog) return undefined;
-    const matches = sessions.filter((session) => session.dogId === heroDog.id || session.dogName === heroDog.name);
-    if (!matches.length) return undefined;
-    return [...matches].sort((a, b) => b.number - a.number)[0];
-  })();
-  const lastSessionSummary = lastSessionForDog?.notes?.[0]?.comment ?? "";
-  const dogProfileHref = heroClient && heroDog ? `/treinos?clientId=${heroClient.id}&dogId=${heroDog.id}` : "/clientes";
-  const lastSessionHref = lastSessionForDog ? `/treinos?clientId=${heroClient?.id ?? ""}&dogId=${heroDog?.id ?? ""}` : dogProfileHref;
-
-  const todaysLabel = todayEvent?.time ?? "10:00";
-  const dogName = todayEvent?.dog ?? heroDog?.name ?? "Sem atendimento";
-  const heroPlan = todayEvent?.plan || "Operação";
-
-  const [checklist, setChecklist] = useState([
-    { id: "c1", label: "Confirmar treinos de amanhã", done: false },
-    { id: "c2", label: "Aprovar relatório mensal da Nina", done: true },
-    { id: "c3", label: "Registrar aula de Thor das 15:30", done: false },
-  ]);
-
-  const toggleChecklistItem = (id: string) => {
-    setChecklist((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
-    );
-  };
-
-  const nextAction = (() => {
-    if (!clients.length) {
-      return {
-        label: "Cadastrar tutor e cão",
-        detail: "Comece criando a ficha do tutor responsável e do cão atendido.",
+  const metrics = useMemo(
+    () => [
+      {
+        label: "Clientes ativos",
+        value: clients.length,
+        sub: `${totalDogs} ${totalDogs === 1 ? "cão" : "cães"}`,
         href: "/clientes",
-        button: "Cadastrar agora",
-      };
-    }
-
-    if (!events.length) {
-      return {
-        label: "Agendar primeira aula",
-        detail: "Escolha dia e horário para transformar o cadastro em atendimento.",
+        Icon: IconUsers,
+      },
+      {
+        label: "Agendamentos",
+        value: events.length,
+        sub: `${pendingEvents} aguardando`,
         href: "/agenda",
-        button: "Agendar aula",
-      };
-    }
-
-    if (!sessions.length) {
-      return {
-        label: "Registrar aula realizada",
-        detail: "Anote evolução, fotos e tarefas para manter o tutor atualizado.",
-        href: "/treinos/registro",
-        button: "Registrar aula",
-      };
-    }
-
-    return {
-      label: "Enviar portal ao tutor",
-      detail: "Compartilhe tarefas, próximos encontros e evolução em um link simples.",
-      href: "/portal",
-      button: "Abrir portal",
-    };
-  })();
+        Icon: IconCalendar,
+      },
+      {
+        label: "Treinos no mês",
+        value: sessionsThisMonth,
+        sub: `${confirmedToday} concluídos`,
+        href: "/treinos",
+        Icon: IconDog,
+      },
+      {
+        label: "Receita do mês",
+        value: "R$ 1.280",
+        sub: "R$ 640 a receber",
+        href: "/financeiro",
+        Icon: IconDollar,
+        accent: true,
+      },
+    ],
+    [clients.length, totalDogs, events.length, pendingEvents, sessionsThisMonth, confirmedToday],
+  );
 
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-8 pt-3 sm:max-w-xl">
-        <section className="rounded-[2rem] border border-[var(--border)] bg-[#f7fbff]/95 p-4 shadow-[var(--shadow)]">
-          <header className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-200 text-lg font-semibold text-[#145a82]">
-                {getFirstName(trainerName || "Adestrador").slice(0, 1)}
-              </div>
-              <div>
-                <p className="text-[1.12rem] font-semibold text-[var(--foreground)]">{getGreeting()}, {getFirstName(trainerName || "adestrador")}!</p>
-                <p className="text-xs text-[var(--muted)]">Veja sua próxima ação e os atendimentos do dia.</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-[var(--muted)]">
-              <Link href="/agenda" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[#145a82]">
-                <Icon name="bell" className="h-4.5 w-4.5" />
-              </Link>
-              <Link href="/portal" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[#145a82]">
-                <Icon name="chat" className="h-4.5 w-4.5" />
-              </Link>
-            </div>
-          </header>
-
-          {/* CTA de tour guiado — mais proeminente se ainda não fez */}
-          {!tourDone ? (
-            <section className="mt-4 overflow-hidden rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-600 to-indigo-600 p-3 text-white shadow-md">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-purple-100">✨ Novo por aqui?</p>
-                  <p className="mt-0.5 text-sm font-bold">Tour guiado em 2 minutos</p>
-                  <p className="text-[10.5px] text-purple-100">10 passos pelas funcionalidades principais</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => startTour()}
-                  className="rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-purple-700 shadow-sm hover:bg-purple-50"
-                >
-                  ▶ Iniciar
-                </button>
-              </div>
-            </section>
-          ) : (
-            <button
-              type="button"
-              onClick={() => startTour()}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-white px-3 py-1 text-[11px] font-semibold text-purple-700 hover:bg-purple-50"
-            >
-              ✨ Refazer tour guiado
-            </button>
-          )}
-
-          <section className="mt-4 rounded-2xl border border-[#cfe4f3] bg-white p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Próxima ação</p>
-            <div className="mt-2 flex items-start justify-between gap-3">
-              <div>
-                <h1 className="text-lg font-semibold leading-tight text-[var(--foreground)]">{nextAction.label}</h1>
-                <p className="mt-1 text-xs leading-5 text-[var(--muted)]">{nextAction.detail}</p>
-              </div>
-              <Link
-                href={nextAction.href}
-                className="flex-shrink-0 rounded-full bg-[#145a82] px-3 py-2 text-[11px] font-semibold text-white"
+      <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-12">
+        {/* Header — saudação + ações */}
+        <header className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-[22px] font-semibold tracking-tight text-[var(--foreground)] sm:text-[26px]">
+              {getGreeting()}, {getFirstName(trainerName || "adestrador")}
+            </h1>
+            <p className="mt-0.5 text-[13.5px] text-[var(--muted)]">
+              Aqui está o resumo da sua operação hoje.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {!tourDone ? (
+              <button
+                type="button"
+                onClick={() => startTour()}
+                className="btn-secondary text-[12.5px]"
               >
-                {nextAction.button}
-              </Link>
-            </div>
-          </section>
-
-          <article className="mt-4 overflow-hidden rounded-2xl bg-[linear-gradient(140deg,#0f3d5e_0%,#145a82_56%,#2c7eab_100%)] p-4 text-white">
-            <p className="text-[11px] uppercase tracking-[0.15em] text-sky-100">Próximo atendimento</p>
-            <div className="mt-2.5 flex items-end justify-between gap-3">
-              <div>
-                <p className="text-4xl font-semibold leading-none">{todaysLabel}</p>
-                <p className="mt-2 text-lg font-semibold">{dogName}</p>
-                <p className="text-xs text-sky-100">{heroPlan}</p>
-              </div>
-              <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-white/20">
-                <Image
-                  src={heroDog?.photoUrl || "/images/dog-default-bolt.svg"}
-                  alt={`Foto de ${heroDog?.name || "Pet"}`}
-                  fill
-                  sizes="96px"
-                  priority
-                  unoptimized
-                  onError={(event) => {
-                    event.currentTarget.src = "/images/dog-default-bolt.svg";
-                  }}
-                  className="object-cover"
-                />
-              </div>
-            </div>
-            <Link
-              href="/agenda"
-              className="mt-3 inline-flex rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white"
-            >
-              Ver agenda completa
-            </Link>
-            {heroDog ? (
-              <div className="mt-3 grid gap-2 rounded-xl bg-white/10 p-2.5 text-xs text-sky-50">
-                <Link
-                  href={dogProfileHref}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-white/10 px-2.5 py-1.5 font-semibold transition hover:bg-white/20"
-                >
-                  <span>Ficha do cão • {heroDog.name}</span>
-                  <span aria-hidden>→</span>
-                </Link>
-                <Link
-                  href={lastSessionHref}
-                  className="rounded-lg bg-white/10 px-2.5 py-1.5 transition hover:bg-white/20"
-                >
-                  <p className="font-semibold">
-                    Última aula{lastSessionForDog ? ` • ${lastSessionForDog.date}` : ""}
-                  </p>
-                  <p className="mt-0.5 line-clamp-2 text-[11px] text-sky-100">
-                    {lastSessionSummary || "Sem resumo registrado ainda. Toque para abrir o histórico."}
-                  </p>
-                </Link>
-              </div>
+                <IconSparkle className="h-3.5 w-3.5" />
+                Tour rápido
+              </button>
             ) : null}
-          </article>
+            <Link href="/agenda?new=true" className="btn-primary text-[12.5px]">
+              <IconPlus className="h-3.5 w-3.5" />
+              Novo agendamento
+            </Link>
+          </div>
+        </header>
 
-          <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {/* 📅 Card 1: Agenda do Dia (Azul) - Spans 2 cols */}
-            <article className="rounded-3xl border border-sky-100 bg-sky-50 p-4 shadow-xs text-sky-900 sm:col-span-2">
+        {/* Métricas */}
+        <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {metrics.map((metric) => (
+            <Link
+              key={metric.label}
+              href={metric.href}
+              className="card group p-4 transition-colors hover:bg-[var(--surface-2)]/30"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#1e5272]">📅 Agenda do Dia</span>
-                <span className="rounded-full bg-sky-200/60 px-2 py-0.5 text-[10px] font-semibold">{upcomingEvents.length} aulas hoje</span>
+                <span className="text-[11.5px] font-medium uppercase tracking-wide text-[var(--muted)]">
+                  {metric.label}
+                </span>
+                <metric.Icon className="h-4 w-4 text-[var(--muted)] transition-colors group-hover:text-[var(--foreground)]" />
               </div>
-              <div className="mt-3 space-y-2.5">
-                {upcomingEvents.length === 0 ? (
-                  <p className="text-xs text-[#2b5d7d]">Sem atendimentos marcados para hoje.</p>
-                ) : (
-                  upcomingEvents.map((event) => (
-                    <div key={event.id} className="flex items-center justify-between border-t border-sky-100/50 pt-2.5">
-                      <div>
-                        <span className="text-xs font-bold text-sky-950">{event.time} • {event.dog}</span>
-                        <span className="ml-1 text-[10px] text-sky-800">({event.client})</span>
-                      </div>
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.05em] ${statusBadge(event.status)}`}>
-                        {statusLabel(event.status)}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-              <Link href="/agenda" className="mt-3.5 inline-block text-xs font-semibold text-[#145a82] hover:underline">
-                Ver agenda de hoje →
-              </Link>
-            </article>
-
-            {/* 📅 Card 2: Agenda da Semana (Azul Claro) */}
-            <Link href="/agenda" className="rounded-3xl border border-cyan-100 bg-cyan-50/70 p-4 shadow-xs text-cyan-900 hover:bg-cyan-50 transition">
-              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#1c647c]">📅 Agenda da Semana</span>
-              <p className="mt-2 text-2xl font-bold text-cyan-950">{events.length}</p>
-              <p className="text-[10px] text-cyan-800 mt-1">Aulas agendadas na semana</p>
+              <p className="mt-2 text-[24px] font-semibold tracking-tight text-[var(--foreground)]">
+                {metric.value}
+              </p>
+              <p className="text-[11.5px] text-[var(--muted)]">{metric.sub}</p>
             </Link>
-
-            {/* 💰 Card 3: Financeiro (Verde) */}
-            <Link href="/financeiro" className="rounded-3xl border border-emerald-100 bg-emerald-50 p-4 shadow-xs text-emerald-900 hover:bg-emerald-50/80 transition">
-              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#175c40]">💰 Financeiro</span>
-              <div className="mt-2 space-y-1 text-xs">
-                <p className="flex justify-between font-semibold text-emerald-950">
-                  <span>Recebido:</span> <span>R$ 1.280</span>
-                </p>
-                <p className="flex justify-between text-emerald-800 text-[10.5px]">
-                  <span>A receber:</span> <span>R$ 640</span>
-                </p>
-                <p className="flex justify-between text-rose-600 font-semibold text-[10.5px]">
-                  <span>Em atraso:</span> <span>R$ 120</span>
-                </p>
-              </div>
-            </Link>
-
-            {/* 🔔 Card 4: Pendências (Laranja) */}
-            <div className="rounded-3xl border border-orange-100 bg-orange-50 p-4 shadow-xs text-orange-950">
-              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#6d3e15]">🔔 Pendências</span>
-              <div className="mt-2 space-y-1.5 text-xs text-orange-900">
-                <Link href="/portal" className="flex items-center gap-1.5 hover:underline">
-                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-                  <span>2 relatórios p/ aprovar</span>
-                </Link>
-                <Link href="/treinos" className="flex items-center gap-1.5 hover:underline">
-                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-                  <span>{pendingEvents} treinos sem registro</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* ☀️ Card 5: Brief do dia (Roxo) - automação preparada pelo cron daily-brief */}
-            <div className="sm:col-span-2" data-tour="brief">
-              <DailyBriefCard />
-            </div>
-          </section>
-
-          <section className="mt-5 rounded-2xl border border-[var(--border)] bg-white p-3">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#4d2d6c]">📋 Checklist do dia</p>
-            <div className="mt-2.5 space-y-2">
-              {checklist.map((item) => (
-                <label key={item.id} className="flex items-start gap-2.5 text-xs text-slate-800 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={item.done}
-                    onChange={() => toggleChecklistItem(item.id)}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-[#145a82] focus:ring-sky-400"
-                  />
-                  <span className={item.done ? "line-through text-slate-400" : "font-medium"}>
-                    {item.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </section>
-
-          <section className="mt-5 rounded-2xl border border-[#cfe4f3] bg-white p-3">
-            <p className="text-sm font-semibold text-[var(--foreground)]">Comece por aqui</p>
-            <p className="mt-0.5 text-[11px] text-[var(--muted)]">Fluxo simples para colocar um caso novo no ar.</p>
-            <ol className="mt-3 space-y-2">
-              {[
-                {
-                  step: 1,
-                  label: "Cadastre tutor e cão",
-                  detail: "Crie a ficha do tutor com os dados do cão.",
-                  href: "/clientes",
-                  done: clients.length > 0,
-                },
-                {
-                  step: 2,
-                  label: "Agende a primeira sessão",
-                  detail: "Defina dia e horário no calendário.",
-                  href: "/agenda",
-                  done: events.length > 0,
-                },
-                {
-                  step: 3,
-                  label: "Registre o treino realizado",
-                  detail: "Anote evolução, notas e fotos.",
-                  href: "/treinos",
-                  done: sessions.length > 0,
-                },
-                {
-                  step: 4,
-                  label: "Compartilhe o portal com o tutor",
-                  detail: "Envie um link seguro para acompanhamento em casa.",
-                  href: "/portal",
-                  done: false,
-                },
-              ].map((item) => (
-                <li key={item.step}>
-                  <Link
-                    href={item.href}
-                    className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[#f7fbff] px-3 py-2 transition hover:bg-white"
-                  >
-                    <span
-                      className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                        item.done
-                          ? "bg-emerald-500 text-white"
-                          : "bg-[#145a82] text-white"
-                      }`}
-                    >
-                      {item.done ? "✓" : item.step}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-[var(--foreground)]">{item.label}</p>
-                      <p className="text-[10px] text-[var(--muted)]">{item.detail}</p>
-                    </div>
-                    <span className="text-[#145a82]" aria-hidden>→</span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          </section>
-
-          <section className="mt-5">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-[var(--foreground)]">Acesso rápido</p>
-              <Link href="/portal" className="text-xs font-semibold text-[#145a82]">Portal</Link>
-            </div>
-            <div className="mt-3 grid gap-2">
-              {[
-                { label: "Novo tutor", href: "/clientes", icon: "user" as const, detail: "Cadastrar tutor e cão" },
-                { label: "Registrar aula", href: "/treinos/registro", icon: "train" as const, detail: "Lançar treino de hoje" },
-                { label: "Ver tutorial", href: "/tutorial", icon: "portal" as const, detail: "Passo a passo para equipe e tutor" },
-              ].map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-white px-3 py-2"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-50 text-[#145a82]">
-                      <Icon name={item.icon} className="h-4.5 w-4.5" />
-                    </span>
-                    <div>
-                      <p className="text-xs font-semibold text-[var(--foreground)]">{item.label}</p>
-                      <p className="text-[10px] text-[var(--muted)]">{item.detail}</p>
-                    </div>
-                  </div>
-                  <span className="text-[#145a82]">
-                    <Icon name="more" className="h-4 w-4" />
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </section>
-
+          ))}
         </section>
 
+        {/* Layout principal */}
+        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          {/* Coluna 1 e 2 — agenda do dia */}
+          <section className="card lg:col-span-2">
+            <header className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+              <div>
+                <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Próximos atendimentos</h2>
+                <p className="text-[11.5px] text-[var(--muted)]">{upcomingEvents.length} eventos nos próximos dias</p>
+              </div>
+              <Link href="/agenda" className="text-[12px] font-medium text-[var(--muted)] hover:text-[var(--foreground)]">
+                Ver agenda
+              </Link>
+            </header>
+            {upcomingEvents.length === 0 ? (
+              <div className="px-4 py-12 text-center">
+                <p className="text-[13px] text-[var(--muted)]">Nenhum atendimento agendado.</p>
+                <Link href="/agenda?new=true" className="mt-3 inline-flex items-center gap-1 text-[12.5px] font-medium text-[var(--foreground)] hover:underline">
+                  Criar primeiro agendamento <IconArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            ) : (
+              <ul className="divide-y divide-[var(--border)]">
+                {upcomingEvents.map((event) => (
+                  <li key={event.id}>
+                    <Link
+                      href={`/agenda`}
+                      className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-[var(--surface-2)]/40"
+                    >
+                      <div className="flex w-14 flex-col items-start">
+                        <span className="text-[12.5px] font-semibold text-[var(--foreground)]">{event.time}</span>
+                        <span className="text-[10px] text-[var(--muted)]">{event.day}</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13.5px] font-medium text-[var(--foreground)]">{event.dog}</p>
+                        <p className="truncate text-[11.5px] text-[var(--muted)]">
+                          {event.client}
+                          {event.sessionNumber ? ` · Sessão ${event.sessionNumber}` : ""}
+                        </p>
+                      </div>
+                      <span
+                        className={`inline-flex h-[22px] items-center rounded border px-2 text-[10px] font-medium ${statusTone(event.status)}`}
+                      >
+                        {statusLabel(event.status)}
+                      </span>
+                      <IconChevronRight className="h-3.5 w-3.5 text-[var(--muted)]" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {/* Coluna 3 — Brief do dia */}
+          <div data-tour="brief">
+            <DailyBriefCard />
+          </div>
+        </div>
+
+        {/* Linha 2: financeiro + pendências */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <section className="card lg:col-span-2 p-4">
+            <header className="flex items-center justify-between">
+              <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Visão financeira</h2>
+              <Link href="/financeiro" className="text-[12px] font-medium text-[var(--muted)] hover:text-[var(--foreground)]">
+                Ir para Financeiro
+              </Link>
+            </header>
+            <div className="mt-4 grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Recebido</p>
+                <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">R$ 1.280</p>
+                <p className="text-[11px] text-[var(--success)]">Mês atual</p>
+              </div>
+              <div className="border-l border-[var(--border)] pl-4">
+                <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">A receber</p>
+                <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">R$ 640</p>
+                <p className="text-[11px] text-[var(--muted)]">Próximos vencimentos</p>
+              </div>
+              <div className="border-l border-[var(--border)] pl-4">
+                <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Em atraso</p>
+                <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--danger)]">R$ 120</p>
+                <p className="text-[11px] text-[var(--danger)]">Requer atenção</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="card p-4">
+            <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Pendências</h2>
+            <div className="mt-3 space-y-2">
+              <Link
+                href="/portal"
+                className="flex items-center justify-between rounded-md px-2 py-1.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
+              >
+                <span className="flex items-center gap-2 text-[var(--foreground)]">
+                  <IconReport className="h-3.5 w-3.5 text-[var(--warning)]" />
+                  Relatórios aguardando aprovação
+                </span>
+                <span className="font-medium text-[var(--foreground)]">2</span>
+              </Link>
+              <Link
+                href="/treinos"
+                className="flex items-center justify-between rounded-md px-2 py-1.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
+              >
+                <span className="flex items-center gap-2 text-[var(--foreground)]">
+                  <IconAlert className="h-3.5 w-3.5 text-[var(--warning)]" />
+                  Treinos sem registro
+                </span>
+                <span className="font-medium text-[var(--foreground)]">{pendingEvents}</span>
+              </Link>
+              <Link
+                href="/financeiro"
+                className="flex items-center justify-between rounded-md px-2 py-1.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
+              >
+                <span className="flex items-center gap-2 text-[var(--foreground)]">
+                  <IconClock className="h-3.5 w-3.5 text-[var(--danger)]" />
+                  Cobranças em atraso
+                </span>
+                <span className="font-medium text-[var(--danger)]">1</span>
+              </Link>
+            </div>
+          </section>
+        </div>
+
+        {/* Linha 3: atalhos secundários */}
+        <section className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: "Novo cliente", href: "/clientes?new=true", Icon: IconUsers },
+            { label: "Registrar treino", href: "/treinos/registro", Icon: IconDog },
+            { label: "Enviar cobrança", href: "/financeiro", Icon: IconDollar },
+            { label: "Gerar relatório", href: "/relatorios", Icon: IconReport },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="card flex items-center justify-between px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/30"
+            >
+              <span className="flex items-center gap-2.5 text-[13px] font-medium text-[var(--foreground)]">
+                <item.Icon className="h-4 w-4 text-[var(--muted)]" />
+                {item.label}
+              </span>
+              <IconChevronRight className="h-3.5 w-3.5 text-[var(--muted)]" />
+            </Link>
+          ))}
+        </section>
       </main>
     </AuthGuard>
   );

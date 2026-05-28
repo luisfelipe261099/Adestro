@@ -4,12 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
+import { IconClose } from "@/components/icons";
+
 type TrialInfo = {
   plan: string;
   trialEndsAt: string | null;
   daysRemaining: number | null;
   isTrial: boolean;
 };
+
+function todayKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+}
 
 export function TrialBanner() {
   const { status } = useSession();
@@ -36,34 +43,38 @@ export function TrialBanner() {
     }
   }
 
-  if (status !== "authenticated" || !info || dismissed) return null;
-  if (!info.isTrial) return null;
+  if (status !== "authenticated" || !info || dismissed || !info.isTrial) return null;
 
   const days = info.daysRemaining ?? 0;
   const urgent = days <= 3;
 
   return (
-    <div className={`relative isolate w-full px-4 py-2 text-center text-xs font-semibold ${urgent ? "bg-rose-600 text-white" : "bg-amber-500 text-amber-950"}`}>
-      <span aria-hidden className="mr-1.5">{urgent ? "⏰" : "✨"}</span>
-      {days > 0
-        ? `Seu trial termina em ${days} dia${days === 1 ? "" : "s"} — `
-        : "Seu trial acabou. "}
-      <Link href="/planos" className="underline underline-offset-2 font-bold">
-        Ative o Pro
+    <div
+      className={`flex items-center justify-center gap-3 border-b px-4 py-1.5 text-[12px] ${
+        urgent
+          ? "border-[var(--danger)]/30 bg-[var(--danger-bg)] text-[var(--danger)]"
+          : "border-[var(--warning)]/30 bg-[var(--warning-bg)] text-[var(--warning)]"
+      }`}
+    >
+      <span className="font-medium">
+        {days > 0
+          ? `Seu período de avaliação termina em ${days} ${days === 1 ? "dia" : "dias"}.`
+          : "Seu período de avaliação acabou."}
+      </span>
+      <Link
+        href="/planos"
+        className="font-semibold underline underline-offset-2 hover:no-underline"
+      >
+        Fazer upgrade
       </Link>
       <button
         type="button"
         onClick={dismiss}
         aria-label="Dispensar"
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2 py-0.5 text-[10px] hover:bg-black/10"
+        className="ml-auto flex h-5 w-5 items-center justify-center rounded hover:bg-black/5"
       >
-        ✕
+        <IconClose className="h-3 w-3" />
       </button>
     </div>
   );
-}
-
-function todayKey(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 }
