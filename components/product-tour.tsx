@@ -298,7 +298,7 @@ export function ProductTour() {
       {/* Highlight border do alvo */}
       {targetRect && !step.fullScreen ? (
         <div
-          className="pointer-events-none absolute rounded-xl border-2 border-purple-400 shadow-[0_0_0_4px_rgba(168,85,247,0.25)] transition-all"
+          className="pointer-events-none absolute rounded-md border-2 border-purple-400 shadow-[0_0_0_4px_rgba(168,85,247,0.25)] transition-all"
           style={{
             top: targetRect.top - 6,
             left: targetRect.left - 6,
@@ -310,7 +310,7 @@ export function ProductTour() {
 
       {/* Tooltip */}
       <div
-        className={`pointer-events-auto fixed max-w-sm rounded-2xl border border-purple-200 bg-white p-4 shadow-2xl ${
+        className={`pointer-events-auto fixed max-w-sm rounded-md border border-purple-200 bg-white p-4 shadow-2xl ${
           tooltipPos ? "" : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
         }`}
         style={tooltipPos ? { top: tooltipPos.top, left: tooltipPos.left, transform: tooltipPos.transform, width: "min(320px, calc(100vw - 32px))" } : { width: "min(360px, calc(100vw - 32px))" }}
@@ -320,7 +320,7 @@ export function ProductTour() {
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-purple-800">
+              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-800">
                 {stepIndex + 1} / {steps.length}
               </span>
               <button

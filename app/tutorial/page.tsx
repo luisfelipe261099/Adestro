@@ -204,11 +204,11 @@ export default function TutorialPage() {
       requireAuth="trainer"
     >
       {/* CTA do tour guiado */}
-      <section className="rounded-[1.5rem] border border-purple-200 bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-5 shadow-sm">
+      <section className="rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-5 shadow-sm">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-purple-700">✨ Tour guiado</p>
-            <h2 className="mt-1 font-display text-xl font-semibold text-slate-900">
+            <p className="text-xs font-bold uppercase tracking-wider text-purple-700">✨ Tour guiado</p>
+            <h2 className="mt-1 text-xl font-semibold text-slate-900">
               Quer um tour de 2 minutos pelo sistema?
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-700">
@@ -227,11 +227,11 @@ export default function TutorialPage() {
       </section>
 
       {/* Status atual da conta */}
-      <section className="mt-4 rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Sua conta</p>
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Sua conta</p>
         <div className="mt-2 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <h2 className="font-display text-2xl font-semibold text-[var(--foreground)]">
+            <h2 className="text-2xl font-semibold text-[var(--foreground)]">
               O sistema acompanha do cadastro à confirmação de presença do tutor
             </h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
@@ -242,8 +242,8 @@ export default function TutorialPage() {
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
             {statusLabels.map((item) => (
-              <div key={item.label} className="rounded-2xl border border-[var(--border)] bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#2d6f99]">{item.label}</p>
+              <div key={item.label} className="rounded-md border border-[var(--border)] bg-white p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">{item.label}</p>
                 <p className="mt-1 text-sm font-semibold text-[var(--foreground)]">
                   {item.getValue(clients.length, totalDogs, sessions.length, events.length, portalTasks.length)}
                 </p>
@@ -254,17 +254,17 @@ export default function TutorialPage() {
       </section>
 
       {/* Fluxo de atendimento detalhado */}
-      <section className="mt-4 rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Fluxo de atendimento</p>
-        <h2 className="mt-1 font-display text-2xl font-semibold text-[var(--foreground)]">
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Fluxo de atendimento</p>
+        <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
           7 passos do cadastro ao relatório mensal
         </h2>
 
         <ol className="mt-5 grid gap-3">
           {trainerFlow.map((step) => (
-            <li key={step.title} className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-4">
+            <li key={step.title} className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
               <h3 className="text-base font-semibold text-[var(--foreground)]">{step.title}</h3>
-              <p className="mt-1 text-sm font-medium text-[#2d6f99]">{step.why}</p>
+              <p className="mt-1 text-sm font-medium text-[var(--muted)]">{step.why}</p>
               <ul className="mt-3 grid gap-2">
                 {step.how.map((item) => (
                   <li key={item} className="flex gap-2 text-sm leading-6 text-[var(--muted)]">
@@ -284,14 +284,14 @@ export default function TutorialPage() {
       </section>
 
       {/* Galeria de features */}
-      <section className="mt-4 rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Funcionalidades em destaque</p>
-        <h2 className="mt-1 font-display text-2xl font-semibold text-[var(--foreground)]">
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Funcionalidades em destaque</p>
+        <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
           Recursos que reduzem cliques no dia a dia
         </h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {featureHighlights.map((feature) => (
-            <article key={feature.title} className="rounded-2xl border border-slate-100 bg-slate-50/40 p-3">
+            <article key={feature.title} className="rounded-md border border-slate-100 bg-slate-50/40 p-3">
               <p className="text-sm font-bold text-slate-900">
                 <span aria-hidden className="mr-1.5">{feature.icon}</span>
                 {feature.title}
@@ -303,9 +303,9 @@ export default function TutorialPage() {
       </section>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Assistente de IA</p>
-          <h2 className="mt-1 font-display text-2xl font-semibold text-[var(--foreground)]">
+        <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Assistente de IA</p>
+          <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
             A IA sugere abordagem técnica — você decide
           </h2>
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
@@ -315,7 +315,7 @@ export default function TutorialPage() {
           </p>
           <div className="mt-4 grid gap-3">
             {assistantExamples.map((example) => (
-              <article key={example.case} className="rounded-2xl border border-[var(--border)] bg-white p-4">
+              <article key={example.case} className="rounded-md border border-[var(--border)] bg-white p-4">
                 <p className="text-sm font-semibold text-[var(--foreground)]">{example.case}</p>
                 <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{example.suggestion}</p>
               </article>
@@ -324,36 +324,36 @@ export default function TutorialPage() {
         </section>
 
         <div className="grid gap-4">
-          <section className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Portal do tutor</p>
-            <h2 className="mt-1 font-display text-xl font-semibold text-[var(--foreground)]">
+          <section className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Portal do tutor</p>
+            <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">
               Como orientar o cliente
             </h2>
             <div className="mt-4 grid gap-2 text-sm leading-6 text-[var(--muted)]">
-              <p className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-3">
+              <p className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
                 Link único por cliente (token + PIN opcional). Sem login.
               </p>
-              <p className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-3">
+              <p className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
                 Tarefas com upload de foto, gamificação (9 níveis, streak, 8 badges), confirmação de presença e NPS.
               </p>
-              <p className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-3">
+              <p className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
                 Use linguagem clara. Uma tarefa bem feita vale mais que cinco mal explicadas.
               </p>
-              <p className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-3">
+              <p className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
                 Notas confidenciais NUNCA aparecem pro tutor — só na sua ficha de adestrador.
               </p>
             </div>
             <Link
               href="/tutorial/cliente"
-              className="mt-3 inline-block text-xs font-semibold text-[#145a82] hover:underline"
+              className="mt-3 inline-block text-xs font-semibold text-[var(--foreground)] hover:underline"
             >
               Ver guia separado pro tutor →
             </Link>
           </section>
 
-          <section className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Atalhos úteis</p>
-            <h2 className="mt-1 font-display text-xl font-semibold text-[var(--foreground)]">
+          <section className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Atalhos úteis</p>
+            <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">
               Comandos de teclado
             </h2>
             <div className="mt-3 grid gap-2 text-sm">

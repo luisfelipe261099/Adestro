@@ -493,11 +493,11 @@ export default function ClientsPage() {
   return (
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-[var(--shadow)]">
+        <section className="rounded-lg border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-sm">
           <header className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Painel de tutores</p>
-              <h1 className="font-display text-2xl font-semibold leading-tight text-[var(--foreground)]">Tutores e cães</h1>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Painel de tutores</p>
+              <h1 className="text-2xl font-semibold leading-tight text-[var(--foreground)]">Tutores e cães</h1>
               <p className="mt-1 text-xs text-[var(--muted)]">Gerencie a ficha completa dos clientes e seus animais.</p>
             </div>
             <button
@@ -506,7 +506,7 @@ export default function ClientsPage() {
                 setShowForm((current) => !current);
                 setFormStep(1);
               }}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#145a82] text-white shadow-[0_10px_24px_rgba(20,90,130,0.28)]"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)] text-white shadow-[0_10px_24px_rgba(20,90,130,0.28)]"
               aria-label="Abrir cadastro"
             >
               <SmallIcon name="plus" />
@@ -515,7 +515,7 @@ export default function ClientsPage() {
 
           {/* Atalhos Rápidos */}
           <div className="mt-3 flex flex-wrap gap-2">
-            <Link href="/agenda" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#145a82]">
+            <Link href="/agenda" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--foreground)]">
               Agenda
             </Link>
             <button
@@ -524,7 +524,7 @@ export default function ClientsPage() {
                 setShowForm(true);
                 setFormStep(1);
               }}
-              className="rounded-full border border-[#145a82] bg-[#145a82] px-3 py-1.5 text-[11px] font-semibold text-white"
+              className="rounded-full border border-[#145a82] bg-[var(--accent)] px-3 py-1.5 text-[11px] font-semibold text-white"
             >
               + Novo tutor
             </button>
@@ -534,25 +534,25 @@ export default function ClientsPage() {
                 setShowForm(true);
                 setFormStep(3); // Salta para a etapa do cão
               }}
-              className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#145a82]"
+              className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--foreground)]"
             >
               + Cadastrar cão
             </button>
           </div>
 
           {/* Alternar Visualização */}
-          <div className="mt-3 inline-flex rounded-full border border-[#c9dfef] bg-white p-0.5 text-[11px] font-semibold">
+          <div className="mt-3 inline-flex rounded-full border border-[var(--border)] bg-white p-0.5 text-[11px] font-semibold">
             <button
               type="button"
               onClick={() => setEntityKind("humanos")}
-              className={`rounded-full px-3 py-1.5 transition ${entityKind === "humanos" ? "bg-[#145a82] text-white" : "text-[var(--muted)]"}`}
+              className={`rounded-full px-3 py-1.5 transition ${entityKind === "humanos" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"}`}
             >
               Tutores
             </button>
             <button
               type="button"
               onClick={() => setEntityKind("caes")}
-              className={`rounded-full px-3 py-1.5 transition ${entityKind === "caes" ? "bg-[#145a82] text-white" : "text-[var(--muted)]"}`}
+              className={`rounded-full px-3 py-1.5 transition ${entityKind === "caes" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"}`}
             >
               Cães
             </button>
@@ -560,7 +560,7 @@ export default function ClientsPage() {
 
           {/* Filtros e Busca */}
           <div className="mt-4 flex items-center gap-2">
-            <label className="flex flex-1 items-center gap-2 rounded-xl border border-[#c9dfef] bg-white px-3 py-2 text-[var(--muted)] shadow-[0_6px_18px_rgba(17,73,110,0.08)]">
+            <label className="flex flex-1 items-center gap-2 rounded-md border border-[var(--border)] bg-white px-3 py-2 text-[var(--muted)] shadow-[0_6px_18px_rgba(17,73,110,0.08)]">
               <SmallIcon name="search" />
               <input
                 value={searchTerm}
@@ -572,7 +572,7 @@ export default function ClientsPage() {
             <button
               type="button"
               onClick={() => setShowQuickFilters((current) => !current)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#c9dfef] bg-white text-[#145a82] shadow-[0_6px_18px_rgba(17,73,110,0.08)]"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border)] bg-white text-[var(--foreground)] shadow-[0_6px_18px_rgba(17,73,110,0.08)]"
               aria-label="Opções"
             >
               <SmallIcon name="filter" />
@@ -593,8 +593,8 @@ export default function ClientsPage() {
                   onClick={() => setStatusFilter(item.value as "todos" | ClientStatus)}
                   className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-semibold ${
                     statusFilter === item.value
-                      ? "bg-[#145a82] text-white shadow-[0_8px_18px_rgba(20,90,130,0.25)]"
-                      : "border border-[#c9dfef] bg-white text-[var(--muted)]"
+                      ? "bg-[var(--accent)] text-white shadow-[0_8px_18px_rgba(20,90,130,0.25)]"
+                      : "border border-[var(--border)] bg-white text-[var(--muted)]"
                   }`}
                 >
                   {item.label}
@@ -605,13 +605,13 @@ export default function ClientsPage() {
 
           {/* Cards Estatísticos */}
           <section className="mt-4 grid grid-cols-2 gap-2">
-            <article className="rounded-xl border border-[var(--border)] bg-white p-3">
-              <p className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#2d6f99]"><SmallIcon name="plus" /> Tutores</p>
+            <article className="rounded-md border border-[var(--border)] bg-white p-3">
+              <p className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]"><SmallIcon name="plus" /> Tutores</p>
               <p className="text-2xl font-semibold text-[var(--foreground)]">{clients.length}</p>
               <p className="mt-1 text-xs text-[var(--muted)]">Base cadastrada</p>
             </article>
-            <article className="rounded-xl border border-[var(--border)] bg-white p-3">
-              <p className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#2d6f99]"><SmallIcon name="dog" /> Cães</p>
+            <article className="rounded-md border border-[var(--border)] bg-white p-3">
+              <p className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]"><SmallIcon name="dog" /> Cães</p>
               <p className="text-2xl font-semibold text-[var(--foreground)]">{totalDogs}</p>
               <p className="mt-1 text-xs text-[var(--muted)]">Total atendido</p>
             </article>
@@ -619,14 +619,14 @@ export default function ClientsPage() {
 
           {/* Mensagens de Feedback */}
           {saveMessage && (
-            <p className="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800">{saveMessage}</p>
+            <p className="mt-3 rounded-md border border-[var(--border-strong)] bg-[var(--surface-2)] px-3 py-2 text-xs text-sky-800">{saveMessage}</p>
           )}
 
           {/* ─── CADASTRO EM 5 ETAPAS (WIZARD) ────────────────────────────────── */}
           {showForm && (
-            <section className="mt-4 rounded-3xl border border-[var(--border)] bg-white p-4 shadow-sm animate-in slide-in-from-top-4 duration-200">
+            <section className="mt-4 rounded-lg border border-[var(--border)] bg-white p-4 shadow-sm animate-in slide-in-from-top-4 duration-200">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <span className="text-xs font-bold text-[#145a82]">Cadastro em Etapas (Etapa {formStep}/5)</span>
+                <span className="text-xs font-bold text-[var(--foreground)]">Cadastro em Etapas (Etapa {formStep}/5)</span>
                 <span className="text-[10px] font-semibold text-[var(--muted)]">
                   {formStep === 1 ? "Dados do Tutor" :
                    formStep === 2 ? "Endereços" :
@@ -642,7 +642,7 @@ export default function ClientsPage() {
                   <span
                     key={s}
                     className={`h-full flex-1 rounded-full transition-all ${
-                      s <= formStep ? "bg-[#145a82]" : "bg-slate-200"
+                      s <= formStep ? "bg-[var(--accent)]" : "bg-slate-200"
                     }`}
                   />
                 ))}
@@ -658,34 +658,34 @@ export default function ClientsPage() {
                       onChange={(e) => setClientName(e.target.value)}
                       placeholder="Nome completo do tutor *"
                       required
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <input
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="WhatsApp (com DDD) *"
                       required
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <input
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       type="email"
                       placeholder="E-mail (opcional)"
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
                         placeholder="Nascimento (DD/MM/AAAA)"
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={cpf}
                         onChange={(e) => setCpf(e.target.value)}
                         placeholder="CPF (opcional)"
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                     </div>
                     <textarea
@@ -693,7 +693,7 @@ export default function ClientsPage() {
                       onChange={(e) => setPrivateNotes(e.target.value)}
                       placeholder="Observações confidenciais do adestrador (não visíveis ao tutor)..."
                       rows={3}
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                   </div>
                 )}
@@ -706,13 +706,13 @@ export default function ClientsPage() {
                         value={addrZipCode}
                         onChange={(e) => setAddrZipCode(e.target.value)}
                         placeholder="CEP (somente números)"
-                        className="flex-1 rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="flex-1 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <button
                         type="button"
                         onClick={handleLookupCEP}
                         disabled={isCEPLoading}
-                        className="rounded-xl bg-sky-100 px-3 text-xs font-semibold text-[#145a82] hover:bg-sky-200"
+                        className="rounded-md bg-sky-100 px-3 text-xs font-semibold text-[var(--foreground)] hover:bg-sky-200"
                       >
                         {isCEPLoading ? "Buscando..." : "Buscar CEP"}
                       </button>
@@ -724,14 +724,14 @@ export default function ClientsPage() {
                         onChange={(e) => setAddrStreet(e.target.value)}
                         placeholder="Logradouro / Rua"
                         required
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={addrNumber}
                         onChange={(e) => setAddrNumber(e.target.value)}
                         placeholder="Número"
                         required
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                     </div>
 
@@ -739,7 +739,7 @@ export default function ClientsPage() {
                       value={addrComplement}
                       onChange={(e) => setAddrComplement(e.target.value)}
                       placeholder="Complemento (Apto, bloco, etc.)"
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
 
                     <div className="grid grid-cols-[1.2fr_1fr_0.6fr] gap-2">
@@ -747,20 +747,20 @@ export default function ClientsPage() {
                         value={addrNeighborhood}
                         onChange={(e) => setAddrNeighborhood(e.target.value)}
                         placeholder="Bairro"
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={addrCity}
                         onChange={(e) => setAddrCity(e.target.value)}
                         placeholder="Cidade"
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={addrState}
                         onChange={(e) => setAddrState(e.target.value)}
                         placeholder="UF"
                         maxLength={2}
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none text-center focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none text-center focus:border-sky-400"
                       />
                     </div>
 
@@ -769,9 +769,9 @@ export default function ClientsPage() {
                         value={addrNickname}
                         onChange={(e) => setAddrNickname(e.target.value)}
                         placeholder="Apelido (ex: Casa, Sítio)"
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
-                      <label className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-slate-50 text-xs text-[var(--muted)] cursor-pointer select-none">
+                      <label className="flex items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-slate-50 text-xs text-[var(--muted)] cursor-pointer select-none">
                         <input
                           type="checkbox"
                           checked={addrIsDefault}
@@ -792,7 +792,7 @@ export default function ClientsPage() {
                         )}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-700 hover:bg-rose-100"
+                        className="inline-flex items-center justify-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-700 hover:bg-rose-100"
                       >
                         📍 Ver no Google Maps
                       </a>
@@ -808,38 +808,38 @@ export default function ClientsPage() {
                       onChange={(e) => setDogName(e.target.value)}
                       placeholder="Nome do cão *"
                       required
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <input
                       value={breed}
                       onChange={(e) => setBreed(e.target.value)}
                       placeholder="Raça (opcional)"
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         value={age}
                         onChange={(e) => setAge(e.target.value)}
                         placeholder="Idade (ex: 2 anos)"
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={weight}
                         onChange={(e) => setWeight(e.target.value)}
                         placeholder="Peso (ex: 20kg)"
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <select
                         value={dogSex}
                         onChange={(e) => setDogSex(e.target.value)}
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
                       >
                         <option value="Macho">Macho</option>
                         <option value="Fêmea">Fêmea</option>
                       </select>
-                      <label className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-slate-50 text-xs text-[var(--muted)] cursor-pointer select-none">
+                      <label className="flex items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-slate-50 text-xs text-[var(--muted)] cursor-pointer select-none">
                         <input
                           type="checkbox"
                           checked={dogCastrated}
@@ -855,17 +855,17 @@ export default function ClientsPage() {
                         value={dogMicrochip}
                         onChange={(e) => setDogMicrochip(e.target.value)}
                         placeholder="Microchip (opcional)"
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={dogColor}
                         onChange={(e) => setDogColor(e.target.value)}
                         placeholder="Cor / Marcações"
-                        className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                     </div>
 
-                    <label className="rounded-xl border border-dashed border-[var(--border)] bg-sky-50/40 px-3 py-2 text-xs text-[var(--muted)] cursor-pointer">
+                    <label className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-2 text-xs text-[var(--muted)] cursor-pointer">
                       Foto do Cão (upload ou url)
                       <input
                         type="file"
@@ -882,7 +882,7 @@ export default function ClientsPage() {
                   <div className="grid gap-2.5 animate-in fade-in duration-200">
                     
                     {/* Lista de Vacinas Adicionadas */}
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+                    <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Vacinas do Animal</span>
                       {vaccines.length === 0 ? (
                         <p className="mt-1 text-[11px] text-[var(--muted)]">Nenhuma vacina registrada.</p>
@@ -908,13 +908,13 @@ export default function ClientsPage() {
                     </div>
 
                     {/* Editor de Vacinas */}
-                    <div className="grid gap-2 rounded-2xl border border-sky-100 bg-sky-50/30 p-3">
-                      <span className="text-[10px] font-bold uppercase text-[#145a82] tracking-wider">Adicionar Vacina</span>
+                    <div className="grid gap-2 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/30 p-3">
+                      <span className="text-[10px] font-bold uppercase text-[var(--foreground)] tracking-wider">Adicionar Vacina</span>
                       <input
                         value={newVacName}
                         onChange={e => setNewVacName(e.target.value)}
                         placeholder="Nome da vacina (ex: V10, Antirrábica)"
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
                       />
                       <div className="grid grid-cols-2 gap-2">
                         <label className="grid gap-1 text-[9px] font-bold text-[var(--muted)] uppercase">
@@ -924,7 +924,7 @@ export default function ClientsPage() {
                             placeholder="DD/MM/AAAA"
                             value={newVacDate}
                             onChange={e => setNewVacDate(e.target.value)}
-                            className="rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                            className="rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
                           />
                         </label>
                         <label className="grid gap-1 text-[9px] font-bold text-[var(--muted)] uppercase">
@@ -934,14 +934,14 @@ export default function ClientsPage() {
                             placeholder="DD/MM/AAAA"
                             value={newVacValidity}
                             onChange={e => setNewVacValidity(e.target.value)}
-                            className="rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                            className="rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
                           />
                         </label>
                       </div>
                       <button
                         type="button"
                         onClick={handleAddVaccine}
-                        className="rounded-xl bg-[#145a82] py-2 text-xs font-semibold text-white hover:bg-[#1b719d]"
+                        className="rounded-md bg-[var(--accent)] py-2 text-xs font-semibold text-white hover:bg-[#1b719d]"
                       >
                         + Adicionar na lista
                       </button>
@@ -951,19 +951,19 @@ export default function ClientsPage() {
                       value={dietRestrictions}
                       onChange={(e) => setDietRestrictions(e.target.value)}
                       placeholder="Restrições alimentares (ex: Frango, Grãos)"
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <input
                       value={healthConditions}
                       onChange={(e) => setHealthConditions(e.target.value)}
                       placeholder="Condições de saúde relevante (ex: Displasia)"
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <input
                       value={veterinarian}
                       onChange={(e) => setVeterinarian(e.target.value)}
                       placeholder="Veterinário de referência (Nome e Telefone)"
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                   </div>
                 )}
@@ -979,7 +979,7 @@ export default function ClientsPage() {
                         <select
                           value={tempEnergy}
                           onChange={e => setTempEnergy(e.target.value)}
-                          className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-[11px] outline-none"
+                          className="rounded-md border border-[var(--border)] bg-white px-2 py-1.5 text-[11px] outline-none"
                         >
                           <option value="Alta energia">Alta</option>
                           <option value="Energia moderada">Moderada</option>
@@ -992,7 +992,7 @@ export default function ClientsPage() {
                         <select
                           value={tempSocial}
                           onChange={e => setTempSocial(e.target.value)}
-                          className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-[11px] outline-none"
+                          className="rounded-md border border-[var(--border)] bg-white px-2 py-1.5 text-[11px] outline-none"
                         >
                           <option value="Sociável com pessoas">Sociável</option>
                           <option value="Tímido/reservado">Tímido</option>
@@ -1005,7 +1005,7 @@ export default function ClientsPage() {
                         <select
                           value={tempDogs}
                           onChange={e => setTempDogs(e.target.value)}
-                          className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-[11px] outline-none"
+                          className="rounded-md border border-[var(--border)] bg-white px-2 py-1.5 text-[11px] outline-none"
                         >
                           <option value="Sociável com outros cães">Sociável</option>
                           <option value="Reativo a outros cães">Reativo</option>
@@ -1019,18 +1019,18 @@ export default function ClientsPage() {
                       value={rotAlimentation}
                       onChange={(e) => setRotAlimentation(e.target.value)}
                       placeholder="Alimentação: ração, horários, tipos"
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     
                     <input
                       value={planLabel}
                       onChange={(e) => setPlanLabel(e.target.value)}
                       placeholder="Plano / Pacote de aulas atrelado"
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
 
                     {/* Focos / Objetivos checkboxes */}
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+                    <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Focos do Adestramento</span>
                       <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                         <label className="flex items-center gap-1.5 cursor-pointer">
@@ -1055,7 +1055,7 @@ export default function ClientsPage() {
                 )}
 
                 {saveError && (
-                  <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{saveError}</p>
+                  <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{saveError}</p>
                 )}
 
                 {/* Controles do Wizard */}
@@ -1064,7 +1064,7 @@ export default function ClientsPage() {
                     <button
                       type="button"
                       onClick={() => setFormStep(formStep - 1)}
-                      className="rounded-xl border border-[var(--border)] bg-white px-4 py-2.5 text-xs font-semibold text-[var(--muted)]"
+                      className="rounded-md border border-[var(--border)] bg-white px-4 py-2.5 text-xs font-semibold text-[var(--muted)]"
                     >
                       Anterior
                     </button>
@@ -1074,7 +1074,7 @@ export default function ClientsPage() {
                     <button
                       type="button"
                       onClick={() => setFormStep(formStep + 1)}
-                      className="flex-1 rounded-xl bg-[#145a82] py-2.5 text-xs font-semibold text-white"
+                      className="flex-1 rounded-md bg-[var(--accent)] py-2.5 text-xs font-semibold text-white"
                     >
                       Próximo
                     </button>
@@ -1082,7 +1082,7 @@ export default function ClientsPage() {
                     <button
                       type="submit"
                       disabled={isSaving}
-                      className="flex-1 pc-primary-action rounded-xl py-2.5 text-xs font-semibold disabled:opacity-60"
+                      className="flex-1 pc-primary-action rounded-md py-2.5 text-xs font-semibold disabled:opacity-60"
                     >
                       {isSaving ? "Salvando..." : "Finalizar Cadastro"}
                     </button>
@@ -1095,13 +1095,13 @@ export default function ClientsPage() {
           {/* Listagem de Clientes */}
           <section data-tour="clients-list" className="mt-3 space-y-2">
             {filteredClients.length === 0 ? (
-              <article className="rounded-2xl border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
+              <article className="rounded-md border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
                 Nenhum {entityKind === "humanos" ? "tutor" : "cão"} encontrado com os filtros atuais.
               </article>
             ) : null}
 
             {entityKind === "caes" ? filteredDogs.map(({ client, dog, status }) => (
-              <article key={`${client.id}-${dog.id}`} className="rounded-2xl border border-[#cfe4f3] bg-white p-3 shadow-[0_10px_24px_rgba(15,72,106,0.09)]">
+              <article key={`${client.id}-${dog.id}`} className="rounded-md border border-[var(--border)] bg-white p-3 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <div className="relative h-11 w-11 overflow-hidden rounded-full bg-sky-100">
@@ -1153,7 +1153,7 @@ export default function ClientsPage() {
                     <div className="flex flex-wrap gap-2">
                       <Link
                         href={`/treinos?clientId=${client.id}&dogId=${dog.id}`}
-                        className="rounded-full border border-[var(--border)] bg-[#145a82] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white whitespace-nowrap"
+                        className="rounded-full border border-[var(--border)] bg-[var(--accent)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white whitespace-nowrap"
                       >
                         Ver histórico
                       </Link>
@@ -1163,13 +1163,13 @@ export default function ClientsPage() {
                           setActiveTaskIdForManagement(client.id);
                           fetchClientTasks(client.id);
                         }}
-                        className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#145a82] hover:bg-slate-50 transition whitespace-nowrap"
+                        className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
                       >
                         📋 Tarefas
                       </button>
                     </div>
                   )}
-                  <Link href="/agenda" className="text-xs font-semibold text-[#145a82] whitespace-nowrap">Agendar</Link>
+                  <Link href="/agenda" className="text-xs font-semibold text-[var(--foreground)] whitespace-nowrap">Agendar</Link>
                 </div>
               </article>
             )) : filteredClients.map((item) => {
@@ -1177,7 +1177,7 @@ export default function ClientsPage() {
               const firstDogId = firstDog?.id;
 
               return (
-                <article key={item.client.id} className="rounded-2xl border border-[#cfe4f3] bg-white p-3 shadow-[0_10px_24px_rgba(15,72,106,0.09)]">
+                <article key={item.client.id} className="rounded-md border border-[var(--border)] bg-white p-3 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
                       <div className="relative h-11 w-11 overflow-hidden rounded-full bg-sky-100">
@@ -1238,7 +1238,7 @@ export default function ClientsPage() {
                       <div className="flex flex-wrap gap-2">
                         <Link
                           href={firstDogId ? `/treinos?clientId=${item.client.id}&dogId=${firstDogId}` : "/treinos"}
-                          className="rounded-full border border-[var(--border)] bg-[#145a82] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white whitespace-nowrap"
+                          className="rounded-full border border-[var(--border)] bg-[var(--accent)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white whitespace-nowrap"
                         >
                           Ver histórico
                         </Link>
@@ -1248,13 +1248,13 @@ export default function ClientsPage() {
                             setActiveTaskIdForManagement(item.client.id);
                             fetchClientTasks(item.client.id);
                           }}
-                          className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#145a82] hover:bg-slate-50 transition whitespace-nowrap"
+                          className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
                         >
                           📋 Tarefas
                         </button>
                       </div>
                     )}
-                    <Link href="/portal" className="text-xs font-semibold text-[#145a82] whitespace-nowrap">Portal</Link>
+                    <Link href="/portal" className="text-xs font-semibold text-[var(--foreground)] whitespace-nowrap">Portal</Link>
                   </div>
                 </article>
               );
@@ -1271,10 +1271,10 @@ export default function ClientsPage() {
             className="absolute inset-0 cursor-default"
             onClick={() => setActiveTaskIdForManagement(null)}
           />
-          <div className="relative w-full max-w-lg rounded-3xl border border-[var(--border)] bg-white p-5 shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg rounded-lg border border-[var(--border)] bg-white p-5 shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
             <header className="flex items-center justify-between border-b border-slate-100 pb-3 flex-shrink-0">
               <div>
-                <h3 className="font-display text-lg font-bold text-slate-900">Tarefas de Casa</h3>
+                <h3 className="text-lg font-bold text-slate-900">Tarefas de Casa</h3>
                 <p className="text-xs text-[var(--muted)]">
                   Tutor: {activeClientForTasks?.name}
                 </p>
@@ -1296,7 +1296,7 @@ export default function ClientsPage() {
                 <p className="text-center text-xs text-[var(--muted)] py-8">Nenhuma tarefa cadastrada para este tutor.</p>
               ) : (
                 clientTasks.map((task) => (
-                  <div key={task.id} className="rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 space-y-3">
+                  <div key={task.id} className="rounded-md border border-slate-100 bg-slate-50/50 p-3.5 space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
@@ -1367,20 +1367,20 @@ export default function ClientsPage() {
                   placeholder="Título da tarefa (ex: Treinar o senta antes de comer)"
                   value={newPortalTaskTitle}
                   onChange={(e) => setNewPortalTaskTitle(e.target.value)}
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full"
+                  className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full"
                 />
                 <textarea
                   placeholder="Instruções adicionais para o tutor (opcional)"
                   value={newPortalTaskDesc}
                   onChange={(e) => setNewPortalTaskDesc(e.target.value)}
                   rows={2}
-                  className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full resize-none"
+                  className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full resize-none"
                 />
                 <button
                   type="button"
                   disabled={isCreatingTask || !newPortalTaskTitle.trim()}
                   onClick={() => handleCreateTask(activeTaskIdForManagement)}
-                  className="rounded-xl bg-[#145a82] text-white py-2 text-xs font-bold transition hover:bg-[#1c719d] disabled:opacity-50"
+                  className="rounded-md bg-[var(--accent)] text-white py-2 text-xs font-bold transition hover:bg-[#1c719d] disabled:opacity-50"
                 >
                   {isCreatingTask ? "Criando..." : "+ Cadastrar Tarefa"}
                 </button>
@@ -1398,7 +1398,7 @@ export default function ClientsPage() {
             className="absolute inset-0 cursor-default"
             onClick={() => setCrmEvidenceLightbox(null)}
           />
-          <div className="relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-md bg-white shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-2">
               <p className="text-sm font-semibold text-[var(--foreground)]">Evidência: {crmEvidenceLightbox.title}</p>
               <button

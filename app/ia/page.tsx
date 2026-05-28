@@ -115,10 +115,10 @@ export default function IaPage() {
   return (
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-md px-3 pb-10 pt-3 sm:max-w-xl">
-        <section className="rounded-[2rem] border border-[var(--border)] bg-[#f7fbff] p-4 shadow-[var(--shadow)]">
+        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <header>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Assistente</p>
-            <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">Assistente de IA para treinos</h1>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Assistente</p>
+            <h1 className="text-2xl font-semibold text-[var(--foreground)]">Assistente de IA para treinos</h1>
             <p className="mt-1 text-xs text-[var(--muted)]">
               Descreva o caso do cão e receba uma sugestão estruturada de treino para usar como ponto de partida profissional.
             </p>
@@ -134,7 +134,7 @@ export default function IaPage() {
                   const next = clients.find((c) => c.id === event.target.value);
                   setSelectedDogId(next?.dogs[0]?.id ?? "");
                 }}
-                className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
               >
                 {clients.map((client) => (
                   <option key={client.id} value={client.id}>{client.name}</option>
@@ -146,7 +146,7 @@ export default function IaPage() {
               <select
                 value={selectedDog?.id ?? ""}
                 onChange={(event) => setSelectedDogId(event.target.value)}
-                className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
               >
                 {(selectedClient?.dogs ?? []).map((dog) => (
                   <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
@@ -155,18 +155,18 @@ export default function IaPage() {
             </label>
           </div>
 
-          <div className="mt-3 inline-flex rounded-full border border-[#c9dfef] bg-white p-0.5 text-[11px] font-semibold">
+          <div className="mt-3 inline-flex rounded-full border border-[var(--border)] bg-white p-0.5 text-[11px] font-semibold">
             <button
               type="button"
               onClick={() => setTab("resumo")}
-              className={`rounded-full px-3 py-1.5 transition ${tab === "resumo" ? "bg-[#145a82] text-white" : "text-[var(--muted)]"}`}
+              className={`rounded-full px-3 py-1.5 transition ${tab === "resumo" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"}`}
             >
               Resumir aula
             </button>
             <button
               type="button"
               onClick={() => setTab("sugestao")}
-              className={`rounded-full px-3 py-1.5 transition ${tab === "sugestao" ? "bg-[#145a82] text-white" : "text-[var(--muted)]"}`}
+              className={`rounded-full px-3 py-1.5 transition ${tab === "sugestao" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"}`}
             >
               Plano de treino
             </button>
@@ -174,7 +174,7 @@ export default function IaPage() {
 
           {tab === "resumo" ? (
             <section className="mt-4 grid gap-3">
-              <article className="rounded-2xl border border-[var(--border)] bg-white p-3">
+              <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-sm font-semibold text-[var(--foreground)]">1. Capture o áudio</p>
                 <p className="mt-1 text-xs text-[var(--muted)]">
                   Grave um áudio enquanto narra a sessão. A IA vai transcrever e gerar o resumo.
@@ -194,21 +194,21 @@ export default function IaPage() {
                   onChange={(event) => setTranscript(event.target.value)}
                   placeholder="Transcrição da aula aparecerá aqui..."
                   rows={5}
-                  className="mt-3 w-full rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  className="mt-3 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
                 />
               </article>
 
-              <article className="rounded-2xl border border-[var(--border)] bg-white p-3">
+              <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-sm font-semibold text-[var(--foreground)]">2. Resumo gerado</p>
                 <button
                   type="button"
                   onClick={handleGenerateSummary}
-                  className="mt-2 rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-xs font-semibold text-[#145a82]"
+                  className="mt-2 rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--foreground)]"
                 >
                   Gerar resumo
                 </button>
                 {summary ? (
-                  <p className="mt-3 whitespace-pre-line rounded-xl border border-sky-100 bg-sky-50 px-3 py-2 text-xs text-[#245d84]">
+                  <p className="mt-3 whitespace-pre-line rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-xs text-[#245d84]">
                     {summary}
                   </p>
                 ) : null}
@@ -216,7 +216,7 @@ export default function IaPage() {
             </section>
           ) : (
             <section className="mt-4 grid gap-3">
-              <article className="rounded-2xl border border-[var(--border)] bg-white p-3">
+              <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-sm font-semibold text-[var(--foreground)]">1. Explique o que você quer treinar</p>
                 <p className="mt-1 text-xs text-[var(--muted)]">
                   Escreva como falaria no atendimento: raça, comportamento, objetivo e dificuldade atual.
@@ -226,11 +226,11 @@ export default function IaPage() {
                   onChange={(event) => setTrainingNeed(event.target.value)}
                   rows={4}
                   placeholder="Ex.: Pastor Alemão puxa na guia, ignora o tutor na rua e reage quando vê outro cão. Quero progressão para passeio mais calmo."
-                  className="mt-3 w-full rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  className="mt-3 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
                 />
               </article>
 
-              <article className="rounded-2xl border border-[var(--border)] bg-white p-3">
+              <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <p className="text-sm font-semibold text-[var(--foreground)]">2. Lembrete da próxima aula</p>
@@ -250,7 +250,7 @@ export default function IaPage() {
                     value={reminder}
                     onChange={(event) => setReminder(event.target.value)}
                     placeholder="Ex.: continuar place com 2m de distância"
-                    className="flex-1 rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                    className="flex-1 rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
                   />
                   <button
                     type="button"
@@ -261,21 +261,21 @@ export default function IaPage() {
                   </button>
                 </div>
                 {reminderSaved ? (
-                  <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800">{reminderSaved}</p>
+                  <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800">{reminderSaved}</p>
                 ) : null}
               </article>
 
-              <article className="rounded-2xl border border-[var(--border)] bg-white p-3">
+              <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-sm font-semibold text-[var(--foreground)]">3. Linha do tempo (últimas 4 semanas)</p>
                 <p className="mt-1 text-xs text-[var(--muted)]">
                   Visão cronológica dos treinos para entender onde parou com {selectedDog?.name ?? "este cão"}.
                 </p>
-                <ol className="mt-3 space-y-2 border-l border-sky-100 pl-3">
+                <ol className="mt-3 space-y-2 border-l border-[var(--border)] pl-3">
                   {dogTimeline.length === 0 ? (
                     <li className="text-xs text-[var(--muted)]">Sem sessões registradas no período.</li>
                   ) : null}
                   {dogTimeline.map((session) => (
-                    <li key={session.id} className="rounded-xl border border-[var(--border)] bg-[#f7fbff] px-3 py-2">
+                    <li key={session.id} className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
                       <p className="text-xs font-semibold text-[var(--foreground)]">{session.date} • {session.title}</p>
                       {session.notes?.[0]?.comment ? (
                         <p className="mt-1 line-clamp-2 text-[11px] text-[var(--muted)]">{session.notes[0].comment}</p>
@@ -285,7 +285,7 @@ export default function IaPage() {
                 </ol>
               </article>
 
-              <article className="rounded-2xl border border-[var(--border)] bg-white p-3">
+              <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-sm font-semibold text-[var(--foreground)]">4. Sugestão de plano de treino</p>
                 <p className="mt-1 text-xs text-[var(--muted)]">
                   A IA monta um roteiro técnico inicial. O adestrador decide o que aplicar e adapta ao cão real.
@@ -293,12 +293,12 @@ export default function IaPage() {
                 <button
                   type="button"
                   onClick={handleSuggestNextTraining}
-                  className="mt-2 rounded-full border border-[#145a82] bg-[#145a82] px-3 py-1.5 text-xs font-semibold text-white"
+                  className="mt-2 rounded-full border border-[#145a82] bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white"
                 >
                   Gerar plano sugerido
                 </button>
                 {suggestion ? (
-                  <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-sky-100 bg-sky-50 px-3 py-2 font-sans text-xs text-[#245d84]">
+                  <pre className="mt-3 whitespace-pre-wrap rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 font-sans text-xs text-[#245d84]">
                     {suggestion}
                   </pre>
                 ) : null}

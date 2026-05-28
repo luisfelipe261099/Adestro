@@ -147,12 +147,12 @@ export default function ChatClientPage() {
   return (
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--panel)] shadow-[var(--shadow)] overflow-hidden h-[82vh]">
+        <section className="flex flex-col rounded-md border border-[var(--border)] bg-[var(--panel)] shadow-sm overflow-hidden h-[82vh]">
           
           {/* Header */}
-          <header className="flex items-center justify-between border-b border-[var(--border)] bg-[#f7fbff] px-4 py-3">
+          <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
             <div className="flex items-center gap-2">
-              <Link href="/dashboard" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[#145a82]">
+              <Link href="/dashboard" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--foreground)]">
                 <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
                   <path d="m14.5 6-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -163,7 +163,7 @@ export default function ChatClientPage() {
               </div>
             </div>
             {selectedContact && (
-              <span className="rounded-full bg-sky-100 text-[#145a82] px-2.5 py-0.5 text-[10px] font-bold">
+              <span className="rounded-full bg-sky-100 text-[var(--foreground)] px-2.5 py-0.5 text-[10px] font-bold">
                 {selectedContact.dogs[0]?.name || "Cão"}
               </span>
             )}
@@ -183,9 +183,9 @@ export default function ChatClientPage() {
                     key={c.id}
                     type="button"
                     onClick={() => setSelectedClientId(c.id)}
-                    className={`flex flex-col items-center justify-center rounded-xl px-3 py-1.5 min-w-[95px] text-center border transition-all ${
+                    className={`flex flex-col items-center justify-center rounded-md px-3 py-1.5 min-w-[95px] text-center border transition-all ${
                       isSelected
-                        ? "border-[#145a82] bg-sky-50 text-[#145a82] font-semibold"
+                        ? "border-[#145a82] bg-[var(--surface-2)] text-[var(--foreground)] font-semibold"
                         : "border-[var(--border)] bg-slate-50 text-[var(--muted)]"
                     }`}
                   >
@@ -216,7 +216,7 @@ export default function ChatClientPage() {
                     }`}
                   >
                     <div
-                      className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed shadow-xs ${
+                      className={`rounded-md px-3.5 py-2 text-sm leading-relaxed shadow-xs ${
                         isMe
                           ? "bg-[linear-gradient(135deg,_#145a82,_#247eb2)] text-white rounded-tr-none"
                           : "bg-white border border-[var(--border)] text-slate-800 rounded-tl-none"
@@ -241,13 +241,13 @@ export default function ChatClientPage() {
                 value={typedMessage}
                 onChange={(e) => setTypedMessage(e.target.value)}
                 placeholder="Escreva sua mensagem..."
-                className="flex-1 rounded-xl border border-[var(--border)] bg-slate-50 px-3.5 py-2 text-sm outline-none focus:border-sky-400 focus:bg-white"
+                className="flex-1 rounded-md border border-[var(--border)] bg-slate-50 px-3.5 py-2 text-sm outline-none focus:border-sky-400 focus:bg-white"
                 required
               />
               <button
                 type="submit"
                 disabled={sending || !typedMessage.trim() || !selectedClientId}
-                className="flex h-9.5 w-9.5 items-center justify-center rounded-xl bg-[#145a82] text-white hover:bg-sky-800 transition disabled:opacity-50"
+                className="flex h-9.5 w-9.5 items-center justify-center rounded-md bg-[var(--accent)] text-white hover:bg-sky-800 transition disabled:opacity-50"
                 aria-label="Enviar"
               >
                 <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 rotate-45 transform" aria-hidden>

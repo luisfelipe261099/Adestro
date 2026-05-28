@@ -43,24 +43,24 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
   const lockedBadges = state.badges.filter((badge) => !badge.unlocked);
 
   return (
-    <article className="rounded-[1.5rem] border border-[var(--border)] bg-gradient-to-br from-sky-50 via-white to-indigo-50 p-5 shadow-sm">
+    <article className="rounded-lg border border-[var(--border)] bg-gradient-to-br from-sky-50 via-white to-indigo-50 p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Jornada de Treino</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Jornada de Treino</p>
           <h3 className="mt-1 text-lg font-semibold text-[var(--foreground)]">Nível e Patente do Cão</h3>
           <p className="mt-1 text-sm text-[var(--muted)]">
             Seu cão está progredindo! Complete tarefas com fotos/vídeos de prova, assista aos vídeos de aula e interaja para subir de nível e desbloquear novas patentes.
           </p>
         </div>
-        <div className="rounded-2xl border border-sky-200 bg-white px-3.5 py-2 text-center min-w-[70px]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#2d6f99]">Nível</p>
-          <p className="text-2xl font-bold text-[#145a82]">{state.level}</p>
+        <div className="rounded-md border border-[var(--border-strong)] bg-white px-3.5 py-2 text-center min-w-[70px]">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">Nível</p>
+          <p className="text-2xl font-bold text-[var(--foreground)]">{state.level}</p>
         </div>
       </div>
 
-      <div className="mt-3.5 rounded-xl bg-[#145a82]/5 border border-[#145a82]/10 p-3.5 flex items-center justify-between gap-3">
+      <div className="mt-3.5 rounded-md bg-[#145a82]/5 border border-[#145a82]/10 p-3.5 flex items-center justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase font-bold tracking-[0.12em] text-[#145a82]">Patente Canina Atual</p>
+          <p className="text-[10px] uppercase font-bold tracking-wide text-[var(--foreground)]">Patente Canina Atual</p>
           <p className="text-base font-bold text-slate-800 mt-0.5">{state.dogRank}</p>
         </div>
         <div className="text-3xl">
@@ -69,7 +69,7 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
       </div>
 
       {lastEarned ? (
-        <div className="mt-3 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+        <div className="mt-3 flex items-center justify-between rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           <span>
             <strong>+{lastEarned.points} pts</strong> • {lastEarned.reason}
           </span>
@@ -78,17 +78,17 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
       ) : null}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-3">
-          <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]">Pontos totais</p>
-          <p className="mt-1 text-2xl font-semibold text-[#145a82]">{state.points}</p>
+        <div className="rounded-md border border-[var(--border)] bg-white p-3">
+          <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">Pontos totais</p>
+          <p className="mt-1 text-2xl font-semibold text-[var(--foreground)]">{state.points}</p>
         </div>
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-3">
-          <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]">Sequência diária</p>
-          <p className="mt-1 text-2xl font-semibold text-[#145a82]">🔥 {state.streakDays}</p>
+        <div className="rounded-md border border-[var(--border)] bg-white p-3">
+          <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">Sequência diária</p>
+          <p className="mt-1 text-2xl font-semibold text-[var(--foreground)]">🔥 {state.streakDays}</p>
         </div>
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-3">
-          <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]">Conquistas</p>
-          <p className="mt-1 text-2xl font-semibold text-[#145a82]">{earnedBadges.length}/{state.badges.length}</p>
+        <div className="rounded-md border border-[var(--border)] bg-white p-3">
+          <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">Conquistas</p>
+          <p className="mt-1 text-2xl font-semibold text-[var(--foreground)]">{earnedBadges.length}/{state.badges.length}</p>
         </div>
       </div>
 
@@ -98,7 +98,7 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
           <span>{state.xpInLevel} / {state.xpInLevel + state.xpToNext} XP</span>
           <span>Nível {state.level + 1}</span>
         </div>
-        <div className="mt-1 h-3 overflow-hidden rounded-full border border-sky-100 bg-white">
+        <div className="mt-1 h-3 overflow-hidden rounded-full border border-[var(--border)] bg-white">
           <div
             className="h-full rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all"
             style={{ width: `${xpPercent}%` }}
@@ -106,8 +106,8 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-[var(--border)] bg-white p-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Avalie seu adestrador</p>
+      <div className="mt-5 rounded-md border border-[var(--border)] bg-white p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Avalie seu adestrador</p>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm text-[var(--foreground)]">{trainerName || "Seu adestrador"}</p>
           <StarPicker value={state.trainerRating} onChange={onRateTrainer} />
@@ -120,12 +120,12 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
       </div>
 
       <div className="mt-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Conquistas</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Conquistas</p>
         <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
           {earnedBadges.map((badge) => (
             <div
               key={badge.id}
-              className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-center"
+              className="rounded-md border border-amber-200 bg-amber-50 p-3 text-center"
               title={badge.description}
             >
               <p className="text-2xl">{badge.icon}</p>
@@ -135,7 +135,7 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
           {lockedBadges.slice(0, 6).map((badge) => (
             <div
               key={badge.id}
-              className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-3 text-center opacity-70"
+              className="rounded-md border border-dashed border-slate-200 bg-white/60 p-3 text-center opacity-70"
               title={badge.description}
             >
               <p className="text-2xl grayscale">{badge.icon}</p>
@@ -145,7 +145,7 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
         </div>
       </div>
 
-      <div className="mt-4 rounded-xl border border-sky-100 bg-white/80 px-3 py-2 text-[11px] text-[#245d84]">
+      <div className="mt-4 rounded-md border border-[var(--border)] bg-white/80 px-3 py-2 text-[11px] text-[#245d84]">
         <strong>Como pontuar:</strong> concluir tarefa (+20) • enviar evidência de tarefa (+15) • assistir vídeo do treino (+15) • avaliar aula (+15) • avaliar adestrador (+25) • enviar comentário (+10) • visita diária (+5).
       </div>
     </article>

@@ -61,7 +61,7 @@ export function TagsEditor({ clientId, initialTags, className = "", onChange }: 
       {tags.map((tag) => (
         <span
           key={tag}
-          className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-sky-900"
+          className="inline-flex items-center gap-1 rounded-full border border-[var(--border-strong)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] font-bold text-sky-900"
         >
           🏷️ {tag}
           <button
@@ -80,7 +80,7 @@ export function TagsEditor({ clientId, initialTags, className = "", onChange }: 
         <summary className="cursor-pointer list-none rounded-full border border-dashed border-slate-300 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-500 hover:border-sky-400 hover:text-sky-700">
           + tag
         </summary>
-        <div className="absolute z-30 mt-1 w-56 rounded-xl border border-[var(--border)] bg-white p-2 shadow-lg">
+        <div className="absolute z-30 mt-1 w-56 rounded-md border border-[var(--border)] bg-white p-2 shadow-lg">
           <input
             type="text"
             value={draft}
@@ -102,7 +102,7 @@ export function TagsEditor({ clientId, initialTags, className = "", onChange }: 
                   key={suggestion}
                   type="button"
                   onClick={() => addTag(suggestion)}
-                  className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-700 hover:bg-sky-50"
+                  className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-700 hover:bg-[var(--surface-2)]"
                 >
                   + {suggestion}
                 </button>

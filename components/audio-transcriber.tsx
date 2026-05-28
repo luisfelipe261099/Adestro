@@ -111,7 +111,7 @@ export function AudioTranscriber({ value, onAppend, lang = "pt-BR", hint, classN
   if (supported === false) {
     return (
       <p className={`text-[11px] text-[var(--muted)] ${className}`}>
-        🎙️ Transcrição não disponível neste navegador. Use Chrome/Edge desktop ou Safari iOS.
+        Transcrição não disponível neste navegador. Use Chrome/Edge ou Safari iOS.
       </p>
     );
   }
@@ -122,27 +122,37 @@ export function AudioTranscriber({ value, onAppend, lang = "pt-BR", hint, classN
         <button
           type="button"
           onClick={recording ? stop : start}
-          className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[11px] font-bold transition ${
+          className={`inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-[12px] font-medium transition ${
             recording
-              ? "bg-rose-600 text-white animate-pulse"
-              : "border border-[var(--border)] bg-white text-[#145a82] hover:bg-sky-50"
+              ? "bg-[var(--danger)] text-white animate-pulse"
+              : "btn-secondary"
           }`}
         >
-          <span aria-hidden>{recording ? "⏹" : "🎙️"}</span>
-          {recording ? "Parar e usar transcrição" : "Gravar nota por voz"}
+          {recording ? (
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
+              <rect x="6" y="6" width="12" height="12" rx="1.5" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+              <rect x="9" y="3" width="6" height="11" rx="3" />
+              <path d="M19 11a7 7 0 0 1-14 0" />
+              <path d="M12 18v3" />
+            </svg>
+          )}
+          {recording ? "Parar e inserir" : "Gravar nota por voz"}
         </button>
-        {hint ? <span className="text-[10px] text-[var(--muted)]">{hint}</span> : null}
+        {hint ? <span className="text-[11px] text-[var(--muted)]">{hint}</span> : null}
       </div>
       {interim ? (
-        <p className="rounded-lg bg-amber-50 px-2 py-1 text-[11px] italic text-amber-800">
+        <p className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1 text-[11.5px] italic text-[var(--muted-strong)]">
           {interim}…
         </p>
       ) : null}
       {error ? (
-        <p className="rounded-lg bg-rose-50 px-2 py-1 text-[11px] text-rose-700">{error}</p>
+        <p className="rounded-md border border-[var(--danger)]/30 bg-[var(--danger-bg)] px-2 py-1 text-[11px] text-[var(--danger)]">{error}</p>
       ) : null}
       {value && !recording ? (
-        <p className="text-[10px] text-emerald-700">✓ Transcrição inserida no campo abaixo.</p>
+        <p className="text-[11px] text-[var(--success)]">Transcrição inserida no campo abaixo.</p>
       ) : null}
     </div>
   );

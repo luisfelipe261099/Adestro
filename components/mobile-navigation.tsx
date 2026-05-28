@@ -46,7 +46,7 @@ export function MobileNavigation() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-30 flex h-14 items-center justify-around border-t border-[var(--border)] bg-[var(--surface)]/90 px-1 pb-safe backdrop-blur-xl lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 flex h-14 items-center justify-around border-t border-[var(--border)] bg-[var(--surface)]/90 px-1 pb-safe backdrop-blur lg:hidden">
         {PRIMARY.map(({ href, label, Icon }) => {
           const active = pathname === href;
           return (

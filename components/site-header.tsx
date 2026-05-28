@@ -134,7 +134,7 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--surface)]/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--surface)]/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           {/* Logo */}
           <Link href={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-2">

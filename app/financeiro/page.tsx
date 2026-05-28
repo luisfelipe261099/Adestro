@@ -288,18 +288,18 @@ export default function FinanceiroPage() {
       `}</style>
 
       <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="rounded-[2rem] border border-[var(--border)] bg-[#fcfdff] p-4 shadow-[var(--shadow)]">
+        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           
           {/* Cabeçalho */}
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Módulo Financeiro</p>
-              <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">Painel Financeiro</h1>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Módulo Financeiro</p>
+              <h1 className="text-2xl font-semibold text-[var(--foreground)]">Painel Financeiro</h1>
               <p className="text-xs text-[var(--muted)]">Controle de faturamento, pacotes e faturamento B2B.</p>
             </div>
             <Link
               href="/dashboard"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[#145a82]"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--foreground)]"
               aria-label="Voltar ao início"
             >
               ✕
@@ -307,7 +307,7 @@ export default function FinanceiroPage() {
           </header>
 
           {/* Abas */}
-          <nav data-tour="finance-tabs" className="mt-4 flex gap-1 rounded-2xl bg-slate-100/80 p-1 text-[11px] font-semibold">
+          <nav data-tour="finance-tabs" className="mt-4 flex gap-1 rounded-md bg-slate-100/80 p-1 text-[11px] font-semibold">
             {[
               { id: "dashboard", label: "Faturamento" },
               { id: "pacotes", label: "Pacotes" },
@@ -321,10 +321,10 @@ export default function FinanceiroPage() {
                   setActiveTab(tab.id as any);
                   setReceiptGenerated(false);
                 }}
-                className={`flex-1 rounded-xl py-2 text-center transition ${
+                className={`flex-1 rounded-md py-2 text-center transition ${
                   activeTab === tab.id
-                    ? "bg-[#145a82] text-white shadow-[0_6px_14px_rgba(20,90,130,0.18)]"
-                    : "text-[var(--muted)] hover:text-[#145a82]"
+                    ? "bg-[var(--accent)] text-white shadow-[0_6px_14px_rgba(20,90,130,0.18)]"
+                    : "text-[var(--muted)] hover:text-[var(--foreground)]"
                 }`}
               >
                 {tab.label}
@@ -332,8 +332,8 @@ export default function FinanceiroPage() {
             ))}
           </nav>
 
-          {error && <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
-          {message && <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p>}
+          {error && <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
+          {message && <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p>}
 
           {loading ? (
             <p className="text-center text-xs text-[var(--muted)] py-12">Carregando painel financeiro...</p>
@@ -345,22 +345,22 @@ export default function FinanceiroPage() {
                   
                   {/* Grid de faturamento */}
                   <div className="grid grid-cols-2 gap-3">
-                    <article className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3.5">
+                    <article className="rounded-md border border-emerald-100 bg-emerald-50/50 p-3.5">
                       <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-emerald-800">💰 Recebido</span>
                       <p className="mt-1 text-xl font-bold text-emerald-950">R$ {stats.metrics.received.toFixed(2)}</p>
                       <span className="text-[9px] text-emerald-700">Parcelas quitadas</span>
                     </article>
-                    <article className="rounded-2xl border border-sky-100 bg-sky-50/50 p-3.5">
+                    <article className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-3.5">
                       <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-sky-800">⏳ A Receber</span>
                       <p className="mt-1 text-xl font-bold text-sky-950">R$ {stats.metrics.pending.toFixed(2)}</p>
                       <span className="text-[9px] text-sky-700">Faturas em aberto</span>
                     </article>
-                    <article className="rounded-2xl border border-rose-100 bg-rose-50/50 p-3.5">
+                    <article className="rounded-md border border-rose-100 bg-rose-50/50 p-3.5">
                       <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-rose-800">🔴 Em Atraso</span>
                       <p className="mt-1 text-xl font-bold text-rose-950">R$ {stats.metrics.overdue.toFixed(2)}</p>
                       <span className="text-[9px] text-rose-700">Faturas vencidas</span>
                     </article>
-                    <article className="rounded-2xl border border-purple-100 bg-purple-50/50 p-3.5">
+                    <article className="rounded-md border border-purple-100 bg-purple-50/50 p-3.5">
                       <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-purple-800">📦 Contratos</span>
                       <p className="mt-1 text-xl font-bold text-purple-950">{stats.metrics.activeContracts} Ativos</p>
                       <span className="text-[9px] text-purple-700">Pacotes ativos vendidos</span>
@@ -368,7 +368,7 @@ export default function FinanceiroPage() {
                   </div>
 
                   {/* Previsibilidade */}
-                  <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-xs">
+                  <article className="rounded-md border border-slate-100 bg-white p-4 shadow-xs">
                     <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--muted)]">Previsão Comercial</h3>
                     <div className="mt-3 flex items-center justify-between gap-4">
                       <div>
@@ -390,19 +390,19 @@ export default function FinanceiroPage() {
 
                   {/* Venda de Pacote Rápida */}
                   <div className="flex justify-between items-center">
-                    <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">Vendas de Pacotes</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Vendas de Pacotes</h3>
                     <button
                       type="button"
                       onClick={() => setShowContractForm(!showContractForm)}
-                      className="rounded-full bg-[#145a82] px-3.5 py-1 text-xs font-bold text-white shadow-xs"
+                      className="rounded-full bg-[var(--accent)] px-3.5 py-1 text-xs font-bold text-white shadow-xs"
                     >
                       {showContractForm ? "Fechar" : "+ Vender Pacote"}
                     </button>
                   </div>
 
                   {showContractForm && (
-                    <form onSubmit={handleCreateContract} className="grid gap-3 rounded-2xl border border-sky-100 bg-sky-50/50 p-4 animate-in slide-in-from-top-4 duration-200">
-                      <h4 className="text-xs font-bold text-[#145a82]">Nova Venda de Pacote</h4>
+                    <form onSubmit={handleCreateContract} className="grid gap-3 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-4 animate-in slide-in-from-top-4 duration-200">
+                      <h4 className="text-xs font-bold text-[var(--foreground)]">Nova Venda de Pacote</h4>
                       
                       <div className="grid gap-2 sm:grid-cols-2">
                         <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
@@ -411,7 +411,7 @@ export default function FinanceiroPage() {
                             value={selectedClientId}
                             onChange={(e) => setSelectedClientId(e.target.value)}
                             required
-                            className="rounded-xl border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                            className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
                           >
                             <option value="">Selecione...</option>
                             {clients.map((c) => (
@@ -426,7 +426,7 @@ export default function FinanceiroPage() {
                             value={selectedDogId}
                             onChange={(e) => setSelectedDogId(e.target.value)}
                             required
-                            className="rounded-xl border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                            className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
                           >
                             <option value="">Selecione...</option>
                             {clientDogs.map((d) => (
@@ -443,7 +443,7 @@ export default function FinanceiroPage() {
                             value={selectedPackageId}
                             onChange={(e) => setSelectedPackageId(e.target.value)}
                             required
-                            className="rounded-xl border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                            className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
                           >
                             <option value="">Selecione...</option>
                             {packages.map((p) => (
@@ -459,7 +459,7 @@ export default function FinanceiroPage() {
                             value={contractStartDate}
                             onChange={(e) => setContractStartDate(e.target.value)}
                             required
-                            className="rounded-xl border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                            className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
                           />
                         </label>
                       </div>
@@ -471,11 +471,11 @@ export default function FinanceiroPage() {
                           value={contractNotes}
                           onChange={(e) => setContractNotes(e.target.value)}
                           placeholder="Ajustes no cronograma, acordos, etc."
-                          className="rounded-xl border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                          className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
                         />
                       </label>
 
-                      <button type="submit" className="pc-primary-action rounded-xl py-2 text-xs font-bold mt-1">
+                      <button type="submit" className="pc-primary-action rounded-md py-2 text-xs font-bold mt-1">
                         Confirmar Venda e Gerar Cobranças
                       </button>
                     </form>
@@ -483,12 +483,12 @@ export default function FinanceiroPage() {
 
                   {/* Transações Recentes */}
                   <section className="space-y-2">
-                    <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">Cobranças Recentes</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Cobranças Recentes</h3>
                     {invoices.length === 0 ? (
                       <p className="text-xs text-[var(--muted)] py-4">Nenhuma cobrança registrada.</p>
                     ) : (
                       invoices.slice(0, 5).map((inv) => (
-                        <div key={inv.id} className="flex justify-between items-center rounded-xl border border-slate-100 bg-white p-3 text-xs">
+                        <div key={inv.id} className="flex justify-between items-center rounded-md border border-slate-100 bg-white p-3 text-xs">
                           <div>
                             <p className="font-semibold text-slate-900">{inv.clientName} ({inv.dogName})</p>
                             <p className="text-[10px] text-[var(--muted)]">{inv.packageName} • Vence em {inv.dueDate}</p>
@@ -512,19 +512,19 @@ export default function FinanceiroPage() {
               {activeTab === "pacotes" && (
                 <div className="mt-4 space-y-4 animate-in fade-in duration-200">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">Pacotes Disponíveis</span>
+                    <span className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Pacotes Disponíveis</span>
                     <button
                       type="button"
                       onClick={() => setShowPackageForm(!showPackageForm)}
-                      className="rounded-full bg-[#145a82] px-3.5 py-1 text-xs font-bold text-white shadow-xs"
+                      className="rounded-full bg-[var(--accent)] px-3.5 py-1 text-xs font-bold text-white shadow-xs"
                     >
                       {showPackageForm ? "Fechar" : "+ Novo Pacote"}
                     </button>
                   </div>
 
                   {showPackageForm && (
-                    <form onSubmit={handleCreatePackage} className="grid gap-3 rounded-2xl border border-sky-100 bg-sky-50/50 p-4 animate-in slide-in-from-top-4 duration-200">
-                      <h4 className="text-xs font-bold text-[#145a82]">Configurar Novo Pacote</h4>
+                    <form onSubmit={handleCreatePackage} className="grid gap-3 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-4 animate-in slide-in-from-top-4 duration-200">
+                      <h4 className="text-xs font-bold text-[var(--foreground)]">Configurar Novo Pacote</h4>
                       
                       <input
                         type="text"
@@ -532,7 +532,7 @@ export default function FinanceiroPage() {
                         placeholder="Nome do pacote (ex: Pacote Básico 4 aulas)"
                         value={newPkgName}
                         onChange={(e) => setNewPkgName(e.target.value)}
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
 
                       <div className="grid grid-cols-2 gap-3">
@@ -544,7 +544,7 @@ export default function FinanceiroPage() {
                             required
                             value={newPkgSessions}
                             onChange={(e) => setNewPkgSessions(Number(e.target.value))}
-                            className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
+                            className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
                           />
                         </label>
 
@@ -556,18 +556,18 @@ export default function FinanceiroPage() {
                             required
                             value={newPkgAmount}
                             onChange={(e) => setNewPkgAmount(Number(e.target.value))}
-                            className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
+                            className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
                           />
                         </label>
                       </div>
 
-                      <div className="rounded-xl bg-white p-3 border border-slate-100">
+                      <div className="rounded-md bg-white p-3 border border-slate-100">
                         <label className="flex items-center gap-2 text-xs font-semibold text-slate-800 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={newPkgFractioned}
                             onChange={(e) => setNewPkgFractioned(e.target.checked)}
-                            className="rounded border-[var(--border)] text-[#145a82]"
+                            className="rounded border-[var(--border)] text-[var(--foreground)]"
                           />
                           Cobrança Fracionada (Parcelado)
                         </label>
@@ -580,13 +580,13 @@ export default function FinanceiroPage() {
                               min={1}
                               value={newPkgFractionSessions}
                               onChange={(e) => setNewPkgFractionSessions(Number(e.target.value))}
-                              className="rounded-xl border border-[var(--border)] bg-slate-50 px-3 py-1.5 text-xs outline-none"
+                              className="rounded-md border border-[var(--border)] bg-slate-50 px-3 py-1.5 text-xs outline-none"
                             />
                           </label>
                         )}
                       </div>
 
-                      <button type="submit" className="pc-primary-action rounded-xl py-2 text-xs font-bold mt-1">
+                      <button type="submit" className="pc-primary-action rounded-md py-2 text-xs font-bold mt-1">
                         Salvar Serviço
                       </button>
                     </form>
@@ -594,7 +594,7 @@ export default function FinanceiroPage() {
 
                   <div className="grid gap-2">
                     {packages.map((pkg) => (
-                      <article key={pkg.id} className="rounded-2xl border border-slate-100 bg-white p-3.5 flex items-center justify-between text-xs shadow-xs">
+                      <article key={pkg.id} className="rounded-md border border-slate-100 bg-white p-3.5 flex items-center justify-between text-xs shadow-xs">
                         <div>
                           <h4 className="font-bold text-slate-900">{pkg.name}</h4>
                           <p className="mt-1 text-[10px] text-[var(--muted)]">
@@ -602,7 +602,7 @@ export default function FinanceiroPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-[#145a82]">R$ {pkg.amount.toFixed(2)}</p>
+                          <p className="text-sm font-bold text-[var(--foreground)]">R$ {pkg.amount.toFixed(2)}</p>
                           <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[8.5px] font-bold text-sky-800">{pkg.status}</span>
                         </div>
                       </article>
@@ -614,11 +614,11 @@ export default function FinanceiroPage() {
               {/* ─── TAB: COBRANÇAS (LISTAGEM & LIQUIDAÇÃO) ─────────────────────────── */}
               {activeTab === "cobrancas" && (
                 <div className="mt-4 space-y-3 animate-in fade-in duration-200">
-                  <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">Listagem de Parcelas Emitidas</span>
+                  <span className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Listagem de Parcelas Emitidas</span>
                   
                   <div className="space-y-2">
                     {invoices.map((inv) => (
-                      <div key={inv.id} className="rounded-2xl border border-slate-100 bg-white p-3.5 flex flex-col gap-2.5 shadow-xs">
+                      <div key={inv.id} className="rounded-md border border-slate-100 bg-white p-3.5 flex flex-col gap-2.5 shadow-xs">
                         <div className="flex justify-between items-start text-xs">
                           <div>
                             <p className="font-bold text-slate-900">{inv.clientName} ({inv.dogName})</p>
@@ -656,7 +656,7 @@ export default function FinanceiroPage() {
                               <button
                                 type="button"
                                 onClick={() => handleSendChargeReminder(inv)}
-                                className="flex-1 rounded-lg bg-sky-50 border border-sky-200 text-sky-700 py-1 font-bold text-center"
+                                className="flex-1 rounded-lg bg-[var(--surface-2)] border border-[var(--border-strong)] text-sky-700 py-1 font-bold text-center"
                                 title="Enviar cobrança via WhatsApp"
                               >
                                 💬 Lembrar
@@ -676,7 +676,7 @@ export default function FinanceiroPage() {
                               <button
                                 type="button"
                                 onClick={() => handlePrefillReceipt(inv)}
-                                className="flex-1 rounded-lg bg-sky-50 border border-sky-200 text-[#145a82] py-1 font-bold"
+                                className="flex-1 rounded-lg bg-[var(--surface-2)] border border-[var(--border-strong)] text-[var(--foreground)] py-1 font-bold"
                               >
                                 Emitir Recibo Oficial
                               </button>
@@ -701,8 +701,8 @@ export default function FinanceiroPage() {
                 <div className="mt-4 space-y-4 animate-in fade-in duration-200">
                   
                   {!receiptGenerated ? (
-                    <form onSubmit={handleGenerateReceiptManual} className="grid gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-xs">
-                      <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">Emitir Recibo Manual</h3>
+                    <form onSubmit={handleGenerateReceiptManual} className="grid gap-3 rounded-md border border-slate-100 bg-white p-4 shadow-xs">
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Emitir Recibo Manual</h3>
                       
                       <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
                         Tutor (Dono)
@@ -712,7 +712,7 @@ export default function FinanceiroPage() {
                           placeholder="Nome do cliente"
                           value={receiptClient}
                           onChange={(e) => setReceiptClient(e.target.value)}
-                          className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
+                          className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
                         />
                       </label>
 
@@ -724,7 +724,7 @@ export default function FinanceiroPage() {
                           placeholder="Nome do cão"
                           value={receiptDog}
                           onChange={(e) => setReceiptDog(e.target.value)}
-                          className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
+                          className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
                         />
                       </label>
 
@@ -737,7 +737,7 @@ export default function FinanceiroPage() {
                             placeholder="Ex: Treino de Comportamento"
                             value={receiptService}
                             onChange={(e) => setReceiptService(e.target.value)}
-                            className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
+                            className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
                           />
                         </label>
 
@@ -749,7 +749,7 @@ export default function FinanceiroPage() {
                             required
                             value={receiptAmount}
                             onChange={(e) => setReceiptAmount(Number(e.target.value))}
-                            className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
+                            className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
                           />
                         </label>
                       </div>
@@ -759,7 +759,7 @@ export default function FinanceiroPage() {
                         <select
                           value={receiptMethod}
                           onChange={(e) => setReceiptMethod(e.target.value)}
-                          className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
+                          className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
                         >
                           <option value="Pix">Pix</option>
                           <option value="Dinheiro">Dinheiro</option>
@@ -768,7 +768,7 @@ export default function FinanceiroPage() {
                         </select>
                       </label>
 
-                      <button type="submit" className="pc-primary-action rounded-xl py-2.5 text-xs font-bold mt-2">
+                      <button type="submit" className="pc-primary-action rounded-md py-2.5 text-xs font-bold mt-2">
                         Gerar Recibo Oficial
                       </button>
                     </form>
@@ -776,20 +776,20 @@ export default function FinanceiroPage() {
                     <div className="grid gap-4 bg-white p-5 animate-in zoom-in-95 duration-200">
                       
                       {/* Recibo Layout para Impressão */}
-                      <div id="printable-receipt" className="border-2 border-dashed border-[#145a82]/40 bg-white p-6 rounded-2xl">
+                      <div id="printable-receipt" className="border-2 border-dashed border-[#145a82]/40 bg-white p-6 rounded-md">
                         <div className="border-b border-slate-100 pb-3.5 text-center">
-                          <h3 className="font-display text-lg font-bold text-[#145a82]">RECIBO DE PAGAMENTO</h3>
+                          <h3 className="text-lg font-bold text-[var(--foreground)]">RECIBO DE PAGAMENTO</h3>
                           <p className="text-[9px] font-semibold text-[var(--muted)] uppercase tracking-wider">Recibo Nº {receiptNumber}</p>
                         </div>
 
                         <div className="space-y-3.5 text-xs text-slate-800 mt-4 leading-relaxed">
                           <p>Recebemos de <strong className="text-slate-900">{receiptClient}</strong>, tutor(a) responsável pelo cão <strong className="text-slate-900">{receiptDog}</strong>.</p>
-                          <p>A importância líquida de <strong className="text-slate-900">R$ {receiptAmount.toFixed(2)}</strong> referente à prestação de serviços de adestramento comportamental canino: <span className="font-semibold text-[#145a82]">{receiptService}</span>.</p>
+                          <p>A importância líquida de <strong className="text-slate-900">R$ {receiptAmount.toFixed(2)}</strong> referente à prestação de serviços de adestramento comportamental canino: <span className="font-semibold text-[var(--foreground)]">{receiptService}</span>.</p>
                           <p>Pagamento quitado via <strong className="text-slate-900">{receiptMethod}</strong> em {new Date().toLocaleDateString("pt-BR")}.</p>
                         </div>
 
                         {receiptMethod === "Pix" && pixKey && isPixKey(pixKey) ? (
-                          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs">
+                          <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-xs">
                             <p className="font-bold text-emerald-900">Pix Copia e Cola</p>
                             <p className="mt-0.5 text-[10px] text-emerald-700">
                               O tutor cola no banco e o pagamento já vem preenchido — sem gateway pago.
@@ -837,21 +837,21 @@ export default function FinanceiroPage() {
                         <button
                           type="button"
                           onClick={() => setReceiptGenerated(false)}
-                          className="rounded-xl border border-[var(--border)] py-2 text-center text-xs font-bold text-[var(--muted)]"
+                          className="rounded-md border border-[var(--border)] py-2 text-center text-xs font-bold text-[var(--muted)]"
                         >
                           Voltar
                         </button>
                         <button
                           type="button"
                           onClick={() => window.print()}
-                          className="rounded-xl border border-[#145a82] bg-white py-2 text-center text-xs font-bold text-[#145a82]"
+                          className="rounded-md border border-[#145a82] bg-white py-2 text-center text-xs font-bold text-[var(--foreground)]"
                         >
                           🖨️ PDF
                         </button>
                         <button
                           type="button"
                           onClick={handleSendReceiptViaWhats}
-                          className="rounded-xl bg-emerald-600 py-2 text-center text-xs font-bold text-white"
+                          className="rounded-md bg-emerald-600 py-2 text-center text-xs font-bold text-white"
                         >
                           💬 WhatsApp
                         </button>

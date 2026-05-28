@@ -56,8 +56,8 @@ export default function RelatoriosPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Crescimento de Usuários */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-6">
-            <h3 className="mb-4 font-display text-xl font-semibold">Crescimento de Adestradores</h3>
+          <div className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
+            <h3 className="mb-4 text-xl font-semibold">Crescimento de Adestradores</h3>
             <div className="space-y-3">
               {[
                 { mes: "Ativos", value: data?.metrics.activeTrainers ?? 0 },
@@ -81,8 +81,8 @@ export default function RelatoriosPage() {
           </div>
 
           {/* Taxa de Retenção */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-6">
-            <h3 className="mb-4 font-display text-xl font-semibold">Taxa de Retenção por Plano</h3>
+          <div className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
+            <h3 className="mb-4 text-xl font-semibold">Taxa de Retenção por Plano</h3>
             <div className="space-y-3">
               {planRows.map(([plan, count]) => (
                 <div key={plan}>
@@ -103,8 +103,8 @@ export default function RelatoriosPage() {
           </div>
 
           {/* Cães por Adestrador */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-6">
-            <h3 className="mb-4 font-display text-xl font-semibold">Média de Cães por Adestrador</h3>
+          <div className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
+            <h3 className="mb-4 text-xl font-semibold">Média de Cães por Adestrador</h3>
             <div className="text-center py-6">
               <p className="text-5xl font-bold text-sky-600">{data?.metrics.averageDogsPerTrainer ?? 0}</p>
               <p className="mt-2 text-sm text-slate-600">casos ativos por conta</p>
@@ -113,8 +113,8 @@ export default function RelatoriosPage() {
           </div>
 
           {/* Sessões Realizadas */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-6">
-            <h3 className="mb-4 font-display text-xl font-semibold">Sessões Realizadas este Mês</h3>
+          <div className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
+            <h3 className="mb-4 text-xl font-semibold">Sessões Realizadas este Mês</h3>
             <div className="text-center py-6">
               <p className="text-5xl font-bold text-emerald-600">{data?.metrics.sessionsMonth ?? 0}</p>
               <p className="mt-2 text-sm text-slate-600">sessões confirmadas e registradas</p>
@@ -124,8 +124,8 @@ export default function RelatoriosPage() {
         </div>
 
         {/* Tabela de Adestradores com Performance */}
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-6">
-          <h3 className="mb-4 font-display text-xl font-semibold">Performance da base de adestradores</h3>
+        <div className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
+          <h3 className="mb-4 text-xl font-semibold">Performance da base de adestradores</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

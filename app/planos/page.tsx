@@ -103,15 +103,15 @@ export default function TrainerPlansPage() {
     >
       {feedbackMessage ? (
         <section>
-          <article className="rounded-2xl border border-[var(--border)] bg-white/90 px-4 py-3 text-sm text-[var(--foreground)] shadow-sm">
+          <article className="rounded-md border border-[var(--border)] bg-white/90 px-4 py-3 text-sm text-[var(--foreground)] shadow-sm">
             {feedbackMessage}
           </article>
         </section>
       ) : null}
 
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <article className="rounded-[1.75rem] border border-[var(--border)] bg-[var(--panel)] p-6 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Planos disponíveis</p>
+        <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Planos disponíveis</p>
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
             {pricingPlans.map((plan) => {
               const isActive = subscription.planName === plan.name;
@@ -119,19 +119,19 @@ export default function TrainerPlansPage() {
               return (
                 <article
                   key={plan.name}
-                  className={`rounded-3xl border p-5 ${
+                  className={`rounded-lg border p-5 ${
                     isActive
                       ? "border-[#145a82] bg-[rgba(20,90,130,0.08)]"
                       : "border-[var(--border)] bg-white"
                   }`}
                 >
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">{plan.audience}</p>
-                  <h2 className="mt-2 font-display text-2xl font-semibold text-[var(--foreground)]">{plan.name}</h2>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">{plan.audience}</p>
+                  <h2 className="mt-2 text-2xl font-semibold text-[var(--foreground)]">{plan.name}</h2>
                   <p className="mt-2 text-2xl font-semibold text-[var(--foreground)]">{plan.price}</p>
                   <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{plan.summary}</p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {plan.features.slice(0, 4).map((feature) => (
-                      <span key={feature} className="rounded-full border border-[var(--border)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
+                      <span key={feature} className="rounded-full border border-[var(--border)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
                         {feature}
                       </span>
                     ))}
@@ -141,7 +141,7 @@ export default function TrainerPlansPage() {
                     onClick={() => handlePlanSelection(plan.name as TrainerPlanName)}
                     disabled={busyPlanName !== null}
                     className={`mt-5 w-full rounded-full px-4 py-3 text-sm font-semibold ${
-                      isActive ? "bg-[#145a82] text-white" : "border border-[var(--border)] bg-white text-[var(--foreground)]"
+                      isActive ? "bg-[var(--accent)] text-white" : "border border-[var(--border)] bg-white text-[var(--foreground)]"
                     } disabled:opacity-60`}
                   >
                     {busyPlanName === plan.name
@@ -157,9 +157,9 @@ export default function TrainerPlansPage() {
         </article>
 
         <div className="grid gap-4">
-          <article className="rounded-[1.75rem] border border-[var(--border)] bg-white/95 p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Assinatura atual</p>
-            <h2 className="mt-2 font-display text-2xl font-semibold">{subscription.planName}</h2>
+          <article className="rounded-lg border border-[var(--border)] bg-white/95 p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Assinatura atual</p>
+            <h2 className="mt-2 text-2xl font-semibold">{subscription.planName}</h2>
             <div className="mt-4 space-y-3 text-sm text-[var(--muted)]">
               <p>Status: <span className="font-semibold text-[var(--foreground)]">{subscription.status}</span></p>
               <p>Forma de pagamento: <span className="font-semibold text-[var(--foreground)]">{subscription.paymentMethod}</span></p>
@@ -168,7 +168,7 @@ export default function TrainerPlansPage() {
               <p>Valor do pacote: <span className="font-semibold text-[var(--foreground)]">{subscription.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span></p>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--panel)] px-4 py-3 text-sm text-[var(--muted)]">
+            <div className="mt-4 rounded-md border border-[var(--border)] bg-[var(--panel)] px-4 py-3 text-sm text-[var(--muted)]">
               <p className="font-semibold text-[var(--foreground)]">{packageChargeLabel(subscription.lessonPackage)}</p>
               <p className="mt-1">{packageBenefitLabel(subscription.lessonPackage)}</p>
             </div>
@@ -183,8 +183,8 @@ export default function TrainerPlansPage() {
             </button>
           </article>
 
-          <article className="rounded-[1.75rem] border border-[var(--border)] bg-[var(--panel)] p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Pagamento e controle do pacote</p>
+          <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Pagamento e controle do pacote</p>
 
             <div className="mt-5 space-y-4">
               <div>
@@ -201,9 +201,9 @@ export default function TrainerPlansPage() {
                           autoRenew: subscription.autoRenew,
                         })
                       }
-                      className={`rounded-2xl border px-3 py-3 text-sm font-semibold ${
+                      className={`rounded-md border px-3 py-3 text-sm font-semibold ${
                         subscription.paymentMethod === method
-                          ? "border-[#145a82] bg-[rgba(20,90,130,0.08)] text-[#145a82]"
+                          ? "border-[#145a82] bg-[rgba(20,90,130,0.08)] text-[var(--foreground)]"
                           : "border-[var(--border)] bg-white text-[var(--foreground)]"
                       }`}
                     >
@@ -227,9 +227,9 @@ export default function TrainerPlansPage() {
                           autoRenew: subscription.autoRenew,
                         })
                       }
-                      className={`rounded-2xl border px-3 py-3 text-sm font-semibold ${
+                      className={`rounded-md border px-3 py-3 text-sm font-semibold ${
                         subscription.lessonPackage === lessonPackage
-                          ? "border-[#145a82] bg-[rgba(20,90,130,0.08)] text-[#145a82]"
+                          ? "border-[#145a82] bg-[rgba(20,90,130,0.08)] text-[var(--foreground)]"
                           : "border-[var(--border)] bg-white text-[var(--foreground)]"
                       }`}
                     >
@@ -248,21 +248,21 @@ export default function TrainerPlansPage() {
                     autoRenew: !subscription.autoRenew,
                   })
                 }
-                className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)]"
+                className="w-full rounded-md border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)]"
               >
                 Renovação automática: {subscription.autoRenew ? "Ativada" : "Desativada"}
               </button>
 
-              <div className="rounded-2xl border border-[var(--border)] bg-white p-4">
+              <div className="rounded-md border border-[var(--border)] bg-white p-4">
                 <p className="text-sm font-semibold text-[var(--foreground)]">Dados de pagamento</p>
 
                 {subscription.paymentMethod === "Pix" ? (
                   <label className="mt-3 block">
-                    <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">Chave Pix</span>
+                    <span className="text-xs font-medium uppercase tracking-wider text-[var(--muted)]">Chave Pix</span>
                     <input
                       value={paymentProfile.pixKey}
                       onChange={(event) => setTrainerPaymentProfile({ pixKey: event.target.value })}
-                      className="mt-2 w-full rounded-2xl border border-[var(--border)] px-4 py-3 text-sm outline-none"
+                      className="mt-2 w-full rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none"
                       placeholder="seu-email@pix"
                     />
                   </label>
@@ -271,21 +271,21 @@ export default function TrainerPlansPage() {
                 {subscription.paymentMethod === "Cartao" ? (
                   <div className="mt-3 grid gap-3">
                     <label className="block">
-                      <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">Titular</span>
+                      <span className="text-xs font-medium uppercase tracking-wider text-[var(--muted)]">Titular</span>
                       <input
                         value={paymentProfile.cardHolder}
                         onChange={(event) => setTrainerPaymentProfile({ cardHolder: event.target.value })}
-                        className="mt-2 w-full rounded-2xl border border-[var(--border)] px-4 py-3 text-sm outline-none"
+                        className="mt-2 w-full rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none"
                         placeholder="Nome no cartão"
                       />
                     </label>
                     <div className="grid grid-cols-[1fr_120px] gap-3">
                       <label className="block">
-                        <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">Bandeira</span>
+                        <span className="text-xs font-medium uppercase tracking-wider text-[var(--muted)]">Bandeira</span>
                         <select
                           value={paymentProfile.cardBrand}
                           onChange={(event) => setTrainerPaymentProfile({ cardBrand: event.target.value as TrainerCardBrand })}
-                          className="mt-2 w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm outline-none"
+                          className="mt-2 w-full rounded-md border border-[var(--border)] bg-white px-4 py-3 text-sm outline-none"
                         >
                           {cardBrands.map((brand) => (
                             <option key={brand} value={brand}>{brand}</option>
@@ -293,11 +293,11 @@ export default function TrainerPlansPage() {
                         </select>
                       </label>
                       <label className="block">
-                        <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">Final</span>
+                        <span className="text-xs font-medium uppercase tracking-wider text-[var(--muted)]">Final</span>
                         <input
                           value={paymentProfile.cardLast4}
                           onChange={(event) => setTrainerPaymentProfile({ cardLast4: event.target.value.replace(/\D/g, "").slice(0, 4) })}
-                          className="mt-2 w-full rounded-2xl border border-[var(--border)] px-4 py-3 text-sm outline-none"
+                          className="mt-2 w-full rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none"
                           placeholder="4456"
                         />
                       </label>
@@ -307,12 +307,12 @@ export default function TrainerPlansPage() {
 
                 {subscription.paymentMethod === "Boleto" ? (
                   <label className="mt-3 block">
-                    <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">Email para boleto</span>
+                    <span className="text-xs font-medium uppercase tracking-wider text-[var(--muted)]">Email para boleto</span>
                     <input
                       type="email"
                       value={paymentProfile.boletoEmail}
                       onChange={(event) => setTrainerPaymentProfile({ boletoEmail: event.target.value })}
-                      className="mt-2 w-full rounded-2xl border border-[var(--border)] px-4 py-3 text-sm outline-none"
+                      className="mt-2 w-full rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none"
                       placeholder="financeiro@seunegocio.com"
                     />
                   </label>
@@ -321,14 +321,14 @@ export default function TrainerPlansPage() {
             </div>
           </article>
 
-          <article className="rounded-[1.75rem] border border-[var(--border)] bg-white/95 p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Histórico de renovações</p>
+          <article className="rounded-lg border border-[var(--border)] bg-white/95 p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Histórico de renovações</p>
             <div className="mt-4 space-y-2">
               {renewalHistory.slice(0, 5).map((record) => (
-                <div key={record.id} className="rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-3 text-sm">
+                <div key={record.id} className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-3 text-sm">
                   <p className="font-semibold text-[var(--foreground)]">{record.planName} • {record.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
                   <p className="mt-1 text-[var(--muted)]">{record.date} • {record.paymentMethod} • {record.lessonPackage}</p>
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{record.status}</p>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">{record.status}</p>
                 </div>
               ))}
             </div>

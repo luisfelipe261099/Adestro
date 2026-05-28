@@ -122,7 +122,7 @@ export function PwaInstallBanner() {
 
   return (
     <>
-      <div className="border-b border-sky-200 bg-[#e7f4fd]">
+      <div className="border-b border-[var(--border-strong)] bg-[#e7f4fd]">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-6 lg:px-8">
           <p className="text-xs font-medium text-[#0f4361] sm:text-sm">{bannerText}</p>
           <div className="flex items-center gap-2">
@@ -156,9 +156,9 @@ export function PwaInstallBanner() {
 
       {showGuide ? (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[rgba(9,38,56,0.48)] p-3 sm:items-center" role="dialog" aria-modal="true">
-          <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-white p-4 shadow-[0_24px_48px_rgba(13,64,95,0.28)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Instalar no celular</p>
-            <h2 className="mt-1 font-display text-xl font-semibold text-[var(--foreground)]">Siga estes 3 passos</h2>
+          <div className="w-full max-w-md rounded-md border border-[var(--border)] bg-white p-4 shadow-[0_24px_48px_rgba(13,64,95,0.28)]">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Instalar no celular</p>
+            <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">Siga estes 3 passos</h2>
 
             {platform === "ios" ? (
               <ol className="mt-3 space-y-2 text-sm text-[var(--foreground)]">
@@ -174,7 +174,7 @@ export function PwaInstallBanner() {
               </ol>
             )}
 
-            <p className="mt-3 rounded-xl bg-[#f2f8fc] px-3 py-2 text-xs text-[#33566f]">
+            <p className="mt-3 rounded-md bg-[#f2f8fc] px-3 py-2 text-xs text-[#33566f]">
               Dica: depois de instalado, abra pelo icone Adestro na tela inicial.
             </p>
 
@@ -184,7 +184,7 @@ export function PwaInstallBanner() {
                   type="button"
                   onClick={handleInstall}
                   disabled={isInstalling}
-                  className="rounded-full bg-[#145a82] px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                  className="rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
                 >
                   {isInstalling ? "Instalando..." : "Instalar agora"}
                 </button>

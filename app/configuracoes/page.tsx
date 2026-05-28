@@ -132,23 +132,23 @@ export default function ConfiguracoesPage() {
   return (
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="rounded-[2rem] border border-[var(--border)] bg-[#f7fbff] p-4 shadow-[var(--shadow)]">
+        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <header>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Conta</p>
-            <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">Configurações</h1>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Conta</p>
+            <h1 className="text-2xl font-semibold text-[var(--foreground)]">Configurações</h1>
             <p className="mt-1 text-xs text-[var(--muted)]">Ajuste preferências de conta, notificações e operação.</p>
           </header>
 
           <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
-            <fieldset className="rounded-2xl border border-[var(--border)] bg-white p-3">
-              <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#2d6f99]">Dados pessoais</legend>
+            <fieldset className="rounded-md border border-[var(--border)] bg-white p-3">
+              <legend className="px-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">Dados pessoais</legend>
               <div className="mt-2 grid gap-2">
                 <label className="text-xs text-[var(--muted)]">
                   Nome
                   <input
                     value={displayName}
                     onChange={(event) => setDisplayName(event.target.value)}
-                    className="mt-1 w-full rounded-xl border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
+                    className="mt-1 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
                   />
                 </label>
                 <label className="text-xs text-[var(--muted)]">
@@ -157,7 +157,7 @@ export default function ConfiguracoesPage() {
                     type="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    className="mt-1 w-full rounded-xl border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
+                    className="mt-1 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
                   />
                 </label>
                 <label className="text-xs text-[var(--muted)]">
@@ -165,35 +165,35 @@ export default function ConfiguracoesPage() {
                   <input
                     value={phone}
                     onChange={(event) => setPhone(event.target.value)}
-                    className="mt-1 w-full rounded-xl border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
+                    className="mt-1 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
                   />
                 </label>
               </div>
             </fieldset>
 
-            <fieldset className="rounded-2xl border border-[var(--border)] bg-white p-3">
-              <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#2d6f99]">Notificações</legend>
+            <fieldset className="rounded-md border border-[var(--border)] bg-white p-3">
+              <legend className="px-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">Notificações</legend>
               <div className="mt-2 grid gap-2 text-sm text-[var(--foreground)]">
-                <label className="flex items-center justify-between rounded-xl border border-[var(--border)] px-3 py-2">
+                <label className="flex items-center justify-between rounded-md border border-[var(--border)] px-3 py-2">
                   <span>Receber por e-mail</span>
                   <input type="checkbox" checked={notifyEmail} onChange={(event) => setNotifyEmail(event.target.checked)} />
                 </label>
-                <label className="flex items-center justify-between rounded-xl border border-[var(--border)] px-3 py-2">
+                <label className="flex items-center justify-between rounded-md border border-[var(--border)] px-3 py-2">
                   <span>Receber por WhatsApp</span>
                   <input type="checkbox" checked={notifyWhats} onChange={(event) => setNotifyWhats(event.target.checked)} />
                 </label>
               </div>
             </fieldset>
 
-            <fieldset className="rounded-2xl border border-[var(--border)] bg-white p-3">
-              <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#2d6f99]">Aparência</legend>
+            <fieldset className="rounded-md border border-[var(--border)] bg-white p-3">
+              <legend className="px-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">Aparência</legend>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 <label className="text-xs text-[var(--muted)]">
                   Idioma
                   <select
                     value={language}
                     onChange={(event) => setLanguage(event.target.value)}
-                    className="mt-1 w-full rounded-xl border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
+                    className="mt-1 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
                   >
                     <option value="pt-BR">Português (Brasil)</option>
                     <option value="en-US">English (US)</option>
@@ -204,7 +204,7 @@ export default function ConfiguracoesPage() {
                   <select
                     value={theme}
                     onChange={(event) => setTheme(event.target.value)}
-                    className="mt-1 w-full rounded-xl border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
+                    className="mt-1 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
                   >
                     <option value="claro">Claro</option>
                     <option value="escuro">Escuro</option>
@@ -214,7 +214,7 @@ export default function ConfiguracoesPage() {
             </fieldset>
 
             {savedMessage ? (
-              <p className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800">{savedMessage}</p>
+              <p className="rounded-md border border-[var(--border-strong)] bg-[var(--surface-2)] px-3 py-2 text-xs text-sky-800">{savedMessage}</p>
             ) : null}
 
             <div className="flex flex-wrap gap-2">
@@ -224,7 +224,7 @@ export default function ConfiguracoesPage() {
               >
                 Salvar preferências
               </button>
-              <Link href="/dashboard" className="rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[#145a82]">
+              <Link href="/dashboard" className="rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--foreground)]">
                 Voltar
               </Link>
             </div>
@@ -239,26 +239,26 @@ export default function ConfiguracoesPage() {
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             <Link
               href="/admin/audit"
-              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-semibold text-[#145a82]"
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-semibold text-[var(--foreground)]"
             >
               📜 Histórico de atividade
             </Link>
             <Link
               href="/admin/templates"
-              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-semibold text-[#145a82]"
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-semibold text-[var(--foreground)]"
             >
               📋 Templates do sistema
             </Link>
           </div>
 
           {/* ── Notificações Push + Tema ─────────────────────────────────────── */}
-          <section className="mt-5 rounded-2xl border border-sky-100 bg-sky-50/40 p-4 space-y-3">
+          <section className="mt-5 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 p-4 space-y-3">
             <header>
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-sky-700">Experiência</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Experiência</p>
               <h2 className="text-base font-semibold text-sky-950">Aparência e notificações push</h2>
             </header>
             <PushPermissionCard />
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-100 bg-white p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-100 bg-white p-3">
               <div>
                 <p className="text-sm font-semibold text-slate-900">Tema do app</p>
                 <p className="text-[11px] text-[var(--muted)]">Alterna entre modo claro e escuro instantaneamente.</p>
@@ -268,13 +268,13 @@ export default function ConfiguracoesPage() {
           </section>
 
           {/* ── Import CSV + Export LGPD ─────────────────────────────────────── */}
-          <section className="mt-5 rounded-2xl border border-purple-100 bg-purple-50/40 p-4 space-y-3">
+          <section className="mt-5 rounded-md border border-purple-100 bg-purple-50/40 p-4 space-y-3">
             <header>
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-purple-700">Dados</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-purple-700">Dados</p>
               <h2 className="text-base font-semibold text-purple-950">Importar clientes e exportar dados</h2>
             </header>
 
-            <div className="rounded-2xl border border-purple-100 bg-white p-3">
+            <div className="rounded-md border border-purple-100 bg-white p-3">
               <p className="text-sm font-semibold text-slate-900">Importar CSV</p>
               <p className="mt-0.5 text-[11px] text-[var(--muted)]">
                 Cabeçalho esperado: <code className="rounded bg-slate-100 px-1">name,phone,email,dogName,dogBreed,notes</code>
@@ -283,7 +283,7 @@ export default function ConfiguracoesPage() {
                 type="file"
                 accept=".csv,text/csv"
                 onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)}
-                className="mt-2 block w-full text-xs file:mr-2 file:rounded-lg file:border file:border-slate-200 file:bg-slate-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[#145a82]"
+                className="mt-2 block w-full text-xs file:mr-2 file:rounded-lg file:border file:border-slate-200 file:bg-slate-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)]"
               />
               <button
                 type="button"
@@ -303,7 +303,7 @@ export default function ConfiguracoesPage() {
               ) : null}
             </div>
 
-            <div className="rounded-2xl border border-purple-100 bg-white p-3">
+            <div className="rounded-md border border-purple-100 bg-white p-3">
               <p className="text-sm font-semibold text-slate-900">Exportar todos os meus dados (LGPD)</p>
               <p className="mt-0.5 text-[11px] text-[var(--muted)]">
                 Baixa um JSON com clientes, cães, sessões, contratos, faturas e tudo associado à sua conta. Art. 18, §1º da LGPD.
@@ -319,10 +319,10 @@ export default function ConfiguracoesPage() {
           </section>
 
           {/* ── Configurações de Alertas (módulo 10.3 §8.5) ─────────────────── */}
-          <section data-tour="settings-alerts" className="mt-5 rounded-2xl border border-amber-100 bg-amber-50/40 p-4">
+          <section data-tour="settings-alerts" className="mt-5 rounded-md border border-amber-100 bg-amber-50/40 p-4">
             <header className="flex items-center justify-between border-b border-amber-100 pb-2">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-700">Operacional</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Operacional</p>
                 <h2 className="text-base font-semibold text-amber-950">Configurações de alertas</h2>
                 <p className="mt-0.5 text-[11px] text-amber-800">
                   Define quando o brief diário e os lembretes do tutor são preparados.
@@ -351,7 +351,7 @@ export default function ConfiguracoesPage() {
                     onChange={(event) =>
                       setAlerts({ ...alerts, reminderHoursBefore: Number(event.target.value) || 24 })
                     }
-                    className="rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm font-normal text-amber-950 outline-none"
+                    className="rounded-md border border-amber-200 bg-white px-3 py-2 text-sm font-normal text-amber-950 outline-none"
                   />
                   <span className="text-[10px] font-normal normal-case text-amber-700">
                     Padrão: 24h antes do horário da aula
@@ -368,7 +368,7 @@ export default function ConfiguracoesPage() {
                     onChange={(event) =>
                       setAlerts({ ...alerts, chargeReminderDaysBefore: Number(event.target.value) || 3 })
                     }
-                    className="rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm font-normal text-amber-950 outline-none"
+                    className="rounded-md border border-amber-200 bg-white px-3 py-2 text-sm font-normal text-amber-950 outline-none"
                   />
                   <span className="text-[10px] font-normal normal-case text-amber-700">
                     Padrão: 3 dias antes do vencimento
@@ -382,7 +382,7 @@ export default function ConfiguracoesPage() {
                     onChange={(event) =>
                       setAlerts({ ...alerts, morningBriefHour: Number(event.target.value) })
                     }
-                    className="rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm font-normal text-amber-950 outline-none"
+                    className="rounded-md border border-amber-200 bg-white px-3 py-2 text-sm font-normal text-amber-950 outline-none"
                   >
                     {Array.from({ length: 24 }, (_, i) => i).map((h) => (
                       <option key={h} value={h}>
@@ -405,7 +405,7 @@ export default function ConfiguracoesPage() {
                     onChange={(event) =>
                       setAlerts({ ...alerts, defaultStreakTolerance: Number(event.target.value) || 100 })
                     }
-                    className="rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm font-normal text-amber-950 outline-none"
+                    className="rounded-md border border-amber-200 bg-white px-3 py-2 text-sm font-normal text-amber-950 outline-none"
                   />
                   <span className="text-[10px] font-normal normal-case text-amber-700">
                     Padrão: 100% (todas as tarefas do dia)
@@ -415,7 +415,7 @@ export default function ConfiguracoesPage() {
             )}
 
             {alertsError ? (
-              <p className="mt-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{alertsError}</p>
+              <p className="mt-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{alertsError}</p>
             ) : null}
 
             <button

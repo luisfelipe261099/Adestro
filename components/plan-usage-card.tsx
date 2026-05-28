@@ -52,7 +52,7 @@ export function PlanUsageCard() {
   }, []);
 
   if (error) {
-    return <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>;
+    return <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>;
   }
   if (!data) {
     return <p className="text-xs text-[var(--muted)]">Carregando uso do plano…</p>;
@@ -61,10 +61,10 @@ export function PlanUsageCard() {
   const showLimited = data.plan !== "Business";
 
   return (
-    <article className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-3">
+    <article className="rounded-md border border-indigo-100 bg-indigo-50/40 p-4 space-y-3">
       <header className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-indigo-700">Plano atual</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700">Plano atual</p>
           <h2 className="text-base font-semibold text-indigo-950">
             {data.plan} {data.isTrial && data.daysRemaining !== null ? `• ${data.daysRemaining} dia(s) restantes` : ""}
           </h2>

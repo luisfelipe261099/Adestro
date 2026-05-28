@@ -18,11 +18,11 @@ type AuditLog = {
 
 const ACTION_LABEL: Record<string, { label: string; icon: string; tone: string }> = {
   "client.created": { label: "Tutor criado", icon: "👤", tone: "bg-emerald-50 text-emerald-800" },
-  "client.updated": { label: "Tutor atualizado", icon: "✏️", tone: "bg-sky-50 text-sky-800" },
+  "client.updated": { label: "Tutor atualizado", icon: "✏️", tone: "bg-[var(--surface-2)] text-sky-800" },
   "client.deleted": { label: "Tutor removido", icon: "🗑️", tone: "bg-rose-50 text-rose-800" },
   "dog.created": { label: "Cão criado", icon: "🐶", tone: "bg-emerald-50 text-emerald-800" },
   "session.created": { label: "Treino registrado", icon: "📝", tone: "bg-purple-50 text-purple-800" },
-  "session.updated": { label: "Treino atualizado", icon: "🔁", tone: "bg-sky-50 text-sky-800" },
+  "session.updated": { label: "Treino atualizado", icon: "🔁", tone: "bg-[var(--surface-2)] text-sky-800" },
   "session.deleted": { label: "Treino removido", icon: "🗑️", tone: "bg-rose-50 text-rose-800" },
   "session.nps": { label: "NPS recebido", icon: "⭐", tone: "bg-amber-50 text-amber-900" },
   "contract.created": { label: "Contrato criado", icon: "📦", tone: "bg-emerald-50 text-emerald-800" },
@@ -30,7 +30,7 @@ const ACTION_LABEL: Record<string, { label: string; icon: string; tone: string }
   "plan.changed": { label: "Plano alterado", icon: "🔼", tone: "bg-indigo-50 text-indigo-800" },
   "settings.updated": { label: "Ajustes salvos", icon: "⚙️", tone: "bg-slate-50 text-slate-700" },
   "template.updated": { label: "Template editado", icon: "📋", tone: "bg-slate-50 text-slate-700" },
-  "portal-link.created": { label: "Link portal criado", icon: "🔗", tone: "bg-sky-50 text-sky-800" },
+  "portal-link.created": { label: "Link portal criado", icon: "🔗", tone: "bg-[var(--surface-2)] text-sky-800" },
   "portal-link.revoked": { label: "Link portal revogado", icon: "🚫", tone: "bg-rose-50 text-rose-800" },
   "csv.imported": { label: "CSV importado", icon: "📥", tone: "bg-purple-50 text-purple-800" },
   "export.lgpd": { label: "Export LGPD", icon: "📤", tone: "bg-amber-50 text-amber-900" },
@@ -86,16 +86,16 @@ export default function AuditPage() {
   return (
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-3xl px-3 pb-24 pt-3">
-        <section className="rounded-[2rem] border border-[var(--border)] bg-[#f7fbff] p-4 shadow-[var(--shadow)]">
+        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Auditoria</p>
-              <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">Histórico de atividade</h1>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Auditoria</p>
+              <h1 className="text-2xl font-semibold text-[var(--foreground)]">Histórico de atividade</h1>
               <p className="mt-1 text-xs text-[var(--muted)]">Quem fez o quê e quando — essencial para multi-adestrador.</p>
             </div>
             <Link
               href="/configuracoes"
-              className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[#145a82]"
+              className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--foreground)]"
             >
               ← Configurações
             </Link>
@@ -109,7 +109,7 @@ export default function AuditPage() {
                 onClick={() => setFilter(scope)}
                 className={`whitespace-nowrap rounded-full px-2.5 py-1 transition ${
                   filter === scope
-                    ? "bg-[#145a82] text-white"
+                    ? "bg-[var(--accent)] text-white"
                     : "border border-[var(--border)] bg-white text-[var(--muted)]"
                 }`}
               >
@@ -119,7 +119,7 @@ export default function AuditPage() {
           </div>
 
           {error ? (
-            <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
+            <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
           ) : null}
 
           {!logs ? (
@@ -135,7 +135,7 @@ export default function AuditPage() {
             <div className="mt-3 space-y-4">
               {groups.map(([date, items]) => (
                 <section key={date}>
-                  <h2 className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{date}</h2>
+                  <h2 className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">{date}</h2>
                   <ul className="mt-1 space-y-1">
                     {items.map((log) => {
                       const meta = describe(log.action);
@@ -150,7 +150,7 @@ export default function AuditPage() {
                       return (
                         <li
                           key={log.id}
-                          className="flex items-start gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2"
+                          className="flex items-start gap-2 rounded-md border border-slate-100 bg-white px-3 py-2"
                         >
                           <span aria-hidden className="text-base">{meta.icon}</span>
                           <div className="flex-1 min-w-0">

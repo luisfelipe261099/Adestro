@@ -381,7 +381,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
       return (
         <PageShell kicker="Onboarding" title="Este portal usa PIN" description="Digite o PIN de 4 dígitos enviado pelo adestrador para liberar o acesso.">
           <form
-            className="max-w-sm space-y-3 rounded-2xl border border-[var(--border)] bg-white p-5"
+            className="max-w-sm space-y-3 rounded-md border border-[var(--border)] bg-white p-5"
             onSubmit={(event) => {
               event.preventDefault();
               if (!/^\d{4}$/.test(pin)) {
@@ -403,7 +403,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                 value={pin}
                 onChange={(event) => setPin(event.target.value.replace(/\D/g, "").slice(0, 4))}
                 placeholder="0000"
-                className="rounded-xl border border-[var(--border)] bg-[var(--panel)] px-3 py-2 outline-none focus:border-sky-400"
+                className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 outline-none focus:border-sky-400"
               />
             </label>
             <button type="submit" className="pc-primary-action rounded-full px-4 py-2 text-sm font-semibold">
@@ -425,18 +425,18 @@ export function PortalOnboardingClient({ token }: { token: string }) {
   if (isSubmitted) {
     return (
       <PageShell kicker="Sucesso!" title="Ficha de Onboarding Enviada" description="Muito obrigado por preencher a ficha de acompanhamento do seu cão.">
-        <article className="rounded-3xl border border-[var(--border)] bg-white p-6 text-center shadow-sm max-w-md mx-auto">
+        <article className="rounded-lg border border-[var(--border)] bg-white p-6 text-center shadow-sm max-w-md mx-auto">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-600">
             ✓
           </div>
-          <h2 className="mt-4 font-display text-xl font-bold text-slate-900">Enviado para Revisão</h2>
+          <h2 className="mt-4 text-xl font-bold text-slate-900">Enviado para Revisão</h2>
           <p className="mt-2 text-sm text-[var(--muted)]">
             As informações foram salvas com sucesso como rascunho. Seu adestrador <strong>{data.trainer.name}</strong> irá revisar e aprovar as informações na próxima aula.
           </p>
           <div className="mt-6">
             <Link
               href={`/portal/cliente/${token}${pinQuery}`}
-              className="inline-block rounded-full bg-[#145a82] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white"
+              className="inline-block rounded-full bg-[var(--accent)] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white"
             >
               Ir para o Portal do Tutor
             </Link>
@@ -448,9 +448,9 @@ export function PortalOnboardingClient({ token }: { token: string }) {
 
   return (
     <PageShell kicker={`Adestrador: ${data.trainer.name}`} title="Ficha de Onboarding do Cão" description="Preencha as informações detalhadas sobre a rotina, saúde e temperamento do seu pet.">
-      <section className="mx-auto max-w-md rounded-3xl border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-[var(--shadow)] sm:max-w-xl">
+      <section className="mx-auto max-w-md rounded-lg border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-sm sm:max-w-xl">
         <header className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <span className="text-xs font-bold text-[#145a82]">Ficha do Tutor & Cão (Etapa {formStep}/5)</span>
+          <span className="text-xs font-bold text-[var(--foreground)]">Ficha do Tutor & Cão (Etapa {formStep}/5)</span>
           <span className="text-[10px] font-semibold text-[var(--muted)]">
             {formStep === 1 ? "Dados do Tutor" :
              formStep === 2 ? "Endereço" :
@@ -466,7 +466,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
             <span
               key={s}
               className={`h-full flex-1 rounded-full transition-all ${
-                s <= formStep ? "bg-[#145a82]" : "bg-slate-200"
+                s <= formStep ? "bg-[var(--accent)]" : "bg-slate-200"
               }`}
             />
           ))}
@@ -484,7 +484,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   onChange={(e) => setClientName(e.target.value)}
                   placeholder="Nome completo"
                   required
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 />
               </label>
               <label className="grid gap-1 text-xs font-semibold text-slate-700">
@@ -494,7 +494,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(00) 00000-0000"
                   required
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 />
               </label>
               <label className="grid gap-1 text-xs font-semibold text-slate-700">
@@ -504,7 +504,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
                   placeholder="seuemail@exemplo.com"
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 />
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -514,7 +514,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     value={birthDate}
                     onChange={(e) => setBirthDate(e.target.value)}
                     placeholder="DD/MM/AAAA"
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
                 <label className="grid gap-1 text-xs font-semibold text-slate-700">
@@ -523,7 +523,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     value={cpf}
                     onChange={(e) => setCpf(e.target.value)}
                     placeholder="000.000.000-00"
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
               </div>
@@ -540,13 +540,13 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     value={addrZipCode}
                     onChange={(e) => setAddrZipCode(e.target.value)}
                     placeholder="00000-000"
-                    className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                   <button
                     type="button"
                     onClick={handleLookupCEP}
                     disabled={isCEPLoading}
-                    className="rounded-xl bg-sky-100 px-4 text-xs font-semibold text-[#145a82] hover:bg-sky-200"
+                    className="rounded-md bg-sky-100 px-4 text-xs font-semibold text-[var(--foreground)] hover:bg-sky-200"
                   >
                     {isCEPLoading ? "Buscando..." : "Buscar CEP"}
                   </button>
@@ -561,7 +561,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     onChange={(e) => setAddrStreet(e.target.value)}
                     placeholder="Nome da rua"
                     required
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
                 <label className="grid gap-1 text-xs font-semibold text-slate-700">
@@ -571,7 +571,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     onChange={(e) => setAddrNumber(e.target.value)}
                     placeholder="Nº"
                     required
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
               </div>
@@ -582,7 +582,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   value={addrComplement}
                   onChange={(e) => setAddrComplement(e.target.value)}
                   placeholder="Apto, bloco, etc. (opcional)"
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 />
               </label>
 
@@ -593,7 +593,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     value={addrNeighborhood}
                     onChange={(e) => setAddrNeighborhood(e.target.value)}
                     placeholder="Bairro"
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
                 <label className="grid gap-1 text-xs font-semibold text-slate-700">
@@ -602,7 +602,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     value={addrCity}
                     onChange={(e) => setAddrCity(e.target.value)}
                     placeholder="Cidade"
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
                 <label className="grid gap-1 text-xs font-semibold text-slate-700">
@@ -612,7 +612,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     onChange={(e) => setAddrState(e.target.value)}
                     placeholder="UF"
                     maxLength={2}
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none text-center focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none text-center focus:border-[#145a82]"
                   />
                 </label>
               </div>
@@ -624,10 +624,10 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     value={addrNickname}
                     onChange={(e) => setAddrNickname(e.target.value)}
                     placeholder="Ex: Casa, Trabalho"
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
-                <label className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-white/60 text-xs text-slate-600 cursor-pointer select-none mt-5">
+                <label className="flex items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-white/60 text-xs text-slate-600 cursor-pointer select-none mt-5">
                   <input
                     type="checkbox"
                     checked={addrIsDefault}
@@ -650,7 +650,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   onChange={(e) => setDogName(e.target.value)}
                   placeholder="Nome do pet"
                   required
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 />
               </label>
               <label className="grid gap-1 text-xs font-semibold text-slate-700">
@@ -659,7 +659,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   value={breed}
                   onChange={(e) => setBreed(e.target.value)}
                   placeholder="Ex: Border Collie, SRD"
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 />
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -669,7 +669,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
                     placeholder="Ex: 1 ano e 3 meses"
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
                 <label className="grid gap-1 text-xs font-semibold text-slate-700">
@@ -678,7 +678,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                     placeholder="Ex: 14 kg"
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
               </div>
@@ -688,13 +688,13 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   <select
                     value={dogSex}
                     onChange={(e) => setDogSex(e.target.value)}
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   >
                     <option value="Macho">Macho</option>
                     <option value="Fêmea">Fêmea</option>
                   </select>
                 </label>
-                <label className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-white/60 text-xs text-slate-600 cursor-pointer select-none mt-5">
+                <label className="flex items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-white/60 text-xs text-slate-600 cursor-pointer select-none mt-5">
                   <input
                     type="checkbox"
                     checked={dogCastrated}
@@ -711,7 +711,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     value={dogMicrochip}
                     onChange={(e) => setDogMicrochip(e.target.value)}
                     placeholder="Nº microchip"
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
                 <label className="grid gap-1 text-xs font-semibold text-slate-700">
@@ -720,11 +720,11 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                     value={dogColor}
                     onChange={(e) => setDogColor(e.target.value)}
                     placeholder="Ex: Preto e Branco"
-                    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                   />
                 </label>
               </div>
-              <label className="rounded-xl border border-dashed border-[var(--border)] bg-sky-50/50 px-3 py-3 text-xs text-slate-600 cursor-pointer">
+              <label className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]/50 px-3 py-3 text-xs text-slate-600 cursor-pointer">
                 Carregar foto do cão (opcional)
                 <input
                   type="file"
@@ -739,7 +739,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
           {/* STEP 4: HEALTH & VACCINES */}
           {formStep === 4 && (
             <div className="grid gap-3 animate-in fade-in duration-200">
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+              <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Histórico de Vacinas</span>
                 {vaccines.length === 0 ? (
                   <p className="mt-1 text-xs text-[var(--muted)]">Nenhuma vacina cadastrada ainda.</p>
@@ -765,13 +765,13 @@ export function PortalOnboardingClient({ token }: { token: string }) {
               </div>
 
               {/* Vaccine Adder */}
-              <div className="grid gap-2 rounded-2xl border border-sky-100 bg-sky-50/40 p-3">
-                <span className="text-xs font-bold text-[#145a82]">Adicionar Vacina</span>
+              <div className="grid gap-2 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 p-3">
+                <span className="text-xs font-bold text-[var(--foreground)]">Adicionar Vacina</span>
                 <input
                   value={newVacName}
                   onChange={(e) => setNewVacName(e.target.value)}
                   placeholder="Nome (ex: V10, Antirrábica)"
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <label className="grid gap-1 text-[9px] font-bold text-slate-500 uppercase">
@@ -780,7 +780,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                       placeholder="DD/MM/AAAA"
                       value={newVacDate}
                       onChange={(e) => setNewVacDate(e.target.value)}
-                      className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
+                      className="rounded-md border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
                     />
                   </label>
                   <label className="grid gap-1 text-[9px] font-bold text-slate-500 uppercase">
@@ -789,14 +789,14 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                       placeholder="DD/MM/AAAA"
                       value={newVacValidity}
                       onChange={(e) => setNewVacValidity(e.target.value)}
-                      className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
+                      className="rounded-md border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
                     />
                   </label>
                 </div>
                 <button
                   type="button"
                   onClick={handleAddVaccine}
-                  className="rounded-xl bg-[#145a82] py-2 text-xs font-semibold text-white hover:bg-[#1b719d]"
+                  className="rounded-md bg-[var(--accent)] py-2 text-xs font-semibold text-white hover:bg-[#1b719d]"
                 >
                   Incluir vacina
                 </button>
@@ -808,7 +808,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   value={dietRestrictions}
                   onChange={(e) => setDietRestrictions(e.target.value)}
                   placeholder="Ex: Alergia a frango, grãos (opcional)"
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 />
               </label>
 
@@ -818,7 +818,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   value={healthConditions}
                   onChange={(e) => setHealthConditions(e.target.value)}
                   placeholder="Ex: Displasia de quadril, sopro no coração"
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 />
               </label>
 
@@ -828,7 +828,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   value={veterinarian}
                   onChange={(e) => setVeterinarian(e.target.value)}
                   placeholder="Nome + Telefone do Vet"
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 />
               </label>
             </div>
@@ -844,7 +844,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   <select
                     value={tempEnergy}
                     onChange={(e) => setTempEnergy(e.target.value)}
-                    className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
+                    className="rounded-md border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
                   >
                     <option value="Alta energia">Alta</option>
                     <option value="Energia moderada">Moderada</option>
@@ -858,7 +858,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   <select
                     value={tempSocial}
                     onChange={(e) => setTempSocial(e.target.value)}
-                    className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
+                    className="rounded-md border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
                   >
                     <option value="Sociável com pessoas">Sociável</option>
                     <option value="Tímido/reservado">Tímido</option>
@@ -872,7 +872,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   <select
                     value={tempDogs}
                     onChange={(e) => setTempDogs(e.target.value)}
-                    className="rounded-xl border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
+                    className="rounded-md border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
                   >
                     <option value="Sociável com outros cães">Sociável</option>
                     <option value="Reativo a outros cães">Reativo</option>
@@ -888,7 +888,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   value={rotAlimentation}
                   onChange={(e) => setRotAlimentation(e.target.value)}
                   placeholder="Ex: Ração seca, 2x ao dia (8h e 19h)"
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 />
               </label>
 
@@ -897,7 +897,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                 <select
                   value={envAloneTime}
                   onChange={(e) => setEnvAloneTime(e.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 >
                   <option value="Fica pouco sozinho (menos de 2h)">Menos de 2h</option>
                   <option value="2–4h">2h a 4h</option>
@@ -911,7 +911,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                 <select
                   value={propertyType}
                   onChange={(e) => setPropertyType(e.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[#145a82]"
                 >
                   <option value="Apartamento">Apartamento</option>
                   <option value="Casa com quintal livre">Casa com quintal livre</option>
@@ -927,11 +927,11 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   onChange={(e) => setTempBehavior(e.target.value)}
                   placeholder="Ex: Pula nas pessoas, late muito no portão, destrói móveis..."
                   rows={2}
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-[#145a82]"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-[#145a82]"
                 />
               </label>
 
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+              <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Objetivos do Adestramento</span>
                 <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                   <label className="flex items-center gap-1.5 cursor-pointer">
@@ -956,7 +956,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
           )}
 
           {saveError && (
-            <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{saveError}</p>
+            <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{saveError}</p>
           )}
 
           {/* Form Actions */}
@@ -965,7 +965,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
               <button
                 type="button"
                 onClick={() => setFormStep(formStep - 1)}
-                className="rounded-xl border border-[var(--border)] bg-white px-4 py-2.5 text-xs font-semibold text-[var(--muted)]"
+                className="rounded-md border border-[var(--border)] bg-white px-4 py-2.5 text-xs font-semibold text-[var(--muted)]"
               >
                 Anterior
               </button>
@@ -975,7 +975,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
               <button
                 type="button"
                 onClick={() => setFormStep(formStep + 1)}
-                className="flex-1 rounded-xl bg-[#145a82] py-2.5 text-xs font-semibold text-white"
+                className="flex-1 rounded-md bg-[var(--accent)] py-2.5 text-xs font-semibold text-white"
               >
                 Próximo
               </button>
@@ -983,7 +983,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="flex-1 pc-primary-action rounded-xl py-2.5 text-xs font-semibold disabled:opacity-60"
+                className="flex-1 pc-primary-action rounded-md py-2.5 text-xs font-semibold disabled:opacity-60"
               >
                 {isSaving ? "Enviando..." : "Enviar Ficha Completa"}
               </button>

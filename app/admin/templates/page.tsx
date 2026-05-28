@@ -66,13 +66,13 @@ const PANELS: Array<{
 function accentRing(accent: string): string {
   if (accent === "indigo") return "border-indigo-200 bg-indigo-50/40";
   if (accent === "amber") return "border-amber-200 bg-amber-50/40";
-  return "border-sky-200 bg-sky-50/40";
+  return "border-[var(--border-strong)] bg-[var(--surface-2)]/40";
 }
 
 function accentChip(accent: string): string {
   if (accent === "indigo") return "bg-indigo-100 text-indigo-900 border-indigo-200";
   if (accent === "amber") return "bg-amber-100 text-amber-900 border-amber-200";
-  return "bg-sky-100 text-sky-900 border-sky-200";
+  return "bg-sky-100 text-sky-900 border-[var(--border-strong)]";
 }
 
 function accentButton(accent: string): string {
@@ -199,26 +199,26 @@ export default function AdminTemplatesPage() {
   return (
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-3xl px-3 pb-24 pt-3">
-        <section className="rounded-[2rem] border border-[var(--border)] bg-[#f7fbff] p-4 shadow-[var(--shadow)]">
+        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Operacional</p>
-              <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">Templates do sistema</h1>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Operacional</p>
+              <h1 className="text-2xl font-semibold text-[var(--foreground)]">Templates do sistema</h1>
               <p className="mt-1 text-xs text-[var(--muted)]">Edite as listas que alimentam sessões e tarefas do tutor.</p>
             </div>
             <Link
               href="/configuracoes"
-              className="flex h-9 items-center justify-center rounded-full border border-[var(--border)] bg-white px-3 text-xs font-semibold text-[#145a82]"
+              className="flex h-9 items-center justify-center rounded-full border border-[var(--border)] bg-white px-3 text-xs font-semibold text-[var(--foreground)]"
             >
               ← Configurações
             </Link>
           </header>
 
           {message ? (
-            <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p>
+            <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p>
           ) : null}
           {error ? (
-            <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
+            <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
           ) : null}
 
           {loading ? (
@@ -226,7 +226,7 @@ export default function AdminTemplatesPage() {
           ) : (
             <div className="mt-4 grid gap-4">
               {/* WhatsApp templates customizáveis */}
-              <article className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
+              <article className="rounded-md border border-emerald-200 bg-emerald-50/40 p-4">
                 <header>
                   <h2 className="text-sm font-bold text-slate-900">💬 Templates de mensagem WhatsApp</h2>
                   <p className="text-[11px] text-slate-700">
@@ -246,7 +246,7 @@ export default function AdminTemplatesPage() {
                         rows={2}
                         maxLength={400}
                         placeholder={field.placeholder}
-                        className="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-normal normal-case text-slate-900 outline-none"
+                        className="rounded-md border border-emerald-200 bg-white px-3 py-2 text-xs font-normal normal-case text-slate-900 outline-none"
                       />
                     </label>
                   ))}
@@ -264,7 +264,7 @@ export default function AdminTemplatesPage() {
               {PANELS.map((panel) => (
                 <article
                   key={panel.key}
-                  className={`rounded-2xl border p-4 ${accentRing(panel.accent)}`}
+                  className={`rounded-md border p-4 ${accentRing(panel.accent)}`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -318,13 +318,13 @@ export default function AdminTemplatesPage() {
                       }}
                       placeholder={panel.placeholder}
                       maxLength={80}
-                      className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                      className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
                     />
                     <button
                       type="button"
                       onClick={() => addItem(panel.key)}
                       disabled={savingKey === panel.key || !drafts[panel.key].trim()}
-                      className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow-sm transition disabled:opacity-50 ${accentButton(panel.accent)}`}
+                      className={`rounded-md px-4 py-2 text-xs font-bold text-white shadow-sm transition disabled:opacity-50 ${accentButton(panel.accent)}`}
                     >
                       {savingKey === panel.key ? "Salvando…" : "Adicionar"}
                     </button>

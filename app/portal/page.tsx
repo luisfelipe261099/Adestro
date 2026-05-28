@@ -251,43 +251,43 @@ export default function PortalPage() {
   return (
     <AuthGuard role="trainer">
       <section className="mx-auto max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <div className="rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-[var(--shadow)]">
+        <div className="rounded-lg border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-sm">
           <header className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Portal do tutor</p>
-              <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">Compartilhar acompanhamento</h1>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Portal do tutor</p>
+              <h1 className="text-2xl font-semibold text-[var(--foreground)]">Compartilhar acompanhamento</h1>
               <p className="mt-1 text-xs text-[var(--muted)]">Adestrador: {trainerName || "Sem nome"}</p>
             </div>
             <div className="flex items-center gap-2">
-              <Link href="/agenda" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#145a82]">
+              <Link href="/agenda" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--foreground)]">
                 Agenda
               </Link>
-              <Link href="/treinos" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#145a82]">
+              <Link href="/treinos" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--foreground)]">
                 Treinos
               </Link>
             </div>
           </header>
 
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <article className="rounded-xl border border-[var(--border)] bg-white p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#2d6f99]">Tarefas</p>
+            <article className="rounded-md border border-[var(--border)] bg-white p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">Tarefas</p>
               <p className="text-2xl font-semibold text-[var(--foreground)]">{selectedTasks.length}</p>
               <p className="text-xs text-[var(--muted)]">Itens no portal</p>
             </article>
-            <article className="rounded-xl border border-[var(--border)] bg-white p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#2d6f99]">Feedbacks</p>
+            <article className="rounded-md border border-[var(--border)] bg-white p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">Feedbacks</p>
               <p className="text-2xl font-semibold text-[var(--foreground)]">{selectedFeedbacks.length}</p>
               <p className="text-xs text-[var(--muted)]">Mensagens recentes</p>
             </article>
           </div>
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+          <label className="grid gap-1 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
             1. Escolha o tutor
             <select
               value={selectedClient?.id ?? ""}
               onChange={(event) => setSelectedClientId(event.target.value)}
-              className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
+              className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
             >
               {storeClients.length === 0 ? <option value="">Sem clientes</option> : null}
               {storeClients.map((client) => (
@@ -298,13 +298,13 @@ export default function PortalPage() {
             </select>
           </label>
 
-          <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+          <label className="grid gap-1 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
             2. Escolha o cão
             <select
               value={selectedDog?.id ?? ""}
               onChange={(event) => setSelectedDogId(event.target.value)}
               disabled={!selectedClient?.dogs.length}
-              className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none disabled:opacity-60 focus:border-sky-400"
+              className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none disabled:opacity-60 focus:border-sky-400"
             >
               {!selectedClient?.dogs.length ? <option value="">Sem cães</option> : null}
               {(selectedClient?.dogs ?? []).map((dog) => (
@@ -317,7 +317,7 @@ export default function PortalPage() {
           </div>
 
           {selectedClient && selectedDog && (
-            <article className="mb-4 mt-4 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
+            <article className="mb-4 mt-4 rounded-md border border-[var(--border)] bg-[var(--panel)] p-4">
             <div className="flex flex-col gap-3">
               <Image
                 src={selectedDog.photoUrl || "/images/dog-default-bolt.svg"}
@@ -328,7 +328,7 @@ export default function PortalPage() {
                 onError={(event) => {
                   event.currentTarget.src = "/images/dog-default-bolt.svg";
                 }}
-                className="h-20 w-20 rounded-xl object-cover"
+                className="h-20 w-20 rounded-md object-cover"
               />
               <div>
                 <h2 className="font-semibold text-[var(--foreground)]">3. Link do portal de {selectedDog.name}</h2>
@@ -338,7 +338,7 @@ export default function PortalPage() {
               </div>
             </div>
 
-            <div className="mt-3 space-y-2 rounded-xl border border-[var(--border)] bg-white p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-[var(--border)] bg-white p-3">
               <p className="text-xs text-[var(--muted)]">
                 Status: <span className="font-semibold text-[var(--foreground)]">{isLoadingLink ? "Carregando..." : portalLink?.status || "Não gerado"}</span>
               </p>
@@ -351,7 +351,7 @@ export default function PortalPage() {
             </div>
 
             <div className="mt-3 space-y-2">
-              <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
                 Validade (dias)
                 <input
                   type="number"
@@ -369,9 +369,9 @@ export default function PortalPage() {
                     key={preset}
                     type="button"
                     onClick={() => setExpiresInDays(preset)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] transition-colors ${
+                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-colors ${
                       expiresInDays === preset
-                        ? "border border-sky-300 bg-sky-50 text-sky-700"
+                        ? "border border-sky-300 bg-[var(--surface-2)] text-sky-700"
                         : "border border-[var(--border)] bg-white text-[var(--muted)]"
                     }`}
                   >
@@ -409,14 +409,14 @@ export default function PortalPage() {
                 type="button"
                 onClick={handleGeneratePortalLink}
                 disabled={!selectedClient || isGeneratingLink}
-                className="flex-1 rounded-xl border border-sky-300 bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-sky-700 transition-colors hover:bg-sky-100 disabled:opacity-60"
+                className="flex-1 rounded-md border border-sky-300 bg-[var(--surface-2)] px-4 py-2 text-xs font-semibold uppercase tracking-wide text-sky-700 transition-colors hover:bg-sky-100 disabled:opacity-60"
               >
                 {isGeneratingLink ? "Gerando..." : portalLink ? "Renovar link" : "Gerar link"}
               </button>
               <button
                 type="button"
                 onClick={handleCopyPortalLink}
-                className="flex-1 rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)] transition-colors hover:bg-sky-50"
+                className="flex-1 rounded-md border border-[var(--border)] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)]"
               >
                 Copiar
               </button>
@@ -424,7 +424,7 @@ export default function PortalPage() {
                 type="button"
                 onClick={handleRevokePortalLink}
                 disabled={!portalLink || portalLink.status === "Revogado" || isRevokingLink}
-                className="flex-1 rounded-xl border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-60"
+                className="flex-1 rounded-md border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-60"
               >
                 {isRevokingLink ? "..." : "Revogar"}
               </button>
@@ -444,21 +444,21 @@ export default function PortalPage() {
         )}
 
           <div className="mb-4 grid gap-4 sm:grid-cols-2">
-          <article className="rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Tarefas</p>
-            <p className="mt-2 font-display text-3xl font-semibold text-[var(--foreground)]">
+          <article className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Tarefas</p>
+            <p className="mt-2 text-3xl font-semibold text-[var(--foreground)]">
               {selectedTasks.filter((task) => task.completed).length}/{selectedTasks.length || 0}
             </p>
           </article>
-          <article className="rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Sessões</p>
-            <p className="mt-2 font-display text-3xl font-semibold text-[var(--foreground)]">
+          <article className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Sessões</p>
+            <p className="mt-2 text-3xl font-semibold text-[var(--foreground)]">
               {selectedSessions.length}
             </p>
           </article>
         </div>
 
-        <article className="mb-4 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
+        <article className="mb-4 rounded-md border border-[var(--border)] bg-[var(--panel)] p-4">
           <h2 className="font-semibold text-[var(--foreground)]">4. Tarefas para casa</h2>
           <p className="mt-1 text-xs text-[var(--muted)]">O tutor verá estas tarefas logo ao abrir o portal.</p>
 
@@ -473,7 +473,7 @@ export default function PortalPage() {
                   {selectedTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-white p-3"
+                      className="flex items-start gap-3 rounded-md border border-[var(--border)] bg-white p-3"
                     >
                       <button
                         type="button"
@@ -503,7 +503,7 @@ export default function PortalPage() {
                     type="button"
                     onClick={() => handleTemplateTask(template)}
                     disabled={isAddingTask}
-                    className="rounded-lg border border-[var(--border)] bg-white px-2 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)] transition-colors hover:bg-sky-50 disabled:opacity-50"
+                    className="rounded-lg border border-[var(--border)] bg-white px-2 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)] disabled:opacity-50"
                   >
                     + {template}
                   </button>
@@ -521,7 +521,7 @@ export default function PortalPage() {
                 <button
                   type="submit"
                   disabled={isAddingTask}
-                  className="rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-sky-700 transition-colors hover:bg-sky-100 disabled:opacity-60"
+                  className="rounded-lg border border-sky-300 bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-sky-700 transition-colors hover:bg-sky-100 disabled:opacity-60"
                 >
                   {isAddingTask ? "..." : "Adicionar"}
                 </button>
@@ -531,24 +531,24 @@ export default function PortalPage() {
         </article>
 
         {selectedClient && selectedDog && (
-          <article className="mb-4 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
+          <article className="mb-4 rounded-md border border-[var(--border)] bg-[var(--panel)] p-4">
             <h2 className="font-semibold text-[var(--foreground)]">Contexto do caso</h2>
 
             {selectedClient.environment && (
-              <div className="mt-3 rounded-xl border border-[var(--border)] bg-white p-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Ambiente</p>
+              <div className="mt-3 rounded-md border border-[var(--border)] bg-white p-3">
+                <p className="text-xs uppercase tracking-wider text-[var(--muted)]">Ambiente</p>
                 <p className="mt-1 text-xs text-[var(--foreground)]">{selectedClient.environment}</p>
               </div>
             )}
 
             {(selectedDog.trainingTypes ?? []).length > 0 && (
-              <div className="mt-3 rounded-xl border border-[var(--border)] bg-white p-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Focos</p>
+              <div className="mt-3 rounded-md border border-[var(--border)] bg-white p-3">
+                <p className="text-xs uppercase tracking-wider text-[var(--muted)]">Focos</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {selectedDog.trainingTypes.map((type) => (
                     <span
                       key={type}
-                      className="rounded-full border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-sky-700"
+                      className="rounded-full border border-[var(--border-strong)] bg-[var(--surface-2)] px-2 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700"
                     >
                       {type}
                     </span>
@@ -558,8 +558,8 @@ export default function PortalPage() {
             )}
 
             {selectedEvents.length > 0 && (
-              <div className="mt-3 rounded-xl border border-[var(--border)] bg-white p-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Próximas sessões</p>
+              <div className="mt-3 rounded-md border border-[var(--border)] bg-white p-3">
+                <p className="text-xs uppercase tracking-wider text-[var(--muted)]">Próximas sessões</p>
                 <div className="mt-2 space-y-2">
                   {selectedEvents.slice(0, 2).map((event) => (
                     <div key={event.id} className="text-xs">
@@ -572,8 +572,8 @@ export default function PortalPage() {
             )}
 
             {selectedSessions.length > 0 && (
-              <div className="mt-3 rounded-xl border border-[var(--border)] bg-white p-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Últimas notas</p>
+              <div className="mt-3 rounded-md border border-[var(--border)] bg-white p-3">
+                <p className="text-xs uppercase tracking-wider text-[var(--muted)]">Últimas notas</p>
                 <div className="mt-2 space-y-1">
                   {selectedSessions.slice(0, 2).map((session) => (
                     <div key={session.id} className="text-xs">
@@ -586,8 +586,8 @@ export default function PortalPage() {
             )}
 
             {selectedFeedbacks.length > 0 && (
-              <div className="mt-3 rounded-xl border border-[var(--border)] bg-white p-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">Feedback ({selectedFeedbacks.length})</p>
+              <div className="mt-3 rounded-md border border-[var(--border)] bg-white p-3">
+                <p className="text-xs uppercase tracking-wider text-[var(--muted)]">Feedback ({selectedFeedbacks.length})</p>
                 <div className="mt-2 space-y-1">
                   {selectedFeedbacks.slice(0, 2).map((feedback) => (
                     <div key={feedback.id} className="text-xs">

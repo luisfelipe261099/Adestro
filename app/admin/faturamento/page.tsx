@@ -61,7 +61,7 @@ export default function FaturamentoPage() {
             { icon: "⏳", label: "Pagamentos Pendentes", value: (metrics?.totalPending ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) },
             { icon: "📈", label: "ARR Estimado", value: (metrics?.arr ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) },
           ].map((stat, idx) => (
-            <div key={idx} className="rounded-2xl border border-slate-300 bg-white p-5">
+            <div key={idx} className="rounded-md border border-slate-300 bg-white p-5">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-base font-bold text-slate-900">{stat.label}</p>
@@ -74,8 +74,8 @@ export default function FaturamentoPage() {
           ))}
         </div>
 
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-6">
-          <h3 className="mb-4 font-display text-xl font-semibold">Transações recentes de assinaturas</h3>
+        <div className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
+          <h3 className="mb-4 text-xl font-semibold">Transações recentes de assinaturas</h3>
           <div className="space-y-3">
             {transactions.slice(0, 8).map((tx) => (
               <div key={tx.id} className="flex items-center justify-between rounded-lg border-2 border-slate-300 bg-white p-4">

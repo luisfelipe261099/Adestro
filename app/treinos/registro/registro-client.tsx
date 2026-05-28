@@ -387,7 +387,7 @@ export default function RegistroTreinoClientPage() {
         className="flex w-full items-center justify-between border-b border-[var(--border)] bg-[#fcfdfe] px-4 py-3.5 text-left font-semibold text-[var(--foreground)] hover:bg-[#f5fafe] transition-colors"
       >
         <span className="flex items-center gap-2.5 text-sm">
-          <span className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-sky-100 text-[11px] font-bold text-[#145a82]">
+          <span className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-sky-100 text-[11px] font-bold text-[var(--foreground)]">
             {letter}
           </span>
           {name}
@@ -400,14 +400,14 @@ export default function RegistroTreinoClientPage() {
   return (
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
+        <section className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#2d6f99]">Módulo de Treinos</p>
-              <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">Evolução Estruturada</h1>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">Módulo de Treinos</p>
+              <h1 className="text-2xl font-semibold text-[var(--foreground)]">Evolução Estruturada</h1>
               <p className="mt-1 text-xs text-[var(--muted)]">Preenchimento guiado das seções operacionais de treino A a I.</p>
             </div>
-            <Link href="/treinos" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[#145a82]">
+            <Link href="/treinos" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--foreground)]">
               Histórico
             </Link>
           </div>
@@ -425,7 +425,7 @@ export default function RegistroTreinoClientPage() {
                     setSelectedClientId(nextClientId);
                     setSelectedDogId(nextClient?.dogs[0]?.id ?? "");
                   }}
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                 >
                   {clients.map((client) => (
                     <option key={client.id} value={client.id}>{client.name}</option>
@@ -438,7 +438,7 @@ export default function RegistroTreinoClientPage() {
                 <select
                   value={selectedDogId}
                   onChange={(event) => setSelectedDogId(event.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                 >
                   {(selectedClient?.dogs ?? []).map((dog) => (
                     <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
@@ -453,7 +453,7 @@ export default function RegistroTreinoClientPage() {
                 <input
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                   required
                 />
               </label>
@@ -463,13 +463,13 @@ export default function RegistroTreinoClientPage() {
                 <input
                   value={sessionLocation}
                   onChange={(event) => setSessionLocation(event.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                 />
               </label>
             </div>
 
             {/* SEÇÕES ACORDEÃO A a I */}
-            <div className="mt-2 overflow-hidden rounded-2xl border border-[var(--border)] bg-white">
+            <div className="mt-2 overflow-hidden rounded-md border border-[var(--border)] bg-white">
               
               {/* SEÇÃO A: Atividades Trabalhadas */}
               {renderSectionHeader("A", "Atividades Trabalhadas")}
@@ -479,14 +479,14 @@ export default function RegistroTreinoClientPage() {
                   
                   <div className="space-y-2">
                     {activities.map((act) => (
-                      <div key={act.id} className="flex flex-col gap-2 rounded-xl border border-slate-100 bg-[#fafcff] p-3">
+                      <div key={act.id} className="flex flex-col gap-2 rounded-md border border-slate-100 bg-[#fafcff] p-3">
                         <div className="flex items-center justify-between">
                           <label className="flex items-center gap-2.5 text-xs font-semibold text-[#1e5272] cursor-pointer">
                             <input
                               type="checkbox"
                               checked={act.completed}
                               onChange={(e) => updateActivity(act.id, "completed", e.target.checked)}
-                              className="rounded border-[var(--border)] text-[#145a82] focus:ring-sky-400"
+                              className="rounded border-[var(--border)] text-[var(--foreground)] focus:ring-sky-400"
                             />
                             {act.name}
                           </label>
@@ -513,12 +513,12 @@ export default function RegistroTreinoClientPage() {
                       placeholder="Nova atividade (Ex: Foco no portão)"
                       value={newActivityName}
                       onChange={(e) => setNewActivityName(e.target.value)}
-                      className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
                     />
                     <button
                       type="button"
                       onClick={addActivity}
-                      className="rounded-xl bg-[#145a82] px-3 text-xs font-semibold text-white"
+                      className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white"
                     >
                       Incluir
                     </button>
@@ -534,7 +534,7 @@ export default function RegistroTreinoClientPage() {
                   
                   <div className="space-y-3">
                     {commands.map((cmd) => (
-                      <div key={cmd.id} className="rounded-xl border border-slate-100 bg-[#fafcff] p-3 space-y-2">
+                      <div key={cmd.id} className="rounded-md border border-slate-100 bg-[#fafcff] p-3 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-[#1e5272]">{cmd.command}</span>
                           <button
@@ -547,7 +547,7 @@ export default function RegistroTreinoClientPage() {
                         </div>
                         <div className="flex items-center justify-between gap-2">
                           <StarRating value={cmd.rating} onChange={(rating) => updateCommand(cmd.id, "rating", rating)} />
-                          <span className="text-xs font-bold text-[#145a82]">{cmd.rating}/5</span>
+                          <span className="text-xs font-bold text-[var(--foreground)]">{cmd.rating}/5</span>
                         </div>
                         <input
                           placeholder="Observações da evolução..."
@@ -564,12 +564,12 @@ export default function RegistroTreinoClientPage() {
                       placeholder="Novo comando (Ex: Junto, Fica, Solta)"
                       value={newCommandName}
                       onChange={(e) => setNewCommandName(e.target.value)}
-                      className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
                     />
                     <button
                       type="button"
                       onClick={addCommand}
-                      className="rounded-xl bg-[#145a82] px-3 text-xs font-semibold text-white"
+                      className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white"
                     >
                       Incluir
                     </button>
@@ -585,7 +585,7 @@ export default function RegistroTreinoClientPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
-                    className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    className="w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
                     placeholder="Descreva de forma simples e estimulante o resumo do treino que o tutor verá no portal."
                   />
                 </div>
@@ -600,7 +600,7 @@ export default function RegistroTreinoClientPage() {
                     value={privateNotes}
                     onChange={(e) => setPrivateNotes(e.target.value)}
                     rows={3}
-                    className="w-full rounded-xl border border-rose-100 bg-rose-50/20 px-3 py-2 text-xs outline-none focus:border-rose-300 text-slate-800"
+                    className="w-full rounded-md border border-rose-100 bg-rose-50/20 px-3 py-2 text-xs outline-none focus:border-rose-300 text-slate-800"
                     placeholder="Comportamentos observados, anotações de temperamento, observações sobre o tutor, etc."
                   />
                 </div>
@@ -611,7 +611,7 @@ export default function RegistroTreinoClientPage() {
               {expandedSection === "E" && (
                 <div className="p-4 space-y-3.5">
                   <div>
-                    <h4 className="text-xs font-bold text-[#145a82]">🎤 Ditado de Notas por Voz</h4>
+                    <h4 className="text-xs font-bold text-[var(--foreground)]">🎤 Ditado de Notas por Voz</h4>
                     <p className="text-[10px] text-[var(--muted)]">Use o microfone do dispositivo para transcrever observações. O áudio fica no seu navegador — não enviamos nada para serviços pagos.</p>
 
                     <AudioTranscriber
@@ -627,7 +627,7 @@ export default function RegistroTreinoClientPage() {
                       value={audioTranscription}
                       onChange={(e) => setAudioTranscription(e.target.value)}
                       rows={3}
-                      className="mt-3 w-full rounded-xl border border-[var(--border)] bg-[#fafcff] px-3 py-2 text-xs outline-none"
+                      className="mt-3 w-full rounded-md border border-[var(--border)] bg-[#fafcff] px-3 py-2 text-xs outline-none"
                       placeholder="A transcrição em tempo real aparece aqui — você pode editar livremente."
                     />
                   </div>
@@ -635,20 +635,20 @@ export default function RegistroTreinoClientPage() {
                   <hr className="border-[var(--border)]" />
 
                   <div>
-                    <h4 className="text-xs font-bold text-[#145a82]">🤖 Análise por Inteligência Artificial (Adestro AI)</h4>
+                    <h4 className="text-xs font-bold text-[var(--foreground)]">🤖 Análise por Inteligência Artificial (Adestro AI)</h4>
                     <p className="text-[10px] text-[var(--muted)]">Gera automaticamente o resumo para o tutor, foco das próximas aulas e checklist de tarefas a partir dos dados do treino.</p>
                     
                     <button
                       type="button"
                       onClick={generateMockAIAnalysis}
                       disabled={isGeneratingAI}
-                      className="mt-2.5 w-full rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-2 text-xs font-bold text-white shadow-sm hover:from-purple-700 transition"
+                      className="mt-2.5 w-full rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 py-2 text-xs font-bold text-white shadow-sm hover:from-purple-700 transition"
                     >
                       {isGeneratingAI ? "Gerando Análise..." : "✨ Gerar Relatório e Análise IA"}
                     </button>
 
                     {aiSummary && (
-                      <div className="mt-3 rounded-xl border border-purple-200 bg-purple-50/55 p-3 space-y-2">
+                      <div className="mt-3 rounded-md border border-purple-200 bg-purple-50/55 p-3 space-y-2">
                         <p className="text-xs font-bold text-purple-900">✨ Resumo Gerado pela IA:</p>
                         <p className="text-xs text-purple-950 italic">"{aiSummary}"</p>
                         
@@ -688,7 +688,7 @@ export default function RegistroTreinoClientPage() {
                   {draftMedia.length > 0 && (
                     <div className="grid grid-cols-2 gap-2 mt-2">
                       {draftMedia.map((item) => (
-                        <div key={item.id} className="relative rounded-xl border border-[var(--border)] bg-slate-50 p-1.5 flex flex-col items-center">
+                        <div key={item.id} className="relative rounded-md border border-[var(--border)] bg-slate-50 p-1.5 flex flex-col items-center">
                           <div className="relative h-20 w-full overflow-hidden rounded-lg">
                             <Image src={item.dataUrl} alt="Foto do treino" fill unoptimized className="object-cover" />
                           </div>
@@ -713,7 +713,7 @@ export default function RegistroTreinoClientPage() {
                   <input
                     value={nextFocus}
                     onChange={(e) => setNextFocus(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    className="w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
                     placeholder="Ex: Treinar permanência com o comando Fica"
                   />
                 </div>
@@ -725,7 +725,7 @@ export default function RegistroTreinoClientPage() {
                 <div className="p-4 space-y-2">
                   <div className="flex flex-wrap gap-1.5">
                     {nextCommands.map((cmd, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-bold text-[#145a82] border border-sky-100">
+                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-bold text-[var(--foreground)] border border-[var(--border)]">
                         {cmd}
                         <button
                           type="button"
@@ -742,7 +742,7 @@ export default function RegistroTreinoClientPage() {
                       placeholder="Novo comando recomendado"
                       value={newNextCommandName}
                       onChange={(e) => setNewNextCommandName(e.target.value)}
-                      className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
                     />
                     <button
                       type="button"
@@ -751,7 +751,7 @@ export default function RegistroTreinoClientPage() {
                         setNextCommands([...nextCommands, newNextCommandName.trim()]);
                         setNewNextCommandName("");
                       }}
-                      className="rounded-xl bg-[#145a82] px-3 text-xs font-semibold text-white"
+                      className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white"
                     >
                       Adicionar
                     </button>
@@ -767,7 +767,7 @@ export default function RegistroTreinoClientPage() {
                   
                   <div className="space-y-1.5">
                     {nextTasks.map((task, i) => (
-                      <div key={i} className="flex items-center justify-between gap-2 rounded-xl bg-slate-50 p-2 text-xs text-slate-800">
+                      <div key={i} className="flex items-center justify-between gap-2 rounded-md bg-slate-50 p-2 text-xs text-slate-800">
                         <span className="flex-1 leading-snug">🏠 {task}</span>
                         <button
                           type="button"
@@ -785,7 +785,7 @@ export default function RegistroTreinoClientPage() {
                       placeholder="Nova tarefa de casa para o tutor..."
                       value={newNextTaskText}
                       onChange={(e) => setNewNextTaskText(e.target.value)}
-                      className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
                     />
                     <button
                       type="button"
@@ -794,7 +794,7 @@ export default function RegistroTreinoClientPage() {
                         setNextTasks([...nextTasks, newNextTaskText.trim()]);
                         setNewNextTaskText("");
                       }}
-                      className="rounded-xl bg-[#145a82] px-3 text-xs font-semibold text-white"
+                      className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white"
                     >
                       Adicionar
                     </button>
@@ -804,8 +804,8 @@ export default function RegistroTreinoClientPage() {
 
             </div>
 
-            {error && <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
-            {message && <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p>}
+            {error && <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
+            {message && <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p>}
 
             <button
               type="submit"

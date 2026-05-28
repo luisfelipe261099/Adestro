@@ -458,12 +458,12 @@ export default function SchedulePage() {
   return (
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="rounded-[2.25rem] border border-[var(--border)] bg-[#f7fbff] p-4 shadow-[var(--shadow)]">
+        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           
           {/* HEADER */}
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <Link href="/dashboard" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[#145a82]" aria-label="Voltar ao início">
+              <Link href="/dashboard" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--foreground)]" aria-label="Voltar ao início">
                 <TinyIcon name="back" />
               </Link>
               <div>
@@ -474,7 +474,7 @@ export default function SchedulePage() {
             <button
               type="button"
               onClick={() => setShowForm((value) => !value)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#145a82] text-white shadow-sm"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)] text-white shadow-sm"
               aria-label="Novo agendamento"
             >
               <TinyIcon name="plus" />
@@ -483,14 +483,14 @@ export default function SchedulePage() {
 
           {/* VIEW SWITCHER & NAVIGATION */}
           <nav className="mt-3 flex items-center justify-between gap-2">
-            <div data-tour="agenda-tabs" className="inline-flex rounded-full border border-[#c9dfef] bg-white p-0.5 text-[11px] font-semibold">
+            <div data-tour="agenda-tabs" className="inline-flex rounded-full border border-[var(--border)] bg-white p-0.5 text-[11px] font-semibold">
               {(["dia", "semana", "mes"] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setViewMode(mode)}
                   className={`rounded-full px-3 py-1 transition ${
-                    viewMode === mode ? "bg-[#145a82] text-white shadow-sm" : "text-[var(--muted)]"
+                    viewMode === mode ? "bg-[var(--accent)] text-white shadow-sm" : "text-[var(--muted)]"
                   }`}
                 >
                   {mode === "dia" ? "Dia" : mode === "semana" ? "Semana" : "Mês"}
@@ -499,27 +499,27 @@ export default function SchedulePage() {
             </div>
 
             <div className="flex items-center gap-1.5">
-              <button onClick={handlePrev} className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border)] bg-white text-xs text-[#145a82]">
+              <button onClick={handlePrev} className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border)] bg-white text-xs text-[var(--foreground)]">
                 ◀
               </button>
-              <button onClick={handleToday} className="rounded-full border border-[var(--border)] bg-white px-2.5 py-1 text-[10px] font-semibold text-[#145a82]">
+              <button onClick={handleToday} className="rounded-full border border-[var(--border)] bg-white px-2.5 py-1 text-[10px] font-semibold text-[var(--foreground)]">
                 Hoje
               </button>
-              <button onClick={handleNext} className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border)] bg-white text-xs text-[#145a82]">
+              <button onClick={handleNext} className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border)] bg-white text-xs text-[var(--foreground)]">
                 ▶
               </button>
             </div>
           </nav>
 
           {/* DATE HEADER CONTEXT */}
-          <header className="mt-3 flex items-center justify-between text-xs font-bold text-slate-700 bg-white/70 border border-slate-100 rounded-xl p-3">
+          <header className="mt-3 flex items-center justify-between text-xs font-bold text-slate-700 bg-white/70 border border-slate-100 rounded-md p-3">
             <span className="flex items-center gap-1">
               <TinyIcon name="calendar" />
               {viewMode === "dia" ? currentDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }) :
                viewMode === "semana" ? `Semana de ${weekDates[0]?.getDate()}/${weekDates[0]?.getMonth() + 1} a ${weekDates[6]?.getDate()}/${weekDates[6]?.getMonth() + 1}` :
                formatMonthYear(currentDate)}
             </span>
-            <button type="button" onClick={() => setShowStatusFilters(c => !c)} className="inline-flex items-center gap-1 text-[#145a82]">
+            <button type="button" onClick={() => setShowStatusFilters(c => !c)} className="inline-flex items-center gap-1 text-[var(--foreground)]">
               <TinyIcon name="filter" />
               Filtro ({statusFilter === "Todos" ? "Todos" : statusLabel(statusFilter)})
             </button>
@@ -535,7 +535,7 @@ export default function SchedulePage() {
                   onClick={() => setStatusFilter(filterValue)}
                   className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-semibold ${
                     statusFilter === filterValue
-                      ? "bg-[#145a82] text-white"
+                      ? "bg-[var(--accent)] text-white"
                       : "border border-[var(--border)] bg-white text-[var(--muted)]"
                   }`}
                 >
@@ -546,7 +546,7 @@ export default function SchedulePage() {
           )}
 
           {agendaMessage && (
-            <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">{agendaMessage}</p>
+            <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">{agendaMessage}</p>
           )}
 
           {/* ======================================= */}
@@ -557,15 +557,15 @@ export default function SchedulePage() {
               
               {/* Daily Statistics */}
               <div className="grid grid-cols-3 gap-2">
-                <article className="rounded-xl border border-[var(--border)] bg-white p-2.5 text-center">
+                <article className="rounded-md border border-[var(--border)] bg-white p-2.5 text-center">
                   <p className="text-xl font-bold text-[var(--foreground)]">{eventsForSelectedDay.length}</p>
                   <p className="text-[10px] text-[var(--muted)]">Aulas no dia</p>
                 </article>
-                <article className="rounded-xl border border-[var(--border)] bg-white p-2.5 text-center">
+                <article className="rounded-md border border-[var(--border)] bg-white p-2.5 text-center">
                   <p className="text-xl font-bold text-amber-600">{totalInProgress}</p>
                   <p className="text-[10px] text-[var(--muted)]">Agendadas</p>
                 </article>
-                <article className="rounded-xl border border-[var(--border)] bg-white p-2.5 text-center">
+                <article className="rounded-md border border-[var(--border)] bg-white p-2.5 text-center">
                   <p className="text-xl font-bold text-sky-600">{totalConfirmed}</p>
                   <p className="text-[10px] text-[var(--muted)]">Concluídas</p>
                 </article>
@@ -581,7 +581,7 @@ export default function SchedulePage() {
                       : undefined) ?? clientDogMetaByNames.get(`${event.client}::${event.dog}`);
                   
                   return (
-                    <article key={event.id} className="rounded-2xl border border-[var(--border)] bg-white p-3 shadow-sm hover:border-[#145a82]/30 transition-all">
+                    <article key={event.id} className="rounded-md border border-[var(--border)] bg-white p-3 shadow-sm hover:border-[#145a82]/30 transition-all">
                       <div className="flex items-start gap-3">
                         <div className="w-10 pt-1 text-right">
                           <p className="text-xs font-bold text-slate-800">{event.time}</p>
@@ -591,7 +591,7 @@ export default function SchedulePage() {
                         <div className="flex-1">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-start gap-2">
-                              <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-sky-50">
+                              <div className="relative h-10 w-10 overflow-hidden rounded-md bg-[var(--surface-2)]">
                                 <Image
                                   src={photo || "/images/dog-default-bolt.svg"}
                                   alt={`Foto de ${event.dog}`}
@@ -623,7 +623,7 @@ export default function SchedulePage() {
                           )}
 
                           <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-[10px] font-semibold">
-                            <Link href={relatedMeta ? `/treinos/registro?clientId=${relatedMeta.clientId}&dogId=${relatedMeta.dogId}` : "/treinos/registro"} className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] py-1.5 text-[#145a82] hover:bg-sky-50">
+                            <Link href={relatedMeta ? `/treinos/registro?clientId=${relatedMeta.clientId}&dogId=${relatedMeta.dogId}` : "/treinos/registro"} className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-[var(--foreground)] hover:bg-[var(--surface-2)]">
                               <TinyIcon name="notes" />
                               Registrar
                             </Link>
@@ -638,7 +638,7 @@ export default function SchedulePage() {
                             <button
                               type="button"
                               onClick={() => handleOpenWhatsApp(relatedMeta?.phone, event.dog, { day: event.day, time: event.time })}
-                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] py-1.5 text-emerald-700 hover:bg-emerald-50"
+                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-emerald-700 hover:bg-emerald-50"
                             >
                               <TinyIcon name="whats" />
                               WhatsApp
@@ -646,14 +646,14 @@ export default function SchedulePage() {
                             <button
                               type="button"
                               onClick={() => handleOpenMap(event)}
-                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] py-1.5 text-rose-700 hover:bg-rose-50"
+                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-rose-700 hover:bg-rose-50"
                             >
                               📍 Mapa
                             </button>
                             <button
                               type="button"
                               onClick={() => handleOpenGoogleCalendar(event)}
-                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] py-1.5 text-blue-700 hover:bg-blue-50"
+                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-blue-700 hover:bg-blue-50"
                               title="Abrir no Google Calendar"
                             >
                               📆 Google
@@ -661,7 +661,7 @@ export default function SchedulePage() {
                             <button
                               type="button"
                               onClick={() => handleExportICS(event)}
-                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] py-1.5 text-indigo-700 hover:bg-indigo-50"
+                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-indigo-700 hover:bg-indigo-50"
                               title="Baixar .ics para Apple Calendar / Outlook"
                             >
                               <TinyIcon name="export" />
@@ -674,7 +674,7 @@ export default function SchedulePage() {
                               type="button"
                               onClick={() => handleSetStatus(event.id, "Confirmado")}
                               disabled={busyEventId === event.id}
-                              className="rounded-full border border-sky-300 bg-sky-50 px-2 py-0.5 text-[9px] font-semibold text-sky-800 disabled:opacity-50"
+                              className="rounded-full border border-sky-300 bg-[var(--surface-2)] px-2 py-0.5 text-[9px] font-semibold text-sky-800 disabled:opacity-50"
                             >
                               Concluir
                             </button>
@@ -702,7 +702,7 @@ export default function SchedulePage() {
                 })}
 
                 {eventsForSelectedDay.length === 0 ? (
-                  <article className="rounded-2xl border border-dashed border-[var(--border)] bg-white p-6 text-center text-xs text-[var(--muted)]">
+                  <article className="rounded-md border border-dashed border-[var(--border)] bg-white p-6 text-center text-xs text-[var(--muted)]">
                     Nenhuma aula agendada para este dia.
                   </article>
                 ) : null}
@@ -726,13 +726,13 @@ export default function SchedulePage() {
                   <div
                     key={dayDate.toDateString()}
                     onClick={() => setCurrentDate(dayDate)}
-                    className={`rounded-2xl border p-3 cursor-pointer transition-all bg-white ${
+                    className={`rounded-md border p-3 cursor-pointer transition-all bg-white ${
                       isSelected ? "border-[#145a82] ring-1 ring-[#145a82]" : "border-[var(--border)]"
                     }`}
                   >
                     <header className="flex justify-between items-center pb-2 border-b border-slate-50">
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-bold uppercase ${isSelected ? "text-[#145a82]" : "text-slate-500"}`}>
+                        <span className={`text-xs font-bold uppercase ${isSelected ? "text-[var(--foreground)]" : "text-slate-500"}`}>
                           {weekDays[dayDate.getDay()]?.full}
                         </span>
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -748,9 +748,9 @@ export default function SchedulePage() {
 
                     <div className="mt-2 space-y-1.5">
                       {dayEvents.map(e => (
-                        <div key={e.id} className="flex justify-between items-center text-xs p-1.5 bg-slate-50 rounded-xl">
+                        <div key={e.id} className="flex justify-between items-center text-xs p-1.5 bg-slate-50 rounded-md">
                           <div className="flex items-center gap-2 truncate">
-                            <span className="font-bold text-[#145a82]">{e.time}</span>
+                            <span className="font-bold text-[var(--foreground)]">{e.time}</span>
                             <span className="truncate text-slate-800 font-medium">{e.dog} ({e.client})</span>
                           </div>
                           <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
@@ -772,7 +772,7 @@ export default function SchedulePage() {
           {/* VIEW: MONTHLY GRID */}
           {/* ======================================= */}
           {viewMode === "mes" && (
-            <section className="mt-3 bg-white border border-[var(--border)] rounded-2xl p-2 shadow-sm animate-in fade-in duration-200">
+            <section className="mt-3 bg-white border border-[var(--border)] rounded-md p-2 shadow-sm animate-in fade-in duration-200">
               
               {/* Weekday headers */}
               <div className="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-500 uppercase tracking-wider pb-1">
@@ -792,10 +792,10 @@ export default function SchedulePage() {
                       key={idx}
                       type="button"
                       onClick={() => setCurrentDate(dayDate)}
-                      className={`relative flex flex-col items-center justify-between h-10 py-1.5 rounded-xl border text-center transition-all ${
+                      className={`relative flex flex-col items-center justify-between h-10 py-1.5 rounded-md border text-center transition-all ${
                         !isCurrentMonth ? "bg-slate-50/40 text-slate-300 border-transparent" : "bg-white text-slate-800 border-slate-100"
                       } ${
-                        isSelected ? "border-[#145a82] ring-1 ring-[#145a82] bg-sky-50/30" : ""
+                        isSelected ? "border-[#145a82] ring-1 ring-[#145a82] bg-[var(--surface-2)]/30" : ""
                       } ${
                         isToday ? "font-extrabold ring-1 ring-amber-400" : ""
                       }`}
@@ -823,9 +823,9 @@ export default function SchedulePage() {
                 </h3>
                 <div className="mt-2 space-y-1.5">
                   {eventsForSelectedDay.map(e => (
-                    <div key={e.id} className="flex justify-between items-center text-xs p-2 bg-slate-50 border border-slate-100 rounded-xl">
+                    <div key={e.id} className="flex justify-between items-center text-xs p-2 bg-slate-50 border border-slate-100 rounded-md">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-[#145a82]">{e.time}</span>
+                        <span className="font-bold text-[var(--foreground)]">{e.time}</span>
                         <span className="text-slate-800 font-medium">{e.dog} • {e.client}</span>
                       </div>
                       <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
@@ -845,7 +845,7 @@ export default function SchedulePage() {
           {/* ======================================= */}
           {/* SECTION: NEW EVENT BUTTON & FORM */}
           {/* ======================================= */}
-          <section className="mt-4 rounded-2xl border border-[var(--border)] bg-sky-50/50 p-3 shadow-sm">
+          <section className="mt-4 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-3 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-bold text-slate-800">Novo Agendamento</p>
@@ -854,7 +854,7 @@ export default function SchedulePage() {
               <button
                 type="button"
                 onClick={() => setShowForm((value) => !value)}
-                className="rounded-full bg-[#145a82] px-4 py-1.5 text-xs font-semibold text-white shadow-sm"
+                className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-xs font-semibold text-white shadow-sm"
               >
                 {showForm ? "Fechar" : "Nova aula"}
               </button>
@@ -862,24 +862,24 @@ export default function SchedulePage() {
           </section>
 
           {showForm && (
-            <section className="mt-3 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm animate-in slide-in-from-top-4 duration-200">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#145a82] border-b border-slate-100 pb-2">Agendar Aula</p>
+            <section className="mt-3 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm animate-in slide-in-from-top-4 duration-200">
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--foreground)] border-b border-slate-100 pb-2">Agendar Aula</p>
               
               <form onSubmit={onSubmit} className="mt-3.5 space-y-3.5">
                 
                 {/* Individual vs Collective Toggle */}
-                <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+                <div className="grid grid-cols-2 gap-2 rounded-md bg-slate-100 p-1 text-xs font-semibold">
                   <button
                     type="button"
                     onClick={() => setIsCollective(false)}
-                    className={`rounded-lg py-1.5 transition ${!isCollective ? "bg-white text-[#145a82] shadow-sm" : "text-[var(--muted)]"}`}
+                    className={`rounded-lg py-1.5 transition ${!isCollective ? "bg-white text-[var(--foreground)] shadow-sm" : "text-[var(--muted)]"}`}
                   >
                     Individual
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsCollective(true)}
-                    className={`rounded-lg py-1.5 transition ${isCollective ? "bg-white text-[#145a82] shadow-sm" : "text-[var(--muted)]"}`}
+                    className={`rounded-lg py-1.5 transition ${isCollective ? "bg-white text-[var(--foreground)] shadow-sm" : "text-[var(--muted)]"}`}
                   >
                     Coletiva (Turma)
                   </button>
@@ -890,7 +890,7 @@ export default function SchedulePage() {
                     <label className="grid gap-1">
                       <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
                         Tutor
-                        <Link href="/clientes" className="text-[9px] font-semibold text-[#145a82] hover:underline">+ Criar Tutor</Link>
+                        <Link href="/clientes" className="text-[9px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Tutor</Link>
                       </span>
                       <select
                         value={selectedClientId ?? ""}
@@ -899,7 +899,7 @@ export default function SchedulePage() {
                           setSelectedClientId(event.target.value);
                           setSelectedDogId(nextClient?.dogs[0]?.id ?? "");
                         }}
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                       >
                         {clients.length === 0 && <option value="">Sem clientes cadastrados</option>}
                         {clients.map((client) => (
@@ -911,13 +911,13 @@ export default function SchedulePage() {
                     <label className="grid gap-1">
                       <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
                         Cão
-                        <Link href="/clientes" className="text-[9px] font-semibold text-[#145a82] hover:underline">+ Criar Cão</Link>
+                        <Link href="/clientes" className="text-[9px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Cão</Link>
                       </span>
                       <select
                         value={selectedDogId ?? ""}
                         onChange={(event) => setSelectedDogId(event.target.value)}
                         disabled={!selectedClient?.dogs.length}
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none disabled:opacity-60 focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none disabled:opacity-60 focus:border-sky-400"
                       >
                         {!selectedClient?.dogs.length && <option value="">Sem cães</option>}
                         {(selectedClient?.dogs ?? []).map((dog) => (
@@ -934,7 +934,7 @@ export default function SchedulePage() {
                         value={collectiveDogName}
                         onChange={(e) => setCollectiveDogName(e.target.value)}
                         placeholder="Ex: Turma do Parque, Socialização"
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                         required
                       />
                     </label>
@@ -944,7 +944,7 @@ export default function SchedulePage() {
                         value={collectiveClientName}
                         onChange={(e) => setCollectiveClientName(e.target.value)}
                         placeholder="Ex: Sítio Cão Feliz, Praça central"
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                       />
                     </label>
                     <label className="grid gap-1 sm:col-span-2">
@@ -953,7 +953,7 @@ export default function SchedulePage() {
                         value={collectivePlanName}
                         onChange={(e) => setCollectivePlanName(e.target.value)}
                         placeholder="Ex: Treino de foco, reatividade com outros cães"
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                       />
                     </label>
                   </div>
@@ -965,7 +965,7 @@ export default function SchedulePage() {
                     <input
                       value={currentDate.toLocaleDateString("pt-BR")}
                       readOnly
-                      className="rounded-xl border border-[var(--border)] bg-slate-50 px-3 py-2 text-sm text-[var(--foreground)]"
+                      className="rounded-md border border-[var(--border)] bg-slate-50 px-3 py-2 text-sm text-[var(--foreground)]"
                     />
                   </label>
 
@@ -975,7 +975,7 @@ export default function SchedulePage() {
                       type="time"
                       value={time}
                       onChange={(event) => setTime(event.target.value)}
-                      className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
                       required
                     />
                   </label>
@@ -987,7 +987,7 @@ export default function SchedulePage() {
                     <select
                       value={status}
                       onChange={(event) => setStatus(event.target.value as EventStatus)}
-                      className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                     >
                       <option value="Pendente">Agendada</option>
                       <option value="Confirmado">Concluída</option>
@@ -1001,7 +1001,7 @@ export default function SchedulePage() {
                     <select
                       value={recurrence}
                       onChange={(event) => setRecurrence(event.target.value)}
-                      className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                     >
                       <option value="none">Não repete</option>
                       <option value="4weeks">Semanal (4 semanas)</option>
@@ -1014,7 +1014,7 @@ export default function SchedulePage() {
                 <button
                   type="submit"
                   disabled={isCreating || (!isCollective && clients.length === 0)}
-                  className="w-full rounded-full bg-[#145a82] py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-60 transition"
+                  className="w-full rounded-full bg-[var(--accent)] py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-60 transition"
                 >
                   {isCreating ? "Criando..." : "Criar Agendamento"}
                 </button>

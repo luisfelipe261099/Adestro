@@ -174,18 +174,18 @@ export default function RelatoriosClientPage() {
       `}</style>
 
       <main className="mx-auto w-full max-w-2xl px-3 pb-24 pt-3">
-        <section className="rounded-[2rem] border border-[var(--border)] bg-[#fcfdff] p-4 shadow-[var(--shadow)] sm:p-6">
+        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm sm:p-6">
           
           {/* Cabeçalho */}
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Módulo Pedagógico</p>
-              <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">Relatórios de Evolução</h1>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Módulo Pedagógico</p>
+              <h1 className="text-2xl font-semibold text-[var(--foreground)]">Relatórios de Evolução</h1>
               <p className="text-xs text-[var(--muted)]">Gere e edite relatórios mensais automáticos para os tutores.</p>
             </div>
             <Link
               href="/dashboard"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[#145a82]"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--foreground)]"
               aria-label="Voltar ao início"
             >
               ✕
@@ -193,7 +193,7 @@ export default function RelatoriosClientPage() {
           </header>
 
           {/* Seletores */}
-          <div className="mt-5 grid gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-2xs">
+          <div className="mt-5 grid gap-3 rounded-md border border-slate-100 bg-white p-4 shadow-2xs">
             <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--muted)]">Configurar Geração</h2>
             
             <div className="grid gap-3 sm:grid-cols-3">
@@ -202,7 +202,7 @@ export default function RelatoriosClientPage() {
                 <select
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-white px-2.5 py-2 text-xs text-[var(--foreground)] outline-none"
+                  className="rounded-md border border-[var(--border)] bg-white px-2.5 py-2 text-xs text-[var(--foreground)] outline-none"
                 >
                   <option value="">Selecione...</option>
                   {clients.map((c) => (
@@ -216,7 +216,7 @@ export default function RelatoriosClientPage() {
                 <select
                   value={selectedDogId}
                   onChange={(e) => setSelectedDogId(e.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-white px-2.5 py-2 text-xs text-[var(--foreground)] outline-none"
+                  className="rounded-md border border-[var(--border)] bg-white px-2.5 py-2 text-xs text-[var(--foreground)] outline-none"
                   disabled={clientDogs.length === 0}
                 >
                   <option value="">Selecione...</option>
@@ -231,7 +231,7 @@ export default function RelatoriosClientPage() {
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-white px-2.5 py-2 text-xs text-[var(--foreground)] outline-none"
+                  className="rounded-md border border-[var(--border)] bg-white px-2.5 py-2 text-xs text-[var(--foreground)] outline-none"
                 >
                   {monthOptions.map((opt) => (
                     <option key={opt} value={opt}>{opt}</option>
@@ -243,7 +243,7 @@ export default function RelatoriosClientPage() {
             <button
               onClick={handleGenerateReport}
               disabled={loading || !selectedDogId}
-              className={`pc-primary-action rounded-xl py-2.5 text-xs font-bold mt-2 ${
+              className={`pc-primary-action rounded-md py-2.5 text-xs font-bold mt-2 ${
                 loading ? "opacity-75" : ""
               }`}
             >
@@ -251,15 +251,15 @@ export default function RelatoriosClientPage() {
             </button>
           </div>
 
-          {error && <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
-          {successMsg && <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{successMsg}</p>}
+          {error && <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
+          {successMsg && <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{successMsg}</p>}
 
           {editableReport && (
             <div className="mt-6 space-y-6">
               
               {/* Seção de Edição do Relatório */}
-              <div className="rounded-2xl border border-sky-100 bg-sky-50/30 p-4 sm:p-5">
-                <h3 className="text-sm font-bold text-[#145a82] border-b border-sky-100 pb-2 mb-4">Ajustes Finos (Editor)</h3>
+              <div className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/30 p-4 sm:p-5">
+                <h3 className="text-sm font-bold text-[var(--foreground)] border-b border-[var(--border)] pb-2 mb-4">Ajustes Finos (Editor)</h3>
                 
                 <div className="space-y-4">
                   
@@ -270,7 +270,7 @@ export default function RelatoriosClientPage() {
                       <select
                         value={editableReport.overallGrade}
                         onChange={(e) => setEditableReport({ ...editableReport, overallGrade: e.target.value })}
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs text-[var(--foreground)]"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs text-[var(--foreground)]"
                       >
                         <option value="A">A - Excelente</option>
                         <option value="B">B - Bom</option>
@@ -288,7 +288,7 @@ export default function RelatoriosClientPage() {
                         max={100}
                         value={editableReport.progressPercentage}
                         onChange={(e) => setEditableReport({ ...editableReport, progressPercentage: Number(e.target.value) })}
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs text-[var(--foreground)]"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs text-[var(--foreground)]"
                       />
                     </label>
                   </div>
@@ -300,7 +300,7 @@ export default function RelatoriosClientPage() {
                       <button
                         type="button"
                         onClick={() => handleAddListItem("highlights")}
-                        className="text-[10px] font-bold text-[#145a82] hover:underline"
+                        className="text-[10px] font-bold text-[var(--foreground)] hover:underline"
                       >
                         + Adicionar Destaque
                       </button>
@@ -311,7 +311,7 @@ export default function RelatoriosClientPage() {
                           type="text"
                           value={item}
                           onChange={(e) => handleUpdateList("highlights", idx, e.target.value)}
-                          className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)]"
+                          className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)]"
                         />
                         <button
                           type="button"
@@ -331,7 +331,7 @@ export default function RelatoriosClientPage() {
                       <button
                         type="button"
                         onClick={() => handleAddListItem("areasForImprovement")}
-                        className="text-[10px] font-bold text-[#145a82] hover:underline"
+                        className="text-[10px] font-bold text-[var(--foreground)] hover:underline"
                       >
                         + Adicionar Melhoria
                       </button>
@@ -342,7 +342,7 @@ export default function RelatoriosClientPage() {
                           type="text"
                           value={item}
                           onChange={(e) => handleUpdateList("areasForImprovement", idx, e.target.value)}
-                          className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)]"
+                          className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)]"
                         />
                         <button
                           type="button"
@@ -362,7 +362,7 @@ export default function RelatoriosClientPage() {
                       <button
                         type="button"
                         onClick={() => handleAddListItem("nextObjectives")}
-                        className="text-[10px] font-bold text-[#145a82] hover:underline"
+                        className="text-[10px] font-bold text-[var(--foreground)] hover:underline"
                       >
                         + Adicionar Objetivo
                       </button>
@@ -373,7 +373,7 @@ export default function RelatoriosClientPage() {
                           type="text"
                           value={item}
                           onChange={(e) => handleUpdateList("nextObjectives", idx, e.target.value)}
-                          className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)]"
+                          className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)]"
                         />
                         <button
                           type="button"
@@ -393,7 +393,7 @@ export default function RelatoriosClientPage() {
                       <button
                         type="button"
                         onClick={() => handleAddListItem("recommendedNextSteps")}
-                        className="text-[10px] font-bold text-[#145a82] hover:underline"
+                        className="text-[10px] font-bold text-[var(--foreground)] hover:underline"
                       >
                         + Adicionar Passo
                       </button>
@@ -404,7 +404,7 @@ export default function RelatoriosClientPage() {
                           type="text"
                           value={item}
                           onChange={(e) => handleUpdateList("recommendedNextSteps", idx, e.target.value)}
-                          className="flex-1 rounded-xl border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)]"
+                          className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)]"
                         />
                         <button
                           type="button"
@@ -422,9 +422,9 @@ export default function RelatoriosClientPage() {
 
               {/* Pré-visualização do Relatório Oficial */}
               <div className="border-t border-slate-100 pt-6">
-                <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)] mb-3">Pré-visualização do Relatório</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)] mb-3">Pré-visualização do Relatório</h3>
                 
-                <div id="printable-report-container" className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                <div id="printable-report-container" className="rounded-md border border-slate-100 bg-white p-4 shadow-sm">
                   <MonthlyReport
                     report={editableReport}
                     onDownloadPDF={() => window.print()}

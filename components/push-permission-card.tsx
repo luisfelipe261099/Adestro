@@ -69,7 +69,7 @@ export function PushPermissionCard() {
 
   if (state === "blocked") {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+      <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
         🔕 Seu navegador não suporta notificações push. Use Chrome, Edge ou Safari (16.4+).
       </div>
     );
@@ -77,7 +77,7 @@ export function PushPermissionCard() {
 
   if (state === "granted") {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
+      <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
         🔔 Notificações ativadas. Você vai receber alertas mesmo com o app fechado.
       </div>
     );
@@ -85,14 +85,14 @@ export function PushPermissionCard() {
 
   if (state === "denied") {
     return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+      <div className="rounded-md border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
         🔕 Você bloqueou as notificações. Reative nas configurações do navegador.
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3 text-xs text-sky-900">
+    <div className="rounded-md border border-[var(--border-strong)] bg-[var(--surface-2)] p-3 text-xs text-sky-900">
       <p className="font-semibold">🔔 Ativar notificações push</p>
       <p className="mt-0.5 text-[11px] text-sky-800">
         Receba alertas no celular quando tutores confirmarem presença, pagamentos chegarem e cobranças vencerem.

@@ -69,9 +69,9 @@ export function AdminDashboard() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-5">
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Comece por aqui</p>
-        <h2 className="mt-1 font-display text-2xl font-semibold">O que voce quer fazer agora?</h2>
+      <section className="rounded-md border border-[var(--border)] bg-white p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Comece por aqui</p>
+        <h2 className="mt-1 text-2xl font-semibold">O que voce quer fazer agora?</h2>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Use os atalhos abaixo para chegar direto na acao principal sem precisar procurar no menu.
         </p>
@@ -85,7 +85,7 @@ export function AdminDashboard() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-xl border border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 transition hover:bg-white"
+              className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 transition hover:bg-white"
             >
               <p className="text-sm font-semibold text-[var(--foreground)]">{item.label}</p>
               <p className="text-xs text-[var(--muted)]">{item.detail}</p>
@@ -130,7 +130,7 @@ export function AdminDashboard() {
         ].map((stat, index) => (
           <div
             key={stat.label}
-            className={`rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-sm ${index > 2 ? "hidden sm:block" : ""}`}
+            className={`rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-sm ${index > 2 ? "hidden sm:block" : ""}`}
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -149,9 +149,9 @@ export function AdminDashboard() {
         {/* Coluna esquerda - Adestradores */}
         <div className="space-y-5 lg:col-span-2">
           {/* Adestradores Ativos */}
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-sm">
+          <section className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
-              <h3 className="font-display text-xl font-semibold">Base de adestradores</h3>
+              <h3 className="text-xl font-semibold">Base de adestradores</h3>
               <span className="hidden text-sm font-medium text-slate-600 sm:block">
                 {metrics?.activeTrainers ?? 0} ativos • {metrics?.trialTrainers ?? 0} em trial
               </span>
@@ -161,7 +161,7 @@ export function AdminDashboard() {
               {trainers.slice(0, 4).map((trainer) => (
                 <div
                   key={trainer.id}
-                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:bg-slate-100"
+                  className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 p-4 transition hover:bg-slate-100"
                 >
                   <div className="flex-1">
                     <p className="font-semibold text-slate-900">{trainer.name}</p>
@@ -181,8 +181,8 @@ export function AdminDashboard() {
           </section>
 
           {/* Relatório de Crescimento */}
-          <section className="hidden rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-6 shadow-sm lg:block">
-            <h3 className="mb-5 font-display text-xl font-semibold">Indicadores resumidos</h3>
+          <section className="hidden rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6 shadow-sm lg:block">
+            <h3 className="mb-5 text-xl font-semibold">Indicadores resumidos</h3>
 
             <div className="space-y-4">
               {[
@@ -211,11 +211,11 @@ export function AdminDashboard() {
         {/* Coluna direita - Info do administrador e ações */}
         <div className="space-y-5">
           {/* Info Admin */}
-          <section className="rounded-2xl border border-[var(--border)] bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+          <section className="rounded-md border border-[var(--border)] bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
               Seu Acesso
             </p>
-            <h3 className="mt-3 font-display text-2xl font-semibold">Administrador</h3>
+            <h3 className="mt-3 text-2xl font-semibold">Administrador</h3>
             <p className="mt-3 text-sm leading-6 text-slate-300">
               Esta area concentra as decisoes principais de operacao: contas, planos, faturamento e desempenho.
             </p>
@@ -235,8 +235,8 @@ export function AdminDashboard() {
           </section>
 
           {/* Atividades Recentes */}
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-sm">
-            <h3 className="mb-4 font-display text-lg font-semibold">Movimentacao recente</h3>
+          <section className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-sm">
+            <h3 className="mb-4 text-lg font-semibold">Movimentacao recente</h3>
 
             <div className="space-y-3">
               {recentTransactions.slice(0, 3).map((tx) => (
@@ -255,8 +255,8 @@ export function AdminDashboard() {
           </section>
 
           {/* Status do Sistema */}
-          <section className="hidden rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-6 shadow-sm lg:block">
-            <h3 className="mb-4 font-display text-lg font-semibold">Saude do sistema</h3>
+          <section className="hidden rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6 shadow-sm lg:block">
+            <h3 className="mb-4 text-lg font-semibold">Saude do sistema</h3>
 
             <div className="space-y-3">
               {[

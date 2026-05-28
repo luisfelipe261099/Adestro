@@ -17,7 +17,7 @@ export function SkeletonCard({ rows = 3, className = "" }: { rows?: number; clas
       role="status"
       aria-live="polite"
       aria-label="Carregando"
-      className={`rounded-2xl border border-[var(--border)] bg-white p-4 ${className}`}
+      className={`rounded-md border border-[var(--border)] bg-white p-4 ${className}`}
     >
       <SkeletonLine className="h-3 w-1/3" />
       <div className="mt-3 space-y-2">

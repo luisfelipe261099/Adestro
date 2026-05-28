@@ -42,14 +42,14 @@ export function NpsPrompt({ sessionId, sessionTitle, token, pinQuery, onSent }: 
 
   if (done) {
     return (
-      <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-center text-xs text-emerald-800">
+      <p className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-center text-xs text-emerald-800">
         ✓ Obrigado pela avaliação!
       </p>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-3">
+    <div className="rounded-md border border-amber-200 bg-amber-50/60 p-3">
       <p className="text-sm font-semibold text-amber-950">
         Como foi a aula <span className="italic">{sessionTitle}</span>?
       </p>
@@ -78,7 +78,7 @@ export function NpsPrompt({ sessionId, sessionTitle, token, pinQuery, onSent }: 
             placeholder={score >= 9 ? "O que mais te encantou? (opcional)" : "Como podemos melhorar? (opcional)"}
             rows={2}
             maxLength={500}
-            className="mt-2 w-full rounded-xl border border-amber-200 bg-white px-2 py-1.5 text-xs outline-none"
+            className="mt-2 w-full rounded-md border border-amber-200 bg-white px-2 py-1.5 text-xs outline-none"
           />
           {error ? <p className="mt-1 text-[10px] text-rose-700">{error}</p> : null}
           <button

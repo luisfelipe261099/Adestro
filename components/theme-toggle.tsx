@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { IconMoon, IconSun } from "@/components/icons";
+
 type Theme = "light" | "dark";
 
 function readStoredTheme(): Theme {
@@ -36,10 +38,10 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={toggle}
-      className={`inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--foreground)] hover:bg-sky-50 ${className}`}
+      className={`btn-secondary ${className}`}
       aria-label={theme === "dark" ? "Mudar para tema claro" : "Mudar para tema escuro"}
     >
-      <span aria-hidden>{theme === "dark" ? "☀️" : "🌙"}</span>
+      {theme === "dark" ? <IconSun className="h-3.5 w-3.5" /> : <IconMoon className="h-3.5 w-3.5" />}
       {theme === "dark" ? "Tema claro" : "Tema escuro"}
     </button>
   );

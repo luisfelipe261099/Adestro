@@ -100,8 +100,8 @@ export function AdestradoresClient() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Fluxo simples</p>
+      <section className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Fluxo simples</p>
         <p className="mt-1 text-sm text-[var(--muted)]">
           1) Filtre por status, 2) abra Novo adestrador ou Editar, 3) salve. Contas novas sao criadas com senha padrao 123456.
         </p>
@@ -140,10 +140,10 @@ export function AdestradoresClient() {
       {loading ? <p className="text-sm text-[var(--muted)]">Carregando adestradores...</p> : null}
 
       {(isCreating || editingId) ? (
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
+        <div className="rounded-md border border-[var(--border)] bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="font-display text-2xl font-semibold text-slate-900">
+              <h3 className="text-2xl font-semibold text-slate-900">
                 {editingId ? "Editar adestrador" : "Novo adestrador"}
               </h3>
               <p className="mt-1 text-sm text-[var(--muted)]">
@@ -164,18 +164,18 @@ export function AdestradoresClient() {
               value={formName}
               onChange={(event) => setFormName(event.target.value)}
               placeholder="Nome do adestrador"
-              className="rounded-2xl border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
+              className="rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
             />
             <input
               value={formEmail}
               onChange={(event) => setFormEmail(event.target.value)}
               placeholder="Email"
-              className="rounded-2xl border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
+              className="rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
             />
             <select
               value={formPlan}
               onChange={(event) => setFormPlan(event.target.value as "Trial" | "Starter" | "Pro" | "Business")}
-              className="rounded-2xl border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
+              className="rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
             >
               <option>Trial</option>
               <option>Starter</option>
@@ -185,7 +185,7 @@ export function AdestradoresClient() {
             <select
               value={formStatus}
               onChange={(event) => setFormStatus(event.target.value as "Ativo" | "Trial")}
-              className="rounded-2xl border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
+              className="rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
             >
               <option>Ativo</option>
               <option>Trial</option>
@@ -202,7 +202,7 @@ export function AdestradoresClient() {
         </div>
       ) : null}
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] overflow-hidden">
+      <div className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

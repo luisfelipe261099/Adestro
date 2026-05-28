@@ -84,10 +84,10 @@ export function MonthlyComparison({ dogId, dogName }: { dogId: string; dogName: 
   }, [dogId, monthA, monthB]);
 
   return (
-    <article className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
+    <article className="rounded-md border border-emerald-100 bg-emerald-50/40 p-4">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-700">Comparativo</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Comparativo</p>
           <h3 className="text-base font-semibold text-emerald-950">Evolução mês vs mês • {dogName}</h3>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-[10px]">
@@ -114,14 +114,14 @@ export function MonthlyComparison({ dogId, dogName }: { dogId: string; dogName: 
       </header>
 
       {error ? (
-        <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
+        <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
       ) : null}
 
       {loading ? (
         <div className="mt-3"><SkeletonCard rows={3} /></div>
       ) : data ? (
         <div className="mt-3 grid gap-2 text-xs">
-          <div className="grid grid-cols-3 gap-2 rounded-xl bg-white p-3 text-center">
+          <div className="grid grid-cols-3 gap-2 rounded-md bg-white p-3 text-center">
             <div>
               <p className="text-[10px] font-bold uppercase text-emerald-700">{data.monthA.label}</p>
               <p className="mt-1 text-2xl font-bold text-emerald-950">{data.monthA.sessions}</p>
@@ -138,7 +138,7 @@ export function MonthlyComparison({ dogId, dogName }: { dogId: string; dogName: 
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 rounded-xl bg-white p-3 text-center">
+          <div className="grid grid-cols-3 gap-2 rounded-md bg-white p-3 text-center">
             <div>
               <p className="text-2xl font-bold text-emerald-950">{data.monthA.averageCommandRating.toFixed(1)}<span className="text-sm text-emerald-600">/5</span></p>
               <p className="text-[10px] text-[var(--muted)]">Comando médio</p>
@@ -152,7 +152,7 @@ export function MonthlyComparison({ dogId, dogName }: { dogId: string; dogName: 
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 rounded-xl bg-white p-3 text-center">
+          <div className="grid grid-cols-3 gap-2 rounded-md bg-white p-3 text-center">
             <div>
               <p className="text-2xl font-bold text-emerald-950">{data.monthA.activitiesCompletionRate.toFixed(0)}<span className="text-sm text-emerald-600">%</span></p>
               <p className="text-[10px] text-[var(--muted)]">Atividades feitas</p>
@@ -167,7 +167,7 @@ export function MonthlyComparison({ dogId, dogName }: { dogId: string; dogName: 
           </div>
 
           {data.monthA.npsAverage !== null || data.monthB.npsAverage !== null ? (
-            <div className="grid grid-cols-3 gap-2 rounded-xl bg-white p-3 text-center">
+            <div className="grid grid-cols-3 gap-2 rounded-md bg-white p-3 text-center">
               <div>
                 <p className="text-2xl font-bold text-emerald-950">
                   {data.monthA.npsAverage === null ? "—" : data.monthA.npsAverage.toFixed(1)}

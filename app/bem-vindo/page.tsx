@@ -9,6 +9,13 @@ import { useAppStore } from "@/lib/app-store";
 
 type Step = 1 | 2 | 3 | 4;
 
+const STEP_INFO: Record<Step, { title: string; description: string }> = {
+  1: { title: "Seu negócio", description: "Identifique o nome usado nos recibos e mensagens." },
+  2: { title: "Recebimento", description: "Cadastre sua chave Pix para gerar Pix Copia e Cola no recibo." },
+  3: { title: "Primeiro tutor", description: "Cadastre seu primeiro cliente. Você pode mudar depois." },
+  4: { title: "Primeiro cão", description: "Vincule o cão atendido ao tutor." },
+};
+
 export default function WelcomePage() {
   const router = useRouter();
   const trainerName = useAppStore((state) => state.trainerName);
@@ -39,9 +46,7 @@ export default function WelcomePage() {
       if (!ok) throw new Error("Não foi possível salvar o cliente. Tente em /clientes.");
       try {
         window.localStorage.setItem("adestro-onboarding-done", "1");
-      } catch {
-        /* ignore */
-      }
+      } catch { /* ignore */ }
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro inesperado");
@@ -49,192 +54,180 @@ export default function WelcomePage() {
     }
   }
 
-  function next() {
-    setStep((current) => (current < 4 ? ((current + 1) as Step) : current));
-  }
-
-  function back() {
-    setStep((current) => (current > 1 ? ((current - 1) as Step) : current));
-  }
+  function next() { setStep((c) => (c < 4 ? ((c + 1) as Step) : c)); }
+  function back() { setStep((c) => (c > 1 ? ((c - 1) as Step) : c)); }
 
   function skip() {
-    try {
-      window.localStorage.setItem("adestro-onboarding-done", "1");
-    } catch {
-      /* ignore */
-    }
+    try { window.localStorage.setItem("adestro-onboarding-done", "1"); } catch { /* ignore */ }
     router.push("/dashboard");
   }
 
+  const info = STEP_INFO[step];
+  const firstName = trainerName?.split(" ")[0] || "adestrador";
+
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-12 pt-6 sm:max-w-xl">
-        <section className="rounded-[2rem] border border-[var(--border)] bg-[#f7fbff] p-5 shadow-[var(--shadow)]">
-          <header className="flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#2d6f99]">Configuração inicial</p>
-              <h1 className="font-display text-2xl font-semibold text-[var(--foreground)]">
-                Olá, {trainerName?.split(" ")[0] || "adestrador"}! 🐾
-              </h1>
-              <p className="mt-1 text-xs text-[var(--muted)]">
-                4 passos rápidos para deixar o Adestro pronto para o seu fluxo.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={skip}
-              className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] hover:text-[#145a82]"
-            >
-              Pular
-            </button>
-          </header>
+      <main className="page-narrow">
+        <header className="mb-8">
+          <p className="text-eyebrow mb-2">Configuração inicial</p>
+          <h1 className="text-display">Bem-vindo, {firstName}</h1>
+          <p className="mt-1 text-subtitle">
+            Quatro passos rápidos para deixar o Adestro pronto.
+          </p>
+        </header>
 
-          {/* Progress */}
-          <div className="mt-4 flex items-center gap-1">
-            {[1, 2, 3, 4].map((s) => (
-              <div
-                key={s}
-                className={`h-1.5 flex-1 rounded-full transition ${
-                  s <= step ? "bg-[#145a82]" : "bg-slate-200"
+        {/* Stepper */}
+        <div className="mb-6 flex items-center gap-2">
+          {[1, 2, 3, 4].map((s) => (
+            <div key={s} className="flex flex-1 items-center gap-2">
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-medium ${
+                  s === step
+                    ? "bg-[var(--accent)] text-white"
+                    : s < step
+                      ? "bg-[var(--success)] text-white"
+                      : "bg-[var(--surface-2)] text-[var(--muted)]"
                 }`}
-              />
-            ))}
+              >
+                {s < step ? "✓" : s}
+              </span>
+              {s < 4 ? (
+                <div className={`h-px flex-1 ${s < step ? "bg-[var(--success)]" : "bg-[var(--border)]"}`} />
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        <div className="card overflow-hidden">
+          <div className="card-header">
+            <div>
+              <h2 className="text-[14px] font-semibold text-[var(--foreground)]">
+                Etapa {step} de 4 — {info.title}
+              </h2>
+              <p className="text-[12px] text-[var(--muted)]">{info.description}</p>
+            </div>
+            <button type="button" onClick={skip} className="btn-ghost text-[12px]">
+              Pular configuração
+            </button>
           </div>
 
-          {error ? (
-            <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
-          ) : null}
+          <div className="card-body space-y-4">
+            {step === 1 && (
+              <>
+                <label className="block">
+                  <span className="label">Nome do negócio (opcional)</span>
+                  <input
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    placeholder="Ex: Adestramento da Mariana"
+                    className="input-field"
+                  />
+                </label>
+                <label className="block">
+                  <span className="label">WhatsApp principal</span>
+                  <input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="(11) 99999-9999"
+                    className="input-field"
+                  />
+                  <p className="help-text">Aparece nos recibos e mensagens enviadas ao tutor.</p>
+                </label>
+              </>
+            )}
 
-          {/* Step 1: Negócio */}
-          {step === 1 && (
-            <div className="mt-5 grid gap-3">
-              <h2 className="text-sm font-semibold text-[var(--foreground)]">1/4 — Seu negócio</h2>
-              <label className="text-xs text-[var(--muted)]">
-                Nome do seu negócio (opcional)
-                <input
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="Ex: Adestramento da Mariana"
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-              </label>
-              <label className="text-xs text-[var(--muted)]">
-                WhatsApp principal
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(11) 99999-9999"
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-              </label>
-              <p className="text-[10px] text-[var(--muted)]">
-                Usaremos para identificar você nos recibos e mensagens.
-              </p>
-            </div>
-          )}
-
-          {/* Step 2: Pix */}
-          {step === 2 && (
-            <div className="mt-5 grid gap-3">
-              <h2 className="text-sm font-semibold text-[var(--foreground)]">2/4 — Recebimento</h2>
-              <label className="text-xs text-[var(--muted)]">
-                Sua chave Pix (CPF/CNPJ, e-mail, telefone ou chave aleatória)
+            {step === 2 && (
+              <label className="block">
+                <span className="label">Chave Pix</span>
                 <input
                   value={pixKey}
                   onChange={(e) => setPixKey(e.target.value)}
-                  placeholder="ex: 99999999999 ou seuemail@dominio.com"
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
+                  className="input-field"
                 />
+                <p className="help-text">
+                  A chave é usada para gerar o Pix Copia e Cola direto no recibo, sem gateway pago.
+                </p>
               </label>
-              <p className="text-[10px] text-[var(--muted)]">
-                A chave aparece no recibo como Pix Copia e Cola — sem gateway pago.
-              </p>
-            </div>
-          )}
+            )}
 
-          {/* Step 3: Primeiro tutor */}
-          {step === 3 && (
-            <div className="mt-5 grid gap-3">
-              <h2 className="text-sm font-semibold text-[var(--foreground)]">3/4 — Primeiro tutor</h2>
-              <label className="text-xs text-[var(--muted)]">
-                Nome do tutor
-                <input
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Ex: Mariana Lopes"
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-              </label>
-              <label className="text-xs text-[var(--muted)]">
-                WhatsApp do tutor
-                <input
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  placeholder="(11) 98888-7777"
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-              </label>
-            </div>
-          )}
+            {step === 3 && (
+              <>
+                <label className="block">
+                  <span className="label">Nome do tutor</span>
+                  <input
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="Ex: Mariana Lopes"
+                    className="input-field"
+                  />
+                </label>
+                <label className="block">
+                  <span className="label">WhatsApp do tutor</span>
+                  <input
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(e.target.value)}
+                    placeholder="(11) 98888-7777"
+                    className="input-field"
+                  />
+                </label>
+              </>
+            )}
 
-          {/* Step 4: Primeiro cão */}
-          {step === 4 && (
-            <form onSubmit={handleFinish} className="mt-5 grid gap-3">
-              <h2 className="text-sm font-semibold text-[var(--foreground)]">4/4 — Primeiro cão</h2>
-              <label className="text-xs text-[var(--muted)]">
-                Nome do cão
-                <input
-                  value={dogName}
-                  onChange={(e) => setDogName(e.target.value)}
-                  placeholder="Ex: Nina"
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-              </label>
-              <label className="text-xs text-[var(--muted)]">
-                Raça
-                <input
-                  value={dogBreed}
-                  onChange={(e) => setDogBreed(e.target.value)}
-                  placeholder="Ex: Golden Retriever (ou 'Sem raça definida')"
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-              </label>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="mt-2 rounded-full bg-[#145a82] px-4 py-3 text-sm font-bold text-white shadow-sm disabled:opacity-60"
-              >
-                {submitting ? "Salvando…" : "Finalizar e ir pro Dashboard"}
-              </button>
-            </form>
-          )}
+            {step === 4 && (
+              <form onSubmit={handleFinish} className="space-y-4">
+                <label className="block">
+                  <span className="label">Nome do cão</span>
+                  <input
+                    value={dogName}
+                    onChange={(e) => setDogName(e.target.value)}
+                    placeholder="Ex: Nina"
+                    className="input-field"
+                  />
+                </label>
+                <label className="block">
+                  <span className="label">Raça</span>
+                  <input
+                    value={dogBreed}
+                    onChange={(e) => setDogBreed(e.target.value)}
+                    placeholder="Golden Retriever, Border Collie, Sem raça definida…"
+                    className="input-field"
+                  />
+                </label>
+                {error ? (
+                  <p className="rounded-md border border-[var(--danger)]/30 bg-[var(--danger-bg)] px-3 py-2 text-[12px] text-[var(--danger)]">
+                    {error}
+                  </p>
+                ) : null}
+                <button type="submit" disabled={submitting} className="btn-primary w-full">
+                  {submitting ? "Salvando…" : "Finalizar configuração"}
+                </button>
+              </form>
+            )}
+          </div>
 
           {step < 4 ? (
-            <div className="mt-5 flex items-center justify-between">
+            <div className="flex items-center justify-between border-t border-[var(--border)] bg-[var(--surface-2)]/40 px-4 py-3">
               <button
                 type="button"
                 onClick={back}
                 disabled={step === 1}
-                className="rounded-full border border-[var(--border)] bg-white px-4 py-2 text-xs font-semibold text-[var(--muted)] disabled:opacity-30"
+                className="btn-secondary disabled:opacity-40"
               >
                 Voltar
               </button>
-              <button
-                type="button"
-                onClick={next}
-                className="rounded-full bg-[#145a82] px-4 py-2 text-xs font-bold text-white"
-              >
-                Próximo →
+              <button type="button" onClick={next} className="btn-primary">
+                Continuar
               </button>
             </div>
           ) : null}
+        </div>
 
-          <footer className="mt-5 border-t border-slate-100 pt-3 text-center">
-            <Link href="/dashboard" className="text-[11px] font-semibold text-[var(--muted)] hover:text-[#145a82]">
-              Quero explorar primeiro
-            </Link>
-          </footer>
-        </section>
+        <p className="mt-6 text-center text-[12px] text-[var(--muted)]">
+          <Link href="/dashboard" className="hover:text-[var(--foreground)] hover:underline">
+            Prefiro explorar primeiro
+          </Link>
+        </p>
       </main>
     </AuthGuard>
   );

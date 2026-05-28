@@ -65,21 +65,21 @@ export default function ClientTutorialPage() {
       description="Guia simples para o tutor entender tarefas, progresso, avaliações e rotina de prática em casa."
     >
       <div className="grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
-        <aside className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Visão geral</p>
-          <h2 className="mt-2 font-display text-2xl font-semibold text-[var(--foreground)]">O portal é o caderno de treino do tutor</h2>
+        <aside className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Visão geral</p>
+          <h2 className="mt-2 text-2xl font-semibold text-[var(--foreground)]">O portal é o caderno de treino do tutor</h2>
           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
             Ele mostra o que foi combinado com o adestrador, quais exercícios devem ser feitos em casa e como o cão está evoluindo ao longo das aulas.
           </p>
 
           <div className="mt-5 grid gap-3">
-            <div className="rounded-2xl border border-[var(--border)] bg-white p-4">
+            <div className="rounded-md border border-[var(--border)] bg-white p-4">
               <p className="text-sm font-semibold text-[var(--foreground)]">Antes de começar</p>
               <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
                 Tenha o link do portal, o PIN caso exista e escolha um momento tranquilo para praticar com o cão.
               </p>
             </div>
-            <div className="rounded-2xl border border-[var(--border)] bg-white p-4">
+            <div className="rounded-md border border-[var(--border)] bg-white p-4">
               <p className="text-sm font-semibold text-[var(--foreground)]">Depois da prática</p>
               <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
                 Marque a tarefa feita e envie observações para o adestrador acompanhar o resultado fora da aula.
@@ -88,27 +88,27 @@ export default function ClientTutorialPage() {
           </div>
         </aside>
 
-        <section className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
+        <section className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Passo a passo</p>
-              <h2 className="mt-1 font-display text-2xl font-semibold text-[var(--foreground)]">Como usar no dia a dia</h2>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Passo a passo</p>
+              <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">Como usar no dia a dia</h2>
             </div>
-            <span className="rounded-full border border-[var(--border)] bg-[#f7fbff] px-3 py-1 text-xs font-semibold text-[#145a82]">
+            <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--foreground)]">
               5 etapas
             </span>
           </div>
 
           <ol className="mt-5 grid gap-3">
             {clientSteps.map((step, index) => (
-              <li key={step.title} className="rounded-2xl border border-[var(--border)] bg-[#f7fbff] p-4">
+              <li key={step.title} className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
                 <div className="flex gap-3">
-                  <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#145a82] text-sm font-semibold text-white">
+                  <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-semibold text-white">
                     {index + 1}
                   </span>
                   <div className="min-w-0 flex-1">
                     <h3 className="text-base font-semibold text-[var(--foreground)]">{step.title}</h3>
-                    <p className="mt-1 text-sm font-medium text-[#2d6f99]">{step.goal}</p>
+                    <p className="mt-1 text-sm font-medium text-[var(--muted)]">{step.goal}</p>
                     <ul className="mt-3 grid gap-2">
                       {step.details.map((detail) => (
                         <li key={detail} className="flex gap-2 text-sm leading-6 text-[var(--muted)]">
@@ -125,12 +125,12 @@ export default function ClientTutorialPage() {
         </section>
       </div>
 
-      <section className="mt-4 rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2d6f99]">Boas práticas</p>
-        <h2 className="mt-1 font-display text-xl font-semibold text-[var(--foreground)]">Como o tutor ajuda o cão a evoluir</h2>
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Boas práticas</p>
+        <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">Como o tutor ajuda o cão a evoluir</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {goodPractices.map((practice) => (
-            <div key={practice} className="rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4 text-sm leading-6 text-[var(--muted)]">
+            <div key={practice} className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-4 text-sm leading-6 text-[var(--muted)]">
               {practice}
             </div>
           ))}

@@ -95,14 +95,14 @@ export default function PlanosPage() {
       <AdminContextNav />
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-6">
-          <h3 className="mb-6 font-display text-xl font-semibold">Distribuição real dos planos</h3>
+          <div className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
+          <h3 className="mb-6 text-xl font-semibold">Distribuição real dos planos</h3>
           <p className="mb-6 text-sm text-[var(--muted)]">Contagem por plano com base na base real de adestradores.</p>
           
           <div className="grid gap-6 md:grid-cols-3">
             {Object.entries(planDistribution).map(([plan, count]) => (
-              <div key={plan} className="rounded-xl border border-slate-300 bg-slate-50 p-5">
-                <h4 className="font-display text-2xl font-bold text-slate-900">{plan}</h4>
+              <div key={plan} className="rounded-md border border-slate-300 bg-slate-50 p-5">
+                <h4 className="text-2xl font-bold text-slate-900">{plan}</h4>
                 <p className="mt-2 text-3xl font-bold text-slate-900">{count}</p>
                 <p className="mt-2 text-sm text-slate-600">adestradores neste plano</p>
               </div>
@@ -111,11 +111,11 @@ export default function PlanosPage() {
           </div>
         </div>
 
-          <aside className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+          <aside className="rounded-md border border-[var(--border)] bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
               Atualização operacional
             </p>
-            <h3 className="mt-2 font-display text-2xl font-semibold text-slate-900">
+            <h3 className="mt-2 text-2xl font-semibold text-slate-900">
               Plano de adestrador
             </h3>
             <p className="mt-2 text-sm leading-7 text-[var(--muted)]">
@@ -132,7 +132,7 @@ export default function PlanosPage() {
                     setSelectedTrainerId(event.target.value);
                     if (next) setDraftPlan(next.planType);
                   }}
-                  className="mt-2 w-full rounded-2xl border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
                 >
                   {trainers.map((trainer) => (
                     <option key={trainer.id} value={trainer.id}>{trainer.name} • {trainer.email}</option>
@@ -145,7 +145,7 @@ export default function PlanosPage() {
                 <select
                   value={draftPlan}
                   onChange={(event) => setDraftPlan(event.target.value as "Trial" | "Starter" | "Pro" | "Business")}
-                  className="mt-2 w-full rounded-2xl border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
+                  className="mt-2 w-full rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
                 >
                   <option value="Trial">Trial</option>
                   <option value="Starter">Starter</option>
@@ -155,7 +155,7 @@ export default function PlanosPage() {
               </label>
 
               {selectedTrainer ? (
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-3 text-sm text-[var(--muted)]">
+                <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-3 text-sm text-[var(--muted)]">
                   Conta atual: {selectedTrainer.name} • {selectedTrainer.planType} • {selectedTrainer.status}
                 </div>
               ) : null}

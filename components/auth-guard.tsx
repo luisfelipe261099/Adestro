@@ -27,7 +27,7 @@ export function AuthGuard({ children, role }: { children: React.ReactNode; role?
   if (status === "loading") {
     return (
       <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-[2rem] border border-[var(--border)] bg-white/85 p-8">
+        <div className="rounded-lg border border-[var(--border)] bg-white/85 p-8">
           <p className="text-sm text-[var(--muted)]">Carregando sessão...</p>
         </div>
       </div>
@@ -40,11 +40,11 @@ export function AuthGuard({ children, role }: { children: React.ReactNode; role?
   if (status !== "authenticated" || !hasRoleAccess) {
     return (
       <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-[2rem] border border-[var(--border)] bg-white/85 p-8">
+        <div className="rounded-lg border border-[var(--border)] bg-white/85 p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
             Acesso restrito
           </p>
-          <h2 className="mt-3 font-display text-3xl font-semibold">
+          <h2 className="mt-3 text-3xl font-semibold">
             {role ? "Perfil sem permissão para esta página." : "Acesso não autorizado."}
           </h2>
           <p className="mt-3 text-sm leading-7 text-[var(--muted)]">

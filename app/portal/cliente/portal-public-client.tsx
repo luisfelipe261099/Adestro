@@ -425,7 +425,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           description="Digite o PIN de 4 digitos enviado pelo adestrador para liberar o acesso."
         >
           <form
-            className="max-w-sm space-y-3 rounded-2xl border border-[var(--border)] bg-white p-5"
+            className="max-w-sm space-y-3 rounded-md border border-[var(--border)] bg-white p-5"
             onSubmit={(event) => {
               event.preventDefault();
               if (!/^\d{4}$/.test(pin)) {
@@ -447,7 +447,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                 value={pin}
                 onChange={(event) => setPin(event.target.value.replace(/\D/g, "").slice(0, 4))}
                 placeholder="0000"
-                className="rounded-xl border border-[var(--border)] bg-[var(--panel)] px-3 py-2 outline-none focus:border-sky-400"
+                className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 outline-none focus:border-sky-400"
               />
             </label>
             <button type="submit" className="pc-primary-action rounded-full px-4 py-2 text-sm font-semibold">
@@ -487,10 +487,10 @@ export function PortalPublicClient({ token }: { token: string }) {
       <section className="space-y-4">
         {/* Banner de Confirmação de Presença (módulo 7 §8.2) */}
         {pendingConfirmEvent ? (
-          <div className="rounded-[1.25rem] border border-sky-200 bg-sky-50 p-4 text-sky-900 shadow-sm animate-in fade-in duration-300">
+          <div className="rounded-md border border-[var(--border-strong)] bg-[var(--surface-2)] p-4 text-sky-900 shadow-sm animate-in fade-in duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700">Confirmar presença</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Confirmar presença</p>
                 <h3 className="mt-0.5 font-semibold text-sm">
                   Próximo treino: {pendingConfirmEvent.day} às {pendingConfirmEvent.time}
                 </h3>
@@ -505,7 +505,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                     value={confirmReason}
                     onChange={(e) => setConfirmReason(e.target.value)}
                     placeholder="Motivo (opcional)"
-                    className="rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs outline-none"
+                    className="rounded-md border border-sky-300 bg-white px-3 py-2 text-xs outline-none"
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <button
@@ -516,7 +516,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                         setConfirmDecline(false);
                         setConfirmReason("");
                       }}
-                      className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-60"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-60"
                     >
                       Voltar
                     </button>
@@ -524,7 +524,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                       type="button"
                       disabled={confirmBusy}
                       onClick={() => handleConfirmEvent(pendingConfirmEvent.id, false, confirmReason)}
-                      className="rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
+                      className="rounded-md bg-rose-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
                     >
                       Enviar recusa
                     </button>
@@ -536,7 +536,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                     type="button"
                     disabled={confirmBusy}
                     onClick={() => handleConfirmEvent(pendingConfirmEvent.id, true)}
-                    className="inline-flex h-9 items-center justify-center rounded-xl bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-60 shadow-sm"
+                    className="inline-flex h-9 items-center justify-center rounded-md bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-60 shadow-sm"
                   >
                     ✅ Confirmar presença
                   </button>
@@ -547,7 +547,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                       setConfirmEventId(pendingConfirmEvent.id);
                       setConfirmDecline(true);
                     }}
-                    className="inline-flex h-9 items-center justify-center rounded-xl border border-rose-300 bg-white px-4 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-60"
+                    className="inline-flex h-9 items-center justify-center rounded-md border border-rose-300 bg-white px-4 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-60"
                   >
                     ❌ Não vou conseguir
                   </button>
@@ -568,20 +568,20 @@ export function PortalPublicClient({ token }: { token: string }) {
         ) : null}
 
         {/* Banner de Onboarding/Atualização cadastral */}
-        <div className="rounded-[1.25rem] border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-300">
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-300">
           <div className="flex-1">
             <h3 className="font-semibold text-sm">📋 Ficha de Acompanhamento do Cão</h3>
             <p className="text-xs text-amber-800 mt-0.5">Preencha ou atualize as informações de saúde, rotina e temperamento do seu cão para personalizar as aulas.</p>
           </div>
           <Link
             href={`/portal/cliente/${token}/onboarding${pinQuery}`}
-            className="inline-flex h-9 items-center justify-center rounded-xl bg-amber-600 px-4 text-xs font-semibold text-white hover:bg-amber-700 whitespace-nowrap shadow-sm transition"
+            className="inline-flex h-9 items-center justify-center rounded-md bg-amber-600 px-4 text-xs font-semibold text-white hover:bg-amber-700 whitespace-nowrap shadow-sm transition"
           >
             Preencher Ficha
           </Link>
         </div>
 
-        <article className="rounded-[1.75rem] border border-[var(--border)] bg-slate-950 p-5 text-white shadow-sm">
+        <article className="rounded-lg border border-[var(--border)] bg-slate-950 p-5 text-white shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-4">
               {featuredDog?.photoUrl ? (
@@ -592,7 +592,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                   height={90}
                   unoptimized
                   onError={() => setPhotoLoadFailed(true)}
-                  className="h-20 w-20 rounded-[1.25rem] object-cover border border-white/10"
+                  className="h-20 w-20 rounded-md object-cover border border-white/10"
                 />
               ) : (
                 <Image
@@ -601,14 +601,14 @@ export function PortalPublicClient({ token }: { token: string }) {
                   width={90}
                   height={90}
                   unoptimized
-                  className="h-20 w-20 rounded-[1.25rem] object-cover border border-white/10"
+                  className="h-20 w-20 rounded-md object-cover border border-white/10"
                 />
               )}
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="font-display text-2xl font-semibold">{featuredDog?.name || "Pet"}</h2>
+                  <h2 className="text-2xl font-semibold">{featuredDog?.name || "Pet"}</h2>
                   {gam.state.streakDays > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/25 px-2 py-0.5 text-xs font-bold text-orange-400 border border-orange-500/35 animate-pulse" title="Sequência diária de atividades">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--danger)]/25 px-2 py-0.5 text-xs font-bold text-orange-400 border border-orange-500/35 animate-pulse" title="Sequência diária de atividades">
                       🔥 {gam.state.streakDays} d
                     </span>
                   )}
@@ -641,24 +641,24 @@ export function PortalPublicClient({ token }: { token: string }) {
                 </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-xs text-slate-300">
+            <div className="rounded-md border border-white/20 bg-white/10 px-3 py-2 text-xs text-slate-300">
               <p>Link: {data.linkMeta.status}</p>
               <p>Expira em: {formatDateTime(data.linkMeta.expiresAt)}</p>
             </div>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl bg-white/10 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-slate-300 font-semibold">Tarefas</p>
+            <div className="rounded-md bg-white/10 p-4">
+              <p className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Tarefas</p>
               <p className="mt-2 text-2xl font-semibold">{completedTasks}/{data.tasks.length}</p>
             </div>
-            <div className="rounded-2xl bg-white/10 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-slate-300 font-semibold">Próxima aula</p>
+            <div className="rounded-md bg-white/10 p-4">
+              <p className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Próxima aula</p>
               <p className="mt-2 text-2xl font-semibold">{nextEvent ? nextEvent.time : "-"}</p>
               <p className="mt-1 text-xs text-slate-300">{nextEvent?.day || "Sem data"}</p>
             </div>
-            <div className="rounded-2xl bg-white/10 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-slate-300 font-semibold">Último treino</p>
+            <div className="rounded-md bg-white/10 p-4">
+              <p className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Último treino</p>
               <p className="mt-2 text-xl font-semibold">{latestSession?.date || "-"}</p>
               <p className="mt-1 text-xs text-slate-300">{latestSession?.title || "Sem registro"}</p>
             </div>
@@ -666,12 +666,12 @@ export function PortalPublicClient({ token }: { token: string }) {
         </article>
 
         <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-          <article className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Tarefas de casa</p>
+          <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Tarefas de casa</p>
             <div className="mt-4 space-y-3">
               {data.tasks.length === 0 ? <p className="text-sm text-[var(--muted)]">Sem tarefas registradas para este caso.</p> : null}
               {data.tasks.map((task) => (
-                <div key={task.id} className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-white p-4">
+                <div key={task.id} className="flex flex-col gap-3 rounded-md border border-[var(--border)] bg-white p-4">
                   <div className="flex items-start gap-3">
                     <button
                       type="button"
@@ -698,7 +698,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                         <button
                           type="button"
                           onClick={() => setEvidenceLightbox({ src: task.evidenceUrl!, title: task.title })}
-                          className="relative h-12 w-12 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 hover:opacity-85 transition flex-shrink-0"
+                          className="relative h-12 w-12 overflow-hidden rounded-md border border-slate-200 bg-slate-50 hover:opacity-85 transition flex-shrink-0"
                         >
                           {task.evidenceUrl.startsWith("data:video") ? (
                             <div className="h-full w-full flex items-center justify-center bg-slate-900 text-white text-[9px] font-bold">
@@ -719,7 +719,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                             <span>✅ Evidência Enviada</span>
                             <span className="rounded bg-emerald-100 text-emerald-800 px-1 py-0.2 text-[8px] font-bold">+15 XP</span>
                           </p>
-                          <label className="cursor-pointer text-[#145a82] hover:underline font-semibold mt-0.5 block text-[10px]">
+                          <label className="cursor-pointer text-[var(--foreground)] hover:underline font-semibold mt-0.5 block text-[10px]">
                             Alterar arquivo
                             <input
                               type="file"
@@ -737,7 +737,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                     ) : (
                       <div className="flex items-center justify-between w-full text-slate-500">
                         <span>Nenhuma evidência enviada</span>
-                        <label className="cursor-pointer inline-flex items-center gap-1 rounded-xl border border-[#145a82] bg-white px-2.5 py-1.5 font-bold text-[#145a82] hover:bg-slate-50 transition text-[11px]">
+                        <label className="cursor-pointer inline-flex items-center gap-1 rounded-md border border-[#145a82] bg-white px-2.5 py-1.5 font-bold text-[var(--foreground)] hover:bg-slate-50 transition text-[11px]">
                           {uploadingTaskId === task.id ? (
                             <span>Enviando...</span>
                           ) : (
@@ -765,11 +765,11 @@ export function PortalPublicClient({ token }: { token: string }) {
             </div>
           </article>
 
-          <article className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Agenda e notas</p>
+          <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Agenda e notas</p>
             <div className="mt-4 space-y-3">
               {data.events.slice(0, 3).map((event) => (
-                <div key={event.id} className="rounded-2xl border border-[var(--border)] bg-white p-3">
+                <div key={event.id} className="rounded-md border border-[var(--border)] bg-white p-3">
                   <p className="font-semibold">{event.day} - {event.time}</p>
                   <p className="text-xs text-[var(--muted)]">Sessao {event.sessionNumber} - {event.status}</p>
                 </div>
@@ -782,7 +782,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                 const isExpanded = expandedSessionId === session.id;
                 const hasDetailedSessions = Array.isArray(session.dogSessions) && session.dogSessions.length > 0;
                 return (
-                  <div key={session.id} className="rounded-2xl border border-[var(--border)] bg-white p-3 space-y-2">
+                  <div key={session.id} className="rounded-md border border-[var(--border)] bg-white p-3 space-y-2">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="font-semibold text-slate-900">{session.date} - {session.title}</p>
@@ -791,7 +791,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                       <button
                         type="button"
                         onClick={() => setExpandedSessionId(isExpanded ? null : session.id)}
-                        className="rounded-xl border border-[var(--border)] bg-slate-50 px-3 py-1 text-xs font-semibold text-[#145a82]"
+                        className="rounded-md border border-[var(--border)] bg-slate-50 px-3 py-1 text-xs font-semibold text-[var(--foreground)]"
                       >
                         {isExpanded ? "Fechar" : "Evolução"}
                       </button>
@@ -805,7 +805,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção A: Atividades */}
                               {ds.activities && ds.activities.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[9px]">A. Atividades Trabalhadas</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">A. Atividades Trabalhadas</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.activities.map((act: any, idx: number) => (
                                       <li key={idx} className="flex items-start gap-1.5">
@@ -823,7 +823,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção B: Comandos */}
                               {ds.commands && ds.commands.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[9px]">B. Comandos de Obediência</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">B. Comandos de Obediência</p>
                                   <ul className="mt-1 space-y-1.5 pl-1">
                                     {ds.commands.map((cmd: any, idx: number) => (
                                       <li key={idx}>
@@ -841,14 +841,14 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção C: Resumo Público */}
                               {ds.description && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[9px]">C. Resumo do Adestrador</p>
-                                  <p className="mt-1 text-slate-600 bg-slate-50 p-2.5 rounded-xl leading-relaxed">{ds.description}</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">C. Resumo do Adestrador</p>
+                                  <p className="mt-1 text-slate-600 bg-slate-50 p-2.5 rounded-md leading-relaxed">{ds.description}</p>
                                 </div>
                               )}
 
                               {/* Seção E: IA Resumo */}
                               {ds.aiSummary && (
-                                <div className="rounded-xl border border-purple-100 bg-purple-50/40 p-3 space-y-1">
+                                <div className="rounded-md border border-purple-100 bg-purple-50/40 p-3 space-y-1">
                                   <p className="font-bold text-purple-800 uppercase tracking-[0.08em] text-[9px]">✨ Análise de IA do Treino</p>
                                   <p className="text-purple-950 leading-relaxed italic">"{ds.aiSummary}"</p>
                                 </div>
@@ -857,7 +857,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção G: Próximo Foco */}
                               {ds.nextFocus && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[9px]">G. Próximo Foco das Aulas</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">G. Próximo Foco das Aulas</p>
                                   <p className="mt-1 text-slate-700 leading-relaxed font-semibold">🎯 {ds.nextFocus}</p>
                                 </div>
                               )}
@@ -865,7 +865,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção H: Próximos Comandos */}
                               {ds.nextCommands && ds.nextCommands.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[9px]">H. Próximos Comandos a Trabalhar</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">H. Próximos Comandos a Trabalhar</p>
                                   <div className="mt-1 flex flex-wrap gap-1">
                                     {ds.nextCommands.map((nc: string, idx: number) => (
                                       <span key={idx} className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-800 border border-slate-200">{nc}</span>
@@ -877,7 +877,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção I: Dever de Casa */}
                               {ds.nextTasks && ds.nextTasks.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[9px]">I. Tarefas para Fazer em Casa</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">I. Tarefas para Fazer em Casa</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.nextTasks.map((t: string, idx: number) => (
                                       <li key={idx} className="text-slate-700">🏠 {t}</li>
@@ -908,9 +908,9 @@ export function PortalPublicClient({ token }: { token: string }) {
           </article>
         </div>
 
-        <article className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Avaliacao e evidencias</p>
-          <div className="mt-3 rounded-2xl border border-[var(--border)] bg-white p-3">
+        <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Avaliacao e evidencias</p>
+          <div className="mt-3 rounded-md border border-[var(--border)] bg-white p-3">
             {latestSessionScore ? (
               <>
                 <p className="text-sm font-semibold text-[var(--foreground)]">Ultima avaliacao: {latestSessionScore.title}</p>
@@ -932,7 +932,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                   setOpenVideo({ id: item.id, src: item.src, title: item.sessionTitle });
                   gam.watchVideo(item.id);
                 }}
-                className="group overflow-hidden rounded-xl border border-[var(--border)] bg-white text-left transition hover:border-sky-300"
+                className="group overflow-hidden rounded-md border border-[var(--border)] bg-white text-left transition hover:border-sky-300"
               >
                 <div className="relative h-20 w-full">
                   <Image src={item.src} alt={`Treino ${item.sessionTitle}`} fill sizes="(min-width: 768px) 8rem, 30vw" unoptimized className="object-cover" />
@@ -950,12 +950,12 @@ export function PortalPublicClient({ token }: { token: string }) {
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Avalie as últimas aulas</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Avalie as últimas aulas</p>
             <div className="mt-2 grid gap-2">
               {data.sessions.slice(0, 5).map((session) => {
                 const current = gam.state.sessionRatings[session.id] ?? 0;
                 return (
-                  <div key={session.id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[var(--border)] bg-white p-3">
+                  <div key={session.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-white p-3">
                     <div>
                       <p className="text-sm font-semibold text-[var(--foreground)]">{session.title}</p>
                       <p className="text-[11px] text-[var(--muted)]">{session.date}</p>
@@ -1016,11 +1016,11 @@ export function PortalPublicClient({ token }: { token: string }) {
           }
         `}</style>
 
-        <article className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm space-y-4">
+        <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm space-y-4">
           <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2d6f99]">Pedagógico</p>
-              <h3 className="font-display text-lg font-bold text-slate-900">Relatório de Evolução Mensal</h3>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Pedagógico</p>
+              <h3 className="text-lg font-bold text-slate-900">Relatório de Evolução Mensal</h3>
               <p className="text-xs text-[var(--muted)]">Acompanhe o desempenho do cão e as orientações para casa.</p>
             </div>
             
@@ -1029,7 +1029,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                 <select
                   value={selectedReportDogId}
                   onChange={(e) => setSelectedReportDogId(e.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-white px-2 py-1 text-xs text-[var(--foreground)] outline-none"
+                  className="rounded-md border border-[var(--border)] bg-white px-2 py-1 text-xs text-[var(--foreground)] outline-none"
                 >
                   {data.client.dogs.map((d) => (
                     <option key={d.id} value={d.id}>{d.name}</option>
@@ -1040,7 +1040,7 @@ export function PortalPublicClient({ token }: { token: string }) {
               <select
                 value={selectedReportMonth}
                 onChange={(e) => setSelectedReportMonth(e.target.value)}
-                className="rounded-xl border border-[var(--border)] bg-white px-2 py-1 text-xs text-[var(--foreground)] outline-none"
+                className="rounded-md border border-[var(--border)] bg-white px-2 py-1 text-xs text-[var(--foreground)] outline-none"
               >
                 {reportMonthOptions.map((opt) => (
                   <option key={opt} value={opt}>{opt}</option>
@@ -1054,7 +1054,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           ) : reportError ? (
             <p className="text-center text-xs text-rose-600 py-6">{reportError}</p>
           ) : reportData ? (
-            <div id="printable-report-container-tutor" className="rounded-2xl border border-slate-100 bg-white p-4 shadow-2xs">
+            <div id="printable-report-container-tutor" className="rounded-md border border-slate-100 bg-white p-4 shadow-2xs">
               <MonthlyReport
                 report={reportData}
                 onDownloadPDF={() => window.print()}
@@ -1065,11 +1065,11 @@ export function PortalPublicClient({ token }: { token: string }) {
           )}
         </article>
 
-        <article className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm h-[420px] flex flex-col">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Central de Mensagens</p>
+        <article className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm h-[420px] flex flex-col">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Central de Mensagens</p>
           
           {/* Scrolling messages list */}
-          <div className="flex-1 overflow-y-auto mt-3.5 mb-3.5 space-y-3 p-2 bg-slate-50/50 rounded-2xl border border-[var(--border)]">
+          <div className="flex-1 overflow-y-auto mt-3.5 mb-3.5 space-y-3 p-2 bg-slate-50/50 rounded-md border border-[var(--border)]">
             {data.feedbacks.length === 0 ? (
               <p className="text-center text-xs text-[var(--muted)] py-12">Nenhum comentário enviado ainda.</p>
             ) : (
@@ -1083,7 +1083,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                     }`}
                   >
                     <div
-                      className={`rounded-2xl px-3.5 py-1.5 text-xs leading-relaxed ${
+                      className={`rounded-md px-3.5 py-1.5 text-xs leading-relaxed ${
                         isMe
                           ? "bg-[linear-gradient(135deg,_#145a82,_#247eb2)] text-white rounded-tr-none"
                           : "bg-white border border-[var(--border)] text-slate-800 rounded-tl-none"
@@ -1107,14 +1107,14 @@ export function PortalPublicClient({ token }: { token: string }) {
               type="text"
               value={feedbackMessage}
               onChange={(event) => setFeedbackMessage(event.target.value)}
-              className="flex-1 rounded-xl border border-[var(--border)] bg-slate-50 px-3.5 py-1.5 text-xs outline-none focus:border-sky-400 focus:bg-white"
+              className="flex-1 rounded-md border border-[var(--border)] bg-slate-50 px-3.5 py-1.5 text-xs outline-none focus:border-sky-400 focus:bg-white"
               placeholder="Digite sua dúvida ou feedback..."
               required
             />
             <button
               type="submit"
               disabled={sendingFeedback || !feedbackMessage.trim()}
-              className="rounded-xl bg-[#145a82] text-white px-4 py-1.5 text-xs font-semibold disabled:opacity-50"
+              className="rounded-md bg-[var(--accent)] text-white px-4 py-1.5 text-xs font-semibold disabled:opacity-50"
             >
               {sendingFeedback ? "Enviando..." : "Enviar"}
             </button>
@@ -1125,7 +1125,7 @@ export function PortalPublicClient({ token }: { token: string }) {
       {openVideo ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true">
           <button type="button" aria-label="Fechar" className="absolute inset-0" onClick={() => setOpenVideo(null)} />
-          <div className="relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-md bg-white shadow-2xl">
             <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-2">
               <p className="text-sm font-semibold text-[var(--foreground)]">{openVideo.title}</p>
               <button type="button" onClick={() => setOpenVideo(null)} className="rounded-full border border-[var(--border)] bg-white px-3 py-1 text-xs font-semibold">Fechar</button>
@@ -1142,7 +1142,7 @@ export function PortalPublicClient({ token }: { token: string }) {
       {evidenceLightbox ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true">
           <button type="button" aria-label="Fechar" className="absolute inset-0" onClick={() => setEvidenceLightbox(null)} />
-          <div className="relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-md bg-white shadow-2xl">
             <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-2">
               <p className="text-sm font-semibold text-[var(--foreground)]">Evidência: {evidenceLightbox.title}</p>
               <button type="button" onClick={() => setEvidenceLightbox(null)} className="rounded-full border border-[var(--border)] bg-white px-3 py-1 text-xs font-semibold">Fechar</button>

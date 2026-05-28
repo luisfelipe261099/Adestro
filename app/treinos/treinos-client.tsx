@@ -518,7 +518,7 @@ export default function TrainingPage() {
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
         {clients.length === 0 ? (
-          <section className="rounded-[2rem] border border-dashed border-[var(--border)] bg-white p-8 text-center">
+          <section className="rounded-lg border border-dashed border-[var(--border)] bg-white p-8 text-center">
             <p className="text-lg font-semibold text-[var(--foreground)]">Nenhum tutor cadastrado</p>
             <p className="mt-2 text-sm text-[var(--muted)]">Cadastre um tutor e seu cão para começar os registros.</p>
             <Link href="/clientes" className="pc-primary-action mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold">
@@ -526,10 +526,10 @@ export default function TrainingPage() {
             </Link>
           </section>
         ) : (
-          <section className="rounded-[2rem] border border-[var(--border)] bg-[#f7fbff] p-3.5 shadow-[var(--shadow)]">
+          <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
             <header className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Link href="/dashboard" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[#145a82]">
+                <Link href="/dashboard" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--foreground)]">
                   <TinyIcon name="back" />
                 </Link>
                 <div>
@@ -540,7 +540,7 @@ export default function TrainingPage() {
               <button
                 type="button"
                 onClick={() => setShowForm((value) => !value)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#145a82] text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)] text-white"
                 aria-label="Novo treino"
               >
                 <TinyIcon name="plus" />
@@ -548,7 +548,7 @@ export default function TrainingPage() {
             </header>
 
             <section className="mt-3 flex gap-2">
-              <label className="flex flex-1 items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-[var(--muted)]">
+              <label className="flex flex-1 items-center gap-2 rounded-md border border-[var(--border)] bg-white px-3 py-2 text-[var(--muted)]">
                 <TinyIcon name="search" />
                 <input
                   value={searchTerm}
@@ -560,7 +560,7 @@ export default function TrainingPage() {
               <button
                 type="button"
                 onClick={() => setShowQuickFilters((current) => !current)}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-white text-[#145a82]"
+                className="flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border)] bg-white text-[var(--foreground)]"
                 aria-label="Filtros"
               >
                 <TinyIcon name="filter" />
@@ -580,7 +580,7 @@ export default function TrainingPage() {
                   onClick={() => setFeedFilter(option.value as FeedFilter)}
                   className={`whitespace-nowrap rounded-full px-4 py-1.5 text-[11px] font-semibold ${
                     feedFilter === option.value
-                      ? "bg-[#145a82] text-white"
+                      ? "bg-[var(--accent)] text-white"
                       : option.value === "pending"
                       ? "bg-[#fff4df] text-[#9a6b09]"
                       : "border border-[var(--border)] bg-white text-[var(--muted)]"
@@ -592,19 +592,19 @@ export default function TrainingPage() {
             </section>
 
             <section className="mt-3 grid grid-cols-2 gap-2">
-              <article className="rounded-xl border border-[var(--border)] bg-white p-3">
+              <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-2xl font-semibold text-[var(--foreground)]">{filteredFeed.length}</p>
                 <p className="text-xs text-[var(--muted)]">Treinos no filtro</p>
               </article>
-              <article className="rounded-xl border border-[var(--border)] bg-white p-3">
+              <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-2xl font-semibold text-[var(--foreground)]">{draftNotes.length}</p>
                 <p className="text-xs text-[var(--muted)]">Blocos do registro</p>
               </article>
-              <article className="rounded-xl border border-[var(--border)] bg-white p-3">
+              <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-2xl font-semibold text-[var(--foreground)]">{trainingSessions.length}</p>
                 <p className="text-xs text-[var(--muted)]">Aulas registradas</p>
               </article>
-              <article className="rounded-xl border border-[var(--border)] bg-white p-3">
+              <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-2xl font-semibold text-[var(--foreground)]">{pendingSessionsCount}</p>
                 <p className="text-xs text-[var(--muted)]">Pendentes</p>
               </article>
@@ -613,8 +613,8 @@ export default function TrainingPage() {
             <section className="mt-4 flex items-center justify-between">
               <p className="text-sm font-semibold text-[var(--foreground)]">{feedTitle}</p>
               <div className="flex items-center gap-3">
-                <Link href="/treinos/registro" className="text-[11px] font-semibold text-[#145a82]">Registrar aula</Link>
-                <Link href="/agenda" className="text-[11px] font-semibold text-[#145a82]">Ver agenda</Link>
+                <Link href="/treinos/registro" className="text-[11px] font-semibold text-[var(--foreground)]">Registrar aula</Link>
+                <Link href="/agenda" className="text-[11px] font-semibold text-[var(--foreground)]">Ver agenda</Link>
               </div>
             </section>
 
@@ -632,10 +632,10 @@ export default function TrainingPage() {
                 const hasDetailedSessions = Array.isArray(session.dogSessions) && session.dogSessions.length > 0;
 
                 return (
-                  <article key={session.id} className="rounded-2xl border border-[var(--border)] bg-white p-3">
+                  <article key={session.id} className="rounded-md border border-[var(--border)] bg-white p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-2.5">
-                        <div className="relative h-11 w-11 overflow-hidden rounded-full bg-sky-50">
+                        <div className="relative h-11 w-11 overflow-hidden rounded-full bg-[var(--surface-2)]">
                           <Image
                             src={dogMeta?.photoUrl || "/images/dog-default-bolt.svg"}
                             alt={`Foto de ${dogName}`}
@@ -651,7 +651,7 @@ export default function TrainingPage() {
                         <div>
                           <p className="text-sm font-semibold text-[var(--foreground)]">{dogName}</p>
                           <p className="text-[11px] text-[var(--muted)]">{clientName} • {breed}</p>
-                          <p className="mt-0.5 text-[11px] text-[#145a82]">
+                          <p className="mt-0.5 text-[11px] text-[var(--foreground)]">
                             {firstNote?.block || "Treino geral"} • {score.toFixed(1)}/10
                           </p>
                         </div>
@@ -670,7 +670,7 @@ export default function TrainingPage() {
                               {/* Seção A: Atividades */}
                               {ds.activities && ds.activities.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">A. Atividades Trabalhadas</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">A. Atividades Trabalhadas</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.activities.map((act: any, idx: number) => (
                                       <li key={idx} className="flex items-start gap-1.5">
@@ -688,7 +688,7 @@ export default function TrainingPage() {
                               {/* Seção B: Comandos */}
                               {ds.commands && ds.commands.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">B. Comandos & Evolução</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">B. Comandos & Evolução</p>
                                   <ul className="mt-1 space-y-1.5 pl-1">
                                     {ds.commands.map((cmd: any, idx: number) => (
                                       <li key={idx}>
@@ -706,7 +706,7 @@ export default function TrainingPage() {
                               {/* Seção C: Resumo Público */}
                               {ds.description && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">C. Resumo do Tutor</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">C. Resumo do Tutor</p>
                                   <p className="mt-1 text-slate-600 bg-slate-50 p-2 rounded-lg leading-relaxed">{ds.description}</p>
                                 </div>
                               )}
@@ -735,7 +735,7 @@ export default function TrainingPage() {
                               {/* Seção G: Próximo Foco */}
                               {ds.nextFocus && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">G. Próximo Foco</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">G. Próximo Foco</p>
                                   <p className="mt-1 text-slate-700 leading-relaxed font-semibold">🎯 {ds.nextFocus}</p>
                                 </div>
                               )}
@@ -743,7 +743,7 @@ export default function TrainingPage() {
                               {/* Seção H: Próximos Comandos */}
                               {ds.nextCommands && ds.nextCommands.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">H. Próximos Comandos Recomendados</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">H. Próximos Comandos Recomendados</p>
                                   <div className="mt-1 flex flex-wrap gap-1">
                                     {ds.nextCommands.map((nc: string, idx: number) => (
                                       <span key={idx} className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-800 border border-slate-200">{nc}</span>
@@ -755,7 +755,7 @@ export default function TrainingPage() {
                               {/* Seção I: Dever de Casa */}
                               {ds.nextTasks && ds.nextTasks.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[#145a82] uppercase tracking-[0.08em] text-[10px]">I. Dever de Casa para o Tutor</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">I. Dever de Casa para o Tutor</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.nextTasks.map((t: string, idx: number) => (
                                       <li key={idx} className="text-slate-700">🏠 {t}</li>
@@ -784,13 +784,13 @@ export default function TrainingPage() {
                       <button
                         type="button"
                         onClick={() => setExpandedSessionId(isExpanded ? null : session.id)}
-                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] px-2 py-1.5 text-[#145a82] font-semibold"
+                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-[var(--foreground)] font-semibold"
                       >
                         {isExpanded ? "Fechar" : "Detalhes"}
                       </button>
                       <Link
                         href={session.clientId && session.dogId ? `/treinos/registro?clientId=${session.clientId}&dogId=${session.dogId}` : "/treinos/registro"}
-                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] px-2 py-1.5 text-[#145a82]"
+                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-[var(--foreground)]"
                       >
                         <TinyIcon name="list" />
                         Registrar
@@ -798,7 +798,7 @@ export default function TrainingPage() {
                       <button
                         type="button"
                         onClick={() => handleOpenWhatsApp(session.dogId ? phoneByDogId.get(session.dogId) : undefined, dogName)}
-                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[#f7fbff] px-2 py-1.5 text-[#145a82]"
+                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-[var(--foreground)]"
                       >
                         <TinyIcon name="whats" />
                         WhatsApp
@@ -809,13 +809,13 @@ export default function TrainingPage() {
               })}
 
               {!filteredFeed.length ? (
-                <article className="rounded-2xl border border-dashed border-[var(--border)] bg-white p-4 text-xs text-[var(--muted)]">
+                <article className="rounded-md border border-dashed border-[var(--border)] bg-white p-4 text-xs text-[var(--muted)]">
                   Nenhum treino encontrado para este filtro.
                 </article>
               ) : null}
             </section>
 
-            <section className="mt-4 rounded-2xl border border-[var(--border)] bg-[#f1f8fe] p-3">
+            <section className="mt-4 rounded-md border border-[var(--border)] bg-[#f1f8fe] p-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-[var(--foreground)]">Registro guiado da aula</p>
@@ -824,7 +824,7 @@ export default function TrainingPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm((value) => !value)}
-                  className="rounded-full bg-[#145a82] px-4 py-2 text-xs font-semibold text-white"
+                  className="rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-semibold text-white"
                 >
                   {showForm ? "Fechar" : "Registro rápido"}
                 </button>
@@ -832,8 +832,8 @@ export default function TrainingPage() {
             </section>
 
             {showForm ? (
-              <article className="mt-3 rounded-2xl border border-[var(--border)] bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Registrar treino</p>
+              <article className="mt-3 rounded-md border border-[var(--border)] bg-white p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Registrar treino</p>
                 <form onSubmit={onSubmit} className="mt-3 grid gap-3">
                   <div className="grid gap-2 sm:grid-cols-2">
                     <label className="grid gap-1">
@@ -848,7 +848,7 @@ export default function TrainingPage() {
                           setSelectedDogId(nextDog?.id ?? "");
                           resetDraftNotes(nextDog?.trainingTypes[0] ?? "Guia");
                         }}
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                       >
                         {clients.map((client) => (
                           <option key={client.id} value={client.id}>{client.name}</option>
@@ -866,7 +866,7 @@ export default function TrainingPage() {
                           setSelectedDogId(nextDogId);
                           resetDraftNotes(nextDog?.trainingTypes[0] ?? "Guia");
                         }}
-                        className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                       >
                         {(selectedClient?.dogs ?? []).map((dog) => (
                           <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
@@ -878,17 +878,17 @@ export default function TrainingPage() {
                   <input
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
-                    className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                    className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
                     placeholder="Titulo da sessao"
                     required
                   />
 
-                  <div className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[#f7fbff] px-3 py-2">
+                  <div className="flex items-center justify-between rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
                     <p className="text-xs text-[var(--muted)]">Blocos: {draftBlocksLabel || "Sem blocos"}</p>
                     <button
                       type="button"
                       onClick={addDraftNote}
-                      className="rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[#145a82]"
+                      className="rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--foreground)]"
                     >
                       Adicionar bloco
                     </button>
@@ -896,7 +896,7 @@ export default function TrainingPage() {
 
                   <div className="space-y-2">
                     {draftNotes.map((note, index) => (
-                      <div key={note.id} className="rounded-xl border border-[var(--border)] bg-white p-3">
+                      <div key={note.id} className="rounded-md border border-[var(--border)] bg-white p-3">
                         <div className="flex items-center justify-between">
                           <p className="text-xs font-semibold text-[var(--foreground)]">Bloco {index + 1}</p>
                           {draftNotes.length > 1 ? (
@@ -910,7 +910,7 @@ export default function TrainingPage() {
                           <select
                             value={note.block}
                             onChange={(event) => updateDraftNote(note.id, "block", event.target.value)}
-                            className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                            className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                           >
                             {blockOptions.map((option) => (
                               <option key={option} value={option}>{option}</option>
@@ -922,14 +922,14 @@ export default function TrainingPage() {
                             max={10}
                             value={note.score}
                             onChange={(event) => updateDraftNote(note.id, "score", Number(event.target.value))}
-                            className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                            className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
                           />
                         </div>
 
                         <textarea
                           value={note.comment}
                           onChange={(event) => updateDraftNote(note.id, "comment", event.target.value)}
-                          className="mt-2 min-h-20 w-full rounded-xl border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                          className="mt-2 min-h-20 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
                           placeholder="Resumo tecnico do bloco"
                           required
                         />
@@ -937,10 +937,10 @@ export default function TrainingPage() {
                     ))}
                   </div>
 
-                  <div className="rounded-xl border border-[var(--border)] bg-[#f7fbff] p-3">
+                  <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs text-[var(--muted)]">Imagens: {draftMedia.length}/{MAX_MEDIA_ITEMS} • {totalMediaKb}/{MAX_TOTAL_MEDIA_KB}KB</p>
-                      <label className="cursor-pointer rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[#145a82]">
+                      <label className="cursor-pointer rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--foreground)]">
                         {isCompressingMedia ? "Comprimindo..." : "Adicionar"}
                         <input
                           type="file"
@@ -983,13 +983,13 @@ export default function TrainingPage() {
                     ) : null}
                   </div>
 
-                  <button type="submit" disabled={isSaving} className="rounded-full bg-[#145a82] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+                  <button type="submit" disabled={isSaving} className="rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
                     {isSaving ? "Salvando..." : "Salvar sessao"}
                   </button>
 
-                  {saveError ? <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{saveError}</p> : null}
+                  {saveError ? <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{saveError}</p> : null}
 
-                  <div className="rounded-xl border border-[var(--border)] bg-[#f7fbff] px-3 py-2 text-xs text-[var(--muted)]">
+                  <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--muted)]">
                     Caso: {selectedClient?.name} • {selectedDog?.name} • Sessao {nextSessionNumber} • Media {averageDraftScore}/10
                   </div>
                 </form>
