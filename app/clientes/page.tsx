@@ -492,130 +492,92 @@ export default function ClientsPage() {
 
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="rounded-lg border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-sm">
-          <header className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Painel de tutores</p>
-              <h1 className="text-2xl font-semibold leading-tight text-[var(--foreground)]">Tutores e cães</h1>
-              <p className="mt-1 text-xs text-[var(--muted)]">Gerencie a ficha completa dos clientes e seus animais.</p>
+      <main className="page">
+        <header className="page-header">
+          <div className="page-header-actions">
+            <div className="min-w-0">
+              <p className="text-eyebrow mb-1.5">Carteira</p>
+              <h1 className="text-display">Tutores e cães</h1>
+              <p className="mt-1 text-subtitle">
+                {clients.length} tutor{clients.length === 1 ? "" : "es"} · {totalDogs} cão{totalDogs === 1 ? "" : "es"} cadastrado{totalDogs === 1 ? "" : "s"}
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setShowForm((current) => !current);
-                setFormStep(1);
-              }}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)] text-white shadow-[0_10px_24px_rgba(20,90,130,0.28)]"
-              aria-label="Abrir cadastro"
-            >
-              <SmallIcon name="plus" />
-            </button>
-          </header>
-
-          {/* Atalhos Rápidos */}
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Link href="/agenda" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--foreground)]">
-              Agenda
-            </Link>
-            <button
-              type="button"
-              onClick={() => {
-                setShowForm(true);
-                setFormStep(1);
-              }}
-              className="rounded-full border border-[#145a82] bg-[var(--accent)] px-3 py-1.5 text-[11px] font-semibold text-white"
-            >
-              + Novo tutor
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowForm(true);
-                setFormStep(3); // Salta para a etapa do cão
-              }}
-              className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--foreground)]"
-            >
-              + Cadastrar cão
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link href="/agenda" className="btn-secondary text-[12.5px]">Agenda</Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm(true);
+                  setFormStep(3);
+                }}
+                className="btn-secondary text-[12.5px]"
+              >
+                + Cão
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm((current) => !current);
+                  setFormStep(1);
+                }}
+                className="btn-primary text-[12.5px]"
+              >
+                + Novo tutor
+              </button>
+            </div>
           </div>
+        </header>
 
-          {/* Alternar Visualização */}
-          <div className="mt-3 inline-flex rounded-full border border-[var(--border)] bg-white p-0.5 text-[11px] font-semibold">
+        {/* Toolbar: busca + tabs + filtros */}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <label className="flex h-9 flex-1 min-w-[200px] items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--muted)]">
+            <SmallIcon name="search" />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder={entityKind === "humanos" ? "Buscar tutor pelo nome" : "Buscar cão pelo nome ou raça"}
+              className="w-full border-none bg-transparent text-[13px] text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
+            />
+          </label>
+
+          <div className="tabs">
             <button
               type="button"
               onClick={() => setEntityKind("humanos")}
-              className={`rounded-full px-3 py-1.5 transition ${entityKind === "humanos" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"}`}
+              data-active={entityKind === "humanos"}
+              className="tab-trigger"
             >
               Tutores
             </button>
             <button
               type="button"
               onClick={() => setEntityKind("caes")}
-              className={`rounded-full px-3 py-1.5 transition ${entityKind === "caes" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"}`}
+              data-active={entityKind === "caes"}
+              className="tab-trigger"
             >
               Cães
             </button>
           </div>
 
-          {/* Filtros e Busca */}
-          <div className="mt-4 flex items-center gap-2">
-            <label className="flex flex-1 items-center gap-2 rounded-md border border-[var(--border)] bg-white px-3 py-2 text-[var(--muted)] shadow-[0_6px_18px_rgba(17,73,110,0.08)]">
-              <SmallIcon name="search" />
-              <input
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder={entityKind === "humanos" ? "Buscar tutor pelo nome" : "Buscar cão pelo nome ou raça"}
-                className="w-full border-none bg-transparent text-sm text-[var(--foreground)] outline-none"
-              />
-            </label>
-            <button
-              type="button"
-              onClick={() => setShowQuickFilters((current) => !current)}
-              className="flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border)] bg-white text-[var(--foreground)] shadow-[0_6px_18px_rgba(17,73,110,0.08)]"
-              aria-label="Opções"
-            >
-              <SmallIcon name="filter" />
-            </button>
+          <div className="tabs">
+            {[
+              { value: "todos", label: "Todos" },
+              { value: "ativos", label: "Ativos" },
+              { value: "rascunho", label: "Rascunhos" },
+              { value: "inativos", label: "Inativos" },
+            ].map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                data-active={statusFilter === item.value}
+                onClick={() => setStatusFilter(item.value as "todos" | ClientStatus)}
+                className="tab-trigger"
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
-
-          {showQuickFilters && (
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-              {[
-                { value: "todos", label: "Todos" },
-                { value: "ativos", label: "Ativos" },
-                { value: "rascunho", label: "Rascunhos" },
-                { value: "inativos", label: "Inativos" },
-              ].map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() => setStatusFilter(item.value as "todos" | ClientStatus)}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-semibold ${
-                    statusFilter === item.value
-                      ? "bg-[var(--accent)] text-white shadow-[0_8px_18px_rgba(20,90,130,0.25)]"
-                      : "border border-[var(--border)] bg-white text-[var(--muted)]"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Cards Estatísticos */}
-          <section className="mt-4 grid grid-cols-2 gap-2">
-            <article className="rounded-md border border-[var(--border)] bg-white p-3">
-              <p className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]"><SmallIcon name="plus" /> Tutores</p>
-              <p className="text-2xl font-semibold text-[var(--foreground)]">{clients.length}</p>
-              <p className="mt-1 text-xs text-[var(--muted)]">Base cadastrada</p>
-            </article>
-            <article className="rounded-md border border-[var(--border)] bg-white p-3">
-              <p className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]"><SmallIcon name="dog" /> Cães</p>
-              <p className="text-2xl font-semibold text-[var(--foreground)]">{totalDogs}</p>
-              <p className="mt-1 text-xs text-[var(--muted)]">Total atendido</p>
-            </article>
-          </section>
+        </div>
 
           {/* Mensagens de Feedback */}
           {saveMessage && (
@@ -1260,7 +1222,6 @@ export default function ClientsPage() {
               );
             })}
           </section>
-        </section>
       </main>
 
       {/* Modal de Gerenciamento de Tarefas */}

@@ -457,59 +457,67 @@ export default function SchedulePage() {
 
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-          
-          {/* HEADER */}
-          <header className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Link href="/dashboard" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--foreground)]" aria-label="Voltar ao início">
-                <TinyIcon name="back" />
-              </Link>
-              <div>
-                <h1 className="text-base font-bold text-[var(--foreground)]">Calendário</h1>
-                <p className="text-[10px] text-[var(--muted)]">Agendamentos, turmas e recorrências.</p>
-              </div>
+      <main className="page">
+        <header className="page-header">
+          <div className="page-header-actions">
+            <div className="min-w-0">
+              <p className="text-eyebrow mb-1.5">Agenda</p>
+              <h1 className="text-display">Calendário</h1>
+              <p className="mt-1 text-subtitle">Agendamentos, turmas e recorrências.</p>
             </div>
             <button
               type="button"
               onClick={() => setShowForm((value) => !value)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)] text-white shadow-sm"
-              aria-label="Novo agendamento"
+              className="btn-primary text-[12.5px]"
             >
               <TinyIcon name="plus" />
+              Novo agendamento
             </button>
-          </header>
+          </div>
+        </header>
 
-          {/* VIEW SWITCHER & NAVIGATION */}
-          <nav className="mt-3 flex items-center justify-between gap-2">
-            <div data-tour="agenda-tabs" className="inline-flex rounded-full border border-[var(--border)] bg-white p-0.5 text-[11px] font-semibold">
-              {(["dia", "semana", "mes"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => setViewMode(mode)}
-                  className={`rounded-full px-3 py-1 transition ${
-                    viewMode === mode ? "bg-[var(--accent)] text-white shadow-sm" : "text-[var(--muted)]"
-                  }`}
-                >
-                  {mode === "dia" ? "Dia" : mode === "semana" ? "Semana" : "Mês"}
-                </button>
-              ))}
-            </div>
+        {/* Toolbar */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div data-tour="agenda-tabs" className="tabs">
+            {(["dia", "semana", "mes"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                data-active={viewMode === mode}
+                onClick={() => setViewMode(mode)}
+                className="tab-trigger"
+              >
+                {mode === "dia" ? "Dia" : mode === "semana" ? "Semana" : "Mês"}
+              </button>
+            ))}
+          </div>
 
-            <div className="flex items-center gap-1.5">
-              <button onClick={handlePrev} className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border)] bg-white text-xs text-[var(--foreground)]">
-                ◀
-              </button>
-              <button onClick={handleToday} className="rounded-full border border-[var(--border)] bg-white px-2.5 py-1 text-[10px] font-semibold text-[var(--foreground)]">
-                Hoje
-              </button>
-              <button onClick={handleNext} className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border)] bg-white text-xs text-[var(--foreground)]">
-                ▶
-              </button>
-            </div>
-          </nav>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={handlePrev}
+              aria-label="Anterior"
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] hover:bg-[var(--surface-2)]"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={handleToday}
+              className="btn-secondary h-8 text-[12px]"
+            >
+              Hoje
+            </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              aria-label="Próximo"
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] hover:bg-[var(--surface-2)]"
+            >
+              ›
+            </button>
+          </div>
+        </div>
 
           {/* DATE HEADER CONTEXT */}
           <header className="mt-3 flex items-center justify-between text-xs font-bold text-slate-700 bg-white/70 border border-slate-100 rounded-md p-3">
@@ -1021,8 +1029,6 @@ export default function SchedulePage() {
               </form>
             </section>
           )}
-
-        </section>
       </main>
     </AuthGuard>
   );

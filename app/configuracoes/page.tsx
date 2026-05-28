@@ -131,8 +131,8 @@ export default function ConfiguracoesPage() {
 
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+      <main className="page">
+        <div className="space-y-6">
           <header>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Conta</p>
             <h1 className="text-2xl font-semibold text-[var(--foreground)]">Configurações</h1>
@@ -427,7 +427,7 @@ export default function ConfiguracoesPage() {
               {alertsSaving ? "Salvando…" : "Salvar configurações de alerta"}
             </button>
           </section>
-        </section>
+        </div>
       </main>
     </AuthGuard>
   );

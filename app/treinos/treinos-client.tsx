@@ -516,7 +516,7 @@ export default function TrainingPage() {
 
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
+      <main className="page">
         {clients.length === 0 ? (
           <section className="rounded-lg border border-dashed border-[var(--border)] bg-white p-8 text-center">
             <p className="text-lg font-semibold text-[var(--foreground)]">Nenhum tutor cadastrado</p>

@@ -43,29 +43,29 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
   const lockedBadges = state.badges.filter((badge) => !badge.unlocked);
 
   return (
-    <article className="rounded-lg border border-[var(--border)] bg-gradient-to-br from-sky-50 via-white to-indigo-50 p-5 shadow-sm">
+    <article className="card p-5">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Jornada de Treino</p>
-          <h3 className="mt-1 text-lg font-semibold text-[var(--foreground)]">Nível e Patente do Cão</h3>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            Seu cão está progredindo! Complete tarefas com fotos/vídeos de prova, assista aos vídeos de aula e interaja para subir de nível e desbloquear novas patentes.
+        <div className="min-w-0">
+          <p className="text-eyebrow mb-1">Jornada</p>
+          <h3 className="text-[15px] font-semibold text-[var(--foreground)]">Nível e patente do cão</h3>
+          <p className="mt-1 text-[12.5px] leading-relaxed text-[var(--muted)]">
+            Conclua tarefas, envie evidências e mantenha a constância para subir de nível.
           </p>
         </div>
-        <div className="rounded-md border border-[var(--border-strong)] bg-white px-3.5 py-2 text-center min-w-[70px]">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">Nível</p>
-          <p className="text-2xl font-bold text-[var(--foreground)]">{state.level}</p>
+        <div className="flex h-12 w-12 flex-col items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] text-center">
+          <p className="text-[8.5px] font-semibold uppercase tracking-wide text-[var(--muted)]">Nível</p>
+          <p className="text-[17px] font-semibold leading-none text-[var(--foreground)]">{state.level}</p>
         </div>
       </div>
 
-      <div className="mt-3.5 rounded-md bg-[#145a82]/5 border border-[#145a82]/10 p-3.5 flex items-center justify-between gap-3">
+      <div className="mt-3 flex items-center justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--surface-2)] p-3">
         <div>
-          <p className="text-[10px] uppercase font-bold tracking-wide text-[var(--foreground)]">Patente Canina Atual</p>
-          <p className="text-base font-bold text-slate-800 mt-0.5">{state.dogRank}</p>
+          <p className="text-eyebrow">Patente atual</p>
+          <p className="mt-0.5 text-[14px] font-semibold text-[var(--foreground)]">{state.dogRank}</p>
         </div>
-        <div className="text-3xl">
+        <span className="text-2xl opacity-80" aria-hidden>
           {state.level >= 10 ? "🏆" : state.level >= 7 ? "🎓" : state.level >= 5 ? "🎖️" : state.level >= 3 ? "🎒" : "🐾"}
-        </div>
+        </span>
       </div>
 
       {lastEarned ? (

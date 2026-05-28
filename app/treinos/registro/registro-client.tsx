@@ -399,18 +399,19 @@ export default function RegistroTreinoClientPage() {
 
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">Módulo de Treinos</p>
-              <h1 className="text-2xl font-semibold text-[var(--foreground)]">Evolução Estruturada</h1>
-              <p className="mt-1 text-xs text-[var(--muted)]">Preenchimento guiado das seções operacionais de treino A a I.</p>
+      <main className="page">
+        <header className="page-header">
+          <div className="page-header-actions">
+            <div className="min-w-0">
+              <p className="text-eyebrow mb-1.5">Treinos</p>
+              <h1 className="text-display">Registrar sessão</h1>
+              <p className="mt-1 text-subtitle">Preenchimento guiado das seções A a I da página de treino.</p>
             </div>
-            <Link href="/treinos" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--foreground)]">
-              Histórico
-            </Link>
+            <Link href="/treinos" className="btn-secondary text-[12.5px]">Ver histórico</Link>
           </div>
+        </header>
+
+        <div className="card p-5">
 
           <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
             {/* Metadados Básicos */}
@@ -815,7 +816,7 @@ export default function RegistroTreinoClientPage() {
               {isSaving ? "Salvando treino estruturado..." : "Salvar Evolução Estruturada"}
             </button>
           </form>
-        </section>
+        </div>
         <SessionAiChat
           context={{
             dogName: selectedDog?.name,

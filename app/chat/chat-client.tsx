@@ -146,7 +146,7 @@ export default function ChatClientPage() {
 
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
+      <main className="page">
         <section className="flex flex-col rounded-md border border-[var(--border)] bg-[var(--panel)] shadow-sm overflow-hidden h-[82vh]">
           
           {/* Header */}

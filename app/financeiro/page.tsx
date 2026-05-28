@@ -287,50 +287,38 @@ export default function FinanceiroPage() {
         }
       `}</style>
 
-      <main className="mx-auto w-full max-w-md px-3 pb-24 pt-3 sm:max-w-xl">
-        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-          
-          {/* Cabeçalho */}
-          <header className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Módulo Financeiro</p>
-              <h1 className="text-2xl font-semibold text-[var(--foreground)]">Painel Financeiro</h1>
-              <p className="text-xs text-[var(--muted)]">Controle de faturamento, pacotes e faturamento B2B.</p>
+      <main className="page">
+        <header className="page-header">
+          <div className="page-header-actions">
+            <div className="min-w-0">
+              <p className="text-eyebrow mb-1.5">Financeiro</p>
+              <h1 className="text-display">Painel Financeiro</h1>
+              <p className="mt-1 text-subtitle">Controle de faturamento, pacotes, cobranças e recibos.</p>
             </div>
-            <Link
-              href="/dashboard"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--foreground)]"
-              aria-label="Voltar ao início"
-            >
-              ✕
-            </Link>
-          </header>
+          </div>
+        </header>
 
-          {/* Abas */}
-          <nav data-tour="finance-tabs" className="mt-4 flex gap-1 rounded-md bg-slate-100/80 p-1 text-[11px] font-semibold">
-            {[
-              { id: "dashboard", label: "Faturamento" },
-              { id: "pacotes", label: "Pacotes" },
-              { id: "cobrancas", label: "Cobranças" },
-              { id: "recibos", label: "Recibos" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  setActiveTab(tab.id as any);
-                  setReceiptGenerated(false);
-                }}
-                className={`flex-1 rounded-md py-2 text-center transition ${
-                  activeTab === tab.id
-                    ? "bg-[var(--accent)] text-white shadow-[0_6px_14px_rgba(20,90,130,0.18)]"
-                    : "text-[var(--muted)] hover:text-[var(--foreground)]"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+        <div data-tour="finance-tabs" className="mb-4 tabs">
+          {[
+            { id: "dashboard", label: "Faturamento" },
+            { id: "pacotes", label: "Pacotes" },
+            { id: "cobrancas", label: "Cobranças" },
+            { id: "recibos", label: "Recibos" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              data-active={activeTab === tab.id}
+              onClick={() => {
+                setActiveTab(tab.id as any);
+                setReceiptGenerated(false);
+              }}
+              className="tab-trigger"
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
           {error && <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
           {message && <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p>}
@@ -862,8 +850,6 @@ export default function FinanceiroPage() {
               )}
             </>
           )}
-
-        </section>
       </main>
     </AuthGuard>
   );

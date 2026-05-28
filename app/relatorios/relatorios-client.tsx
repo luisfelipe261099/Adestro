@@ -173,7 +173,7 @@ export default function RelatoriosClientPage() {
         }
       `}</style>
 
-      <main className="mx-auto w-full max-w-2xl px-3 pb-24 pt-3">
+      <main className="page">
         <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm sm:p-6">
           
           {/* Cabeçalho */}
