@@ -2,7 +2,7 @@
 // Estratégia: stale-while-revalidate para assets, network-first para HTML,
 // cache-first para imagens. Inclui handler de push para notificações Web Push.
 
-const CACHE_VERSION = "adestro-v2";
+const CACHE_VERSION = "adestro-v3";
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 const IMAGE_CACHE = `${CACHE_VERSION}-images`;
 const APP_SHELL = ["/dashboard", "/agenda", "/clientes", "/financeiro", "/icon.svg", "/manifest.webmanifest"];
