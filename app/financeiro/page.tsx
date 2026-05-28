@@ -88,7 +88,7 @@ export default function FinanceiroPage() {
   const [receiptAmount, setReceiptAmount] = useState(0);
   const [receiptMethod, setReceiptMethod] = useState("Pix");
   const [receiptGenerated, setReceiptGenerated] = useState(false);
-  const [receiptNumber, setReceiptNumber] = useState(1025);
+  const [receiptNumber, setReceiptNumber] = useState(1);
 
   // Função para carregar dados
   async function loadFinancials() {

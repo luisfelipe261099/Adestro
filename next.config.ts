@@ -1,22 +1,26 @@
 import type { NextConfig } from "next";
 
-// Content Security Policy — bloqueia XSS de evidências base64 e scripts externos.
-// 'unsafe-inline' em script-src é necessário enquanto não migrarmos para nonces.
-// 'unsafe-eval' fica fora — Next 16 com Turbopack não precisa em produção.
+// Content Security Policy.
+// Em produção: trava 'unsafe-eval' (Next 16/Turbopack não precisa).
+// Em desenvolvimento: libera 'unsafe-eval' (React DevTools / HMR usam).
+const isProd = process.env.NODE_ENV === "production";
+
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+  `script-src 'self' 'unsafe-inline' ${isProd ? "" : "'unsafe-eval'"} https://va.vercel-scripts.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https:",
   "media-src 'self' data: blob: https:",
-  "connect-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+  "connect-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com ws: wss:",
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",
   "object-src 'none'",
-  "upgrade-insecure-requests",
-].join("; ");
+  isProd ? "upgrade-insecure-requests" : "",
+]
+  .filter(Boolean)
+  .join("; ");
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: cspDirectives },

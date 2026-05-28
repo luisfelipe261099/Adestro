@@ -57,12 +57,35 @@ export default function DashboardPage() {
   const startTour = useTour((s) => s.start);
 
   const [tourDone, setTourDone] = useState(false);
+  const [finance, setFinance] = useState<{ received: number; pending: number; overdue: number; activeContracts: number } | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setTourDone(window.localStorage.getItem("adestro-tour-done") === "1");
     }
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/finance/overview", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.metrics) return;
+        setFinance(data.metrics);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function brl(value: number): string {
+    return value.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      minimumFractionDigits: 2,
+    });
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -115,8 +138,8 @@ export default function DashboardPage() {
       },
       {
         label: "Receita do mês",
-        value: "R$ 1.280",
-        sub: "R$ 640 a receber",
+        value: finance ? brl(finance.received) : "—",
+        sub: finance ? `${brl(finance.pending)} a receber` : "Carregando…",
         href: "/financeiro",
         Icon: IconDollar,
         accent: true,
@@ -248,18 +271,26 @@ export default function DashboardPage() {
             <div className="mt-4 grid grid-cols-3 gap-4">
               <div>
                 <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Recebido</p>
-                <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">R$ 1.280</p>
+                <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
+                  {finance ? brl(finance.received) : "—"}
+                </p>
                 <p className="text-[11px] text-[var(--success)]">Mês atual</p>
               </div>
               <div className="border-l border-[var(--border)] pl-4">
                 <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">A receber</p>
-                <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">R$ 640</p>
+                <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
+                  {finance ? brl(finance.pending) : "—"}
+                </p>
                 <p className="text-[11px] text-[var(--muted)]">Próximos vencimentos</p>
               </div>
               <div className="border-l border-[var(--border)] pl-4">
                 <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Em atraso</p>
-                <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--danger)]">R$ 120</p>
-                <p className="text-[11px] text-[var(--danger)]">Requer atenção</p>
+                <p className={`mt-1 text-[20px] font-semibold tracking-tight ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--foreground)]"}`}>
+                  {finance ? brl(finance.overdue) : "—"}
+                </p>
+                <p className={`text-[11px] ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--muted)]"}`}>
+                  {finance && finance.overdue > 0 ? "Requer atenção" : "Sem pendências"}
+                </p>
               </div>
             </div>
           </section>
@@ -275,7 +306,7 @@ export default function DashboardPage() {
                   <IconReport className="h-3.5 w-3.5 text-[var(--warning)]" />
                   Relatórios aguardando aprovação
                 </span>
-                <span className="font-medium text-[var(--foreground)]">2</span>
+                <span className="font-medium text-[var(--foreground)]">0</span>
               </Link>
               <Link
                 href="/treinos"
@@ -291,11 +322,13 @@ export default function DashboardPage() {
                 href="/financeiro"
                 className="flex items-center justify-between rounded-md px-2 py-1.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
               >
-                <span className="flex items-center gap-2 text-[var(--foreground)]">
-                  <IconClock className="h-3.5 w-3.5 text-[var(--danger)]" />
+                <span className={`flex items-center gap-2 text-[var(--foreground)]`}>
+                  <IconClock className={`h-3.5 w-3.5 ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--muted)]"}`} />
                   Cobranças em atraso
                 </span>
-                <span className="font-medium text-[var(--danger)]">1</span>
+                <span className={`font-medium ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--foreground)]"}`}>
+                  {finance ? brl(finance.overdue) : "—"}
+                </span>
               </Link>
             </div>
           </section>

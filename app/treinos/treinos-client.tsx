@@ -229,7 +229,7 @@ export default function TrainingPage() {
   const [feedFilter, setFeedFilter] = useState<FeedFilter>("today");
   const [showQuickFilters, setShowQuickFilters] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [title, setTitle] = useState("Sessao pratica");
+  const [title, setTitle] = useState("");
   const [draftNotes, setDraftNotes] = useState<DraftTrainingNote[]>([createDraftTrainingNote()]);
   const [draftMedia, setDraftMedia] = useState<DraftTrainingMedia[]>([]);
   const [isCompressingMedia, setIsCompressingMedia] = useState(false);

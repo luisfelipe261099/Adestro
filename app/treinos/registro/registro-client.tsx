@@ -117,7 +117,7 @@ export default function RegistroTreinoClientPage() {
   // Dados Gerais da Sessão
   const [title, setTitle] = useState("Sessão prática estruturada");
   const [sessionType, setSessionType] = useState<"Individual" | "Coletivo">("Individual");
-  const [sessionLocation, setSessionLocation] = useState("Parque / Residência");
+  const [sessionLocation, setSessionLocation] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -126,24 +126,18 @@ export default function RegistroTreinoClientPage() {
   const [expandedSection, setExpandedSection] = useState<AccordionSection>("A");
 
   // SEÇÃO A: Atividades Trabalhadas
-  const [activities, setActivities] = useState<ActivityItem[]>([
-    { id: "act-1", name: "Caminhada estruturada", completed: true, notes: "Boa condução sem puxar." },
-    { id: "act-2", name: "Socialização ambiental", completed: false, notes: "Apresentou hesitação com barulhos de moto." }
-  ]);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [newActivityName, setNewActivityName] = useState("");
 
   // SEÇÃO B: Comandos de Obediência/Evolução
-  const [commands, setCommands] = useState<CommandItem[]>([
-    { id: "cmd-1", command: "Senta", rating: 4, notes: "Sentou rápido sob recompensa de petisco." },
-    { id: "cmd-2", command: "Aqui", rating: 3, notes: "Ainda hesita quando há cheiros de outros cães." }
-  ]);
+  const [commands, setCommands] = useState<CommandItem[]>([]);
   const [newCommandName, setNewCommandName] = useState("");
 
   // SEÇÃO C: Descrição / Resumo Público
-  const [description, setDescription] = useState("O treino de hoje focou na caminhada estruturada em rua e comandos de atenção básica.");
+  const [description, setDescription] = useState("");
 
   // SEÇÃO D: Notas Privadas
-  const [privateNotes, setPrivateNotes] = useState("O cachorro está respondendo melhor ao adestrador do que ao próprio tutor. Recomendo aula conjunta no próximo encontro.");
+  const [privateNotes, setPrivateNotes] = useState("");
 
   // SEÇÃO E: Transcrição & IA
   const [audioTranscription, setAudioTranscription] = useState("");
@@ -156,17 +150,14 @@ export default function RegistroTreinoClientPage() {
   const [isProcessingImages, setIsProcessingImages] = useState(false);
 
   // SEÇÃO G: Próximo Foco
-  const [nextFocus, setNextFocus] = useState("Reduzir a reatividade da aproximação de novos cães na rua.");
+  const [nextFocus, setNextFocus] = useState("");
 
   // SEÇÃO H: Próximos Comandos
-  const [nextCommands, setNextCommands] = useState<string[]>(["Deita", "Fica"]);
+  const [nextCommands, setNextCommands] = useState<string[]>([]);
   const [newNextCommandName, setNewNextCommandName] = useState("");
 
   // SEÇÃO I: Tarefas de Casa (Tutor)
-  const [nextTasks, setNextTasks] = useState<string[]>([
-    "Caminhada estruturada diária por 15 minutos com guia frouxa",
-    "Fazer 5 treinos curtos de Place antes do almoço e janta"
-  ]);
+  const [nextTasks, setNextTasks] = useState<string[]>([]);
   const [newNextTaskText, setNewNextTaskText] = useState("");
 
   const selectedClient = useMemo(
@@ -212,23 +203,56 @@ export default function RegistroTreinoClientPage() {
     return Math.max(...list.map((session) => session.number)) + 1;
   }, [selectedDog, trainingSessions]);
 
-  // Simulador de Análise por IA
-  const generateMockAIAnalysis = () => {
+  // Análise por IA — chama o endpoint /api/ia/analyze-session com os dados reais
+  // que o adestrador acabou de preencher na sessão.
+  async function generateMockAIAnalysis() {
     if (!selectedDog) return;
     setIsGeneratingAI(true);
-    setTimeout(() => {
+    try {
+      const notes = [
+        description,
+        audioTranscription,
+        privateNotes,
+        ...activities.map((a) => `${a.name}: ${a.completed ? "feito" : "pendente"}. ${a.notes}`),
+        ...commands.map((c) => `${c.command} (${c.rating}/5): ${c.notes}`),
+      ].filter(Boolean).join("\n");
+
+      const response = await fetch("/api/ia/analyze-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: `draft-${Date.now()}`,
+          trainer_notes: notes || "Sessão sem notas detalhadas.",
+          dog_id: selectedDog.id,
+          video_tags: commands.map((c) => c.command.toLowerCase()),
+          duration_minutes: 60,
+          techniques_used: activities.map((a) => a.name),
+        }),
+      });
+
+      if (response.ok) {
+        const payload = await response.json();
+        const analysis = payload?.analysis;
+        if (analysis) {
+          setAiSummary(analysis.summary_for_tutor || "");
+          if (analysis.next_steps?.[0]) setNextFocus(analysis.next_steps[0]);
+          if (Array.isArray(analysis.recommended_exercises) && analysis.recommended_exercises.length > 0) {
+            setNextTasks(analysis.recommended_exercises);
+          }
+          const lowRated = commands.filter((c) => c.rating <= 3).map((c) => c.command);
+          if (lowRated.length > 0) setNextCommands(lowRated);
+          setAiApproved(false);
+          setExpandedSection("E");
+          return;
+        }
+      }
+      setAiSummary("Não foi possível gerar a análise agora. Preencha mais detalhes na descrição e tente novamente.");
+    } catch {
+      setAiSummary("Falha ao consultar a IA. Verifique sua conexão e tente novamente.");
+    } finally {
       setIsGeneratingAI(false);
-      setAiSummary(`Excelente evolução de ${selectedDog.name} no treino estruturado! Demonstrou domínio da caminhada estruturada. O foco em place está consolidado sob estímulos moderados, necessitando continuar a dessensibilização contra sons urbanos de motos.`);
-      setNextFocus("Reforçar a obediência e desvio de atenção em ambientes externos sob maiores distrações.");
-      setNextCommands(["Fica", "Junto"]);
-      setNextTasks([
-        `Treinar comandos de foco em Place por 10 min com ${selectedDog.name}`,
-        "Praticar desvio de olhar durante passeios perto de ruas movimentadas"
-      ]);
-      setAiApproved(true);
-      setExpandedSection("E"); // Mantém na seção de IA para visualização e aprovação
-    }, 2000);
-  };
+    }
+  }
 
   // Funções Auxiliares SEÇÃO A
   const addActivity = () => {

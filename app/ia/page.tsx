@@ -26,7 +26,7 @@ export default function IaPage() {
   const [reminder, setReminder] = useState("");
   const [reminderSaved, setReminderSaved] = useState("");
   const [suggestion, setSuggestion] = useState("");
-  const [trainingNeed, setTrainingNeed] = useState("Treinamento de guia para cão que puxa na rua e perde foco com distrações.");
+  const [trainingNeed, setTrainingNeed] = useState("");
 
   const selectedClient = useMemo(
     () => clients.find((client) => client.id === selectedClientId) ?? clients[0],
