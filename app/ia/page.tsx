@@ -1,11 +1,40 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import {
+  IconArrowRight,
+  IconChevronDown,
+  IconSparkle,
+  IconUser,
+} from "@/components/icons";
 import { useAppStore } from "@/lib/app-store";
 
-type Tab = "sugestao" | "resumo";
+type ChatTurn = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: number;
+};
+
+const QUICK_PROMPTS = [
+  { id: "plano", label: "Sugerir plano da próxima aula" },
+  { id: "ansiedade", label: "Como trabalhar ansiedade?" },
+  { id: "recall", label: "Recall não funciona, e agora?" },
+  { id: "latido", label: "Latido excessivo — como tratar?" },
+  { id: "socializacao", label: "Janela de socialização" },
+  { id: "analise", label: "Analisar esta sessão" },
+];
+
+const PROMPT_TEXTS: Record<string, string> = {
+  plano: "Sugira o plano da próxima aula considerando o contexto.",
+  ansiedade: "Como trabalhar ansiedade de separação?",
+  recall: "O recall não está funcionando. O que fazer?",
+  latido: "Latido excessivo está incomodando o tutor. Como tratar?",
+  socializacao: "Quero trabalhar socialização. Por onde começar?",
+  analise: "Analise esta sessão e me dê próximos passos.",
+};
 
 function parseBrazilianDate(date: string): number {
   const [day, month, year] = date.split("/").map(Number);
@@ -13,28 +42,36 @@ function parseBrazilianDate(date: string): number {
   return new Date(year, month - 1, day).getTime();
 }
 
+function nowId(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function formatTime(ts: number): string {
+  const d = new Date(ts);
+  return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
 export default function IaPage() {
   const clients = useAppStore((state) => state.clients);
   const sessions = useAppStore((state) => state.trainingSessions);
 
-  const [tab, setTab] = useState<Tab>("sugestao");
   const [selectedClientId, setSelectedClientId] = useState(clients[0]?.id ?? "");
   const [selectedDogId, setSelectedDogId] = useState(clients[0]?.dogs[0]?.id ?? "");
-  const [transcript, setTranscript] = useState("");
-  const [summary, setSummary] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [reminder, setReminder] = useState("");
-  const [reminderSaved, setReminderSaved] = useState("");
-  const [suggestion, setSuggestion] = useState("");
-  const [trainingNeed, setTrainingNeed] = useState("");
+
+  const [messages, setMessages] = useState<ChatTurn[]>([]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
   const selectedClient = useMemo(
-    () => clients.find((client) => client.id === selectedClientId) ?? clients[0],
+    () => clients.find((c) => c.id === selectedClientId) ?? clients[0],
     [clients, selectedClientId],
   );
-
   const selectedDog = useMemo(
-    () => selectedClient?.dogs.find((dog) => dog.id === selectedDogId) ?? selectedClient?.dogs[0],
+    () => selectedClient?.dogs.find((d) => d.id === selectedDogId) ?? selectedClient?.dogs[0],
     [selectedClient, selectedDogId],
   );
 
@@ -42,269 +79,392 @@ export default function IaPage() {
     if (!selectedDog) return [];
     const fourWeeksAgo = Date.now() - 4 * 7 * 24 * 60 * 60 * 1000;
     return sessions
-      .filter((session) => session.dogId === selectedDog.id || session.dogName === selectedDog.name)
-      .map((session) => ({ ...session, ts: parseBrazilianDate(session.date) }))
-      .filter((session) => session.ts >= fourWeeksAgo)
+      .filter((s) => s.dogId === selectedDog.id || s.dogName === selectedDog.name)
+      .map((s) => ({ ...s, ts: parseBrazilianDate(s.date) }))
+      .filter((s) => s.ts >= fourWeeksAgo)
       .sort((a, b) => b.ts - a.ts);
   }, [sessions, selectedDog]);
 
-  function handleFakeTranscribe() {
-    setIsRecording(true);
-    window.setTimeout(() => {
-      setIsRecording(false);
-      setTranscript(
-        "Hoje treinamos comando 'senta' e 'fica' com reforço positivo. O cão respondeu bem após 5 repetições. Apresentou ansiedade quando outro cão passou na rua, mas conseguimos redirecionar a atenção.",
-      );
-    }, 1200);
+  const lastSessionSummary = dogTimeline[0]?.notes?.[0]?.comment ?? "";
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
+
+  function autoResize() {
+    const el = composerRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(160, el.scrollHeight)}px`;
   }
 
-  function handleGenerateSummary() {
-    const base = transcript.trim();
-    if (!base) {
-      setSummary("Grave ou cole a transcrição para gerar o resumo.");
-      return;
+  async function send(rawText: string) {
+    const text = rawText.trim();
+    if (!text || busy) return;
+
+    const userMsg: ChatTurn = {
+      id: nowId(),
+      role: "user",
+      content: text,
+      timestamp: Date.now(),
+    };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setBusy(true);
+
+    try {
+      const response = await fetch("/api/ia/session-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          context: {
+            dogName: selectedDog?.name,
+            dogBreed: selectedDog?.breed,
+            sessionDescription: lastSessionSummary,
+            commandsWorked: [],
+          },
+          history: messages.map((m) => ({ role: m.role, content: m.content })),
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || "Falha");
+
+      const aiMsg: ChatTurn = {
+        id: nowId(),
+        role: "assistant",
+        content: data.response || "Sem resposta.",
+        timestamp: Date.now(),
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: nowId(),
+          role: "assistant",
+          content:
+            err instanceof Error
+              ? `Não foi possível responder agora — ${err.message}`
+              : "Não foi possível responder agora.",
+          timestamp: Date.now(),
+        },
+      ]);
+    } finally {
+      setBusy(false);
+      composerRef.current?.focus();
     }
-    const sentences = base.split(/(?<=[.!?])\s+/).slice(0, 3).join(" ");
-    setSummary(`Resumo da aula: ${sentences}`);
   }
 
-  function handleSaveReminder() {
-    if (!reminder.trim() || !selectedDog) return;
-    setReminderSaved(
-      `Lembrete salvo para ${selectedDog.name}: "${reminder.trim()}". Você verá ao iniciar a próxima aula.`,
-    );
-    window.setTimeout(() => setReminderSaved(""), 4000);
-    setReminder("");
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    send(input);
   }
 
-  function handleSuggestNextTraining() {
-    if (!selectedDog) return;
-    const focuses = selectedDog.trainingTypes?.length ? selectedDog.trainingTypes : ["Obediência básica"];
-    const last = dogTimeline[0];
-    const baseLine = last
-      ? `Última sessão (${last.date}): ${last.title}.`
-      : "Sem sessões recentes registradas para este cão.";
-    const need = trainingNeed.trim() || `Montar progressão para ${focuses.join(" + ")}.`;
-
-    setSuggestion(
-      [
-        `Plano sugerido para ${selectedDog.name} (${selectedDog.breed})`,
-        `Necessidade informada: ${need}`,
-        baseLine,
-        "",
-        "1. Diagnóstico rápido (3 a 5 min)",
-        "Observe nível de energia, resposta ao nome, contato visual e reação ao ambiente antes de exigir desempenho.",
-        "",
-        "2. Aquecimento de foco (5 min)",
-        `Reforce ${focuses[0]} em ambiente com pouca distração. Use recompensa alta e sessões curtas para criar engajamento.`,
-        "",
-        "3. Bloco principal de treino (12 a 18 min)",
-        need.toLowerCase().includes("guia")
-          ? "Para guia: trabalhe andar ao lado, recompensa na posição correta, mudanças de direção, paradas com contato visual e retomada calma. Aumente distrações só depois de resposta consistente."
-          : `Trabalhe ${focuses.slice(0, 2).join(" + ") || "obediência"} em progressões pequenas, aumentando distância, duração ou distração uma variável por vez.`,
-        "",
-        "4. Tarefa para o tutor",
-        "Passe uma prática de 5 minutos por dia, com critério simples de sucesso e sem correções confusas.",
-        "",
-        "5. Atenção profissional",
-        "Ajuste o plano se o cão demonstrar medo, excesso de excitação, dor, agressividade ou queda brusca de motivação.",
-      ].join("\n"),
-    );
+  function handleNewChat() {
+    setMessages([]);
+    setInput("");
+    composerRef.current?.focus();
   }
 
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-md px-3 pb-10 pt-3 sm:max-w-xl">
-        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-          <header>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Assistente</p>
-            <h1 className="text-2xl font-semibold text-[var(--foreground)]">Assistente de IA para treinos</h1>
-            <p className="mt-1 text-xs text-[var(--muted)]">
-              Descreva o caso do cão e receba uma sugestão estruturada de treino para usar como ponto de partida profissional.
-            </p>
+      <main className="flex h-[calc(100dvh-56px)] w-full">
+        {/* Sidebar de contexto (desktop) */}
+        <aside className="hidden h-full w-72 flex-shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface-2)]/40 lg:flex">
+          <header className="border-b border-[var(--border)] px-4 py-3">
+            <p className="text-eyebrow">Assistente IA</p>
+            <h1 className="text-[15px] font-semibold text-[var(--foreground)]">Conversas</h1>
           </header>
 
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <label className="grid gap-1">
-              <span className="text-[11px] font-medium text-[var(--muted)]">Cliente</span>
-              <select
-                value={selectedClient?.id ?? ""}
-                onChange={(event) => {
-                  setSelectedClientId(event.target.value);
-                  const next = clients.find((c) => c.id === event.target.value);
-                  setSelectedDogId(next?.dogs[0]?.id ?? "");
-                }}
-                className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-              >
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>{client.name}</option>
-                ))}
-              </select>
-            </label>
-            <label className="grid gap-1">
-              <span className="text-[11px] font-medium text-[var(--muted)]">Cão</span>
-              <select
-                value={selectedDog?.id ?? ""}
-                onChange={(event) => setSelectedDogId(event.target.value)}
-                className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-              >
-                {(selectedClient?.dogs ?? []).map((dog) => (
-                  <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
-                ))}
-              </select>
-            </label>
-          </div>
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="mx-3 mt-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--surface)] text-[12.5px] font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--surface-2)]"
+          >
+            + Nova conversa
+          </button>
 
-          <div className="mt-3 inline-flex rounded-full border border-[var(--border)] bg-white p-0.5 text-[11px] font-semibold">
-            <button
-              type="button"
-              onClick={() => setTab("resumo")}
-              className={`rounded-full px-3 py-1.5 transition ${tab === "resumo" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"}`}
-            >
-              Resumir aula
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("sugestao")}
-              className={`rounded-full px-3 py-1.5 transition ${tab === "sugestao" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"}`}
-            >
-              Plano de treino
-            </button>
-          </div>
-
-          {tab === "resumo" ? (
-            <section className="mt-4 grid gap-3">
-              <article className="rounded-md border border-[var(--border)] bg-white p-3">
-                <p className="text-sm font-semibold text-[var(--foreground)]">1. Capture o áudio</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">
-                  Grave um áudio enquanto narra a sessão. A IA vai transcrever e gerar o resumo.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={handleFakeTranscribe}
-                    disabled={isRecording}
-                    className="pc-primary-action rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
+          <div className="mt-4 space-y-3 overflow-y-auto px-3 pb-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Contexto</p>
+              <div className="mt-2 space-y-2">
+                <label className="block">
+                  <span className="text-[11px] text-[var(--muted)]">Cliente</span>
+                  <select
+                    value={selectedClient?.id ?? ""}
+                    onChange={(e) => {
+                      setSelectedClientId(e.target.value);
+                      const next = clients.find((c) => c.id === e.target.value);
+                      setSelectedDogId(next?.dogs[0]?.id ?? "");
+                    }}
+                    className="input-field mt-1 h-8 text-[12.5px]"
                   >
-                    {isRecording ? "Transcrevendo..." : "Gravar / Transcrever áudio"}
-                  </button>
-                </div>
-                <textarea
-                  value={transcript}
-                  onChange={(event) => setTranscript(event.target.value)}
-                  placeholder="Transcrição da aula aparecerá aqui..."
-                  rows={5}
-                  className="mt-3 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-              </article>
-
-              <article className="rounded-md border border-[var(--border)] bg-white p-3">
-                <p className="text-sm font-semibold text-[var(--foreground)]">2. Resumo gerado</p>
-                <button
-                  type="button"
-                  onClick={handleGenerateSummary}
-                  className="mt-2 rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--foreground)]"
-                >
-                  Gerar resumo
-                </button>
-                {summary ? (
-                  <p className="mt-3 whitespace-pre-line rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-xs text-[#245d84]">
-                    {summary}
-                  </p>
+                    <option value="">Sem contexto</option>
+                    {clients.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {selectedClient ? (
+                  <label className="block">
+                    <span className="text-[11px] text-[var(--muted)]">Cão</span>
+                    <select
+                      value={selectedDog?.id ?? ""}
+                      onChange={(e) => setSelectedDogId(e.target.value)}
+                      className="input-field mt-1 h-8 text-[12.5px]"
+                    >
+                      {(selectedClient?.dogs ?? []).map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name} · {d.breed || "Sem raça"}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 ) : null}
-              </article>
-            </section>
-          ) : (
-            <section className="mt-4 grid gap-3">
-              <article className="rounded-md border border-[var(--border)] bg-white p-3">
-                <p className="text-sm font-semibold text-[var(--foreground)]">1. Explique o que você quer treinar</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">
-                  Escreva como falaria no atendimento: raça, comportamento, objetivo e dificuldade atual.
-                </p>
-                <textarea
-                  value={trainingNeed}
-                  onChange={(event) => setTrainingNeed(event.target.value)}
-                  rows={4}
-                  placeholder="Ex.: Pastor Alemão puxa na guia, ignora o tutor na rua e reage quando vê outro cão. Quero progressão para passeio mais calmo."
-                  className="mt-3 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                />
-              </article>
+              </div>
+            </div>
 
-              <article className="rounded-md border border-[var(--border)] bg-white p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-semibold text-[var(--foreground)]">2. Lembrete da próxima aula</p>
-                    <p className="mt-1 text-xs text-[var(--muted)]">
-                      Anote para você mesmo onde parou. Aparecerá ao abrir a próxima sessão deste cão.
-                    </p>
-                  </div>
-                  <span aria-hidden className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100 text-amber-700" title="Lembrete">
-                    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-                      <path d="M12 3a5 5 0 0 0-5 5v3.5L5.5 14h13L17 11.5V8a5 5 0 0 0-5-5Z" stroke="currentColor" strokeWidth="1.7" />
-                      <path d="M9 18a3 3 0 0 0 6 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                    </svg>
-                  </span>
-                </div>
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                  <input
-                    value={reminder}
-                    onChange={(event) => setReminder(event.target.value)}
-                    placeholder="Ex.: continuar place com 2m de distância"
-                    className="flex-1 rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSaveReminder}
-                    className="pc-primary-action rounded-full px-3 py-1.5 text-xs font-semibold"
-                  >
-                    Salvar lembrete
-                  </button>
-                </div>
-                {reminderSaved ? (
-                  <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800">{reminderSaved}</p>
-                ) : null}
-              </article>
-
-              <article className="rounded-md border border-[var(--border)] bg-white p-3">
-                <p className="text-sm font-semibold text-[var(--foreground)]">3. Linha do tempo (últimas 4 semanas)</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">
-                  Visão cronológica dos treinos para entender onde parou com {selectedDog?.name ?? "este cão"}.
+            {dogTimeline.length > 0 ? (
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">
+                  Sessões recentes
                 </p>
-                <ol className="mt-3 space-y-2 border-l border-[var(--border)] pl-3">
-                  {dogTimeline.length === 0 ? (
-                    <li className="text-xs text-[var(--muted)]">Sem sessões registradas no período.</li>
-                  ) : null}
-                  {dogTimeline.map((session) => (
-                    <li key={session.id} className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
-                      <p className="text-xs font-semibold text-[var(--foreground)]">{session.date} • {session.title}</p>
-                      {session.notes?.[0]?.comment ? (
-                        <p className="mt-1 line-clamp-2 text-[11px] text-[var(--muted)]">{session.notes[0].comment}</p>
-                      ) : null}
+                <ul className="mt-2 space-y-1.5">
+                  {dogTimeline.slice(0, 5).map((session) => (
+                    <li
+                      key={session.id}
+                      className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5"
+                    >
+                      <p className="truncate text-[11.5px] font-medium text-[var(--foreground)]">{session.title}</p>
+                      <p className="text-[10px] text-[var(--muted)]">{session.date}</p>
                     </li>
                   ))}
-                </ol>
-              </article>
+                </ul>
+              </div>
+            ) : null}
 
-              <article className="rounded-md border border-[var(--border)] bg-white p-3">
-                <p className="text-sm font-semibold text-[var(--foreground)]">4. Sugestão de plano de treino</p>
-                <p className="mt-1 text-xs text-[var(--muted)]">
-                  A IA monta um roteiro técnico inicial. O adestrador decide o que aplicar e adapta ao cão real.
+            <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
+              <p className="text-[11px] font-medium text-[var(--foreground)]">
+                Motor heurístico determinístico
+              </p>
+              <p className="mt-0.5 text-[10.5px] leading-snug text-[var(--muted)]">
+                Sem custo de API. Quando você quiser plugar IA real (Gemini / Claude / OpenAI), é só trocar a função
+                <code className="mx-0.5 rounded bg-[var(--surface-2)] px-1 text-[10px]">generateResponse</code>.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        {/* Conversa principal */}
+        <section className="flex flex-1 flex-col overflow-hidden">
+          {/* Header da conversa */}
+          <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 lg:px-6">
+            <div className="flex items-center gap-2 min-w-0">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen((v) => !v)}
+                aria-label="Contexto"
+                className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] text-[var(--muted)] lg:hidden"
+              >
+                <IconChevronDown className={`h-4 w-4 transition-transform ${sidebarOpen ? "rotate-180" : ""}`} />
+              </button>
+              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--accent)] text-white">
+                <IconSparkle className="h-3.5 w-3.5" />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[13.5px] font-semibold text-[var(--foreground)]">
+                  Assistente Adestro
                 </p>
-                <button
-                  type="button"
-                  onClick={handleSuggestNextTraining}
-                  className="mt-2 rounded-full border border-[#145a82] bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white"
-                >
-                  Gerar plano sugerido
-                </button>
-                {suggestion ? (
-                  <pre className="mt-3 whitespace-pre-wrap rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 font-sans text-xs text-[#245d84]">
-                    {suggestion}
-                  </pre>
+                <p className="truncate text-[11px] text-[var(--muted)]">
+                  {selectedDog
+                    ? `${selectedDog.name} · ${selectedDog.breed || "Sem raça"} · ${selectedClient?.name ?? ""}`
+                    : "Pergunte sobre planos, comportamentos e técnicas"}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleNewChat}
+              className="btn-ghost text-[12px]"
+            >
+              Nova conversa
+            </button>
+          </header>
+
+          {/* Drawer mobile de contexto */}
+          {sidebarOpen ? (
+            <div className="border-b border-[var(--border)] bg-[var(--surface-2)]/30 px-4 py-3 lg:hidden">
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block">
+                  <span className="text-[11px] text-[var(--muted)]">Cliente</span>
+                  <select
+                    value={selectedClient?.id ?? ""}
+                    onChange={(e) => {
+                      setSelectedClientId(e.target.value);
+                      const next = clients.find((c) => c.id === e.target.value);
+                      setSelectedDogId(next?.dogs[0]?.id ?? "");
+                    }}
+                    className="input-field mt-1 h-9 text-[13px]"
+                  >
+                    <option value="">Sem contexto</option>
+                    {clients.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </label>
+                {selectedClient ? (
+                  <label className="block">
+                    <span className="text-[11px] text-[var(--muted)]">Cão</span>
+                    <select
+                      value={selectedDog?.id ?? ""}
+                      onChange={(e) => setSelectedDogId(e.target.value)}
+                      className="input-field mt-1 h-9 text-[13px]"
+                    >
+                      {(selectedClient?.dogs ?? []).map((d) => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                      ))}
+                    </select>
+                  </label>
                 ) : null}
-              </article>
-            </section>
-          )}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Lista de mensagens */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 lg:px-6">
+            {messages.length === 0 ? (
+              <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center text-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent)] text-white">
+                  <IconSparkle className="h-5 w-5" />
+                </span>
+                <h2 className="mt-4 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
+                  Como posso ajudar com {selectedDog?.name || "o treino"}?
+                </h2>
+                <p className="mt-1.5 max-w-md text-[13px] text-[var(--muted)]">
+                  Pergunte sobre técnicas, planos de progressão, comportamentos específicos ou análise de sessão.
+                  Use os atalhos abaixo ou escreva sua dúvida.
+                </p>
+                <div className="mt-6 grid w-full max-w-2xl grid-cols-2 gap-2 sm:grid-cols-3">
+                  {QUICK_PROMPTS.map((prompt) => (
+                    <button
+                      key={prompt.id}
+                      type="button"
+                      onClick={() => send(PROMPT_TEXTS[prompt.id])}
+                      className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-left text-[12.5px] font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--surface-2)]"
+                    >
+                      {prompt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="mx-auto max-w-2xl space-y-6">
+                {messages.map((msg) => (
+                  <article key={msg.id} className="flex gap-3">
+                    <div className="flex-shrink-0">
+                      <span
+                        className={`flex h-7 w-7 items-center justify-center rounded-md text-white ${
+                          msg.role === "user"
+                            ? "bg-[var(--surface-3)] text-[var(--foreground)]"
+                            : "bg-[var(--accent)]"
+                        }`}
+                      >
+                        {msg.role === "user" ? (
+                          <IconUser className="h-3.5 w-3.5" />
+                        ) : (
+                          <IconSparkle className="h-3.5 w-3.5" />
+                        )}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-[12.5px] font-semibold text-[var(--foreground)]">
+                          {msg.role === "user" ? "Você" : "Assistente"}
+                        </p>
+                        <span className="text-[10.5px] text-[var(--muted)]">{formatTime(msg.timestamp)}</span>
+                      </div>
+                      <div className="mt-1 whitespace-pre-wrap text-[13.5px] leading-relaxed text-[var(--foreground)]">
+                        {msg.content}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+                {busy ? (
+                  <article className="flex gap-3">
+                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-[var(--accent)] text-white">
+                      <IconSparkle className="h-3.5 w-3.5 animate-pulse" />
+                    </span>
+                    <div className="flex h-7 items-center gap-1.5 text-[12.5px] text-[var(--muted)]">
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--muted)]" style={{ animationDelay: "0ms" }} />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--muted)]" style={{ animationDelay: "150ms" }} />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--muted)]" style={{ animationDelay: "300ms" }} />
+                    </div>
+                  </article>
+                ) : null}
+              </div>
+            )}
+          </div>
+
+          {/* Composer */}
+          <footer className="border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3 lg:px-6">
+            <form onSubmit={handleSubmit} className="mx-auto max-w-2xl">
+              {messages.length > 0 ? (
+                <div className="mb-2 flex flex-wrap gap-1.5">
+                  {QUICK_PROMPTS.slice(0, 3).map((prompt) => (
+                    <button
+                      key={prompt.id}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => send(PROMPT_TEXTS[prompt.id])}
+                      className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[11px] font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--foreground)] disabled:opacity-50"
+                    >
+                      {prompt.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <div className="relative flex items-end gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 focus-within:border-[var(--accent)]">
+                <textarea
+                  ref={composerRef}
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    autoResize();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      send(input);
+                    }
+                  }}
+                  placeholder={
+                    selectedDog
+                      ? `Pergunte sobre ${selectedDog.name}…`
+                      : "Pergunte sobre técnicas, comportamento, plano de aula…"
+                  }
+                  rows={1}
+                  maxLength={1000}
+                  disabled={busy}
+                  className="flex-1 resize-none bg-transparent text-[14px] outline-none placeholder:text-[var(--muted)]"
+                />
+                <button
+                  type="submit"
+                  disabled={busy || !input.trim()}
+                  className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--accent)] text-white transition-opacity disabled:opacity-30"
+                  aria-label="Enviar"
+                >
+                  <IconArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="mt-1.5 text-center text-[10.5px] text-[var(--muted)]">
+                <kbd className="kbd">Enter</kbd> envia · <kbd className="kbd">Shift+Enter</kbd> nova linha
+              </p>
+            </form>
+          </footer>
         </section>
       </main>
     </AuthGuard>
