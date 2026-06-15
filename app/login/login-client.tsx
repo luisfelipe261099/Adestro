@@ -3,24 +3,39 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
+import { getSession, signIn, useSession } from "next-auth/react";
+
+function defaultRouteForRole(role?: string) {
+  switch ((role ?? "").toLowerCase()) {
+    case "admin":
+      return "/admin";
+    case "client":
+      return "/portal";
+    case "trainer":
+    default:
+      return "/dashboard";
+  }
+}
 
 export function LoginClient() {
   const params = useSearchParams();
   const router = useRouter();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const next = params.get("next") ?? "/dashboard";
-  const safNext = next.startsWith("/") ? next : "/dashboard";
+  const explicitNext = params.get("next");
+  const safeExplicitNext = explicitNext?.startsWith("/") ? explicitNext : null;
 
   useEffect(() => {
-    if (status === "authenticated") router.replace(safNext);
-  }, [status, router, safNext]);
+    if (status === "authenticated") {
+      const role = (session?.user as { role?: string } | undefined)?.role;
+      router.replace(safeExplicitNext ?? defaultRouteForRole(role));
+    }
+  }, [status, session, router, safeExplicitNext]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -39,7 +54,9 @@ export function LoginClient() {
       return;
     }
 
-    router.replace(safNext);
+    const freshSession = await getSession();
+    const role = (freshSession?.user as { role?: string } | undefined)?.role;
+    router.replace(safeExplicitNext ?? defaultRouteForRole(role));
   }
 
   return (
