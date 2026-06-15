@@ -454,6 +454,26 @@ function isDemoEmail(email: string): boolean {
   );
 }
 
+/**
+ * fetch com retry para absorver o "cold start" do TiDB Cloud serverless (free):
+ * o cluster hiberna quando ocioso e as primeiras requisições retornam 500
+ * ("Can't reach database server"). Tentamos novamente com backoff antes de desistir.
+ */
+async function fetchWithRetry(input: RequestInfo | URL, init?: RequestInit, attempts = 3): Promise<Response> {
+  let lastError: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(input, init);
+      if (res.status < 500 || i === attempts - 1) return res;
+    } catch (err) {
+      lastError = err;
+      if (i === attempts - 1) throw err;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 700 * (i + 1)));
+  }
+  throw lastError ?? new Error("fetchWithRetry: tentativas esgotadas");
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -861,14 +881,14 @@ export const useAppStore = create<AppState>()(
 
         try {
           const [meRes, clientsRes, sessionsRes, eventsRes, paymentsRes, tasksRes, feedbacksRes, renewalsRes] = await Promise.all([
-            fetch("/api/me", { cache: "no-store" }),
-            fetch("/api/clients", { cache: "no-store" }),
-            fetch("/api/sessions", { cache: "no-store" }),
-            fetch("/api/events", { cache: "no-store" }),
-            fetch("/api/payments", { cache: "no-store" }),
-            fetch("/api/portal-tasks", { cache: "no-store" }),
-            fetch("/api/portal-feedbacks", { cache: "no-store" }),
-            fetch("/api/trainer/renewals", { cache: "no-store" }),
+            fetchWithRetry("/api/me", { cache: "no-store" }),
+            fetchWithRetry("/api/clients", { cache: "no-store" }),
+            fetchWithRetry("/api/sessions", { cache: "no-store" }),
+            fetchWithRetry("/api/events", { cache: "no-store" }),
+            fetchWithRetry("/api/payments", { cache: "no-store" }),
+            fetchWithRetry("/api/portal-tasks", { cache: "no-store" }),
+            fetchWithRetry("/api/portal-feedbacks", { cache: "no-store" }),
+            fetchWithRetry("/api/trainer/renewals", { cache: "no-store" }),
           ]);
 
           if (!clientsRes.ok || !sessionsRes.ok || !eventsRes.ok || !paymentsRes.ok) {

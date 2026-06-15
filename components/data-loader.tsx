@@ -11,9 +11,10 @@ import { useAppStore } from "@/lib/app-store";
  */
 export function DataLoader() {
   const { data: session, status } = useSession();
-  const loadFromDB = useAppStore((state) => state.loadFromDB);
-  const login      = useAppStore((state) => state.login);
-  const loaded     = useRef(false);
+  const loadFromDB       = useAppStore((state) => state.loadFromDB);
+  const login            = useAppStore((state) => state.login);
+  const setDataLoadError = useAppStore((state) => state.setDataLoadError);
+  const loaded           = useRef(false);
 
   useEffect(() => {
     if (status !== "authenticated" || !session?.user) return;
@@ -25,9 +26,17 @@ export function DataLoader() {
     const role  = ((session.user as { role?: string }).role ?? "trainer").toLowerCase() as "trainer" | "admin" | "client";
     login(email, role);
 
-    // Carrega dados reais do banco
-    loadFromDB();
-  }, [status, session, loadFromDB, login]);
+    // Apenas adestradores possuem dados no store principal (clientes, sessões,
+    // agenda, pagamentos). Admin e cliente não usam essas APIs — para eles, o
+    // /api/clients, /api/sessions etc. retornam 403 e disparariam o banner de
+    // "não foi possível sincronizar" sem motivo. Por isso só sincronizamos para trainer.
+    if (role === "trainer") {
+      loadFromDB();
+    } else {
+      // Garante que nenhum erro de sincronização antigo continue visível.
+      setDataLoadError(null);
+    }
+  }, [status, session, loadFromDB, login, setDataLoadError]);
 
   return null;
 }
