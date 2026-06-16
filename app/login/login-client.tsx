@@ -5,17 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSession, signIn, useSession } from "next-auth/react";
 
-function defaultRouteForRole(role?: string) {
-  switch ((role ?? "").toLowerCase()) {
-    case "admin":
-      return "/admin";
-    case "client":
-      return "/portal";
-    case "trainer":
-    default:
-      return "/dashboard";
-  }
-}
+import { homeRouteForRole } from "@/lib/routes";
 
 export function LoginClient() {
   const params = useSearchParams();
@@ -33,7 +23,7 @@ export function LoginClient() {
   useEffect(() => {
     if (status === "authenticated") {
       const role = (session?.user as { role?: string } | undefined)?.role;
-      router.replace(safeExplicitNext ?? defaultRouteForRole(role));
+      router.replace(safeExplicitNext ?? homeRouteForRole(role));
     }
   }, [status, session, router, safeExplicitNext]);
 
@@ -56,7 +46,13 @@ export function LoginClient() {
 
     const freshSession = await getSession();
     const role = (freshSession?.user as { role?: string } | undefined)?.role;
-    router.replace(safeExplicitNext ?? defaultRouteForRole(role));
+
+    // Navegação "dura" (full reload) de propósito. Após signIn(redirect:false),
+    // o estado do SessionProvider pode ainda não ter propagado a sessão; uma
+    // navegação SPA (router.replace) faria o AuthGuard da página de destino ler
+    // status "não autenticado" por um instante e exibir "sem permissão". O reload
+    // garante que o destino já inicialize com o cookie de sessão presente.
+    window.location.replace(safeExplicitNext ?? homeRouteForRole(role));
   }
 
   return (
