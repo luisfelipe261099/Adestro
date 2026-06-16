@@ -10,7 +10,7 @@ import { homeRouteForRole } from "@/lib/routes";
 export function LoginClient() {
   const params = useSearchParams();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,15 +44,16 @@ export function LoginClient() {
       return;
     }
 
-    const freshSession = await getSession();
+    // Atualiza o contexto do SessionProvider ANTES de navegar. Sem isso, a
+    // página de destino lia status "não autenticado" por um instante e o
+    // AuthGuard exibia "sem permissão" (corrida). update() refaz o fetch da
+    // sessão e atualiza o contexto; getSession() fica só como fallback do role.
+    // Navegação SPA (router.replace) de propósito: a navegação "dura"
+    // (window.location) passa pelo Service Worker, cujo fallback de navegação é
+    // /dashboard — o que derruba admin/cliente numa página sem permissão.
+    const freshSession = (await update()) ?? (await getSession());
     const role = (freshSession?.user as { role?: string } | undefined)?.role;
-
-    // Navegação "dura" (full reload) de propósito. Após signIn(redirect:false),
-    // o estado do SessionProvider pode ainda não ter propagado a sessão; uma
-    // navegação SPA (router.replace) faria o AuthGuard da página de destino ler
-    // status "não autenticado" por um instante e exibir "sem permissão". O reload
-    // garante que o destino já inicialize com o cookie de sessão presente.
-    window.location.replace(safeExplicitNext ?? homeRouteForRole(role));
+    router.replace(safeExplicitNext ?? homeRouteForRole(role));
   }
 
   return (
