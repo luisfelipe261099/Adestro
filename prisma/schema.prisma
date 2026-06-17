@@ -124,6 +124,7 @@ model Trainer {
   servicePackages  ServicePackage[]
   clientContracts  ClientContract[]
   clientInvoices   ClientInvoice[]
+  evolutionReports EvolutionReport[]
 
   @@index([userId])
 }
@@ -299,6 +300,7 @@ model Dog {
   dogSessions DogTrainingSession[]
   calendarEvents CalendarEvent[]
   clientContracts ClientContract[]
+  evolutionReports EvolutionReport[]
 
   @@index([clientId])
 }
@@ -560,4 +562,22 @@ model ClientGamification {
   updatedAt               DateTime @updatedAt
 
   @@index([trainerId])
+}
+
+// ─── Relatório de Evolução (módulo 5 - ciclo de vida do relatório) ──────────
+model EvolutionReport {
+  id          String   @id @default(cuid())
+  trainerId   String
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  dogId       String
+  dog         Dog      @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  month       String   // rótulo do período (ex: "Junho de 2026")
+  status      String   @default("Rascunho") // Rascunho / Aguardando / Enviado
+  content     String   @db.LongText          // JSON do relatório gerado/editado
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([trainerId])
+  @@index([dogId])
 }
