@@ -2,10 +2,15 @@
 // Estratégia: stale-while-revalidate para assets, network-first para HTML,
 // cache-first para imagens. Inclui handler de push para notificações Web Push.
 
-const CACHE_VERSION = "adestro-v3";
+const CACHE_VERSION = "adestro-v4";
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 const IMAGE_CACHE = `${CACHE_VERSION}-images`;
-const APP_SHELL = ["/dashboard", "/agenda", "/clientes", "/financeiro", "/icon.svg", "/manifest.webmanifest"];
+// App é multi-perfil: NÃO pré-cachear páginas de um perfil só (ex.: /dashboard é
+// só-trainer). Pré-cacheamos apenas assets neutros + a página neutra de offline,
+// que é o fallback universal de navegação. Cada página de perfil é cacheada
+// sob demanda na primeira visita bem-sucedida (handler de navigate abaixo).
+const OFFLINE_FALLBACK = "/offline.html";
+const APP_SHELL = [OFFLINE_FALLBACK, "/icon.svg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -66,9 +71,13 @@ self.addEventListener("fetch", (event) => {
           return response;
         } catch {
           const cache = await caches.open(RUNTIME_CACHE);
+          // 1) A própria rota, se já foi visitada antes (cache por-URL).
           const cached = await cache.match(request);
           if (cached) return cached;
-          const fallback = await cache.match("/dashboard");
+          // 2) Fallback NEUTRO. Nunca cair numa página de perfil específico:
+          //    servir /dashboard aqui derrubava admin/cliente em "perfil sem
+          //    permissão" (guard role="trainer"). offline.html é seguro p/ todos.
+          const fallback = await cache.match(OFFLINE_FALLBACK);
           return fallback || Response.error();
         }
       })(),
