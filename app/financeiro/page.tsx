@@ -80,6 +80,23 @@ export default function FinanceiroPage() {
   const [selectedPackageId, setSelectedPackageId] = useState("");
   const [contractStartDate, setContractStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [contractNotes, setContractNotes] = useState("");
+  // Ajustes na venda — pré-preenchidos pelo pacote, mas editáveis por venda.
+  const [saleSessions, setSaleSessions] = useState(0);
+  const [saleAmount, setSaleAmount] = useState(0);
+  const [saleFractioned, setSaleFractioned] = useState(false);
+  const [saleFractionSessions, setSaleFractionSessions] = useState(1);
+
+  // Ao escolher um pacote, copia os valores dele para os campos editáveis.
+  function selectPackageForSale(pkgId: string) {
+    setSelectedPackageId(pkgId);
+    const pkg = packages.find((p) => p.id === pkgId);
+    if (pkg) {
+      setSaleSessions(pkg.sessionsCount);
+      setSaleAmount(pkg.amount);
+      setSaleFractioned(pkg.isFractioned);
+      setSaleFractionSessions(pkg.fractionSessions || 1);
+    }
+  }
 
   // Estado do Recibo
   const [receiptClient, setReceiptClient] = useState("");
@@ -175,10 +192,10 @@ export default function FinanceiroPage() {
           dogId: selectedDogId || undefined,
           packageId: selectedPackageId,
           name: pkg.name,
-          sessionsCount: pkg.sessionsCount,
-          amount: pkg.amount,
-          isFractioned: pkg.isFractioned,
-          fractionSessions: pkg.fractionSessions,
+          sessionsCount: saleSessions || pkg.sessionsCount,
+          amount: saleAmount || pkg.amount,
+          isFractioned: saleFractioned,
+          fractionSessions: saleFractioned ? (saleFractionSessions || 1) : 1,
           startDate: contractStartDate,
           notes: contractNotes,
         }),
@@ -429,7 +446,7 @@ export default function FinanceiroPage() {
                           Pacote de Serviço
                           <select
                             value={selectedPackageId}
-                            onChange={(e) => setSelectedPackageId(e.target.value)}
+                            onChange={(e) => selectPackageForSale(e.target.value)}
                             required
                             className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
                           >
@@ -451,6 +468,56 @@ export default function FinanceiroPage() {
                           />
                         </label>
                       </div>
+
+                      {selectedPackageId && (
+                        <div className="grid gap-2 rounded-md border border-dashed border-[var(--border)] bg-white/60 p-2.5">
+                          <p className="text-[10px] font-bold uppercase text-[var(--muted)]">Ajustes desta venda</p>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                              Nº de Sessões
+                              <input
+                                type="number"
+                                min={1}
+                                value={saleSessions}
+                                onChange={(e) => setSaleSessions(Number(e.target.value))}
+                                className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                              />
+                            </label>
+                            <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                              Valor Total (R$)
+                              <input
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                value={saleAmount}
+                                onChange={(e) => setSaleAmount(Number(e.target.value))}
+                                className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                              />
+                            </label>
+                          </div>
+                          <label className="flex items-center gap-2 text-[11px] text-[var(--muted)]">
+                            <input
+                              type="checkbox"
+                              checked={saleFractioned}
+                              onChange={(e) => setSaleFractioned(e.target.checked)}
+                              className="h-3.5 w-3.5"
+                            />
+                            Cobrança fracionada
+                          </label>
+                          {saleFractioned && (
+                            <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                              Cobrar a cada X sessões
+                              <input
+                                type="number"
+                                min={1}
+                                value={saleFractionSessions}
+                                onChange={(e) => setSaleFractionSessions(Number(e.target.value))}
+                                className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                              />
+                            </label>
+                          )}
+                        </div>
+                      )}
 
                       <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
                         Observações da Venda

@@ -177,17 +177,42 @@ export async function PATCH(request: Request) {
 
   const body = await request.json() as {
     id: string;
-    status: "Confirmado" | "Pendente" | "Aguardando" | "Recorrente" | "Cancelado";
+    status?: "Confirmado" | "Pendente" | "Aguardando" | "Recorrente" | "Cancelado";
+    day?: string;   // remarcação: nova data
+    time?: string;  // remarcação: novo horário
   };
 
-  const allowedStatuses = new Set(["Confirmado", "Pendente", "Aguardando", "Recorrente", "Cancelado"]);
-  if (!allowedStatuses.has(body.status)) {
-    return NextResponse.json({ error: "Status inválido" }, { status: 400 });
+  if (!body.id) {
+    return NextResponse.json({ error: "id é obrigatório" }, { status: 400 });
+  }
+
+  const data: { status?: string; day?: string; time?: string } = {};
+
+  if (body.status !== undefined) {
+    const allowedStatuses = new Set(["Confirmado", "Pendente", "Aguardando", "Recorrente", "Cancelado"]);
+    if (!allowedStatuses.has(body.status)) {
+      return NextResponse.json({ error: "Status inválido" }, { status: 400 });
+    }
+    data.status = body.status;
+  }
+
+  // Remarcar: aceita nova data e/ou horário. Ao remarcar, o evento volta a
+  // "Pendente" (aguardando nova confirmação do tutor), salvo status explícito.
+  if (body.day !== undefined && body.day.trim()) {
+    data.day = body.day.trim();
+    if (body.status === undefined) data.status = "Pendente";
+  }
+  if (body.time !== undefined && body.time.trim()) {
+    data.time = body.time.trim();
+  }
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: "Nada para atualizar" }, { status: 400 });
   }
 
   const updated = await prisma.calendarEvent.updateMany({
     where: { id: body.id, trainerId: trainer.id },
-    data: { status: body.status },
+    data,
   });
 
   return NextResponse.json({ ok: updated.count > 0 });

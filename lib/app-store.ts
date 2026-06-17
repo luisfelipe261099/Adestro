@@ -203,6 +203,7 @@ type AppState = {
   addPortalFeedback: (message: string, author?: PortalFeedback["author"], clientId?: string) => Promise<void>;
   setEventStatus: (eventId: string, status: SessionStatus) => Promise<boolean>;
   toggleEventStatus: (eventId: string) => void;
+  rescheduleEvent: (eventId: string, day: string, time: string) => Promise<boolean>;
   addCalendarEvent: (payload: {
     clientId?: string;
     dogId?: string;
@@ -742,6 +743,30 @@ export const useAppStore = create<AppState>()(
           const body = await response.json() as { ok?: boolean };
           if (body.ok === false) return false;
           return true;
+        } catch {
+          return false;
+        }
+      },
+      rescheduleEvent: async (eventId, day, time) => {
+        const currentEvent = get().calendarEvents.find((event) => event.id === eventId);
+        if (!currentEvent) return false;
+
+        // Optimistic: nova data/hora + volta a "Pendente" (reconfirmação do tutor).
+        set((state) => ({
+          calendarEvents: state.calendarEvents.map((event) =>
+            event.id === eventId ? { ...event, day, time, status: "Pendente" as SessionStatus } : event,
+          ),
+        }));
+
+        try {
+          const response = await fetch("/api/events", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: eventId, day, time }),
+          });
+          if (!response.ok) return false;
+          const body = (await response.json()) as { ok?: boolean };
+          return body.ok !== false;
         } catch {
           return false;
         }

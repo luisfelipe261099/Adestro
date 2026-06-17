@@ -189,6 +189,7 @@ export default function SchedulePage() {
   const events = useAppStore((state) => state.calendarEvents);
   const clients = useAppStore((state) => state.clients);
   const setEventStatus = useAppStore((state) => state.setEventStatus);
+  const rescheduleEvent = useAppStore((state) => state.rescheduleEvent);
   const addCalendarEvent = useAppStore((state) => state.addCalendarEvent);
 
   // States
@@ -199,6 +200,10 @@ export default function SchedulePage() {
   const [time, setTime] = useState("09:30");
   const [status, setStatus] = useState<EventStatus>("Pendente");
   const [busyEventId, setBusyEventId] = useState<string | null>(null);
+  // Remarcação (modal)
+  const [reschedId, setReschedId] = useState<string | null>(null);
+  const [reschedDay, setReschedDay] = useState("");
+  const [reschedTime, setReschedTime] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showStatusFilters, setShowStatusFilters] = useState(false);
@@ -377,6 +382,25 @@ export default function SchedulePage() {
         setAgendaMessage("Não foi possível sincronizar o status.");
         window.setTimeout(() => setAgendaMessage(""), 3000);
       }
+    } finally {
+      setBusyEventId(null);
+    }
+  }
+
+  function handleOpenReschedule(event: { id: string; day: string; time: string }) {
+    setReschedId(event.id);
+    setReschedDay(parseEventDate(event.day));
+    setReschedTime(event.time || "09:30");
+  }
+
+  async function handleConfirmReschedule() {
+    if (!reschedId || !reschedDay || !reschedTime || busyEventId) return;
+    setBusyEventId(reschedId);
+    try {
+      const ok = await rescheduleEvent(reschedId, reschedDay, reschedTime);
+      setAgendaMessage(ok ? "Aula remarcada. Tutor precisa reconfirmar." : "Não foi possível remarcar.");
+      window.setTimeout(() => setAgendaMessage(""), 3000);
+      if (ok) setReschedId(null);
     } finally {
       setBusyEventId(null);
     }
@@ -701,6 +725,14 @@ export default function SchedulePage() {
                               className="rounded-full border border-rose-300 bg-rose-50 px-2 py-0.5 text-[9px] font-semibold text-rose-800 disabled:opacity-50"
                             >
                               Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenReschedule(event)}
+                              disabled={busyEventId === event.id}
+                              className="rounded-full border border-violet-300 bg-violet-50 px-2 py-0.5 text-[9px] font-semibold text-violet-800 disabled:opacity-50"
+                            >
+                              Remarcar
                             </button>
                           </div>
                         </div>
@@ -1029,6 +1061,60 @@ export default function SchedulePage() {
               </form>
             </section>
           )}
+
+        {reschedId && (
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+            onClick={() => setReschedId(null)}
+          >
+            <div
+              className="w-full max-w-sm rounded-t-2xl bg-[var(--surface)] p-5 shadow-xl sm:rounded-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-base font-semibold text-[var(--foreground)]">Remarcar aula</h3>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                Ao remarcar, a aula volta para “Pendente” e o tutor precisa reconfirmar.
+              </p>
+              <div className="mt-4 grid gap-3">
+                <div className="grid gap-1">
+                  <label className="text-[11px] font-medium text-[var(--muted)]">Nova data</label>
+                  <input
+                    type="date"
+                    value={reschedDay}
+                    onChange={(e) => setReschedDay(e.target.value)}
+                    className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  />
+                </div>
+                <div className="grid gap-1">
+                  <label className="text-[11px] font-medium text-[var(--muted)]">Novo horário</label>
+                  <input
+                    type="time"
+                    value={reschedTime}
+                    onChange={(e) => setReschedTime(e.target.value)}
+                    className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setReschedId(null)}
+                  className="flex-1 rounded-full border border-[var(--border)] py-2 text-sm font-semibold text-[var(--muted)]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmReschedule}
+                  disabled={!reschedDay || !reschedTime || busyEventId === reschedId}
+                  className="flex-1 rounded-full bg-[var(--accent)] py-2 text-sm font-semibold text-white disabled:opacity-60"
+                >
+                  {busyEventId === reschedId ? "Remarcando..." : "Confirmar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </AuthGuard>
   );

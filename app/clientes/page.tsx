@@ -19,6 +19,31 @@ function parseBrazilianDate(date: string): number {
   return new Date(year, month - 1, day).getTime();
 }
 
+// Calcula uma idade legível ("2 anos e 3 meses") a partir de uma data ISO
+// (YYYY-MM-DD vinda de <input type="date">). Retorna "" se a data for inválida
+// ou futura. Não depende de schema: o resultado é gravado no campo `age`.
+function dogAgeFromBirthDate(iso: string): string {
+  if (!iso) return "";
+  const birth = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(birth.getTime())) return "";
+  const now = new Date();
+  if (birth.getTime() > now.getTime()) return "";
+
+  let months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+  if (now.getDate() < birth.getDate()) months -= 1;
+  if (months < 0) months = 0;
+
+  const years = Math.floor(months / 12);
+  const remMonths = months % 12;
+
+  if (years === 0 && remMonths === 0) return "Recém-nascido";
+  if (years === 0) return `${remMonths} ${remMonths === 1 ? "mês" : "meses"}`;
+
+  const yearLabel = `${years} ${years === 1 ? "ano" : "anos"}`;
+  if (remMonths === 0) return yearLabel;
+  return `${yearLabel} e ${remMonths} ${remMonths === 1 ? "mês" : "meses"}`;
+}
+
 function normalizeText(value: string): string {
   return value
     .normalize("NFD")
@@ -148,6 +173,7 @@ export default function ClientsPage() {
   // Etapa 3: Identificação do Cão
   const [dogName, setDogName] = useState("");
   const [breed, setBreed] = useState("");
+  const [dogBirthDate, setDogBirthDate] = useState("");
   const [age, setAge] = useState("");
   const [weight, setWeight] = useState("");
   const [dogSex, setDogSex] = useState("Macho");
@@ -471,6 +497,7 @@ export default function ClientsPage() {
       setAddrState("");
       setDogName("");
       setBreed("");
+      setDogBirthDate("");
       setAge("");
       setWeight("");
       setDogMicrochip("");
@@ -779,19 +806,36 @@ export default function ClientsPage() {
                       className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <div className="grid grid-cols-2 gap-2">
-                      <input
-                        value={age}
-                        onChange={(e) => setAge(e.target.value)}
-                        placeholder="Idade (ex: 2 anos)"
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
-                      />
-                      <input
-                        value={weight}
-                        onChange={(e) => setWeight(e.target.value)}
-                        placeholder="Peso (ex: 20kg)"
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
-                      />
+                      <div className="grid gap-1">
+                        <label className="text-[10px] font-medium text-[var(--muted)]">Nascimento (calcula idade)</label>
+                        <input
+                          type="date"
+                          value={dogBirthDate}
+                          max={new Date().toISOString().slice(0, 10)}
+                          onChange={(e) => {
+                            setDogBirthDate(e.target.value);
+                            const computed = dogAgeFromBirthDate(e.target.value);
+                            if (computed) setAge(computed);
+                          }}
+                          className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        />
+                      </div>
+                      <div className="grid gap-1">
+                        <label className="text-[10px] font-medium text-[var(--muted)]">Peso</label>
+                        <input
+                          value={weight}
+                          onChange={(e) => setWeight(e.target.value)}
+                          placeholder="Ex: 20kg"
+                          className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        />
+                      </div>
                     </div>
+                    <input
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      placeholder="Idade (ex: 2 anos) — preenche sozinho pela data de nascimento"
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                    />
                     <div className="grid grid-cols-2 gap-2">
                       <select
                         value={dogSex}
