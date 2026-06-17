@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-function authzRole(session: Awaited<ReturnType<typeof auth>>) {
+function authzRole(session: { user?: { id?: string; role?: string } } | null) {
   return ((session?.user as { role?: string } | undefined)?.role ?? "").toLowerCase();
 }
 
