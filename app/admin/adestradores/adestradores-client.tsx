@@ -2,6 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+type Permission = "admin" | "standard" | "viewer";
+
+const PERMISSION_LABELS: Record<Permission, string> = {
+  admin: "Admin",
+  standard: "Padrão",
+  viewer: "Só-visualização",
+};
+
 type TrainerRow = {
   id: string;
   userId: string;
@@ -10,6 +18,7 @@ type TrainerRow = {
   joinedAt: string;
   status: "Ativo" | "Trial";
   planType: "Trial" | "Starter" | "Pro" | "Business";
+  permission: Permission;
   monthlyValue: number;
 };
 
@@ -23,7 +32,10 @@ export function AdestradoresClient() {
   const [formEmail, setFormEmail] = useState("");
   const [formPlan, setFormPlan] = useState<"Trial" | "Starter" | "Pro" | "Business">("Starter");
   const [formStatus, setFormStatus] = useState<"Ativo" | "Trial">("Ativo");
+  const [formPermission, setFormPermission] = useState<Permission>("standard");
   const [message, setMessage] = useState("");
+  // Senha temporária retornada ao criar — exibida uma vez para repassar.
+  const [tempPassword, setTempPassword] = useState<{ email: string; password: string } | null>(null);
 
   async function loadTrainers() {
     setLoading(true);
@@ -51,6 +63,7 @@ export function AdestradoresClient() {
     setFormEmail("");
     setFormPlan("Starter");
     setFormStatus("Ativo");
+    setFormPermission("standard");
     setEditingId(null);
     setIsCreating(false);
   }
@@ -69,6 +82,7 @@ export function AdestradoresClient() {
     setFormEmail(trainer.email);
     setFormPlan(trainer.planType);
     setFormStatus(trainer.status);
+    setFormPermission(trainer.permission ?? "standard");
   }
 
   async function saveTrainer() {
@@ -80,6 +94,7 @@ export function AdestradoresClient() {
       email: formEmail.trim(),
       planType: formPlan,
       status: formStatus,
+      permission: formPermission,
     };
 
     const response = await fetch("/api/admin/trainers", {
@@ -93,7 +108,11 @@ export function AdestradoresClient() {
       return;
     }
 
-    setMessage(editingId ? "Adestrador atualizado." : "Adestrador criado (senha padrão: 123456).");
+    if (!editingId) {
+      const data = (await response.json()) as { tempPassword?: string };
+      if (data.tempPassword) setTempPassword({ email: formEmail.trim().toLowerCase(), password: data.tempPassword });
+    }
+    setMessage(editingId ? "Adestrador atualizado." : "Adestrador criado.");
     await loadTrainers();
     resetForm();
   }
@@ -103,9 +122,39 @@ export function AdestradoresClient() {
       <section className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Fluxo simples</p>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          1) Filtre por status, 2) abra Novo adestrador ou Editar, 3) salve. Contas novas sao criadas com senha padrao 123456.
+          1) Filtre por status, 2) abra Novo adestrador ou Editar, 3) salve. Cada conta nova recebe uma
+          senha temporária aleatória, exibida uma única vez para você repassar ao adestrador.
         </p>
       </section>
+
+      {tempPassword ? (
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-4">
+          <p className="text-sm font-bold text-amber-900">Senha temporária gerada</p>
+          <p className="mt-1 text-xs text-amber-800">
+            Repasse ao adestrador <span className="font-semibold">{tempPassword.email}</span>. Ela não será
+            exibida de novo. Peça para trocá-la no primeiro acesso.
+          </p>
+          <div className="mt-2 flex items-center gap-2">
+            <code className="rounded bg-white px-3 py-1.5 text-sm font-bold text-slate-900 border border-amber-200">
+              {tempPassword.password}
+            </code>
+            <button
+              type="button"
+              onClick={() => navigator.clipboard?.writeText(tempPassword.password)}
+              className="rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-800"
+            >
+              Copiar
+            </button>
+            <button
+              type="button"
+              onClick={() => setTempPassword(null)}
+              className="text-xs font-semibold text-amber-700 underline"
+            >
+              Ocultar
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
@@ -190,6 +239,18 @@ export function AdestradoresClient() {
               <option>Ativo</option>
               <option>Trial</option>
             </select>
+            <label className="grid gap-1 text-xs font-semibold text-[var(--muted)] md:col-span-2">
+              Permissão
+              <select
+                value={formPermission}
+                onChange={(event) => setFormPermission(event.target.value as Permission)}
+                className="rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
+              >
+                <option value="admin">Admin — acesso total</option>
+                <option value="standard">Padrão — opera clientes e treinos</option>
+                <option value="viewer">Só-visualização — apenas leitura</option>
+              </select>
+            </label>
           </div>
 
           <button
@@ -210,6 +271,7 @@ export function AdestradoresClient() {
                 <th className="px-6 py-4 text-left font-bold text-slate-900 text-base">Nome</th>
                 <th className="px-6 py-4 text-left font-bold text-slate-900 text-base">Email</th>
                 <th className="px-6 py-4 text-left font-bold text-slate-900 text-base">Plano</th>
+                <th className="px-6 py-4 text-left font-bold text-slate-900 text-base">Permissão</th>
                 <th className="px-6 py-4 text-left font-bold text-slate-900 text-base">Mensalidade</th>
                 <th className="px-6 py-4 text-left font-bold text-slate-900 text-base">Status</th>
                 <th className="px-6 py-4 text-right font-bold text-slate-900 text-base">Ações</th>
@@ -223,6 +285,11 @@ export function AdestradoresClient() {
                   </td>
                   <td className="px-6 py-4 text-slate-800 font-medium">{trainer.email}</td>
                   <td className="px-6 py-4 text-slate-800 font-medium">{trainer.planType}</td>
+                  <td className="px-6 py-4">
+                    <span className="inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                      {PERMISSION_LABELS[trainer.permission] ?? "Padrão"}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 font-bold text-slate-900 text-base">{trainer.monthlyValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
                   <td className="px-6 py-4">
                     <span className={`inline-block rounded-full px-3 py-1 text-sm font-bold ${

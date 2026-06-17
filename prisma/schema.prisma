@@ -85,6 +85,10 @@ model Trainer {
   trialEndsAt DateTime?
   createdAt   DateTime  @default(now())
 
+  // Permissão do adestrador na conta (módulo 10.2 - multi-usuário).
+  // "admin" | "standard" | "viewer". Hoje é um rótulo (enforcement é follow-up).
+  permission        String  @default("standard")
+
   // Dados do negócio (módulo 10.1 - configurações do negócio)
   businessName      String?
   businessDocument  String?          // CNPJ ou CPF

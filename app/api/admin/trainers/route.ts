@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
@@ -5,6 +6,13 @@ import { prisma } from "@/lib/prisma";
 
 function assertAdmin(role?: string) {
   return role === "ADMIN";
+}
+
+const ALLOWED_PERMISSIONS = new Set(["admin", "standard", "viewer"]);
+
+// Senha temporária aleatória legível (10 chars) — substitui o "123456" fixo.
+function generateTempPassword(): string {
+  return randomBytes(8).toString("base64url").slice(0, 10);
 }
 
 function planToMonthlyValue(plan: string): number {
@@ -36,6 +44,7 @@ export async function GET() {
       joinedAt: trainer.createdAt.toLocaleDateString("pt-BR"),
       status: trainer.plan === "Trial" ? "Trial" : "Ativo",
       planType: trainer.plan,
+      permission: trainer.permission,
       monthlyValue: planToMonthlyValue(trainer.plan),
     })),
   );
@@ -54,12 +63,14 @@ export async function POST(request: Request) {
     email?: string;
     planType?: "Trial" | "Starter" | "Pro" | "Business";
     status?: "Ativo" | "Trial";
+    permission?: string;
   };
 
   const name = (body.name ?? "").trim();
   const email = (body.email ?? "").trim().toLowerCase();
   const planType = body.planType ?? "Starter";
   const status = body.status ?? "Ativo";
+  const permission = ALLOWED_PERMISSIONS.has(body.permission ?? "") ? (body.permission as string) : "standard";
 
   if (!name || !email) {
     return NextResponse.json({ error: "Nome e e-mail são obrigatórios" }, { status: 422 });
@@ -72,13 +83,14 @@ export async function POST(request: Request) {
 
   const finalPlan = status === "Trial" ? "Trial" : planType;
   const trialEndsAt = status === "Trial" ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) : null;
+  const tempPassword = generateTempPassword();
 
   const created = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
         name,
         email,
-        password: await bcrypt.hash("123456", 12),
+        password: await bcrypt.hash(tempPassword, 12),
         role: "TRAINER",
       },
     });
@@ -89,6 +101,7 @@ export async function POST(request: Request) {
         name,
         plan: finalPlan,
         trialEndsAt,
+        permission,
       },
     });
 
@@ -97,6 +110,8 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
+    // Senha temporária exibida UMA vez ao admin para repassar ao adestrador.
+    tempPassword,
     trainer: {
       id: created.trainer.id,
       userId: created.trainer.userId,
@@ -105,6 +120,7 @@ export async function POST(request: Request) {
       joinedAt: created.trainer.createdAt.toLocaleDateString("pt-BR"),
       status: created.trainer.plan === "Trial" ? "Trial" : "Ativo",
       planType: created.trainer.plan,
+      permission: created.trainer.permission,
       monthlyValue: planToMonthlyValue(created.trainer.plan),
     },
   });
@@ -124,6 +140,7 @@ export async function PATCH(request: Request) {
     email?: string;
     planType?: "Trial" | "Starter" | "Pro" | "Business";
     status?: "Ativo" | "Trial";
+    permission?: string;
   };
 
   if (!body.id) {
@@ -138,6 +155,10 @@ export async function PATCH(request: Request) {
   const nextStatus = body.status ?? (trainer.plan === "Trial" ? "Trial" : "Ativo");
   const nextPlan = nextStatus === "Trial" ? "Trial" : (body.planType ?? trainer.plan);
   const trialEndsAt = nextStatus === "Trial" ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) : null;
+  const nextPermission =
+    body.permission !== undefined && ALLOWED_PERMISSIONS.has(body.permission)
+      ? body.permission
+      : trainer.permission;
 
   await prisma.$transaction(async (tx) => {
     if (body.name || body.email) {
@@ -156,6 +177,7 @@ export async function PATCH(request: Request) {
         ...(body.name ? { name: body.name.trim() } : {}),
         plan: nextPlan,
         trialEndsAt,
+        permission: nextPermission,
       },
     });
   });
