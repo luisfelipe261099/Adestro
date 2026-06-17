@@ -36,6 +36,45 @@ export function AdestradoresClient() {
   const [message, setMessage] = useState("");
   // Senha temporária retornada ao criar — exibida uma vez para repassar.
   const [tempPassword, setTempPassword] = useState<{ email: string; password: string } | null>(null);
+  // Troca de senha (modal): qual adestrador, novo valor e estado.
+  const [pwdTrainer, setPwdTrainer] = useState<TrainerRow | null>(null);
+  const [pwdValue, setPwdValue] = useState("");
+  const [pwdBusy, setPwdBusy] = useState(false);
+  const [pwdError, setPwdError] = useState("");
+
+  function randomPwd() {
+    const chars = "abcdefghijkmnpqrstuvwxyz23456789";
+    let out = "";
+    for (let i = 0; i < 10; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    setPwdValue(out);
+  }
+
+  async function savePassword() {
+    if (!pwdTrainer || pwdValue.trim().length < 6) {
+      setPwdError("A senha precisa ter ao menos 6 caracteres.");
+      return;
+    }
+    setPwdBusy(true);
+    setPwdError("");
+    try {
+      const res = await fetch("/api/admin/trainers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: pwdTrainer.id, newPassword: pwdValue.trim() }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setPwdError(data.error || "Não foi possível trocar a senha.");
+        return;
+      }
+      setTempPassword({ email: pwdTrainer.email, password: pwdValue.trim() });
+      setMessage(`Senha de ${pwdTrainer.name} atualizada.`);
+      setPwdTrainer(null);
+      setPwdValue("");
+    } finally {
+      setPwdBusy(false);
+    }
+  }
 
   async function loadTrainers() {
     setLoading(true);
@@ -299,13 +338,22 @@ export function AdestradoresClient() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button
-                      type="button"
-                      onClick={() => startEdit(trainer.id)}
-                      className="text-sky-700 hover:text-sky-900 font-bold text-base"
-                    >
-                      Editar
-                    </button>
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => { setPwdTrainer(trainer); setPwdValue(""); setPwdError(""); }}
+                        className="font-bold text-base text-amber-700 hover:text-amber-900"
+                      >
+                        Senha
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startEdit(trainer.id)}
+                        className="text-sky-700 hover:text-sky-900 font-bold text-base"
+                      >
+                        Editar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -318,6 +366,59 @@ export function AdestradoresClient() {
           ) : null}
         </div>
       </div>
+
+      {pwdTrainer ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+          onClick={() => setPwdTrainer(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-slate-900">Trocar senha</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Defina uma nova senha para <span className="font-semibold text-slate-700">{pwdTrainer.name}</span> ({pwdTrainer.email}).
+            </p>
+            <div className="mt-4 grid gap-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={pwdValue}
+                  onChange={(e) => setPwdValue(e.target.value)}
+                  placeholder="Nova senha (mín. 6 caracteres)"
+                  className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-400"
+                />
+                <button
+                  type="button"
+                  onClick={randomPwd}
+                  className="shrink-0 rounded-md border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Gerar
+                </button>
+              </div>
+              {pwdError ? <p className="text-xs font-semibold text-rose-600">{pwdError}</p> : null}
+            </div>
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPwdTrainer(null)}
+                className="flex-1 rounded-full border border-slate-300 py-2 text-sm font-semibold text-slate-600"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={savePassword}
+                disabled={pwdBusy || pwdValue.trim().length < 6}
+                className="flex-1 rounded-full bg-sky-600 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {pwdBusy ? "Salvando..." : "Salvar senha"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

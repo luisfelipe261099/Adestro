@@ -141,6 +141,7 @@ export async function PATCH(request: Request) {
     planType?: "Trial" | "Starter" | "Pro" | "Business";
     status?: "Ativo" | "Trial";
     permission?: string;
+    newPassword?: string;
   };
 
   if (!body.id) {
@@ -152,6 +153,16 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
   }
 
+  // Troca de senha pelo admin (opcional). Mínimo de 6 caracteres.
+  let passwordHash: string | null = null;
+  if (typeof body.newPassword === "string" && body.newPassword.trim()) {
+    const pwd = body.newPassword.trim();
+    if (pwd.length < 6) {
+      return NextResponse.json({ error: "A senha deve ter ao menos 6 caracteres" }, { status: 422 });
+    }
+    passwordHash = await bcrypt.hash(pwd, 12);
+  }
+
   const nextStatus = body.status ?? (trainer.plan === "Trial" ? "Trial" : "Ativo");
   const nextPlan = nextStatus === "Trial" ? "Trial" : (body.planType ?? trainer.plan);
   const trialEndsAt = nextStatus === "Trial" ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) : null;
@@ -161,12 +172,13 @@ export async function PATCH(request: Request) {
       : trainer.permission;
 
   await prisma.$transaction(async (tx) => {
-    if (body.name || body.email) {
+    if (body.name || body.email || passwordHash) {
       await tx.user.update({
         where: { id: trainer.userId },
         data: {
           ...(body.name ? { name: body.name.trim() } : {}),
           ...(body.email ? { email: body.email.trim().toLowerCase() } : {}),
+          ...(passwordHash ? { password: passwordHash } : {}),
         },
       });
     }

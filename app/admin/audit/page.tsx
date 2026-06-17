@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { AdminContextNav } from "@/components/admin-context-nav";
 import { SkeletonCard } from "@/components/skeletons";
 
 type AuditLog = {
@@ -86,6 +87,9 @@ export default function AuditPage() {
   return (
     <AuthGuard role="admin">
       <main className="mx-auto w-full max-w-3xl px-3 pb-24 pt-3">
+        <div className="mb-3">
+          <AdminContextNav />
+        </div>
         <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
