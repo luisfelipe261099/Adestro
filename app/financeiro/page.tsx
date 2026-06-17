@@ -45,13 +45,31 @@ type OverviewStats = {
   };
 };
 
+// Parser tolerante p/ datas do financeiro (ISO YYYY-MM-DD, DD/MM/YYYY ou Date).
+function parseFinDate(value?: string | null): Date | null {
+  if (!value) return null;
+  const v = value.trim();
+  let d: Date;
+  if (/^\d{4}-\d{2}-\d{2}/.test(v)) d = new Date(`${v.slice(0, 10)}T00:00:00`);
+  else {
+    const br = v.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    d = br ? new Date(`${br[3]}-${br[2]}-${br[1]}T00:00:00`) : new Date(v);
+  }
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 export default function FinanceiroPage() {
   const clients = useAppStore((state) => state.clients);
   const trainerName = useAppStore((state) => state.trainerName);
   const pixKey = useAppStore((state) => state.trainerPaymentProfile.pixKey);
 
-  const [activeTab, setActiveTab] = useState<"dashboard" | "pacotes" | "cobrancas" | "recibos">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "pacotes" | "cobrancas" | "recibos" | "extrato">("dashboard");
   const [pixCopied, setPixCopied] = useState(false);
+
+  // Extrato: filtros de período
+  const [extratoPeriod, setExtratoPeriod] = useState<"dia" | "semana" | "mes" | "intervalo">("mes");
+  const [extratoStart, setExtratoStart] = useState("");
+  const [extratoEnd, setExtratoEnd] = useState("");
 
   // Estados carregados do Backend
   const [packages, setPackages] = useState<PackageInfo[]>([]);
@@ -320,6 +338,7 @@ export default function FinanceiroPage() {
             { id: "dashboard", label: "Faturamento" },
             { id: "pacotes", label: "Pacotes" },
             { id: "cobrancas", label: "Cobranças" },
+            { id: "extrato", label: "Extrato" },
             { id: "recibos", label: "Recibos" },
           ].map((tab) => (
             <button
@@ -750,6 +769,100 @@ export default function FinanceiroPage() {
                   </div>
                 </div>
               )}
+
+              {/* ─── TAB: EXTRATO (HISTÓRICO COM FILTROS) ────────────────────────── */}
+              {activeTab === "extrato" && (() => {
+                // Define o intervalo conforme o período escolhido.
+                const now = new Date();
+                let start: Date;
+                let end: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+                if (extratoPeriod === "dia") {
+                  start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                } else if (extratoPeriod === "semana") {
+                  start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+                } else if (extratoPeriod === "mes") {
+                  start = new Date(now.getFullYear(), now.getMonth(), 1);
+                  end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                } else {
+                  start = parseFinDate(extratoStart) ?? new Date(now.getFullYear(), now.getMonth(), 1);
+                  end = parseFinDate(extratoEnd) ?? end;
+                  end = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59);
+                }
+
+                const rows = invoices
+                  .map((inv) => ({ inv, ref: parseFinDate(inv.paidAt || inv.dueDate) }))
+                  .filter((r) => r.ref && r.ref >= start && r.ref <= end)
+                  .sort((a, b) => (b.ref!.getTime() - a.ref!.getTime()));
+
+                const totalRecebido = rows.filter((r) => r.inv.status === "Pago").reduce((s, r) => s + r.inv.amount, 0);
+                const totalPendente = rows.filter((r) => r.inv.status === "Pendente").reduce((s, r) => s + r.inv.amount, 0);
+                const totalAtraso = rows.filter((r) => r.inv.status === "Atrasado").reduce((s, r) => s + r.inv.amount, 0);
+
+                return (
+                  <div className="mt-4 space-y-4 animate-in fade-in duration-200">
+                    <div className="flex flex-wrap items-end gap-2">
+                      {([
+                        { id: "dia", label: "Hoje" },
+                        { id: "semana", label: "7 dias" },
+                        { id: "mes", label: "Este mês" },
+                        { id: "intervalo", label: "Intervalo" },
+                      ] as const).map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setExtratoPeriod(p.id)}
+                          className={`rounded-full border px-3 py-1 text-xs font-semibold ${extratoPeriod === p.id ? "border-sky-400 bg-sky-50 text-sky-800" : "border-[var(--border)] text-[var(--muted)]"}`}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                      {extratoPeriod === "intervalo" && (
+                        <div className="flex items-center gap-2">
+                          <input type="date" value={extratoStart} onChange={(e) => setExtratoStart(e.target.value)} className="rounded-md border border-[var(--border)] px-2 py-1 text-xs" />
+                          <span className="text-xs text-[var(--muted)]">até</span>
+                          <input type="date" value={extratoEnd} onChange={(e) => setExtratoEnd(e.target.value)} className="rounded-md border border-[var(--border)] px-2 py-1 text-xs" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3">
+                        <p className="text-[10px] font-bold uppercase text-emerald-700">Recebido</p>
+                        <p className="mt-1 text-lg font-bold text-emerald-800">R$ {totalRecebido.toFixed(2)}</p>
+                      </div>
+                      <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
+                        <p className="text-[10px] font-bold uppercase text-amber-700">Pendente</p>
+                        <p className="mt-1 text-lg font-bold text-amber-800">R$ {totalPendente.toFixed(2)}</p>
+                      </div>
+                      <div className="rounded-md border border-rose-200 bg-rose-50 p-3">
+                        <p className="text-[10px] font-bold uppercase text-rose-700">Em atraso</p>
+                        <p className="mt-1 text-lg font-bold text-rose-800">R$ {totalAtraso.toFixed(2)}</p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-md border border-[var(--border)] bg-white">
+                      {rows.length === 0 ? (
+                        <p className="p-6 text-center text-xs text-[var(--muted)]">Nenhuma transação no período selecionado.</p>
+                      ) : (
+                        <ul className="divide-y divide-slate-100">
+                          {rows.map(({ inv, ref }) => (
+                            <li key={inv.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                              <div className="min-w-0">
+                                <p className="truncate text-xs font-semibold text-slate-900">{inv.clientName} · {inv.dogName}</p>
+                                <p className="truncate text-[11px] text-[var(--muted)]">{inv.packageName} · {ref?.toLocaleDateString("pt-BR")}{inv.method ? ` · ${inv.method}` : ""}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs font-bold text-slate-900">R$ {inv.amount.toFixed(2)}</p>
+                                <span className={`text-[10px] font-semibold ${inv.status === "Pago" ? "text-emerald-700" : inv.status === "Atrasado" ? "text-rose-700" : "text-amber-700"}`}>{inv.status}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* ─── TAB: RECIBOS (IMPRESSÃO/PDF) ─────────────────────────────────── */}
               {activeTab === "recibos" && (

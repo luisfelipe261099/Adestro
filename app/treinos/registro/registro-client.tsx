@@ -117,6 +117,9 @@ export default function RegistroTreinoClientPage() {
   // Dados Gerais da Sessão
   const [title, setTitle] = useState("Sessão prática estruturada");
   const [sessionType, setSessionType] = useState<"Individual" | "Coletivo">("Individual");
+  // Coletivo (turma): cães adicionais além do principal. O conteúdo (atividades,
+  // comandos, etc.) é compartilhado, mas cada cão recebe seu próprio registro.
+  const [collectiveDogIds, setCollectiveDogIds] = useState<string[]>([]);
   const [sessionLocation, setSessionLocation] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -343,9 +346,13 @@ export default function RegistroTreinoClientPage() {
     setMessage("");
     setIsSaving(true);
 
-    // Estruturando o payload da DogTrainingSession
-    const dogSessionPayload = {
-      dogId: selectedDog.id,
+    // Cães da sessão: o principal + (se coletivo) os demais marcados. Cada cão
+    // recebe seu próprio DogTrainingSession; o conteúdo é compartilhado na turma.
+    const sessionDogIds =
+      sessionType === "Coletivo" ? [selectedDog.id, ...collectiveDogIds] : [selectedDog.id];
+
+    const dogSessionsPayload = sessionDogIds.map((dogId) => ({
+      dogId,
       activities,
       commands,
       description: description.trim(),
@@ -356,7 +363,7 @@ export default function RegistroTreinoClientPage() {
       nextFocus: nextFocus.trim(),
       nextCommands,
       nextTasks
-    };
+    }));
 
     try {
       const ok = await addTrainingSession({
@@ -366,7 +373,10 @@ export default function RegistroTreinoClientPage() {
         clientId: selectedClient.id,
         clientName: selectedClient.name,
         dogId: selectedDog.id,
-        dogName: selectedDog.name,
+        dogName:
+          sessionType === "Coletivo" && collectiveDogIds.length > 0
+            ? `${selectedDog.name} + ${collectiveDogIds.length} (turma)`
+            : selectedDog.name,
         notes: commands.map((c) => ({
           block: c.command,
           score: c.rating * 2, // Converte 1-5 estrelas para nota 1-10 herdada
@@ -375,7 +385,7 @@ export default function RegistroTreinoClientPage() {
         media: draftMedia,
         // Enviar os dados estendidos suportados pela nova API
         // @ts-ignore
-        dogSessions: [dogSessionPayload],
+        dogSessions: dogSessionsPayload,
         type: sessionType,
         location: sessionLocation,
         status: "Realizado"
@@ -395,6 +405,8 @@ export default function RegistroTreinoClientPage() {
       setAudioTranscription("");
       setDraftMedia([]);
       setExpandedSection("A");
+      setCollectiveDogIds([]);
+      setSessionType("Individual");
     } catch {
       setError("Ocorreu um erro no processamento.");
     } finally {
@@ -470,6 +482,62 @@ export default function RegistroTreinoClientPage() {
                   ))}
                 </select>
               </label>
+            </div>
+
+            {/* Tipo de sessão: Individual ou Coletivo (turma) */}
+            <div className="grid gap-2">
+              <span className="text-xs font-medium text-[var(--muted)]">Tipo de sessão</span>
+              <div className="flex gap-2">
+                {(["Individual", "Coletivo"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => {
+                      setSessionType(t);
+                      if (t === "Individual") setCollectiveDogIds([]);
+                    }}
+                    className={`flex-1 rounded-md border px-3 py-2 text-sm font-semibold ${sessionType === t ? "border-sky-400 bg-sky-50 text-sky-800" : "border-[var(--border)] text-[var(--muted)]"}`}
+                  >
+                    {t === "Individual" ? "🐕 Individual" : "🐕‍🦺 Coletivo (turma)"}
+                  </button>
+                ))}
+              </div>
+              {sessionType === "Coletivo" && (
+                <div className="rounded-md border border-dashed border-[var(--border)] bg-white/60 p-3">
+                  <p className="text-[11px] text-[var(--muted)]">
+                    Marque os outros cães da turma. O conteúdo abaixo é aplicado a todos, mas cada cão recebe seu próprio registro e dever de casa.
+                  </p>
+                  <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+                    {clients.flatMap((client) =>
+                      client.dogs
+                        .filter((dog) => dog.id !== selectedDog?.id)
+                        .map((dog) => {
+                          const checked = collectiveDogIds.includes(dog.id);
+                          return (
+                            <label key={dog.id} className="flex items-center gap-2 rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e) =>
+                                  setCollectiveDogIds((prev) =>
+                                    e.target.checked ? [...prev, dog.id] : prev.filter((id) => id !== dog.id),
+                                  )
+                                }
+                                className="h-3.5 w-3.5"
+                              />
+                              <span className="truncate">{dog.name} <span className="text-[var(--muted)]">· {client.name}</span></span>
+                            </label>
+                          );
+                        }),
+                    )}
+                  </div>
+                  {collectiveDogIds.length > 0 && (
+                    <p className="mt-2 text-[11px] font-semibold text-sky-700">
+                      Turma: {collectiveDogIds.length + 1} cães (incluindo {selectedDog?.name}).
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">

@@ -85,6 +85,44 @@ function formatDateTime(value?: string | null): string {
   return `${date.toLocaleDateString("pt-BR")} ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
+// Converte uma data (ISO YYYY-MM-DD, DD/MM/YYYY ou parseável por Date) para a
+// chave local YYYY-MM-DD. Tolerante: retorna null se não der pra interpretar.
+function toDayKey(value?: string | null): string | null {
+  if (!value) return null;
+  const v = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10);
+  const br = v.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (br) return `${br[3]}-${br[2]}-${br[1]}`;
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return null;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// Monta os últimos 7 dias com a contagem de treinos por dia (sessões + eventos
+// confirmados). Usado no gráfico semanal do portal — só dados já carregados.
+function buildWeekSummary(
+  sessions: { date: string }[],
+  events: { day: string; status: string }[],
+): Array<{ label: string; key: string; count: number }> {
+  const weekdayLetters = ["D", "S", "T", "Q", "Q", "S", "S"];
+  const today = new Date();
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return { label: weekdayLetters[d.getDay()], key, count: 0 };
+  });
+  const bump = (raw?: string | null) => {
+    const k = toDayKey(raw);
+    if (!k) return;
+    const slot = days.find((x) => x.key === k);
+    if (slot) slot.count += 1;
+  };
+  sessions.forEach((s) => bump(s.date));
+  events.filter((e) => e.status === "Confirmado").forEach((e) => bump(e.day));
+  return days;
+}
+
 export function PortalPublicClient({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -664,6 +702,37 @@ export function PortalPublicClient({ token }: { token: string }) {
             </div>
           </div>
         </article>
+
+        {(() => {
+          const week = buildWeekSummary(data.sessions, data.events);
+          const maxCount = Math.max(1, ...week.map((d) => d.count));
+          const trainedDays = week.filter((d) => d.count > 0).length;
+          return (
+            <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Resumo da semana</p>
+                <span className="text-xs text-[var(--muted)]">{trainedDays}/7 dias com treino 🐾</span>
+              </div>
+              <div className="mt-4 flex items-end justify-between gap-2" style={{ height: 90 }}>
+                {week.map((d, i) => {
+                  const heightPct = d.count > 0 ? Math.max(14, (d.count / maxCount) * 100) : 6;
+                  return (
+                    <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1.5">
+                      <div className="flex w-full items-end justify-center" style={{ height: 64 }}>
+                        <div
+                          className={`w-full max-w-[26px] rounded-t-md transition-all ${d.count > 0 ? "bg-sky-500" : "bg-slate-200"}`}
+                          style={{ height: `${heightPct}%` }}
+                          title={`${d.count} treino(s)`}
+                        />
+                      </div>
+                      <span className="text-[11px] font-medium text-[var(--muted)]">{d.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          );
+        })()}
 
         <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
           <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
