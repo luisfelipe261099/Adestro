@@ -385,9 +385,26 @@ model CalendarEvent {
   status        String   @default("Confirmado")
   createdAt     DateTime @default(now())
 
+  participants  EventParticipant[]
+
   @@index([trainerId])
   @@index([clientId])
   @@index([dogId])
+}
+
+// ─── Participante de turma (módulo 5.5 - confirmação individual por cão) ──────
+model EventParticipant {
+  id          String        @id @default(cuid())
+  eventId     String
+  event       CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  dogId       String?
+  clientId    String?
+  dogName     String
+  clientName  String
+  status      String        @default("Pendente") // Pendente / Confirmado / Recusado
+  createdAt   DateTime      @default(now())
+
+  @@index([eventId])
 }
 
 // ─── Pagamento do Adestrador (SaaS) ───────────────────────────────────────────

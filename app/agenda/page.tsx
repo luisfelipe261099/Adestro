@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { EventParticipants } from "@/components/event-participants";
 import { useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
 import { downloadIcs, googleCalendarUrl, googleMapsLink, type IcsEvent } from "@/lib/calendar-ics";
@@ -200,6 +201,8 @@ export default function SchedulePage() {
   const [time, setTime] = useState("09:30");
   const [status, setStatus] = useState<EventStatus>("Pendente");
   const [busyEventId, setBusyEventId] = useState<string | null>(null);
+  // Participantes da turma (qual evento está com a lista aberta)
+  const [participantsOpenId, setParticipantsOpenId] = useState<string | null>(null);
   // Remarcação (modal)
   const [reschedId, setReschedId] = useState<string | null>(null);
   const [reschedDay, setReschedDay] = useState("");
@@ -734,7 +737,20 @@ export default function SchedulePage() {
                             >
                               Remarcar
                             </button>
+                            {!event.clientId ? (
+                              <button
+                                type="button"
+                                onClick={() => setParticipantsOpenId(participantsOpenId === event.id ? null : event.id)}
+                                className="rounded-full border border-sky-300 bg-sky-50 px-2 py-0.5 text-[9px] font-semibold text-sky-800"
+                              >
+                                {participantsOpenId === event.id ? "Ocultar turma" : "Participantes"}
+                              </button>
+                            ) : null}
                           </div>
+
+                          {!event.clientId && participantsOpenId === event.id ? (
+                            <EventParticipants eventId={event.id} clients={clients} />
+                          ) : null}
                         </div>
                       </div>
                     </article>
