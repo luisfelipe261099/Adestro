@@ -48,12 +48,13 @@ const TRAINER_SECONDARY: NavItem[] = [
 ];
 
 const ADMIN_NAV: NavItem[] = [
-  { href: "/admin", label: "Visão geral", icon: IconHome },
-  { href: "/admin/adestradores", label: "Adestradores", icon: IconUsers },
-  { href: "/admin/planos", label: "Planos", icon: IconDollar },
-  { href: "/admin/faturamento", label: "Faturamento", icon: IconReceipt },
-  { href: "/admin/relatorios", label: "Relatórios", icon: IconReport },
-  { href: "/admin/audit", label: "Atividade", icon: IconReport },
+  { href: "/admin", label: "Visão geral", icon: IconHome, description: "Resumo da operação" },
+  { href: "/admin/adestradores", label: "Adestradores", icon: IconUsers, description: "Contas, senha e permissões" },
+  { href: "/admin/planos", label: "Planos", icon: IconDollar, description: "Plano de cada conta" },
+  { href: "/admin/faturamento", label: "Faturamento", icon: IconReceipt, description: "Pagos e pendentes" },
+  { href: "/admin/relatorios", label: "Relatórios", icon: IconReport, description: "Uso e desempenho" },
+  { href: "/admin/templates", label: "Templates", icon: IconChat, description: "Atividades, comandos, tarefas" },
+  { href: "/admin/audit", label: "Auditoria", icon: IconReport, description: "Histórico de atividade" },
 ];
 
 const CLIENT_NAV: NavItem[] = [{ href: "/portal/cliente", label: "Meu portal" }];
@@ -145,8 +146,8 @@ export function SiteHeader() {
             <span className="text-[15px] font-semibold tracking-tight text-[var(--foreground)]">Adestro</span>
           </Link>
 
-          {/* Desktop nav */}
-          {primaryNav.length > 0 ? (
+          {/* Desktop nav (admin usa o botão "Menu" que abre o painel) */}
+          {primaryNav.length > 0 && userRole !== "admin" ? (
             <nav className="hidden items-center gap-0.5 lg:flex">
               {primaryNav.map((item) => (
                 <NavLink key={item.href} item={item} active={pathname === item.href} />
@@ -243,6 +244,16 @@ export function SiteHeader() {
                   <IconMenu className="h-4 w-4" />
                 </button>
               </>
+            ) : isAuthenticated && userRole === "admin" ? (
+              <button
+                type="button"
+                onClick={() => setMenuOpen(true)}
+                className="flex h-9 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px] font-semibold text-[var(--foreground)] transition-colors hover:bg-[var(--surface-2)]"
+                aria-label="Abrir menu"
+              >
+                <IconMenu className="h-4 w-4" />
+                <span>Menu</span>
+              </button>
             ) : isAuthenticated ? (
               <button
                 type="button"
@@ -260,9 +271,9 @@ export function SiteHeader() {
         </div>
       </header>
 
-      {/* Mobile drawer */}
+      {/* Drawer de navegação (mobile para trainer; qualquer tela para admin) */}
       {isAuthenticated && menuOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
           <button
             type="button"
             aria-label="Fechar menu"
@@ -292,11 +303,32 @@ export function SiteHeader() {
 
             <nav className="flex-1 overflow-y-auto p-2">
               <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">
-                Principal
+                {userRole === "admin" ? "Páginas do administrativo" : "Principal"}
               </div>
-              {primaryNav.map((item) => (
-                <NavLink key={item.href} item={item} active={pathname === item.href} onClick={() => setMenuOpen(false)} />
-              ))}
+              {primaryNav.map((item) => {
+                const Icon = item.icon;
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-start gap-3 rounded-md px-3 py-2.5 transition ${
+                      active ? "bg-[var(--surface-2)]" : "hover:bg-[var(--surface-2)]"
+                    }`}
+                  >
+                    {Icon ? (
+                      <span className="mt-0.5 text-[var(--muted)]">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                    ) : null}
+                    <div className="min-w-0">
+                      <div className="text-[13px] font-medium text-[var(--foreground)]">{item.label}</div>
+                      {item.description ? <div className="text-[11px] text-[var(--muted)]">{item.description}</div> : null}
+                    </div>
+                  </Link>
+                );
+              })}
 
               {secondaryNav.length ? (
                 <>
@@ -309,14 +341,18 @@ export function SiteHeader() {
                 </>
               ) : null}
 
-              <div className="mt-3 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">
-                Conta
-              </div>
-              <NavLink
-                item={{ href: "/configuracoes", label: "Configurações", icon: IconSettings }}
-                active={pathname === "/configuracoes"}
-                onClick={() => setMenuOpen(false)}
-              />
+              {userRole === "trainer" ? (
+                <>
+                  <div className="mt-3 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">
+                    Conta
+                  </div>
+                  <NavLink
+                    item={{ href: "/configuracoes", label: "Configurações", icon: IconSettings }}
+                    active={pathname === "/configuracoes"}
+                    onClick={() => setMenuOpen(false)}
+                  />
+                </>
+              ) : null}
             </nav>
 
             <footer className="border-t border-[var(--border)] p-2">
