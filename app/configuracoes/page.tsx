@@ -23,6 +23,22 @@ const DEFAULT_ALERTS: AlertSettings = {
   defaultStreakTolerance: 100,
 };
 
+type BusinessSettings = {
+  businessName: string;
+  businessDocument: string;
+  businessAddress: string;
+  businessHours: string;
+  logoUrl: string;
+};
+
+const DEFAULT_BUSINESS: BusinessSettings = {
+  businessName: "",
+  businessDocument: "",
+  businessAddress: "",
+  businessHours: "",
+  logoUrl: "",
+};
+
 export default function ConfiguracoesPage() {
   const trainerName = useAppStore((state) => state.trainerName);
   const [displayName, setDisplayName] = useState(trainerName ?? "");
@@ -37,6 +53,8 @@ export default function ConfiguracoesPage() {
   const [alertsLoading, setAlertsLoading] = useState(true);
   const [alertsSaving, setAlertsSaving] = useState(false);
   const [alertsError, setAlertsError] = useState("");
+  const [business, setBusiness] = useState<BusinessSettings>(DEFAULT_BUSINESS);
+  const [businessSaving, setBusinessSaving] = useState(false);
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvBusy, setCsvBusy] = useState(false);
   const [csvResult, setCsvResult] = useState<{ created: number; skipped: number; total: number } | null>(null);
@@ -55,6 +73,13 @@ export default function ConfiguracoesPage() {
           chargeReminderDaysBefore: data.chargeReminderDaysBefore ?? 3,
           morningBriefHour: data.morningBriefHour ?? 7,
           defaultStreakTolerance: data.defaultStreakTolerance ?? 100,
+        });
+        setBusiness({
+          businessName: data.businessName ?? "",
+          businessDocument: data.businessDocument ?? "",
+          businessAddress: data.businessAddress ?? "",
+          businessHours: data.businessHours ?? "",
+          logoUrl: data.logoUrl ?? "",
         });
       } catch {
         // mantém defaults
@@ -127,6 +152,35 @@ export default function ConfiguracoesPage() {
     } finally {
       setAlertsSaving(false);
     }
+  }
+
+  async function handleSaveBusiness() {
+    setBusinessSaving(true);
+    try {
+      const response = await fetch("/api/trainer/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(business),
+      });
+      if (!response.ok) throw new Error();
+      setSavedMessage("Dados do negócio atualizados.");
+      window.setTimeout(() => setSavedMessage(""), 3000);
+    } catch {
+      setAlertsError("Falha ao salvar dados do negócio.");
+    } finally {
+      setBusinessSaving(false);
+    }
+  }
+
+  async function handleLogoUpload(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 1_500_000) {
+      setAlertsError("Logo muito grande. Use uma imagem de até 1.5MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setBusiness((b) => ({ ...b, logoUrl: String(reader.result) }));
+    reader.readAsDataURL(file);
   }
 
   return (
@@ -314,6 +368,90 @@ export default function ConfiguracoesPage() {
                 className="mt-2 rounded-full bg-purple-600 px-3 py-1.5 text-[11px] font-bold text-white"
               >
                 Baixar JSON
+              </button>
+            </div>
+          </section>
+
+          {/* ── Dados do Negócio (módulo 10.1) ──────────────────────────────── */}
+          <section className="mt-5 rounded-md border border-sky-100 bg-sky-50/40 p-4">
+            <header className="border-b border-sky-100 pb-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Negócio</p>
+              <h2 className="text-base font-semibold text-sky-950">Dados do negócio</h2>
+              <p className="mt-0.5 text-[11px] text-sky-800">
+                Aparecem nos recibos e relatórios enviados aos tutores.
+              </p>
+            </header>
+            <div className="mt-3 grid gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-md border border-sky-200 bg-white">
+                  {business.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={business.logoUrl} alt="Logo" className="h-full w-full object-contain" />
+                  ) : (
+                    <span className="text-[10px] text-[var(--muted)]">Sem logo</span>
+                  )}
+                </div>
+                <div className="grid gap-1">
+                  <label className="cursor-pointer rounded-full border border-sky-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-sky-800">
+                    Enviar logo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleLogoUpload(e.target.files[0])}
+                    />
+                  </label>
+                  {business.logoUrl && (
+                    <button type="button" onClick={() => setBusiness((b) => ({ ...b, logoUrl: "" }))} className="text-[10px] text-rose-600">
+                      Remover logo
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                  Nome do negócio
+                  <input
+                    value={business.businessName}
+                    onChange={(e) => setBusiness({ ...business, businessName: e.target.value })}
+                    placeholder="Ex: Adestra Pet"
+                    className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                  />
+                </label>
+                <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                  CNPJ / CPF
+                  <input
+                    value={business.businessDocument}
+                    onChange={(e) => setBusiness({ ...business, businessDocument: e.target.value })}
+                    className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                  />
+                </label>
+              </div>
+              <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                Endereço
+                <input
+                  value={business.businessAddress}
+                  onChange={(e) => setBusiness({ ...business, businessAddress: e.target.value })}
+                  className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                />
+              </label>
+              <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                Horário de funcionamento
+                <input
+                  value={business.businessHours}
+                  onChange={(e) => setBusiness({ ...business, businessHours: e.target.value })}
+                  placeholder="Ex: Seg-Sex 8h-18h"
+                  className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={handleSaveBusiness}
+                disabled={businessSaving}
+                className="justify-self-start rounded-full bg-sky-600 px-4 py-1.5 text-[11px] font-bold text-white disabled:opacity-60"
+              >
+                {businessSaving ? "Salvando..." : "Salvar dados do negócio"}
               </button>
             </div>
           </section>

@@ -85,6 +85,13 @@ model Trainer {
   trialEndsAt DateTime?
   createdAt   DateTime  @default(now())
 
+  // Dados do negócio (módulo 10.1 - configurações do negócio)
+  businessName      String?
+  businessDocument  String?          // CNPJ ou CPF
+  businessAddress   String?  @db.Text
+  businessHours     String?          // ex: "Seg-Sex 8h-18h"
+  logoUrl           String?  @db.LongText // base64 (mesma estratégia das demais mídias)
+
   // Configurações de alertas (módulo 10.3 - configurações operacionais)
   reminderHoursBefore       Int @default(24)
   chargeReminderDaysBefore  Int @default(3)

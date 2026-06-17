@@ -11,6 +11,12 @@ type SettingsPayload = {
   defaultActivities?: string[];
   defaultCommands?: string[];
   defaultTutorTasks?: string[];
+  // Dados do negócio (módulo 10.1)
+  businessName?: string;
+  businessDocument?: string;
+  businessAddress?: string;
+  businessHours?: string;
+  logoUrl?: string;
 };
 
 const FALLBACK_ACTIVITIES = [
@@ -82,6 +88,11 @@ export async function GET() {
     defaultActivities: parseList(trainer.defaultActivities, FALLBACK_ACTIVITIES),
     defaultCommands: parseList(trainer.defaultCommands, FALLBACK_COMMANDS),
     defaultTutorTasks: parseList(trainer.defaultTutorTasks, FALLBACK_TASKS),
+    businessName: trainer.businessName ?? "",
+    businessDocument: trainer.businessDocument ?? "",
+    businessAddress: trainer.businessAddress ?? "",
+    businessHours: trainer.businessHours ?? "",
+    logoUrl: trainer.logoUrl ?? "",
   });
 }
 
@@ -126,6 +137,17 @@ export async function PATCH(request: Request) {
   const tasksJson = sanitizeList(body.defaultTutorTasks);
   if (tasksJson !== undefined) data.defaultTutorTasks = tasksJson;
 
+  // Dados do negócio — texto curto trimado; logo é base64 limitado a ~1.5MB.
+  const trimField = (v: unknown, max: number): string | undefined =>
+    typeof v === "string" ? v.trim().slice(0, max) : undefined;
+  if (body.businessName !== undefined) data.businessName = trimField(body.businessName, 120);
+  if (body.businessDocument !== undefined) data.businessDocument = trimField(body.businessDocument, 40);
+  if (body.businessAddress !== undefined) data.businessAddress = trimField(body.businessAddress, 300);
+  if (body.businessHours !== undefined) data.businessHours = trimField(body.businessHours, 120);
+  if (body.logoUrl !== undefined && typeof body.logoUrl === "string" && body.logoUrl.length <= 2_000_000) {
+    data.logoUrl = body.logoUrl;
+  }
+
   const updated = await prisma.trainer.update({
     where: { id: trainer.id },
     data,
@@ -139,5 +161,10 @@ export async function PATCH(request: Request) {
     defaultActivities: parseList(updated.defaultActivities, FALLBACK_ACTIVITIES),
     defaultCommands: parseList(updated.defaultCommands, FALLBACK_COMMANDS),
     defaultTutorTasks: parseList(updated.defaultTutorTasks, FALLBACK_TASKS),
+    businessName: updated.businessName ?? "",
+    businessDocument: updated.businessDocument ?? "",
+    businessAddress: updated.businessAddress ?? "",
+    businessHours: updated.businessHours ?? "",
+    logoUrl: updated.logoUrl ?? "",
   });
 }
