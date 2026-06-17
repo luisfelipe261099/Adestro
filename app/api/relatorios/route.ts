@@ -15,7 +15,7 @@ async function getTrainer(userId: string) {
   return prisma.trainer.findUnique({ where: { userId } });
 }
 
-function authzRole(session: { user?: { role?: string } } | null) {
+function authzRole(session: Awaited<ReturnType<typeof auth>>) {
   return ((session?.user as { role?: string } | undefined)?.role ?? "").toLowerCase();
 }
 
