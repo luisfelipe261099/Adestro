@@ -33,6 +33,7 @@ export function AdestradoresClient() {
   const [formPlan, setFormPlan] = useState<"Trial" | "Starter" | "Pro" | "Business">("Starter");
   const [formStatus, setFormStatus] = useState<"Ativo" | "Trial">("Ativo");
   const [formPermission, setFormPermission] = useState<Permission>("standard");
+  const [formPassword, setFormPassword] = useState(""); // nova senha no modo edição (opcional)
   const [message, setMessage] = useState("");
   // Senha temporária retornada ao criar — exibida uma vez para repassar.
   const [tempPassword, setTempPassword] = useState<{ email: string; password: string } | null>(null);
@@ -107,6 +108,7 @@ export function AdestradoresClient() {
     setFormPlan("Starter");
     setFormStatus("Ativo");
     setFormPermission("standard");
+    setFormPassword("");
     setEditingId(null);
     setIsCreating(false);
   }
@@ -131,6 +133,11 @@ export function AdestradoresClient() {
   async function saveTrainer() {
     if (!formName.trim() || !formEmail.trim()) return;
 
+    if (editingId && formPassword.trim() && formPassword.trim().length < 6) {
+      setMessage("A nova senha precisa ter ao menos 6 caracteres.");
+      return;
+    }
+
     const payload = {
       ...(editingId ? { id: editingId } : {}),
       name: formName.trim(),
@@ -138,6 +145,7 @@ export function AdestradoresClient() {
       planType: formPlan,
       status: formStatus,
       permission: formPermission,
+      ...(editingId && formPassword.trim() ? { newPassword: formPassword.trim() } : {}),
     };
 
     const response = await fetch("/api/admin/trainers", {
@@ -154,8 +162,16 @@ export function AdestradoresClient() {
     if (!editingId) {
       const data = (await response.json()) as { tempPassword?: string };
       if (data.tempPassword) setTempPassword({ email: formEmail.trim().toLowerCase(), password: data.tempPassword });
+    } else if (formPassword.trim()) {
+      setTempPassword({ email: formEmail.trim().toLowerCase(), password: formPassword.trim() });
     }
-    setMessage(editingId ? "Adestrador atualizado." : "Adestrador criado.");
+    setMessage(
+      editingId
+        ? formPassword.trim()
+          ? "Adestrador e senha atualizados."
+          : "Adestrador atualizado."
+        : "Adestrador criado.",
+    );
     await loadTrainers();
     resetForm();
   }
@@ -294,6 +310,35 @@ export function AdestradoresClient() {
                 <option value="viewer">Só-visualização — apenas leitura</option>
               </select>
             </label>
+
+            {editingId ? (
+              <label className="grid gap-1 text-xs font-semibold text-[var(--muted)] md:col-span-2">
+                Nova senha (opcional — deixe em branco para manter)
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formPassword}
+                    onChange={(event) => setFormPassword(event.target.value)}
+                    placeholder="Mín. 6 caracteres"
+                    className="flex-1 rounded-md border border-[var(--border)] px-4 py-3 text-sm outline-none focus:border-sky-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const chars = "abcdefghijkmnpqrstuvwxyz23456789";
+                      const buf = new Uint32Array(16);
+                      crypto.getRandomValues(buf);
+                      let out = "";
+                      for (const n of buf) out += chars[n % chars.length];
+                      setFormPassword(out);
+                    }}
+                    className="shrink-0 rounded-md border border-[var(--border)] px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Gerar
+                  </button>
+                </div>
+              </label>
+            ) : null}
           </div>
 
           <button
