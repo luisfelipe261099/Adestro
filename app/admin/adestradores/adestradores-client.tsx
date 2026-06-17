@@ -43,9 +43,13 @@ export function AdestradoresClient() {
   const [pwdError, setPwdError] = useState("");
 
   function randomPwd() {
+    // CSPRNG (Web Crypto), não Math.random. Alfabeto de 32 chars (sem l/o/0/1
+    // para legibilidade) → n % 32 é sem viés. 16 chars ≈ 80 bits de entropia.
     const chars = "abcdefghijkmnpqrstuvwxyz23456789";
+    const buf = new Uint32Array(16);
+    crypto.getRandomValues(buf);
     let out = "";
-    for (let i = 0; i < 10; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    for (const n of buf) out += chars[n % chars.length];
     setPwdValue(out);
   }
 
