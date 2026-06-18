@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -27,6 +28,19 @@ const WHATSAPP_MESSAGE =
 const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
   WHATSAPP_MESSAGE,
 )}`;
+
+/* Fotos (Unsplash) — todas verificadas (HTTP 200). Domínio já liberado em next.config.ts.
+   Para trocar por fotos próprias, basta substituir as URLs abaixo. */
+const photo = (id: string, w: number) =>
+  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
+
+const IMG = {
+  hero: photo("1601758228041-f3b2795255f1", 1600), // cão de perto
+  showcase: photo("1576201836106-db1758fd1c97", 1200), // treino com recompensa
+  audienceSolo: photo("1543466835-00a7907e9de1", 800), // cão golden
+  audienceSchool: photo("1548199973-03cce0bbc87b", 800), // passeio com vários cães
+  audienceTeam: photo("1591768575198-88dac53fbd0a", 800), // border collie atento
+};
 
 type Feature = {
   icon: React.ComponentType<{ className?: string }>;
@@ -128,6 +142,7 @@ const steps: Step[] = [
 type Audience = {
   title: string;
   description: string;
+  image: string;
 };
 
 const audiences: Audience[] = [
@@ -135,16 +150,19 @@ const audiences: Audience[] = [
     title: "Adestradores autônomos",
     description:
       "Profissionalize seu atendimento e tenha mais tempo para o que importa: treinar cães.",
+    image: IMG.audienceSolo,
   },
   {
     title: "Escolas de adestramento",
     description:
       "Centralize a carteira de clientes e padronize o acompanhamento de cada turma.",
+    image: IMG.audienceSchool,
   },
   {
     title: "Franquias & equipes",
     description:
       "Multi-adestrador, relatórios por carteira e portal white-label para a sua marca.",
+    image: IMG.audienceTeam,
   },
 ];
 
@@ -273,27 +291,27 @@ export function Landing() {
               "radial-gradient(60rem 30rem at 50% -10%, var(--accent-soft), transparent 70%)",
           }}
         />
-        <div className={`${container} py-20 sm:py-28`}>
+        <div className={`${container} py-14 sm:py-20`}>
           <div className="mx-auto max-w-3xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[12px] font-medium text-[var(--muted)]">
               <span className="flex h-1.5 w-1.5 rounded-full bg-[var(--success)]" />
               Plataforma para adestradores profissionais
             </span>
 
-            <h1 className="mt-6 text-4xl font-semibold leading-[1.1] tracking-tight text-[var(--foreground)] sm:text-5xl md:text-6xl">
+            <h1 className="mt-6 text-3xl font-semibold leading-[1.1] tracking-tight text-[var(--foreground)] sm:text-5xl md:text-6xl">
               Toda a sua operação de adestramento em um só lugar
             </h1>
 
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
               Clientes, agenda, treinos, portal do tutor, cobrança e IA — o
               Adestro organiza o dia a dia do adestrador e dá ao tutor um
               acompanhamento profissional da evolução do cão.
             </p>
 
-            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mx-auto mt-8 flex w-full max-w-sm flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center">
               <Link
                 href="/cadastro"
-                className="btn-primary h-11 px-6 text-[15px]"
+                className="btn-primary h-12 w-full px-6 text-[15px] sm:h-11 sm:w-auto"
               >
                 Criar conta grátis
                 <IconArrowRight className="h-4 w-4" />
@@ -302,7 +320,7 @@ export function Landing() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-secondary h-11 px-6 text-[15px]"
+                className="btn-secondary h-12 w-full px-6 text-[15px] sm:h-11 sm:w-auto"
               >
                 <IconWhatsApp className="h-4 w-4" />
                 Falar no WhatsApp
@@ -313,14 +331,26 @@ export function Landing() {
               90 dias grátis · sem cartão de crédito · cancele quando quiser
             </p>
           </div>
+
+          {/* Imagem principal */}
+          <div className="relative mx-auto mt-12 aspect-[16/10] w-full max-w-5xl overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] shadow-lg sm:aspect-[16/8]">
+            <Image
+              src={IMG.hero}
+              alt="Cão atento durante uma sessão de adestramento"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="object-cover"
+            />
+          </div>
         </div>
       </section>
 
       {/* ── Dores ────────────────────────────────────────────────────────── */}
-      <section className={`${container} py-16 sm:py-20`}>
+      <section className={`${container} py-14 sm:py-20`}>
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-eyebrow">O problema</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
             Gerir adestramento na unha custa caro
           </h2>
           <p className="mt-3 text-[var(--muted)]">
@@ -348,12 +378,12 @@ export function Landing() {
       {/* ── Como funciona ────────────────────────────────────────────────── */}
       <section
         id="como-funciona"
-        className="border-y border-[var(--border)] bg-[var(--surface)]"
+        className="scroll-mt-16 border-y border-[var(--border)] bg-[var(--surface)]"
       >
-        <div className={`${container} py-16 sm:py-20`}>
+        <div className={`${container} py-14 sm:py-20`}>
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-eyebrow">Como funciona</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
               Comece a usar em 3 passos
             </h2>
             <p className="mt-3 text-[var(--muted)]">
@@ -379,10 +409,13 @@ export function Landing() {
       </section>
 
       {/* ── Funcionalidades ──────────────────────────────────────────────── */}
-      <section id="funcionalidades" className={`${container} py-16 sm:py-24`}>
+      <section
+        id="funcionalidades"
+        className={`${container} scroll-mt-16 py-14 sm:py-24`}
+      >
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-eyebrow">Funcionalidades</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
             Tudo que o adestrador precisa
           </h2>
           <p className="mt-3 text-[var(--muted)]">
@@ -413,21 +446,71 @@ export function Landing() {
         </div>
       </section>
 
-      {/* ── Para quem é ──────────────────────────────────────────────────── */}
+      {/* ── Showcase (portal do tutor) ───────────────────────────────────── */}
       <section className="border-y border-[var(--border)] bg-[var(--surface)]">
-        <div className={`${container} py-16 sm:py-20`}>
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-eyebrow">Para quem é</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-              Feito para o seu tamanho
-            </h2>
+        <div
+          className={`${container} grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2`}
+        >
+          <div className="relative order-last aspect-[4/3] w-full overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] shadow-md lg:order-first">
+            <Image
+              src={IMG.showcase}
+              alt="Tutor acompanhando o treino do cão"
+              fill
+              sizes="(max-width: 1024px) 100vw, 600px"
+              className="object-cover"
+            />
           </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {audiences.map((audience) => (
-              <div
-                key={audience.title}
-                className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-6"
-              >
+          <div>
+            <p className="text-eyebrow">Portal do tutor</p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Um acompanhamento que encanta o cliente
+            </h2>
+            <p className="mt-3 text-[var(--muted)]">
+              O tutor recebe um link e vê tudo: tarefas de casa, vídeos, fotos e
+              a evolução do cão. Mais transparência, mais confiança e mais
+              renovações para você.
+            </p>
+            <ul className="mt-6 space-y-3">
+              {[
+                "Tarefas e vídeos de treino para o tutor praticar em casa",
+                "Linha do tempo com a evolução do cão em fotos",
+                "Gamificação que mantém o tutor engajado",
+                "Sem instalar nada — abre direto no navegador",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2.5 text-sm">
+                  <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--success)]" />
+                  <span className="text-[var(--muted-strong)]">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Para quem é ──────────────────────────────────────────────────── */}
+      <section className={`${container} py-14 sm:py-20`}>
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-eyebrow">Para quem é</p>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
+            Feito para o seu tamanho
+          </h2>
+        </div>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {audiences.map((audience) => (
+            <div
+              key={audience.title}
+              className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]"
+            >
+              <div className="relative aspect-[16/10] w-full bg-[var(--surface-2)]">
+                <Image
+                  src={audience.image}
+                  alt={audience.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 380px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-6">
                 <h3 className="text-lg font-semibold tracking-tight">
                   {audience.title}
                 </h3>
@@ -435,16 +518,19 @@ export function Landing() {
                   {audience.description}
                 </p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* ── Planos ───────────────────────────────────────────────────────── */}
-      <section id="planos" className={`${container} py-16 sm:py-24`}>
+      <section
+        id="planos"
+        className={`${container} scroll-mt-16 py-14 sm:py-24`}
+      >
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-eyebrow">Planos</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
             Comece grátis, evolua quando quiser
           </h2>
           <p className="mt-3 text-[var(--muted)]">
@@ -452,7 +538,7 @@ export function Landing() {
             com a sua carteira.
           </p>
         </div>
-        <div className="mt-12 grid gap-5 lg:grid-cols-4">
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {plans.map((plan) => (
             <div
               key={plan.name}
@@ -500,7 +586,7 @@ export function Landing() {
                 href="/cadastro"
                 className={`mt-6 ${
                   plan.highlight ? "btn-primary" : "btn-secondary"
-                } h-10 w-full`}
+                } h-11 w-full`}
               >
                 {plan.price === "R$ 0" ? "Começar de graça" : "Escolher plano"}
               </Link>
@@ -512,12 +598,12 @@ export function Landing() {
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
       <section
         id="faq"
-        className="border-y border-[var(--border)] bg-[var(--surface)]"
+        className="scroll-mt-16 border-y border-[var(--border)] bg-[var(--surface)]"
       >
-        <div className={`${container} py-16 sm:py-20`}>
+        <div className={`${container} py-14 sm:py-20`}>
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-eyebrow">Dúvidas frequentes</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
               Perguntas que todo adestrador faz
             </h2>
           </div>
@@ -540,19 +626,19 @@ export function Landing() {
       </section>
 
       {/* ── CTA final ────────────────────────────────────────────────────── */}
-      <section className={`${container} py-20 sm:py-28`}>
+      <section className={`${container} py-16 sm:py-28`}>
         <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--accent)] px-6 py-14 text-center sm:px-12">
-          <h2 className="mx-auto max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          <h2 className="mx-auto max-w-2xl text-2xl font-semibold tracking-tight text-white sm:text-4xl">
             Comece grátis hoje e profissionalize seu adestramento
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-white/80">
             90 dias gratuitos. Sem cartão, sem compromisso. Veja na prática como
             o Adestro organiza sua operação.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mx-auto mt-8 flex w-full max-w-sm flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center">
             <Link
               href="/cadastro"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-white px-6 text-[15px] font-medium text-[var(--accent)] transition-opacity hover:opacity-90"
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-white px-6 text-[15px] font-medium text-[var(--accent)] transition-opacity hover:opacity-90 sm:h-11 sm:w-auto"
             >
               Criar conta grátis
               <IconArrowRight className="h-4 w-4" />
@@ -561,7 +647,7 @@ export function Landing() {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-white/30 px-6 text-[15px] font-medium text-white transition-colors hover:bg-white/10"
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md border border-white/30 px-6 text-[15px] font-medium text-white transition-colors hover:bg-white/10 sm:h-11 sm:w-auto"
             >
               <IconWhatsApp className="h-4 w-4" />
               Falar no WhatsApp
