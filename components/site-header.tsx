@@ -263,9 +263,16 @@ export function SiteHeader() {
                 Sair
               </button>
             ) : !isLoginPage ? (
-              <Link href="/login" className="btn-primary">
-                Entrar
-              </Link>
+              <>
+                <Link href="/login" className="btn-secondary text-[12.5px]">
+                  Entrar
+                </Link>
+                {pathname !== "/cadastro" ? (
+                  <Link href="/cadastro" className="btn-primary">
+                    Criar conta grátis
+                  </Link>
+                ) : null}
+              </>
             ) : null}
           </div>
         </div>
