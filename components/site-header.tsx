@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
 import { homeRouteForRole } from "@/lib/routes";
@@ -89,7 +89,6 @@ function NavLink({ item, active, onClick }: { item: NavItem; active: boolean; on
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const router = useRouter();
   const isLoginPage = pathname === "/login";
   const isPublicPage = pathname === "/" || pathname === "/cadastro" || isLoginPage;
 
@@ -111,7 +110,10 @@ export function SiteHeader() {
     setMenuOpen(false);
     setScrollLock(false);
     await signOut({ redirect: false });
-    router.replace("/login");
+    // Reload "duro" para limpar TODO o estado de sessão no cliente (contexto do
+    // SessionProvider, cache de getSession, store) — senão o role do perfil
+    // anterior pode vazar para o próximo login (trainer→logout→admin).
+    window.location.assign("/login");
   }
 
   useEffect(() => setScrollLock(false), [pathname]);

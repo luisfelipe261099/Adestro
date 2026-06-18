@@ -1,8 +1,18 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
+import { auth } from "@/lib/auth";
+import { homeRouteForRole } from "@/lib/routes";
 import { LoginClient } from "./login-client";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  // Quem já está logado e abre /login vai direto para a home do próprio perfil
+  // — resolvido SERVER-SIDE (auth() lê o cookie), sem corrida de role no cliente.
+  const session = await auth();
+  if (session?.user) {
+    redirect(homeRouteForRole((session.user as { role?: string }).role));
+  }
+
   return (
     <Suspense
       fallback={

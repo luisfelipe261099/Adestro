@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Adestro",
     short_name: "Adestro",
     description: "Plataforma para adestradores gerenciarem rotina, treinos, relatorios e agenda com apoio de IA.",
-    start_url: "/dashboard",
+    start_url: "/",
     scope: "/",
     display: "standalone",
     background_color: "#eaf4fb",

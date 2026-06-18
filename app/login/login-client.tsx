@@ -1,16 +1,29 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSession, signIn, useSession } from "next-auth/react";
 
-import { homeRouteForRole } from "@/lib/routes";
+import { homeRouteForRoleStrict } from "@/lib/routes";
+
+async function resolveRole(): Promise<string | null> {
+  // getSession() faz GET em /api/auth/session com o cookie recém-criado pelo
+  // signIn. Retry curto até o role aparecer — evita redirecionar com o role do
+  // perfil ANTERIOR (corrida / sessão obsoleta após logout→login).
+  for (let i = 0; i < 5; i++) {
+    const s = await getSession();
+    const role = (s?.user as { role?: string } | undefined)?.role;
+    if (role) return role;
+    await new Promise((r) => setTimeout(r, 120));
+  }
+  return null;
+}
 
 export function LoginClient() {
   const params = useSearchParams();
   const router = useRouter();
-  const { data: session, status, update } = useSession();
+  const { update } = useSession();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,13 +32,6 @@ export function LoginClient() {
 
   const explicitNext = params.get("next");
   const safeExplicitNext = explicitNext?.startsWith("/") ? explicitNext : null;
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      const role = (session?.user as { role?: string } | undefined)?.role;
-      router.replace(safeExplicitNext ?? homeRouteForRole(role));
-    }
-  }, [status, session, router, safeExplicitNext]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,16 +50,14 @@ export function LoginClient() {
       return;
     }
 
-    // Atualiza o contexto do SessionProvider ANTES de navegar. Sem isso, a
-    // página de destino lia status "não autenticado" por um instante e o
-    // AuthGuard exibia "sem permissão" (corrida). update() refaz o fetch da
-    // sessão e atualiza o contexto; getSession() fica só como fallback do role.
-    // Navegação SPA (router.replace) de propósito: a navegação "dura"
-    // (window.location) passa pelo Service Worker, cujo fallback de navegação é
-    // /dashboard — o que derruba admin/cliente numa página sem permissão.
-    const freshSession = (await update()) ?? (await getSession());
-    const role = (freshSession?.user as { role?: string } | undefined)?.role;
-    router.replace(safeExplicitNext ?? homeRouteForRole(role));
+    // Resolve o role na fonte autoritativa (servidor, com o cookie novo) e só
+    // então navega — um ÚNICO redirect. update() sincroniza o contexto do
+    // SessionProvider (header/guards). Destino: ?next seguro > home do role
+    // resolvido > "/" (que resolve o perfil server-side em app/page.tsx).
+    // NUNCA cai no default /dashboard por role indefinido.
+    const role = await resolveRole();
+    await update();
+    router.replace(safeExplicitNext ?? homeRouteForRoleStrict(role) ?? "/");
   }
 
   return (

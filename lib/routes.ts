@@ -20,3 +20,22 @@ export function homeRouteForRole(role?: UserRole | string | null): string {
       return "/dashboard";
   }
 }
+
+/**
+ * Versão "estrita": retorna `null` quando o role ainda NÃO é confiável
+ * (undefined / "" / desconhecido). Use no redirect pós-login e na auto-cura do
+ * AuthGuard para NUNCA navegar com role indefinido — o que mandaria todo mundo
+ * para o default /dashboard (página só-trainer) e derrubaria admin/cliente.
+ */
+export function homeRouteForRoleStrict(role?: UserRole | string | null): string | null {
+  switch ((role ?? "").toLowerCase()) {
+    case "admin":
+      return "/admin";
+    case "client":
+      return "/portal/cliente";
+    case "trainer":
+      return "/dashboard";
+    default:
+      return null;
+  }
+}
