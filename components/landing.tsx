@@ -35,11 +35,10 @@ const photo = (id: string, w: number) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
 
 const IMG = {
-  hero: photo("1601758228041-f3b2795255f1", 1600), // cão de perto
-  showcase: photo("1576201836106-db1758fd1c97", 1200), // treino com recompensa
-  audienceSolo: photo("1543466835-00a7907e9de1", 800), // cão golden
-  audienceSchool: photo("1548199973-03cce0bbc87b", 800), // passeio com vários cães
-  audienceTeam: photo("1591768575198-88dac53fbd0a", 800), // border collie atento
+  showcase: photo("1576201836106-db1758fd1c97", 1200), // filhote golden correndo
+  audienceSolo: photo("1543466835-00a7907e9de1", 800), // beagle sorrindo
+  audienceSchool: photo("1548199973-03cce0bbc87b", 800), // dois cães correndo
+  audienceTeam: photo("1591768575198-88dac53fbd0a", 800), // pug de moletom
 };
 
 type Feature = {
