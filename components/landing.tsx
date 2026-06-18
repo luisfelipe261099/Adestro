@@ -276,7 +276,80 @@ const faqs: Faq[] = [
   },
 ];
 
+type Stat = { value: string; label: string };
+
+/* Faixa de credibilidade — FATOS REAIS do produto (nada de tração inventada).
+   Se você tiver números reais (adestradores ativos, sessões registradas,
+   horas economizadas), troque os valores/labels abaixo. */
+const stats: Stat[] = [
+  { value: "9", label: "módulos integrados: agenda, treinos, financeiro, IA e mais" },
+  { value: "90 dias", label: "grátis para testar — sem cartão de crédito" },
+  { value: "100%", label: "no navegador · instala como app e funciona offline" },
+  { value: "1 link", label: "e o tutor acompanha treinos, tarefas e evolução" },
+];
+
+type Testimonial = { quote: string; author: string; role: string };
+
+/* ⚠️ PLACEHOLDER — TROCAR pelos depoimentos REAIS antes de apresentar.
+   Não use depoimento fictício como se fosse real. Cole frase + autor + cidade
+   verdadeiros (ou me mande que eu troco). */
+const testimonials: Testimonial[] = [
+  {
+    quote:
+      "Saí do caderno e do WhatsApp e finalmente tenho a operação organizada. O tutor adora acompanhar a evolução pelo portal.",
+    author: "Adestradora autônoma",
+    role: "São Paulo · SP",
+  },
+  {
+    quote:
+      "Agenda e financeiro no mesmo lugar me devolveram horas por semana. Hoje sei exatamente quem precisa renovar.",
+    author: "Escola de adestramento",
+    role: "Campinas · SP",
+  },
+  {
+    quote:
+      "Registrar cada sessão com foto e vídeo virou meu diferencial. Fechei mais pacotes só mostrando o acompanhamento.",
+    author: "Adestrador profissional",
+    role: "Belo Horizonte · MG",
+  },
+];
+
 const container = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
+
+/* Moldura de celular com uma screenshot real do produto. */
+function Phone({
+  src,
+  alt,
+  width,
+  height,
+  className,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  className?: string;
+  priority?: boolean;
+}) {
+  return (
+    <div
+      className={`shrink-0 overflow-hidden rounded-[2rem] border-[6px] border-[#0f172a] bg-[#0f172a] shadow-2xl ${
+        className ?? ""
+      }`}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        priority={priority}
+        sizes="(max-width: 1024px) 70vw, 260px"
+        className="block h-auto w-full rounded-[1.5rem]"
+      />
+    </div>
+  );
+}
 
 export function Landing() {
   return (
@@ -298,14 +371,16 @@ export function Landing() {
               Plataforma para adestradores profissionais
             </span>
 
-            <h1 className="mt-6 text-3xl font-semibold leading-[1.1] tracking-tight text-[var(--foreground)] sm:text-5xl md:text-6xl">
-              Toda a sua operação de adestramento em um só lugar
+            <h1 className="mt-6 text-[34px] font-semibold leading-[1.05] tracking-tight text-[var(--foreground)] sm:text-[54px] md:text-[60px]">
+              Menos caderno e WhatsApp.{" "}
+              <span className="text-[var(--accent)]">Mais cães treinados</span> e
+              tutores fiéis.
             </h1>
 
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
-              Clientes, agenda, treinos, portal do tutor, cobrança e IA — o
-              Adestro organiza o dia a dia do adestrador e dá ao tutor um
-              acompanhamento profissional da evolução do cão.
+              O Adestro reúne agenda, registro de treinos, portal do tutor,
+              cobrança e IA num só lugar — pra você profissionalizar o
+              atendimento e provar a evolução de cada cão.
             </p>
 
             <div className="mx-auto mt-8 flex w-full max-w-sm flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center">
@@ -327,22 +402,67 @@ export function Landing() {
               </a>
             </div>
 
-            <p className="mt-4 text-[13px] text-[var(--muted)]">
-              90 dias grátis · sem cartão de crédito · cancele quando quiser
-            </p>
+            <div className="mt-6 flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3">
+              <span className="flex items-center gap-0.5 text-[var(--accent)]">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <IconStar key={i} className="h-4 w-4" />
+                ))}
+              </span>
+              <p className="text-[13px] text-[var(--muted)]">
+                90 dias grátis · sem cartão de crédito · cancele quando quiser
+              </p>
+            </div>
           </div>
 
-          {/* Imagem principal */}
-          <div className="relative mx-auto mt-12 aspect-[16/10] w-full max-w-5xl overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] shadow-lg sm:aspect-[16/8]">
-            <Image
-              src={IMG.hero}
-              alt="Cão atento durante uma sessão de adestramento"
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 1024px"
-              className="object-cover"
+          {/* Telas reais do produto em molduras de celular */}
+          <div className="relative mx-auto mt-12 w-full max-w-4xl sm:mt-16">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-2 -z-10 mx-auto h-[78%] max-w-2xl rounded-[3rem] bg-[var(--accent-soft)] opacity-70 blur-3xl"
             />
+            <div className="flex items-end justify-center gap-3 sm:gap-5">
+              <Phone
+                src="/tela-ia.jpg"
+                alt="Assistente de IA do Adestro sugerindo treinos"
+                width={898}
+                height={1600}
+                className="hidden w-[185px] -rotate-[5deg] lg:block"
+              />
+              <Phone
+                src="/tela-home.jpg"
+                alt="Painel inicial do Adestro no celular"
+                width={862}
+                height={1600}
+                priority
+                className="relative z-10 w-[225px] sm:w-[250px]"
+              />
+              <Phone
+                src="/tela-financeiro.jpg"
+                alt="Painel financeiro do Adestro no celular"
+                width={874}
+                height={1600}
+                className="hidden w-[185px] rotate-[5deg] lg:block"
+              />
+            </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Faixa de credibilidade (fatos reais do produto) ──────────────── */}
+      <section className="border-b border-[var(--border)] bg-[var(--surface)]">
+        <div className={container}>
+          <dl className="grid grid-cols-2 gap-y-6 py-8 sm:py-10 lg:grid-cols-4 lg:gap-y-0 lg:divide-x lg:divide-[var(--border)]">
+            {stats.map((s) => (
+              <div key={s.label} className="px-2 text-center sm:px-4">
+                <dt className="text-[26px] font-semibold tracking-tight text-[var(--foreground)] sm:text-[32px]">
+                  {s.value}
+                </dt>
+                <dd className="mx-auto mt-1 max-w-[15rem] text-[12.5px] leading-snug text-[var(--muted)]">
+                  {s.label}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
@@ -499,7 +619,7 @@ export function Landing() {
           {audiences.map((audience) => (
             <div
               key={audience.title}
-              className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]"
+              className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm transition-shadow hover:shadow-md"
             >
               <div className="relative aspect-[16/10] w-full bg-[var(--surface-2)]">
                 <Image
@@ -520,6 +640,44 @@ export function Landing() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Depoimentos ──────────────────────────────────────────────────── */}
+      <section className="border-y border-[var(--border)] bg-[var(--surface)]">
+        <div className={`${container} py-14 sm:py-20`}>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-eyebrow">Quem usa, recomenda</p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Adestradores que pararam de gerir na unha
+            </h2>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {testimonials.map((t) => (
+              <figure
+                key={t.quote}
+                className="flex flex-col rounded-xl border border-[var(--border)] bg-[var(--background)] p-6 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <span className="flex items-center gap-0.5 text-[var(--accent)]">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <IconStar key={i} className="h-4 w-4" />
+                  ))}
+                </span>
+                <blockquote className="mt-4 flex-1 text-[15px] leading-relaxed text-[var(--muted-strong)]">
+                  “{t.quote}”
+                </blockquote>
+                <figcaption className="mt-5 flex items-center gap-3 border-t border-[var(--border)] pt-4">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[13px] font-semibold text-[var(--accent-text)]">
+                    {t.author.charAt(0)}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-semibold">{t.author}</span>
+                    <span className="block text-[12px] text-[var(--muted)]">{t.role}</span>
+                  </span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
         </div>
       </section>
 
