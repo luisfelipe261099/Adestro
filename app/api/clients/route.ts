@@ -59,7 +59,11 @@ function sanitizePhotoUrl(photoUrl?: string): string | undefined {
   const value = (photoUrl ?? "").trim();
   if (!value) return undefined;
 
-  if (value.startsWith("data:image/")) return value;
+  // A coluna photoUrl é VARCHAR(191). Data URLs (base64) e URLs muito longas
+  // estouram esse limite e quebram o INSERT ("value too long for column").
+  // Nesses casos descartamos a foto (cai no padrão por raça). Para PERSISTIR a
+  // foto enviada, a coluna precisa virar @db.Text (ver nota no fim do arquivo).
+  if (value.length > 191) return undefined;
   if (/^https?:\/\//i.test(value)) return value;
 
   return undefined;
@@ -203,7 +207,7 @@ export async function POST(request: Request) {
       email:          body.email          ?? "",
       birthDate:      body.birthDate      ?? "",
       cpf:            body.cpf            ?? "",
-      photoUrl:       body.clientPhotoUrl ?? "",
+      photoUrl:       sanitizePhotoUrl(body.clientPhotoUrl) ?? "",
       privateNotes:   body.privateNotes   ?? "",
       status:         body.status         ?? "Ativo",
       propertyType:   body.propertyType   ?? "",
