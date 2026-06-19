@@ -8,6 +8,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { TagsEditor } from "@/components/tags-editor";
 import { useAppStore } from "@/lib/app-store";
 import { googleMapsLink } from "@/lib/calendar-ics";
+import { maskCEP, maskCPF, maskDate, maskPhone } from "@/lib/masks";
 
 type ClientStatus = "ativos" | "inativos" | "rascunho";
 type SortMode = "recentes" | "nome";
@@ -298,7 +299,17 @@ export default function ClientsPage() {
         .sort((a, b) => b - a)[0] ?? 0;
 
       const hasRecentSession = lastSessionDate > 0;
-      const status = client.status === "Rascunho" ? "rascunho" : getClientStatus({ hasRecentSession });
+      // O status SALVO no banco tem prioridade — um cliente recém-cadastrado é
+      // "Ativo" e não pode aparecer como "Inativo" só por ainda não ter sessão.
+      // getClientStatus fica como fallback para registros legados/sem status.
+      const status =
+        client.status === "Rascunho"
+          ? "rascunho"
+          : client.status === "Inativo"
+            ? "inativos"
+            : client.status === "Ativo"
+              ? "ativos"
+              : getClientStatus({ hasRecentSession });
 
       return {
         client,
@@ -413,6 +424,9 @@ export default function ClientsPage() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSaving) return;
+    // Só salva na ÚLTIMA etapa — evita salvar quando o usuário aperta Enter ou
+    // o "Go"/"Enviar" do teclado do celular nas etapas anteriores.
+    if (formStep !== 5) return;
 
     if (!clientName.trim() || !dogName.trim()) {
       setSaveError("Nome do tutor e nome do cão são obrigatórios.");
@@ -637,7 +651,17 @@ export default function ClientsPage() {
                 ))}
               </div>
 
-              <form onSubmit={onSubmit} className="mt-4 space-y-3">
+              <form
+                onSubmit={onSubmit}
+                onKeyDown={(e) => {
+                  // Enter num campo de texto NÃO envia o formulário — só o botão
+                  // "Finalizar Cadastro" salva. (Textarea mantém o Enter normal.)
+                  if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+                    e.preventDefault();
+                  }
+                }}
+                className="mt-4 space-y-3"
+              >
 
                 {/* ETAPA 1: Dados do Tutor */}
                 {formStep === 1 && (
@@ -651,7 +675,7 @@ export default function ClientsPage() {
                     />
                     <input
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(maskPhone(e.target.value))}
                       placeholder="WhatsApp (com DDD) *"
                       required
                       className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
@@ -666,13 +690,13 @@ export default function ClientsPage() {
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         value={birthDate}
-                        onChange={(e) => setBirthDate(e.target.value)}
+                        onChange={(e) => setBirthDate(maskDate(e.target.value))}
                         placeholder="Nascimento (DD/MM/AAAA)"
                         className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={cpf}
-                        onChange={(e) => setCpf(e.target.value)}
+                        onChange={(e) => setCpf(maskCPF(e.target.value))}
                         placeholder="CPF (opcional)"
                         className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
@@ -693,7 +717,7 @@ export default function ClientsPage() {
                     <div className="flex gap-2">
                       <input
                         value={addrZipCode}
-                        onChange={(e) => setAddrZipCode(e.target.value)}
+                        onChange={(e) => setAddrZipCode(maskCEP(e.target.value))}
                         placeholder="CEP (somente números)"
                         className="flex-1 min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
@@ -920,7 +944,7 @@ export default function ClientsPage() {
                         value={newVacName}
                         onChange={e => setNewVacName(e.target.value)}
                         placeholder="Nome da vacina (ex: V10, Antirrábica)"
-                        className="rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
                       />
                       <div className="grid grid-cols-2 gap-2">
                         <label className="grid gap-1 text-[9px] font-bold text-[var(--muted)] uppercase">
@@ -929,8 +953,8 @@ export default function ClientsPage() {
                             type="text"
                             placeholder="DD/MM/AAAA"
                             value={newVacDate}
-                            onChange={e => setNewVacDate(e.target.value)}
-                            className="rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                            onChange={e => setNewVacDate(maskDate(e.target.value))}
+                            className="min-w-0 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
                           />
                         </label>
                         <label className="grid gap-1 text-[9px] font-bold text-[var(--muted)] uppercase">
@@ -939,8 +963,8 @@ export default function ClientsPage() {
                             type="text"
                             placeholder="DD/MM/AAAA"
                             value={newVacValidity}
-                            onChange={e => setNewVacValidity(e.target.value)}
-                            className="rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                            onChange={e => setNewVacValidity(maskDate(e.target.value))}
+                            className="min-w-0 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
                           />
                         </label>
                       </div>
