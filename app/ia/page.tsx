@@ -59,6 +59,7 @@ export default function IaPage() {
   const [selectedDogId, setSelectedDogId] = useState(clients[0]?.dogs[0]?.id ?? "");
 
   const [messages, setMessages] = useState<ChatTurn[]>([]);
+  const [aiEngine, setAiEngine] = useState<"gemini" | "heuristic" | null>(null);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -138,6 +139,7 @@ export default function IaPage() {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error || "Falha");
+      setAiEngine(data?.engine === "gemini" ? "gemini" : "heuristic");
 
       const aiMsg: ChatTurn = {
         id: nowId(),
@@ -257,11 +259,11 @@ export default function IaPage() {
 
             <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
               <p className="text-[11px] font-medium text-[var(--foreground)]">
-                Motor heurístico determinístico
+                {aiEngine === "gemini" ? "IA Gemini com contexto" : "Assistente contextual"}
               </p>
               <p className="mt-0.5 text-[10.5px] leading-snug text-[var(--muted)]">
-                Sem custo de API. Quando você quiser plugar IA real (Gemini / Claude / OpenAI), é só trocar a função
-                <code className="mx-0.5 rounded bg-[var(--surface-2)] px-1 text-[10px]">generateResponse</code>.
+                Responde com o perfil do cão e a memória da conversa. Com a chave do Gemini
+                configurada, usa IA real; sem ela, cai no motor heurístico como fallback.
               </p>
             </div>
           </div>
@@ -294,13 +296,36 @@ export default function IaPage() {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={handleNewChat}
-              className="btn-ghost text-[12px]"
-            >
-              Nova conversa
-            </button>
+            <div className="flex items-center gap-2">
+              {aiEngine ? (
+                <span
+                  className={`hidden items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold sm:inline-flex ${
+                    aiEngine === "gemini"
+                      ? "bg-[var(--success-bg)] text-[var(--success)]"
+                      : "bg-[var(--surface-2)] text-[var(--muted)]"
+                  }`}
+                  title={
+                    aiEngine === "gemini"
+                      ? "Respondendo com IA (Gemini), com contexto do cão e memória da conversa"
+                      : "Usando o motor básico (sem chave de IA configurada)"
+                  }
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      aiEngine === "gemini" ? "bg-[var(--success)]" : "bg-[var(--muted)]"
+                    }`}
+                  />
+                  {aiEngine === "gemini" ? "IA ativa" : "Modo básico"}
+                </span>
+              ) : null}
+              <button
+                type="button"
+                onClick={handleNewChat}
+                className="btn-ghost text-[12px]"
+              >
+                Nova conversa
+              </button>
+            </div>
           </header>
 
           {/* Drawer mobile de contexto */}
