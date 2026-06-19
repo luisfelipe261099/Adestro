@@ -11,7 +11,9 @@ import { create } from "zustand";
 export type TourStep = {
   id: string;
   // Rota onde o passo acontece. Se diferente da atual, o tour navega antes.
-  route: string;
+  // Opcional: se ausente, o passo roda na página ATUAL sem navegar — usado em
+  // tours de página única (ex.: portal do tutor, que tem rota com token).
+  route?: string;
   // CSS selector que destaca o elemento (procuramos `data-tour="<id>"`
   // por padrão; também aceita selector arbitrário se começar com "." ou "#")
   selector?: string;
@@ -124,6 +126,92 @@ const DEFAULT_STEPS: TourStep[] = [
   },
 ];
 
+// Tour do ADMIN — roda nas páginas /admin.
+export const ADMIN_STEPS: TourStep[] = [
+  {
+    id: "admin-welcome",
+    route: "/admin",
+    title: "Painel administrativo 👋",
+    description:
+      "Em poucos passos: como acompanhar a operação e gerenciar adestradores, planos, faturamento e relatórios.",
+    fullScreen: true,
+  },
+  {
+    id: "admin-nav",
+    route: "/admin",
+    selector: '[data-tour="admin-nav"]',
+    title: "Navegação do admin",
+    description:
+      "Use estas abas para alternar entre Visão geral, Adestradores, Planos, Faturamento, Relatórios, Templates e Auditoria.",
+    placement: "bottom",
+  },
+  {
+    id: "admin-actions",
+    route: "/admin",
+    selector: '[data-tour="admin-actions"]',
+    title: "Comece por aqui",
+    description:
+      "Atalhos mais usados: gerenciar adestradores (senha e status), ajustar planos, revisar faturamento e ver relatórios.",
+    placement: "bottom",
+  },
+  {
+    id: "admin-done",
+    route: "/admin",
+    title: "Pronto! 🎉",
+    description:
+      "Explore cada aba no seu ritmo. Você pode reabrir este tour quando quiser pelo botão “Tutorial”.",
+    fullScreen: true,
+  },
+];
+
+// Tour do PORTAL DO TUTOR — página única (sem route, não navega).
+export const TUTOR_STEPS: TourStep[] = [
+  {
+    id: "tutor-welcome",
+    title: "Bem-vindo ao portal do seu cão! 🐾",
+    description:
+      "Aqui você acompanha os treinos, faz as tarefas de casa e fala com o adestrador. Vou te mostrar rapidinho.",
+    fullScreen: true,
+  },
+  {
+    id: "tutor-dog",
+    selector: '[data-tour="tutor-dog"]',
+    title: "Seu cão e a sequência",
+    description:
+      "Resumo do seu pet e a sequência diária de atividades — manter a rotina rende pontos e mantém o treino vivo.",
+    placement: "bottom",
+  },
+  {
+    id: "tutor-tasks",
+    selector: '[data-tour="tutor-tasks"]',
+    title: "Tarefas de casa",
+    description:
+      "O que o adestrador passou para praticar entre as aulas. Marque conforme for fazendo.",
+    placement: "top",
+  },
+  {
+    id: "tutor-sessions",
+    selector: '[data-tour="tutor-sessions"]',
+    title: "Histórico de treinos",
+    description:
+      "Cada aula com fotos, vídeos e avaliação. Você pode dar estrelas para cada treino.",
+    placement: "top",
+  },
+  {
+    id: "tutor-chat",
+    selector: '[data-tour="tutor-chat"]',
+    title: "Fale com o adestrador",
+    description: "Mande dúvidas e recados por aqui — as respostas aparecem em tempo real.",
+    placement: "top",
+  },
+  {
+    id: "tutor-done",
+    title: "Pronto! 🎉",
+    description: "Bons treinos! Você pode reabrir este guia pelo botão “Como usar” no topo.",
+    fullScreen: true,
+  },
+];
+
 export const useTour = create<TourState>((set) => ({
   active: false,
   stepIndex: 0,
@@ -223,7 +311,7 @@ export function ProductTour() {
 
   // Navega para a rota do passo atual quando necessário
   useEffect(() => {
-    if (!step) return;
+    if (!step || !step.route) return;
     if (pathname !== step.route) {
       router.push(step.route);
     }
@@ -236,7 +324,7 @@ export function ProductTour() {
       setWaitingForElement(false);
       return;
     }
-    if (pathname !== step.route) {
+    if (step.route && pathname !== step.route) {
       setWaitingForElement(true);
       return;
     }

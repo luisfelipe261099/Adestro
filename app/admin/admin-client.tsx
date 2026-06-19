@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { ADMIN_STEPS, useTour } from "@/components/product-tour";
+
 type OverviewResponse = {
   metrics: {
     totalTrainers: number;
@@ -40,6 +42,7 @@ type OverviewResponse = {
 };
 
 export function AdminDashboard() {
+  const startAdminTour = useTour((s) => s.start);
   const [data, setData] = useState<OverviewResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -93,9 +96,20 @@ export function AdminDashboard() {
   return (
     <div className="mx-auto max-w-7xl space-y-5 text-slate-900">
       {/* Atalhos */}
-      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Comece por aqui</p>
-        <h2 className="mt-1 text-xl font-semibold text-slate-900 sm:text-2xl">O que você quer fazer agora?</h2>
+      <section data-tour="admin-actions" className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Comece por aqui</p>
+            <h2 className="mt-1 text-xl font-semibold text-slate-900 sm:text-2xl">O que você quer fazer agora?</h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => startAdminTour(ADMIN_STEPS)}
+            className="shrink-0 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            ✨ Tutorial
+          </button>
+        </div>
         <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
           {[
             { href: "/admin/adestradores", label: "Gerenciar adestradores", detail: "Cadastrar, editar, senha e status" },

@@ -32,7 +32,7 @@ export function AdminContextNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Navegação administrativa" className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+    <nav data-tour="admin-nav" aria-label="Navegação administrativa" className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
       {/* Rola na horizontal no mobile; vira barra única no desktop. */}
       <div className="flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {adminItems.map((item) => {

@@ -7,6 +7,7 @@ import Link from "next/link";
 
 
 import { PageShell } from "@/components/page-shell";
+import { TUTOR_STEPS, useTour } from "@/components/product-tour";
 import { GamificationPanel } from "@/components/gamification-panel";
 import { MonthlyReport } from "@/components/monthly-report";
 import { NpsPrompt } from "@/components/nps-prompt";
@@ -152,6 +153,7 @@ export function PortalPublicClient({ token }: { token: string }) {
   const [reportMonthOptions, setReportMonthOptions] = useState<string[]>([]);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const startTutorTour = useTour((s) => s.start);
 
   const prevFeedbackCount = useRef(0);
   useEffect(() => {
@@ -540,6 +542,15 @@ export function PortalPublicClient({ token }: { token: string }) {
       description="Veja o que fazer em casa, quando será a próxima aula e o resumo mais recente do treino."
     >
       <section className="space-y-4">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => startTutorTour(TUTOR_STEPS)}
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--muted)] shadow-sm transition hover:bg-slate-50 hover:text-[var(--foreground)]"
+          >
+            ✨ Como usar
+          </button>
+        </div>
         {/* Banner de Confirmação de Presença (módulo 7 §8.2) */}
         {pendingConfirmEvent ? (
           <div className="rounded-md border border-[var(--border-strong)] bg-[var(--surface-2)] p-4 text-sky-900 shadow-sm animate-in fade-in duration-300">
@@ -636,7 +647,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           </Link>
         </div>
 
-        <article className="rounded-lg border border-[var(--border)] bg-slate-950 p-5 text-white shadow-sm">
+        <article data-tour="tutor-dog" className="rounded-lg border border-[var(--border)] bg-slate-950 p-5 text-white shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-4">
               {featuredDog?.photoUrl ? (
@@ -752,7 +763,7 @@ export function PortalPublicClient({ token }: { token: string }) {
         })()}
 
         <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-          <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+          <article data-tour="tutor-tasks" className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Tarefas de casa</p>
             <div className="mt-4 space-y-3">
               {data.tasks.length === 0 ? <p className="text-sm text-[var(--muted)]">Sem tarefas registradas para este caso.</p> : null}
@@ -994,7 +1005,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           </article>
         </div>
 
-        <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <article data-tour="tutor-sessions" className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Avaliacao e evidencias</p>
           <div className="mt-3 rounded-md border border-[var(--border)] bg-white p-3">
             {latestSessionScore ? (
@@ -1151,7 +1162,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           )}
         </article>
 
-        <article className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm h-[420px] flex flex-col">
+        <article data-tour="tutor-chat" className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm h-[420px] flex flex-col">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Central de Mensagens</p>
           
           {/* Scrolling messages list */}
