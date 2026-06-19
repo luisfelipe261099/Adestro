@@ -3,32 +3,116 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { requireRateLimit } from "@/lib/rate-limit";
 
-// Assistente IA contextual para a página de sessão (módulo 3 §4.2 Seção I).
-// MVP grátis: motor heurístico determinístico baseado nas notas + comandos da sessão.
-// Quando o adestrador quiser conectar IA real (Gemini gratuito, Llama via Ollama,
-// OpenAI, etc.), basta trocar a função `generateResponse` por uma chamada à API.
+// Assistente IA contextual do Adestro (módulo 3 §4.2).
+// Usa IA REAL (Gemini) quando GEMINI_API_KEY está configurada; se não houver
+// chave (ou a chamada falhar), cai no motor heurístico determinístico abaixo —
+// então o chat nunca quebra. O contexto do cão + o histórico da conversa são
+// enviados em todo turno, para a IA "lembrar" sem o adestrador repetir tudo.
 
 type ChatTurn = { role: "user" | "assistant"; content: string };
 
+type ChatContext = {
+  dogName?: string;
+  dogBreed?: string;
+  dogAge?: string;
+  trainingTypes?: string[];
+  tutorName?: string;
+  environment?: string;
+  recentSessions?: Array<{ date?: string; title?: string; notes?: string[] }>;
+  // Compat com a versão anterior do payload:
+  sessionDescription?: string;
+  commandsWorked?: Array<{ command: string; rating: number; notes?: string }>;
+  privateNotes?: string;
+};
+
 type ChatRequest = {
   message: string;
-  context: {
-    dogName?: string;
-    dogBreed?: string;
-    sessionDescription?: string;
-    commandsWorked?: Array<{ command: string; rating: number; notes?: string }>;
-    privateNotes?: string;
-  };
+  context: ChatContext;
   history?: ChatTurn[];
 };
 
-function buildBriefContext(ctx: ChatRequest["context"]): string {
+// ─── IA real (Gemini) ────────────────────────────────────────────────────────
+
+function buildSystemPrompt(ctx: ChatContext): string {
+  const lines: string[] = [
+    "Você é o assistente de IA do Adestro, especialista em adestramento e comportamento",
+    "canino, falando com um adestrador profissional. Responda em português do Brasil, de",
+    "forma prática, objetiva e segura, com técnicas de reforço positivo (nunca recomende",
+    "punir medo ou dor). Você JÁ conhece o cão e o histórico abaixo — não peça informações",
+    "que já estão aqui, e use o histórico da conversa para dar continuidade sem repetir.",
+    "",
+    "# Caso atual",
+  ];
+  if (ctx.dogName) {
+    lines.push(`Cão: ${[ctx.dogName, ctx.dogBreed, ctx.dogAge].filter(Boolean).join(", ")}`);
+  }
+  if (ctx.tutorName) lines.push(`Tutor: ${ctx.tutorName}`);
+  if (ctx.trainingTypes && ctx.trainingTypes.length) {
+    lines.push(`Foco de treino: ${ctx.trainingTypes.join(", ")}`);
+  }
+  if (ctx.environment) lines.push(`Ambiente/convívio: ${ctx.environment}`);
+  if (ctx.recentSessions && ctx.recentSessions.length) {
+    lines.push("", "Sessões recentes:");
+    for (const s of ctx.recentSessions.slice(0, 5)) {
+      const notes = s.notes && s.notes.length ? `: ${s.notes.join("; ")}` : "";
+      lines.push(`- ${s.date ?? "?"} — ${s.title ?? "Sessão"}${notes}`);
+    }
+  }
+  if (ctx.sessionDescription) {
+    lines.push("", `Resumo da última sessão: ${ctx.sessionDescription.slice(0, 300)}`);
+  }
+  return lines.join("\n");
+}
+
+async function generateWithGemini(ctx: ChatContext, history: ChatTurn[], message: string): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY ausente");
+  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+  // Gemini espera turnos alternados user/model. Mandamos as últimas 12 trocas
+  // da conversa (memória) + a mensagem nova.
+  const contents = [
+    ...history.slice(-12).map((t) => ({
+      role: t.role === "assistant" ? "model" : "user",
+      parts: [{ text: t.content }],
+    })),
+    { role: "user", parts: [{ text: message }] },
+  ];
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: buildSystemPrompt(ctx) }] },
+      contents,
+      generationConfig: { temperature: 0.7, maxOutputTokens: 800 },
+    }),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Gemini ${res.status}: ${detail.slice(0, 200)}`);
+  }
+
+  const data = (await res.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+  const text = (data.candidates?.[0]?.content?.parts ?? [])
+    .map((p) => p.text ?? "")
+    .join("")
+    .trim();
+  if (!text) throw new Error("Gemini: resposta vazia");
+  return text;
+}
+
+// ─── Fallback heurístico (sem chave de IA / se a IA falhar) ──────────────────
+
+function buildBriefContext(ctx: ChatContext): string {
   const parts: string[] = [];
   if (ctx.dogName) parts.push(`Cão: ${ctx.dogName}${ctx.dogBreed ? ` (${ctx.dogBreed})` : ""}`);
   if (ctx.commandsWorked && ctx.commandsWorked.length > 0) {
-    const summary = ctx.commandsWorked
-      .map((c) => `${c.command} ${c.rating}/5`)
-      .join(", ");
+    const summary = ctx.commandsWorked.map((c) => `${c.command} ${c.rating}/5`).join(", ");
     parts.push(`Comandos: ${summary}`);
   }
   if (ctx.sessionDescription) {
@@ -45,7 +129,6 @@ function generateResponse(input: ChatRequest): string {
 
   if (!message) return "Pergunte algo sobre o treino — posso sugerir próximos passos, técnicas ou exercícios.";
 
-  // Detecta tópicos populares
   if (message.includes("próxim") || message.includes("plano") || message.includes("planejar")) {
     const lowRated = (ctx.commandsWorked ?? []).filter((c) => c.rating <= 3);
     if (lowRated.length > 0) {
@@ -92,7 +175,6 @@ function generateResponse(input: ChatRequest): string {
       `Pontos fortes destacados, anote no campo "Resumo público" o que o tutor precisa reforçar em casa.`;
   }
 
-  // Fallback genérico contextualizado
   const context = buildBriefContext(ctx);
   return `Sobre "${input.message.slice(0, 60)}" — considere o contexto: ${context || "ainda há poucos dados nesta sessão"}. ` +
     `Pergunte sobre próximos passos, ansiedade, recall, latido, socialização ou análise do treino para respostas mais ricas.`;
@@ -112,14 +194,27 @@ export async function POST(request: Request) {
   if (!body.message || typeof body.message !== "string") {
     return NextResponse.json({ error: "message obrigatorio" }, { status: 400 });
   }
-  if (body.message.length > 500) {
-    return NextResponse.json({ error: "Mensagem muito longa (máx 500)" }, { status: 400 });
+  if (body.message.length > 1000) {
+    return NextResponse.json({ error: "Mensagem muito longa (máx 1000)" }, { status: 400 });
   }
 
-  const response = generateResponse(body);
+  let response: string;
+  let engine: "gemini" | "heuristic" = "heuristic";
+  try {
+    if (process.env.GEMINI_API_KEY) {
+      response = await generateWithGemini(body.context ?? {}, body.history ?? [], body.message);
+      engine = "gemini";
+    } else {
+      response = generateResponse(body);
+    }
+  } catch (err) {
+    console.error("[ia.session-chat] IA real falhou, usando fallback heurístico:", err);
+    response = generateResponse(body);
+  }
 
   return NextResponse.json({
     response,
+    engine,
     timestamp: new Date().toISOString(),
   });
 }

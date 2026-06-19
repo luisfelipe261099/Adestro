@@ -52,7 +52,7 @@ export function NotificationsBell() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 top-11 z-50 w-[22rem] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-lg">
+        <div className="fixed inset-x-2 top-14 z-50 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:w-[22rem]">
           <header className="flex items-center justify-between border-b border-[var(--border)] px-3 py-2.5">
             <div>
               <p className="text-[13px] font-semibold text-[var(--foreground)]">Notificações</p>

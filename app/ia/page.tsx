@@ -121,8 +121,16 @@ export default function IaPage() {
           context: {
             dogName: selectedDog?.name,
             dogBreed: selectedDog?.breed,
+            dogAge: selectedDog?.age,
+            trainingTypes: selectedDog?.trainingTypes,
+            tutorName: selectedClient?.name,
+            environment: selectedClient?.environment,
+            recentSessions: dogTimeline.slice(0, 5).map((s) => ({
+              date: s.date,
+              title: s.title,
+              notes: (s.notes ?? []).map((n) => `${n.block}: ${n.score}/10 — ${n.comment}`),
+            })),
             sessionDescription: lastSessionSummary,
-            commandsWorked: [],
           },
           history: messages.map((m) => ({ role: m.role, content: m.content })),
         }),
@@ -170,7 +178,7 @@ export default function IaPage() {
 
   return (
     <AuthGuard role="trainer">
-      <main className="flex h-[calc(100dvh-56px)] w-full">
+      <main className="flex h-[calc(100dvh-112px)] w-full lg:h-[calc(100dvh-56px)]">
         {/* Sidebar de contexto (desktop) */}
         <aside className="hidden h-full w-72 flex-shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface-2)]/40 lg:flex">
           <header className="border-b border-[var(--border)] px-4 py-3">
