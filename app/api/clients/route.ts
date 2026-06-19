@@ -78,6 +78,29 @@ function getDefaultDogPhotoByBreed(breed?: string): string | undefined {
   return undefined;
 }
 
+/**
+ * Garante que o adestrador logado tenha um perfil na tabela Trainer. Algumas
+ * contas (criadas pelo admin ou em versões antigas) têm User role=TRAINER mas
+ * nenhum registro Trainer — o que fazia o cadastro de cliente dar 404 "sem
+ * adestrador" para sempre. Mesmo padrão já usado em /api/trainer/settings e
+ * /api/portal-links. Cria sob demanda; null só se o próprio User sumiu.
+ */
+async function ensureTrainer(userId: string) {
+  const existing = await prisma.trainer.findUnique({ where: { userId } });
+  if (existing) return existing;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, email: true },
+  });
+  if (!user) return null;
+  return prisma.trainer.create({
+    data: {
+      userId,
+      name: user.name?.trim() || user.email?.split("@")[0] || "Adestrador",
+    },
+  });
+}
+
 // GET /api/clients
 export async function GET() {
   const session = await auth();
@@ -85,7 +108,7 @@ export async function GET() {
   const role = ((session.user as { role?: string }).role ?? "").toLowerCase();
   if (role !== "trainer") return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
 
-  const trainer = await prisma.trainer.findUnique({ where: { userId: session.user.id } });
+  const trainer = await ensureTrainer(session.user.id);
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
   const clients = await prisma.clientProfile.findMany({
@@ -104,7 +127,7 @@ export async function POST(request: Request) {
   const role = ((session.user as { role?: string }).role ?? "").toLowerCase();
   if (role !== "trainer") return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
 
-  const trainer = await prisma.trainer.findUnique({ where: { userId: session.user.id } });
+  const trainer = await ensureTrainer(session.user.id);
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
   // Enforcement de limite de clientes por plano (módulo 1 §SaaS)
@@ -171,7 +194,8 @@ export async function POST(request: Request) {
 
   const resolvedDogPhotoUrl = sanitizePhotoUrl(body.photoUrl) ?? getDefaultDogPhotoByBreed(body.breed);
 
-  const client = await prisma.clientProfile.create({
+  try {
+    const client = await prisma.clientProfile.create({
     data: {
       trainerId:      trainer.id,
       name:           body.clientName,
@@ -231,16 +255,28 @@ export async function POST(request: Request) {
     },
   });
 
-  await audit({
-    trainerId: trainer.id,
-    action: "client.created",
-    resourceId: client.id,
-    detail: { name: client.name, dogName: body.dogName },
-    actorEmail: session.user.email ?? null,
-    request,
-  });
+    await audit({
+      trainerId: trainer.id,
+      action: "client.created",
+      resourceId: client.id,
+      detail: { name: client.name, dogName: body.dogName },
+      actorEmail: session.user.email ?? null,
+      request,
+    });
 
-  return NextResponse.json(client, { status: 201 });
+    return NextResponse.json(client, { status: 201 });
+  } catch (err) {
+    // Sem try/catch, um erro do Prisma virava 500 SEM corpo JSON e o app só
+    // mostrava o fallback genérico. Agora devolvemos a mensagem real do banco
+    // para diagnóstico (ex.: "Can't reach database server", violação de
+    // constraint, coluna ausente).
+    console.error("[clients.POST] erro ao criar cliente:", err);
+    const detail = err instanceof Error ? err.message : "erro desconhecido";
+    return NextResponse.json(
+      { error: `Não foi possível salvar no banco. ${detail}` },
+      { status: 500 },
+    );
+  }
 }
 
 // PATCH /api/clients
@@ -250,7 +286,7 @@ export async function PATCH(request: Request) {
   const role = ((session.user as { role?: string }).role ?? "").toLowerCase();
   if (role !== "trainer") return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
 
-  const trainer = await prisma.trainer.findUnique({ where: { userId: session.user.id } });
+  const trainer = await ensureTrainer(session.user.id);
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
   const body = await request.json() as { clientId: string; status?: string };
