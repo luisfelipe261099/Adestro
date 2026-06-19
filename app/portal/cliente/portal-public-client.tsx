@@ -153,9 +153,17 @@ export function PortalPublicClient({ token }: { token: string }) {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  const prevFeedbackCount = useRef(0);
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [data?.feedbacks]);
+    const count = data?.feedbacks?.length ?? 0;
+    // Rola APENAS quando chega uma mensagem nova de verdade — nunca no
+    // carregamento inicial nem nas atualizações automáticas (senão a página
+    // "rola sozinha" a cada poll, porque data?.feedbacks muda de referência).
+    if (count > prevFeedbackCount.current && prevFeedbackCount.current > 0) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    prevFeedbackCount.current = count;
+  }, [data?.feedbacks?.length]);
 
   const gam = useGamification(token, { pin: pinRequired ? pin : undefined });
 
@@ -235,21 +243,30 @@ export function PortalPublicClient({ token }: { token: string }) {
     loadPortal();
   }, [token, pinQuery, pinRequired, unlockAttempt]);
 
+  // Mantém o data mais recente num ref para o polling comparar sem se recriar.
+  const dataRef = useRef<PortalData | null>(null);
   useEffect(() => {
-    if (pinRequired || !data) return;
+    dataRef.current = data;
+  }, [data]);
+
+  useEffect(() => {
+    if (pinRequired) return;
     const interval = setInterval(async () => {
       try {
         const response = await fetch(`/api/portal-public/${encodeURIComponent(token)}${pinQuery}`, { cache: "no-store" });
-        if (response.ok) {
-          const payload = (await response.json()) as PortalData;
+        if (!response.ok) return;
+        const payload = (await response.json()) as PortalData;
+        // Só re-renderiza se algo MUDOU de verdade. Sem isso, o setData a cada
+        // poll criava um objeto novo → a página "recarregava"/piscava sem parar.
+        if (JSON.stringify(payload) !== JSON.stringify(dataRef.current)) {
           setData(payload);
         }
       } catch {
         // ignore background errors
       }
-    }, 5000);
+    }, 20000);
     return () => clearInterval(interval);
-  }, [token, pinQuery, pinRequired, data]);
+  }, [token, pinQuery, pinRequired]);
 
   const featuredDog = data?.client.dogs[0];
   const featuredDogPhoto = photoLoadFailed ? "/images/dog-default-bolt.svg" : featuredDog?.photoUrl || "/images/dog-default-bolt.svg";
