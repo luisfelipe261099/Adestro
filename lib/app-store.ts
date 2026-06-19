@@ -186,7 +186,7 @@ type AppState = {
   }) => void;
   setTrainerPaymentProfile: (payload: Partial<TrainerPaymentProfile>) => void;
   renewTrainerSubscription: () => Promise<boolean>;
-  addClientWithDog: (payload: any) => Promise<boolean>;
+  addClientWithDog: (payload: any) => Promise<{ ok: true } | { ok: false; error: string }>;
   addTrainingSession: (payload: {
     number?: number;
     title: string;
@@ -621,17 +621,34 @@ export const useAppStore = create<AppState>()(
       },
       addClientWithDog: async (payload) => {
         try {
-          const response = await fetch("/api/clients", {
+          // fetchWithRetry: o TiDB serverless hiberna e devolve 500 na 1ª
+          // requisição (cold start). O retry só dispara em 5xx; respostas 4xx
+          // (limite de plano, etc.) voltam na hora. audit() é à prova de falha,
+          // então reenviar não duplica o cadastro.
+          const response = await fetchWithRetry("/api/clients", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           });
 
-          if (!response.ok) return false;
+          if (!response.ok) {
+            let error = "Não foi possível cadastrar agora. Tente novamente.";
+            try {
+              const data = (await response.json()) as { error?: string };
+              if (data?.error) error = data.error;
+            } catch {
+              // resposta sem corpo JSON
+            }
+            return { ok: false as const, error };
+          }
+
           await get().loadFromDB();
-          return true;
+          return { ok: true as const };
         } catch {
-          return false;
+          return {
+            ok: false as const,
+            error: "Falha de conexão com o servidor. Verifique sua internet e tente de novo.",
+          };
         }
       },
       addTrainingSession: async (payload) => {

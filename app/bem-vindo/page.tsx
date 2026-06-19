@@ -37,13 +37,13 @@ export default function WelcomePage() {
     setSubmitting(true);
     setError("");
     try {
-      const ok = await addClient({
+      const result = await addClient({
         clientName: clientName || "Tutor de exemplo",
         phone: clientPhone || "",
         dogName: dogName || "Cão de exemplo",
         breed: dogBreed || "Sem raça definida",
       });
-      if (!ok) throw new Error("Não foi possível salvar o cliente. Tente em /clientes.");
+      if (!result.ok) throw new Error(result.error || "Não foi possível salvar o cliente. Tente em /clientes.");
       try {
         window.localStorage.setItem("adestro-onboarding-done", "1");
       } catch { /* ignore */ }

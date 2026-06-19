@@ -472,11 +472,11 @@ export default function ClientsPage() {
     };
 
     try {
-      const ok = await addClientWithDog(payload);
+      const result = await addClientWithDog(payload);
 
-      if (!ok) {
-        setSaveError("Erro ao cadastrar. Verifique sua conexão e tente novamente.");
-        window.setTimeout(() => setSaveError(""), 4000);
+      if (!result.ok) {
+        setSaveError(result.error || "Erro ao cadastrar. Tente novamente.");
+        window.setTimeout(() => setSaveError(""), 6000);
         return;
       }
 
@@ -647,34 +647,34 @@ export default function ClientsPage() {
                       onChange={(e) => setClientName(e.target.value)}
                       placeholder="Nome completo do tutor *"
                       required
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <input
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="WhatsApp (com DDD) *"
                       required
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <input
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       type="email"
                       placeholder="E-mail (opcional)"
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
                         placeholder="Nascimento (DD/MM/AAAA)"
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={cpf}
                         onChange={(e) => setCpf(e.target.value)}
                         placeholder="CPF (opcional)"
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                     </div>
                     <textarea
@@ -682,7 +682,7 @@ export default function ClientsPage() {
                       onChange={(e) => setPrivateNotes(e.target.value)}
                       placeholder="Observações confidenciais do adestrador (não visíveis ao tutor)..."
                       rows={3}
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                   </div>
                 )}
@@ -695,7 +695,7 @@ export default function ClientsPage() {
                         value={addrZipCode}
                         onChange={(e) => setAddrZipCode(e.target.value)}
                         placeholder="CEP (somente números)"
-                        className="flex-1 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="flex-1 min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <button
                         type="button"
@@ -713,14 +713,14 @@ export default function ClientsPage() {
                         onChange={(e) => setAddrStreet(e.target.value)}
                         placeholder="Logradouro / Rua"
                         required
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={addrNumber}
                         onChange={(e) => setAddrNumber(e.target.value)}
                         placeholder="Número"
                         required
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                     </div>
 
@@ -728,7 +728,7 @@ export default function ClientsPage() {
                       value={addrComplement}
                       onChange={(e) => setAddrComplement(e.target.value)}
                       placeholder="Complemento (Apto, bloco, etc.)"
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
 
                     <div className="grid grid-cols-[1.2fr_1fr_0.6fr] gap-2">
@@ -736,20 +736,20 @@ export default function ClientsPage() {
                         value={addrNeighborhood}
                         onChange={(e) => setAddrNeighborhood(e.target.value)}
                         placeholder="Bairro"
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={addrCity}
                         onChange={(e) => setAddrCity(e.target.value)}
                         placeholder="Cidade"
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={addrState}
                         onChange={(e) => setAddrState(e.target.value)}
                         placeholder="UF"
                         maxLength={2}
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none text-center focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none text-center focus:border-sky-400"
                       />
                     </div>
 
@@ -758,7 +758,7 @@ export default function ClientsPage() {
                         value={addrNickname}
                         onChange={(e) => setAddrNickname(e.target.value)}
                         placeholder="Apelido (ex: Casa, Sítio)"
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <label className="flex items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-slate-50 text-xs text-[var(--muted)] cursor-pointer select-none">
                         <input
@@ -797,13 +797,13 @@ export default function ClientsPage() {
                       onChange={(e) => setDogName(e.target.value)}
                       placeholder="Nome do cão *"
                       required
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <input
                       value={breed}
                       onChange={(e) => setBreed(e.target.value)}
                       placeholder="Raça (opcional)"
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <div className="grid gap-1">
@@ -817,7 +817,7 @@ export default function ClientsPage() {
                             const computed = dogAgeFromBirthDate(e.target.value);
                             if (computed) setAge(computed);
                           }}
-                          className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                          className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                         />
                       </div>
                       <div className="grid gap-1">
@@ -826,7 +826,7 @@ export default function ClientsPage() {
                           value={weight}
                           onChange={(e) => setWeight(e.target.value)}
                           placeholder="Ex: 20kg"
-                          className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                          className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                         />
                       </div>
                     </div>
@@ -834,7 +834,7 @@ export default function ClientsPage() {
                       value={age}
                       onChange={(e) => setAge(e.target.value)}
                       placeholder="Idade (ex: 2 anos) — preenche sozinho pela data de nascimento"
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <select
@@ -861,13 +861,13 @@ export default function ClientsPage() {
                         value={dogMicrochip}
                         onChange={(e) => setDogMicrochip(e.target.value)}
                         placeholder="Microchip (opcional)"
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <input
                         value={dogColor}
                         onChange={(e) => setDogColor(e.target.value)}
                         placeholder="Cor / Marcações"
-                        className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                     </div>
 
@@ -957,19 +957,19 @@ export default function ClientsPage() {
                       value={dietRestrictions}
                       onChange={(e) => setDietRestrictions(e.target.value)}
                       placeholder="Restrições alimentares (ex: Frango, Grãos)"
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <input
                       value={healthConditions}
                       onChange={(e) => setHealthConditions(e.target.value)}
                       placeholder="Condições de saúde relevante (ex: Displasia)"
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     <input
                       value={veterinarian}
                       onChange={(e) => setVeterinarian(e.target.value)}
                       placeholder="Veterinário de referência (Nome e Telefone)"
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                   </div>
                 )}
@@ -1025,14 +1025,14 @@ export default function ClientsPage() {
                       value={rotAlimentation}
                       onChange={(e) => setRotAlimentation(e.target.value)}
                       placeholder="Alimentação: ração, horários, tipos"
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                     
                     <input
                       value={planLabel}
                       onChange={(e) => setPlanLabel(e.target.value)}
                       placeholder="Plano / Pacote de aulas atrelado"
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
 
                     {/* Focos / Objetivos checkboxes */}
@@ -1372,14 +1372,14 @@ export default function ClientsPage() {
                   placeholder="Título da tarefa (ex: Treinar o senta antes de comer)"
                   value={newPortalTaskTitle}
                   onChange={(e) => setNewPortalTaskTitle(e.target.value)}
-                  className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full"
+                  className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full"
                 />
                 <textarea
                   placeholder="Instruções adicionais para o tutor (opcional)"
                   value={newPortalTaskDesc}
                   onChange={(e) => setNewPortalTaskDesc(e.target.value)}
                   rows={2}
-                  className="rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full resize-none"
+                  className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full resize-none"
                 />
                 <button
                   type="button"
