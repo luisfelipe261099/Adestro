@@ -64,9 +64,20 @@ function buildSystemPrompt(ctx: ChatContext): string {
   return lines.join("\n");
 }
 
+// Aceita os nomes mais comuns de variável da chave do Gemini/Google AI, para
+// funcionar com o que já estiver configurado na Vercel (sem depender de um nome).
+function getGeminiKey(): string | undefined {
+  return (
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.GEMINI_KEY
+  );
+}
+
 async function generateWithGemini(ctx: ChatContext, history: ChatTurn[], message: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY ausente");
+  const apiKey = getGeminiKey();
+  if (!apiKey) throw new Error("Chave do Gemini ausente");
   const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
@@ -201,7 +212,7 @@ export async function POST(request: Request) {
   let response: string;
   let engine: "gemini" | "heuristic" = "heuristic";
   try {
-    if (process.env.GEMINI_API_KEY) {
+    if (getGeminiKey()) {
       response = await generateWithGemini(body.context ?? {}, body.history ?? [], body.message);
       engine = "gemini";
     } else {
