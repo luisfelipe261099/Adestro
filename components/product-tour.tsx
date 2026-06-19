@@ -165,24 +165,44 @@ function getRect(selector?: string): Rect | null {
   return { top: r.top, left: r.left, width: r.width, height: r.height };
 }
 
-function computeTooltipPosition(rect: Rect, placement: "top" | "bottom" | "left" | "right"): { top: number; left: number; transform: string } {
+function computeTooltipPosition(rect: Rect, placement: "top" | "bottom" | "left" | "right"): { top: number; left: number } {
   const gap = 12;
   const vw = typeof window !== "undefined" ? window.innerWidth : 1024;
   const vh = typeof window !== "undefined" ? window.innerHeight : 768;
-  const maxWidth = 320;
+  const margin = 16;
+  const width = Math.min(320, vw - 2 * margin);
+  // Altura estimada (generosa) do card. Usada só para o CLAMP — garante que o
+  // card inteiro, incluindo os botões, caiba na tela mesmo quando o alvo está
+  // num canto. Maior que o card real => botões sempre visíveis.
+  const height = 300;
 
+  let top: number;
+  let left: number;
   switch (placement) {
     case "top":
-      return { top: rect.top - gap, left: Math.min(vw - maxWidth - 16, Math.max(16, rect.left)), transform: "translateY(-100%)" };
-    case "bottom":
-      return { top: rect.top + rect.height + gap, left: Math.min(vw - maxWidth - 16, Math.max(16, rect.left)), transform: "translateY(0)" };
+      top = rect.top - gap - height;
+      left = rect.left;
+      break;
     case "left":
-      return { top: rect.top, left: rect.left - gap, transform: "translateX(-100%)" };
+      top = rect.top;
+      left = rect.left - gap - width;
+      break;
     case "right":
-      return { top: rect.top, left: rect.left + rect.width + gap, transform: "translateX(0)" };
+      top = rect.top;
+      left = rect.left + rect.width + gap;
+      break;
+    case "bottom":
     default:
-      return { top: Math.min(vh - 200, rect.top + rect.height + gap), left: 16, transform: "translateY(0)" };
+      top = rect.top + rect.height + gap;
+      left = rect.left;
+      break;
   }
+
+  // Prende o card dentro da viewport (com margem) — sem isso, alvos perto das
+  // bordas faziam o card transbordar e o botão "Próximo" sumir embaixo da tela.
+  left = Math.min(vw - width - margin, Math.max(margin, left));
+  top = Math.min(vh - height - margin, Math.max(margin, top));
+  return { top, left };
 }
 
 export function ProductTour() {
@@ -310,10 +330,10 @@ export function ProductTour() {
 
       {/* Tooltip */}
       <div
-        className={`pointer-events-auto fixed max-w-sm rounded-md border border-purple-200 bg-white p-4 shadow-2xl ${
+        className={`pointer-events-auto fixed max-h-[calc(100dvh-2rem)] max-w-sm overflow-y-auto rounded-md border border-purple-200 bg-white p-4 shadow-2xl ${
           tooltipPos ? "" : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
         }`}
-        style={tooltipPos ? { top: tooltipPos.top, left: tooltipPos.left, transform: tooltipPos.transform, width: "min(320px, calc(100vw - 32px))" } : { width: "min(360px, calc(100vw - 32px))" }}
+        style={tooltipPos ? { top: tooltipPos.top, left: tooltipPos.left, width: "min(320px, calc(100vw - 32px))" } : { width: "min(360px, calc(100vw - 32px))" }}
       >
         {waitingForElement ? (
           <p className="text-xs text-[var(--muted)]">Carregando passo…</p>
