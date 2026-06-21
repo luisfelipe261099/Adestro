@@ -40,6 +40,8 @@ export default function PortalPage() {
   const addPortalTask = useAppStore((state) => state.addPortalTask);
 
   const [taskTitle, setTaskTitle] = useState("");
+  const [taskRecurrence, setTaskRecurrence] = useState<"once" | "daily" | "weekly">("daily");
+  const [taskWeekdays, setTaskWeekdays] = useState<number[]>([]);
   const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedDogId, setSelectedDogId] = useState("");
   const [copyStatus, setCopyStatus] = useState<"idle" | "ok" | "ok-renewed" | "error">("idle");
@@ -96,7 +98,7 @@ export default function PortalPage() {
         setPortalLink(body.link ?? null);
         setLastGeneratedUrl("");
       } catch {
-        setLinkError("Não foi possível carregar o status do link deste tutor.");
+        setLinkError("Não foi possível carregar o status do link deste cliente.");
       } finally {
         setIsLoadingLink(false);
       }
@@ -108,9 +110,13 @@ export default function PortalPage() {
   async function handleAddTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!taskTitle.trim() || isAddingTask || !selectedClient?.id) return;
+    if (taskRecurrence === "weekly" && taskWeekdays.length === 0) return;
     setIsAddingTask(true);
     try {
-      await addPortalTask(taskTitle, "", selectedClient.id);
+      await addPortalTask(taskTitle, "", selectedClient.id, {
+        recurrence: taskRecurrence,
+        weekdays: taskWeekdays,
+      });
       setTaskTitle("");
     } finally {
       setIsAddingTask(false);
@@ -121,7 +127,10 @@ export default function PortalPage() {
     if (isAddingTask || !selectedClient?.id) return;
     setIsAddingTask(true);
     try {
-      await addPortalTask(template, "Tarefa sugerida", selectedClient.id);
+      await addPortalTask(template, "Tarefa sugerida", selectedClient.id, {
+        recurrence: taskRecurrence,
+        weekdays: taskWeekdays,
+      });
     } finally {
       setIsAddingTask(false);
     }
@@ -179,7 +188,7 @@ export default function PortalPage() {
       setLastGeneratedUrl(nextShareUrl);
       return nextShareUrl;
     } catch {
-      setLinkError("Não foi possível gerar o link deste tutor. Tente novamente.");
+      setLinkError("Não foi possível gerar o link deste cliente. Tente novamente.");
       return null;
     } finally {
       setIsGeneratingLink(false);
@@ -254,7 +263,7 @@ export default function PortalPage() {
         <div className="rounded-lg border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-sm">
           <header className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Portal do tutor</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Portal do cliente</p>
               <h1 className="text-2xl font-semibold text-[var(--foreground)]">Compartilhar acompanhamento</h1>
               <p className="mt-1 text-xs text-[var(--muted)]">Adestrador: {trainerName || "Sem nome"}</p>
             </div>
@@ -283,7 +292,7 @@ export default function PortalPage() {
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
           <label className="grid gap-1 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
-            1. Escolha o tutor
+            1. Escolha o cliente
             <select
               value={selectedClient?.id ?? ""}
               onChange={(event) => setSelectedClientId(event.target.value)}
@@ -333,7 +342,7 @@ export default function PortalPage() {
               <div>
                 <h2 className="font-semibold text-[var(--foreground)]">3. Link do portal de {selectedDog.name}</h2>
                 <p className="mt-1 text-xs text-[var(--muted)]">
-                  Tutor: {selectedClient.name} • {selectedClient.plan || "Plano não informado"}
+                  Cliente: {selectedClient.name} • {selectedClient.plan || "Plano não informado"}
                 </p>
               </div>
             </div>
@@ -460,10 +469,10 @@ export default function PortalPage() {
 
         <article className="mb-4 rounded-md border border-[var(--border)] bg-[var(--panel)] p-4">
           <h2 className="font-semibold text-[var(--foreground)]">4. Tarefas para casa</h2>
-          <p className="mt-1 text-xs text-[var(--muted)]">O tutor verá estas tarefas logo ao abrir o portal.</p>
+          <p className="mt-1 text-xs text-[var(--muted)]">O cliente verá estas tarefas logo ao abrir o portal.</p>
 
           {!selectedClient ? (
-            <p className="mt-3 text-xs text-[var(--muted)]">Selecione um tutor para gerenciar tarefas.</p>
+            <p className="mt-3 text-xs text-[var(--muted)]">Selecione um cliente para gerenciar tarefas.</p>
           ) : (
             <>
               {selectedTasks.length === 0 ? (
@@ -510,7 +519,53 @@ export default function PortalPage() {
                 ))}
               </div>
 
-              <form onSubmit={handleAddTask} className="mt-3 flex gap-2">
+              {/* Frequência da tarefa — evita que o cliente marque só uma vez */}
+              <div className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/40 p-2.5">
+                <p className="text-[11px] font-semibold text-[var(--foreground)]">Com que frequência o cliente deve fazer?</p>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {([
+                    { key: "daily", label: "Todos os dias" },
+                    { key: "weekly", label: "Dias da semana" },
+                    { key: "once", label: "Uma vez" },
+                  ] as const).map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setTaskRecurrence(opt.key)}
+                      className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
+                        taskRecurrence === opt.key
+                          ? "bg-[var(--accent)] text-white"
+                          : "border border-[var(--border)] bg-white text-[var(--muted)]"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {taskRecurrence === "weekly" && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d, i) => {
+                      const on = taskWeekdays.includes(i);
+                      return (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() =>
+                            setTaskWeekdays((prev) => (on ? prev.filter((x) => x !== i) : [...prev, i]))
+                          }
+                          className={`h-7 w-9 rounded-md text-[11px] font-semibold ${
+                            on ? "bg-[var(--accent)] text-white" : "border border-[var(--border)] bg-white text-[var(--muted)]"
+                          }`}
+                        >
+                          {d}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <form onSubmit={handleAddTask} className="mt-2 flex gap-2">
                 <input
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}

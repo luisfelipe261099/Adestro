@@ -321,7 +321,7 @@ export default function SchedulePage() {
   function eventToIcs(event: { id: string; day: string; time: string; dog: string; client: string; plan?: string }): IcsEvent {
     return {
       uid: event.id,
-      title: `Adestramento: ${event.dog} (Tutor: ${event.client})`,
+      title: `Adestramento: ${event.dog} (Cliente: ${event.client})`,
       description: event.plan ? `Plano/foco: ${event.plan}` : undefined,
       date: parseEventDate(event.day),
       startTime: event.time || "09:00",
@@ -360,7 +360,7 @@ export default function SchedulePage() {
   }
 
   function handleOpenMap(event: { client: string; dog: string }) {
-    // Usa o nome do tutor + cão como termo de busca quando não há endereço estruturado.
+    // Usa o nome do cliente + cão como termo de busca quando não há endereço estruturado.
     const meta = clientDogMetaByNames.get(`${event.client}::${event.dog}`);
     const client = meta ? clients.find((c) => c.id === meta.clientId) : null;
     const address = client?.environment?.split("\n")[0] || `${event.client}`;
@@ -401,7 +401,7 @@ export default function SchedulePage() {
     setBusyEventId(reschedId);
     try {
       const ok = await rescheduleEvent(reschedId, reschedDay, reschedTime);
-      setAgendaMessage(ok ? "Aula remarcada. Tutor precisa reconfirmar." : "Não foi possível remarcar.");
+      setAgendaMessage(ok ? "Aula remarcada. Cliente precisa reconfirmar." : "Não foi possível remarcar.");
       window.setTimeout(() => setAgendaMessage(""), 3000);
       if (ok) setReschedId(null);
     } finally {
@@ -435,7 +435,7 @@ export default function SchedulePage() {
     if (isCreating) return;
 
     if (!isCollective && (!selectedClient || !selectedDog)) {
-      setAgendaMessage("Selecione um tutor e cão.");
+      setAgendaMessage("Selecione um cliente e cão.");
       return;
     }
     if (isCollective && !collectiveDogName.trim()) {
@@ -945,8 +945,8 @@ export default function SchedulePage() {
                   <div className="grid gap-3.5 sm:grid-cols-2">
                     <label className="grid gap-1">
                       <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
-                        Tutor
-                        <Link href="/clientes" className="text-[9px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Tutor</Link>
+                        Cliente
+                        <Link href="/clientes" className="text-[9px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Cliente</Link>
                       </span>
                       <select
                         value={selectedClientId ?? ""}
@@ -1089,7 +1089,7 @@ export default function SchedulePage() {
             >
               <h3 className="text-base font-semibold text-[var(--foreground)]">Remarcar aula</h3>
               <p className="mt-1 text-xs text-[var(--muted)]">
-                Ao remarcar, a aula volta para “Pendente” e o tutor precisa reconfirmar.
+                Ao remarcar, a aula volta para “Pendente” e o cliente precisa reconfirmar.
               </p>
               <div className="mt-4 grid gap-3">
                 <div className="grid gap-1">

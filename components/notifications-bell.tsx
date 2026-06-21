@@ -12,7 +12,7 @@ const TYPE_LABEL: Record<NotificationType | "all", string> = {
   treinos: "Treinos",
   financeiro: "Financeiro",
   relatorios: "Relatórios",
-  portal: "Tutores",
+  portal: "Clientes",
 };
 
 export function NotificationsBell() {

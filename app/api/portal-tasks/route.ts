@@ -32,11 +32,25 @@ export async function POST(request: Request) {
   const trainer = await prisma.trainer.findUnique({ where: { userId: session.user.id } });
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
-  const body = await request.json() as { title: string; description?: string; clientId?: string };
+  const body = await request.json() as {
+    title: string;
+    description?: string;
+    clientId?: string;
+    recurrence?: string;
+    weekdays?: number[];
+  };
 
   if (!body.title?.trim()) {
     return NextResponse.json({ error: "Título obrigatório" }, { status: 400 });
   }
+
+  const recurrence = ["once", "daily", "weekly"].includes(body.recurrence ?? "")
+    ? (body.recurrence as string)
+    : "once";
+  const weekdays =
+    recurrence === "weekly" && Array.isArray(body.weekdays)
+      ? body.weekdays.filter((d) => Number.isInteger(d) && d >= 0 && d <= 6)
+      : [];
 
   if (body.clientId) {
     const client = await prisma.clientProfile.findFirst({
@@ -56,6 +70,9 @@ export async function POST(request: Request) {
       title:       body.title.trim(),
       description: body.description?.trim() ?? null,
       completed:   false,
+      recurrence,
+      weekdays:    recurrence === "weekly" ? JSON.stringify(weekdays) : null,
+      completions: "[]",
     },
   });
 

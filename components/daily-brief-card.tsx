@@ -81,11 +81,13 @@ export function DailyBriefCard() {
     return (
       <div className="card p-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-[13px] font-semibold text-[var(--foreground)]">Brief do dia</h2>
+          <h2 className="text-[13px] font-semibold text-[var(--foreground)]">Brief do dia <span className="font-normal text-[var(--muted)]">(resumo automático)</span></h2>
           <span className="text-[11px] text-[var(--success)]">Tudo em dia</span>
         </div>
-        <p className="mt-2 text-[12px] text-[var(--muted)]">
-          Nenhum lembrete pendente. Os próximos atendimentos aparecerão aqui.
+        <p className="mt-1.5 text-[11.5px] leading-relaxed text-[var(--muted)]">
+          O Brief é o resumo automático do seu dia: lembretes prontos de WhatsApp para os clientes
+          que têm aula amanhã e treinos que ainda faltam registrar. Quando houver algo a fazer,
+          aparece aqui.
         </p>
       </div>
     );
@@ -94,11 +96,11 @@ export function DailyBriefCard() {
   return (
     <div className="card p-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-[13px] font-semibold text-[var(--foreground)]">Brief do dia</h2>
+        <h2 className="text-[13px] font-semibold text-[var(--foreground)]">Brief do dia <span className="font-normal text-[var(--muted)]">(resumo automático)</span></h2>
         <span className="text-[11px] font-medium text-[var(--muted)]">{items.length} {items.length === 1 ? "item" : "itens"}</span>
       </div>
       <p className="mt-0.5 text-[11.5px] text-[var(--muted)]">
-        Lembretes e ações sugeridas para hoje.
+        Resumo do dia: lembretes de WhatsApp e treinos a registrar. Toque para resolver cada item.
       </p>
 
       <ul className="mt-3 divide-y divide-[var(--border)]">

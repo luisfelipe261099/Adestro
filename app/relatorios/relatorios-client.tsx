@@ -232,7 +232,7 @@ export default function RelatoriosClientPage() {
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Módulo Pedagógico</p>
               <h1 className="text-2xl font-semibold text-[var(--foreground)]">Relatórios de Evolução</h1>
-              <p className="text-xs text-[var(--muted)]">Gere e edite relatórios mensais automáticos para os tutores.</p>
+              <p className="text-xs text-[var(--muted)]">Gere e edite relatórios mensais automáticos para os clientes.</p>
             </div>
             <Link
               href="/dashboard"
@@ -249,7 +249,7 @@ export default function RelatoriosClientPage() {
             
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
-                Cliente (Tutor)
+                Cliente
                 <select
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}

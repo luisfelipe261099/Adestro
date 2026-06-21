@@ -378,7 +378,7 @@ export default function ConfiguracoesPage() {
               <p className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Negócio</p>
               <h2 className="text-base font-semibold text-sky-950">Dados do negócio</h2>
               <p className="mt-0.5 text-[11px] text-sky-800">
-                Aparecem nos recibos e relatórios enviados aos tutores.
+                Aparecem nos recibos e relatórios enviados aos clientes.
               </p>
             </header>
             <div className="mt-3 grid gap-3">
@@ -463,7 +463,7 @@ export default function ConfiguracoesPage() {
                 <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Operacional</p>
                 <h2 className="text-base font-semibold text-amber-950">Configurações de alertas</h2>
                 <p className="mt-0.5 text-[11px] text-amber-800">
-                  Define quando o brief diário e os lembretes do tutor são preparados.
+                  Define quando o brief diário e os lembretes do cliente são preparados.
                 </p>
               </div>
               <Link

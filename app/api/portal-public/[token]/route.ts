@@ -253,14 +253,51 @@ export async function PATCH(request: Request, { params }: Params) {
   const parsed = portalTaskUpdateSchema.safeParse(rawBody);
   if (!parsed.success) return badRequest("Payload invalido", parsed.error.flatten());
 
-  const updated = await prisma.portalTask.updateMany({
+  // Busca a tarefa para saber se é recorrente.
+  const task = await prisma.portalTask.findFirst({
     where: {
       id: parsed.data.taskId,
       trainerId: link.trainerId,
       clientId: link.clientId,
     },
+  });
+  if (!task) return NextResponse.json({ ok: false }, { status: 404 });
+
+  const recurrence = (task as { recurrence?: string }).recurrence ?? "once";
+
+  if (recurrence === "once") {
+    const updated = await prisma.portalTask.updateMany({
+      where: { id: task.id, trainerId: link.trainerId, clientId: link.clientId },
+      data: {
+        completed: parsed.data.completed,
+        ...(parsed.data.evidenceUrl !== undefined ? { evidenceUrl: parsed.data.evidenceUrl } : {}),
+      },
+    });
+    return NextResponse.json({ ok: updated.count > 0 });
+  }
+
+  // Recorrente: marca/desmarca a data de HOJE na lista de conclusões.
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  let completions: string[] = [];
+  try {
+    const raw = JSON.parse((task as { completions?: string }).completions ?? "[]");
+    if (Array.isArray(raw)) completions = raw.filter((d): d is string => typeof d === "string");
+  } catch {
+    completions = [];
+  }
+  if (parsed.data.completed) {
+    if (!completions.includes(todayStr)) completions.push(todayStr);
+  } else {
+    completions = completions.filter((d) => d !== todayStr);
+  }
+
+  const updated = await prisma.portalTask.updateMany({
+    where: { id: task.id, trainerId: link.trainerId, clientId: link.clientId },
     data: {
-      completed: parsed.data.completed,
+      completions: JSON.stringify(completions.slice(-180)),
+      // `completed` reflete "feito hoje" (para gamificação e contagem).
+      completed: completions.includes(todayStr),
       ...(parsed.data.evidenceUrl !== undefined ? { evidenceUrl: parsed.data.evidenceUrl } : {}),
     },
   });

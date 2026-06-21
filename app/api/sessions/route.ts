@@ -180,3 +180,94 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ ...created, notes: body.notes ?? [], media: safeMedia }, { status: 201 });
 }
+
+// PATCH /api/sessions — edita um treino JÁ existente (não cria outro).
+// Corrige o bug em que "editar" gravava um novo registro a cada vez.
+export async function PATCH(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  const role = ((session.user as { role?: string }).role ?? "").toLowerCase();
+  if (role !== "trainer") return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+
+  const trainer = await prisma.trainer.findUnique({ where: { userId: session.user.id } });
+  if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
+
+  const body = (await request.json()) as {
+    id: string;
+    title?: string;
+    date?: string;
+    location?: string;
+    type?: string;
+    status?: string;
+    clientName?: string;
+    dogId?: string;
+    dogName?: string;
+    notes?: unknown[];
+    media?: unknown[];
+    dogSessions?: Array<{
+      dogId: string;
+      activities?: unknown[];
+      commands?: unknown[];
+      description?: string;
+      privateNotes?: string;
+      aiSummary?: string;
+      aiApproved?: boolean;
+      media?: unknown[];
+      nextFocus?: string;
+      nextCommands?: string[];
+      nextTasks?: string[];
+    }>;
+  };
+
+  if (!body.id) return NextResponse.json({ error: "ID do treino obrigatório" }, { status: 400 });
+
+  // Garante que o treino pertence a este adestrador.
+  const existing = await prisma.trainingSession.findFirst({
+    where: { id: body.id, trainerId: trainer.id },
+    select: { id: true },
+  });
+  if (!existing) return NextResponse.json({ error: "Treino não encontrado" }, { status: 404 });
+
+  const safeMedia = Array.isArray(body.media) ? body.media.slice(0, 5) : undefined;
+
+  await prisma.trainingSession.update({
+    where: { id: body.id },
+    data: {
+      ...(body.title !== undefined ? { title: body.title } : {}),
+      ...(body.date !== undefined ? { date: body.date } : {}),
+      ...(body.location !== undefined ? { location: body.location } : {}),
+      ...(body.type !== undefined ? { type: body.type } : {}),
+      ...(body.status !== undefined ? { status: body.status } : {}),
+      ...(body.clientName !== undefined ? { clientName: body.clientName } : {}),
+      ...(body.dogId !== undefined ? { dogId: body.dogId } : {}),
+      ...(body.dogName !== undefined ? { dogName: body.dogName } : {}),
+      ...(body.notes !== undefined ? { notes: JSON.stringify(body.notes) } : {}),
+      ...(safeMedia !== undefined ? { media: JSON.stringify(safeMedia) } : {}),
+    },
+  });
+
+  // Substitui os registros por cão (atualiza em vez de acumular).
+  if (Array.isArray(body.dogSessions)) {
+    await prisma.dogTrainingSession.deleteMany({ where: { sessionId: body.id } });
+    for (const ds of body.dogSessions) {
+      await prisma.dogTrainingSession.create({
+        data: {
+          sessionId: body.id,
+          dogId: ds.dogId,
+          activities: JSON.stringify(ds.activities ?? []),
+          commands: JSON.stringify(ds.commands ?? []),
+          description: ds.description ?? "",
+          privateNotes: ds.privateNotes ?? "",
+          aiSummary: ds.aiSummary ?? "",
+          aiApproved: ds.aiApproved ?? false,
+          media: JSON.stringify(ds.media ?? []),
+          nextFocus: ds.nextFocus ?? "",
+          nextCommands: JSON.stringify(ds.nextCommands ?? []),
+          nextTasks: JSON.stringify(ds.nextTasks ?? []),
+        },
+      });
+    }
+  }
+
+  return NextResponse.json({ ok: true });
+}

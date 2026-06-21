@@ -32,9 +32,9 @@ export default function manifest(): MetadataRoute.Manifest {
         icons: [{ src: "/icon.svg", sizes: "any" }],
       },
       {
-        name: "Novo tutor",
+        name: "Novo cliente",
         short_name: "Cadastrar",
-        description: "Cadastrar tutor e cão",
+        description: "Cadastrar cliente e cão",
         url: "/clientes?new=true",
         icons: [{ src: "/icon.svg", sizes: "any" }],
       },

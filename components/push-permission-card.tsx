@@ -95,7 +95,7 @@ export function PushPermissionCard() {
     <div className="rounded-md border border-[var(--border-strong)] bg-[var(--surface-2)] p-3 text-xs text-sky-900">
       <p className="font-semibold">🔔 Ativar notificações push</p>
       <p className="mt-0.5 text-[11px] text-sky-800">
-        Receba alertas no celular quando tutores confirmarem presença, pagamentos chegarem e cobranças vencerem.
+        Receba alertas no celular quando clientes confirmarem presença, pagamentos chegarem e cobranças vencerem.
       </p>
       <button
         type="button"

@@ -11,7 +11,7 @@ interface OnboardingStep {
 }
 
 interface OnboardingChecklistProps {
-  userRole: "trainer" | "tutor" | "admin";
+  userRole: "trainer" | "cliente" | "admin";
 }
 
 export function OnboardingChecklist({ userRole }: OnboardingChecklistProps) {
@@ -72,7 +72,7 @@ export function OnboardingChecklist({ userRole }: OnboardingChecklistProps) {
             completed: false,
           },
         ]
-      : userRole === "tutor"
+      : userRole === "cliente"
         ? [
             {
               id: "welcome",

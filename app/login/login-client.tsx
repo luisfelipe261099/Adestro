@@ -137,7 +137,7 @@ export function LoginClient() {
 
         <div className="mt-12 grid gap-2 border-t border-[var(--border)] pt-6 text-[11.5px] text-[var(--muted)]">
           <p className="font-medium text-[var(--muted-strong)]">Para adestradores profissionais</p>
-          <p>CRM completo · agenda mobile-first · cobrança com Pix · portal do tutor incluído</p>
+          <p>CRM completo · agenda mobile-first · cobrança com Pix · portal do cliente incluído</p>
         </div>
       </div>
     </main>

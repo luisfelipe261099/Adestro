@@ -509,6 +509,10 @@ model PortalTask {
   description String?  @db.Text
   completed   Boolean  @default(false)
   evidenceUrl String?  @db.Text
+  // Recorrência: "once" (uma vez) | "daily" (todo dia) | "weekly" (dias específicos)
+  recurrence  String   @default("once")
+  weekdays    String?  @db.Text   // JSON [0..6] (0=Domingo) quando recurrence="weekly"
+  completions String?  @db.Text   // JSON ["YYYY-MM-DD", ...] datas concluídas (recorrentes)
   createdAt   DateTime @default(now())
 
   @@index([trainerId])

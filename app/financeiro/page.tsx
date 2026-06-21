@@ -430,7 +430,7 @@ export default function FinanceiroPage() {
                       
                       <div className="grid gap-2 sm:grid-cols-2">
                         <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
-                          Cliente (Tutor)
+                          Cliente
                           <select
                             value={selectedClientId}
                             onChange={(e) => setSelectedClientId(e.target.value)}
@@ -873,7 +873,7 @@ export default function FinanceiroPage() {
                       <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Emitir Recibo Manual</h3>
                       
                       <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
-                        Tutor (Dono)
+                        Cliente
                         <input
                           type="text"
                           required
@@ -951,7 +951,7 @@ export default function FinanceiroPage() {
                         </div>
 
                         <div className="space-y-3.5 text-xs text-slate-800 mt-4 leading-relaxed">
-                          <p>Recebemos de <strong className="text-slate-900">{receiptClient}</strong>, tutor(a) responsável pelo cão <strong className="text-slate-900">{receiptDog}</strong>.</p>
+                          <p>Recebemos de <strong className="text-slate-900">{receiptClient}</strong>, cliente(a) responsável pelo cão <strong className="text-slate-900">{receiptDog}</strong>.</p>
                           <p>A importância líquida de <strong className="text-slate-900">R$ {receiptAmount.toFixed(2)}</strong> referente à prestação de serviços de adestramento comportamental canino: <span className="font-semibold text-[var(--foreground)]">{receiptService}</span>.</p>
                           <p>Pagamento quitado via <strong className="text-slate-900">{receiptMethod}</strong> em {new Date().toLocaleDateString("pt-BR")}.</p>
                         </div>
@@ -960,7 +960,7 @@ export default function FinanceiroPage() {
                           <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-xs">
                             <p className="font-bold text-emerald-900">Pix Copia e Cola</p>
                             <p className="mt-0.5 text-[10px] text-emerald-700">
-                              O tutor cola no banco e o pagamento já vem preenchido — sem gateway pago.
+                              O cliente cola no banco e o pagamento já vem preenchido — sem gateway pago.
                             </p>
                             <code className="mt-2 block break-all rounded-lg bg-white px-2 py-1.5 text-[10px] text-emerald-950">
                               {buildPixPayload({

@@ -23,7 +23,7 @@ const ROUTE_ITEMS: PaletteItem[] = [
   { id: "route-registro", kind: "route", label: "Registrar treino", href: "/treinos/registro" },
   { id: "route-financeiro", kind: "route", label: "Financeiro", href: "/financeiro" },
   { id: "route-relatorios", kind: "route", label: "Relatórios", href: "/relatorios" },
-  { id: "route-portal", kind: "route", label: "Portal do tutor", href: "/portal" },
+  { id: "route-portal", kind: "route", label: "Portal do cliente", href: "/portal" },
   { id: "route-config", kind: "route", label: "Configurações", href: "/configuracoes" },
   { id: "route-templates", kind: "route", label: "Templates do sistema", href: "/admin/templates" },
   { id: "route-audit", kind: "route", label: "Atividade", href: "/admin/audit" },

@@ -50,7 +50,6 @@ function statusLabel(status: string): string {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const clients = useAppStore((state) => state.clients);
   const events = useAppStore((state) => state.calendarEvents);
   const sessions = useAppStore((state) => state.trainingSessions);
   const trainerName = useAppStore((state) => state.trainerName);
@@ -108,44 +107,84 @@ export default function DashboardPage() {
   }, [router]);
 
   const upcomingEvents = events.slice(0, 5);
-  const totalDogs = clients.reduce((total, client) => total + client.dogs.length, 0);
   const pendingEvents = events.filter((e) => e.status === "Pendente" || e.status === "Aguardando").length;
-  const confirmedToday = events.filter((e) => e.status === "Confirmado").length;
-  const sessionsThisMonth = sessions.length;
 
-  const metrics = useMemo(
+  // Agenda do dia / da semana — casa nome do dia OU data (igual ao Brief).
+  const weekdayNames = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+  const today = new Date();
+  const todayName = weekdayNames[today.getDay()] ?? "";
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const eventsToday = events.filter((e) => {
+    const day = e.day.trim();
+    return day === todayStr || day.toLowerCase().includes(todayName.toLowerCase());
+  });
+  const eventsWeek = events; // visão semanal resumida (próximos eventos)
+
+  // Treinos sem registro: aulas confirmadas cujo cão ainda não tem sessão.
+  const sessionDogIds = new Set(sessions.map((s) => s.dogId).filter(Boolean) as string[]);
+  const treinosSemRegistro = events.filter(
+    (e) => e.status === "Confirmado" && e.dogId && !sessionDogIds.has(e.dogId),
+  ).length;
+  const pendenciasTotal = treinosSemRegistro + pendingEvents;
+
+  // Checklist do dia — tarefas rápidas derivadas da rotina.
+  const checklistTotal = eventsToday.length + treinosSemRegistro;
+
+  // Os 5 cards coloridos (cor = foco, conforme documento de cores).
+  const statCards = useMemo(
     () => [
       {
-        label: "Clientes ativos",
-        value: clients.length,
-        sub: `${totalDogs} ${totalDogs === 1 ? "cão" : "cães"}`,
-        href: "/clientes",
-        Icon: IconUsers,
-      },
-      {
-        label: "Agendamentos",
-        value: events.length,
-        sub: `${pendingEvents} aguardando`,
+        key: "agenda-dia",
+        tone: "stat-card-blue",
+        emoji: "📅",
+        label: "Agenda do dia",
+        value: eventsToday.length,
+        sub: eventsToday.length === 0 ? "Sem atendimentos hoje" : `${eventsToday.length} atendimento(s) hoje`,
         href: "/agenda",
         Icon: IconCalendar,
       },
       {
-        label: "Treinos no mês",
-        value: sessionsThisMonth,
-        sub: `${confirmedToday} concluídos`,
-        href: "/treinos",
-        Icon: IconDog,
+        key: "agenda-semana",
+        tone: "stat-card-sky",
+        emoji: "🗓️",
+        label: "Agenda da semana",
+        value: eventsWeek.length,
+        sub: `${pendingEvents} aguardando confirmação`,
+        href: "/agenda",
+        Icon: IconCalendar,
       },
       {
-        label: "Receita do mês",
+        key: "financeiro",
+        tone: "stat-card-green",
+        emoji: "💰",
+        label: "Financeiro",
         value: finance ? brl(finance.received) : "—",
-        sub: finance ? `${brl(finance.pending)} a receber` : "Carregando…",
+        sub: finance ? `${brl(finance.pending)} a receber · ${brl(finance.overdue)} em atraso` : "Carregando…",
         href: "/financeiro",
         Icon: IconDollar,
-        accent: true,
+      },
+      {
+        key: "pendencias",
+        tone: "stat-card-orange",
+        emoji: "🔔",
+        label: "Pendências",
+        value: pendenciasTotal,
+        sub: `${treinosSemRegistro} treino(s) sem registro`,
+        href: "/treinos",
+        Icon: IconAlert,
+      },
+      {
+        key: "checklist",
+        tone: "stat-card-purple",
+        emoji: "📋",
+        label: "Checklist do dia",
+        value: checklistTotal,
+        sub: checklistTotal === 0 ? "Tudo em dia 🎉" : "Tarefas rápidas de hoje",
+        href: "/agenda",
+        Icon: IconReport,
       },
     ],
-    [clients.length, totalDogs, events.length, pendingEvents, sessionsThisMonth, confirmedToday],
+    [eventsToday.length, eventsWeek.length, pendingEvents, finance, pendenciasTotal, treinosSemRegistro, checklistTotal],
   );
 
   return (
@@ -179,24 +218,19 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* Métricas */}
-        <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {metrics.map((metric) => (
-            <Link
-              key={metric.label}
-              href={metric.href}
-              className="card group p-4 transition-colors hover:bg-[var(--surface-2)]/30"
-            >
+        {/* Cards coloridos — cada cor marca um foco do dia (TDAH-friendly) */}
+        <section className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+          {statCards.map((card) => (
+            <Link key={card.key} href={card.href} className={`stat-card group ${card.tone}`}>
               <div className="flex items-center justify-between">
-                <span className="text-[11.5px] font-medium uppercase tracking-wide text-[var(--muted)]">
-                  {metric.label}
+                <span className="flex items-center gap-1.5 text-[12px] font-semibold" style={{ color: "var(--c)" }}>
+                  <span className="text-[15px] leading-none">{card.emoji}</span>
+                  {card.label}
                 </span>
-                <metric.Icon className="h-4 w-4 text-[var(--muted)] transition-colors group-hover:text-[var(--foreground)]" />
+                <card.Icon className="h-4 w-4" style={{ color: "var(--c)" }} />
               </div>
-              <p className="mt-2 text-[24px] font-semibold tracking-tight text-[var(--foreground)]">
-                {metric.value}
-              </p>
-              <p className="text-[11.5px] text-[var(--muted)]">{metric.sub}</p>
+              <p className="mt-2.5 text-[22px] font-bold tracking-tight text-[var(--foreground)]">{card.value}</p>
+              <p className="mt-0.5 text-[11px] text-[var(--muted)]">{card.sub}</p>
             </Link>
           ))}
         </section>

@@ -26,9 +26,9 @@ export function AIAnalysisPanel({ analysis, dogName, sessionDate }: AIAnalysisPa
         <p className="text-sm text-gray-600">Análise automática da sessão de {sessionDate}</p>
       </div>
 
-      {/* Resumo para o Tutor */}
+      {/* Resumo para o Cliente */}
       <div className="mb-6 rounded-lg bg-white p-4 shadow-sm">
-        <h4 className="mb-2 font-semibold text-gray-900">Resumo para Enviar ao Tutor</h4>
+        <h4 className="mb-2 font-semibold text-gray-900">Resumo para Enviar ao Cliente</h4>
         <p className="italic text-gray-700">{analysis.summary_for_tutor}</p>
       </div>
 
@@ -116,7 +116,7 @@ export function AIAnalysisPanel({ analysis, dogName, sessionDate }: AIAnalysisPa
       <div className="mt-6 rounded-lg border-l-4 border-purple-500 bg-purple-50 px-4 py-3 text-sm text-gray-700">
         <p className="font-semibold text-purple-900">💡 Dica:</p>
         <p>
-          Compartilhe o resumo acima com o tutor para manter a comunicação clara sobre o progresso do cão. A análise de IA
+          Compartilhe o resumo acima com o cliente para manter a comunicação clara sobre o progresso do cão. A análise de IA
           ajuda a personalizar o plano de treino.
         </p>
       </div>
