@@ -18,9 +18,9 @@ type AuditLog = {
 };
 
 const ACTION_LABEL: Record<string, { label: string; icon: string; tone: string }> = {
-  "client.created": { label: "Tutor criado", icon: "👤", tone: "bg-emerald-50 text-emerald-800" },
-  "client.updated": { label: "Tutor atualizado", icon: "✏️", tone: "bg-[var(--surface-2)] text-sky-800" },
-  "client.deleted": { label: "Tutor removido", icon: "🗑️", tone: "bg-rose-50 text-rose-800" },
+  "client.created": { label: "Cliente criado", icon: "👤", tone: "bg-emerald-50 text-emerald-800" },
+  "client.updated": { label: "Cliente atualizado", icon: "✏️", tone: "bg-[var(--surface-2)] text-sky-800" },
+  "client.deleted": { label: "Cliente removido", icon: "🗑️", tone: "bg-rose-50 text-rose-800" },
   "dog.created": { label: "Cão criado", icon: "🐶", tone: "bg-emerald-50 text-emerald-800" },
   "session.created": { label: "Treino registrado", icon: "📝", tone: "bg-purple-50 text-purple-800" },
   "session.updated": { label: "Treino atualizado", icon: "🔁", tone: "bg-[var(--surface-2)] text-sky-800" },

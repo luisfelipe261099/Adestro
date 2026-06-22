@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Evento inválido" }, { status: 403 });
   }
 
-  // Resolve cão/tutor garantindo que pertencem ao adestrador.
+  // Resolve cão/cliente garantindo que pertencem ao adestrador.
   const dog = await prisma.dog.findFirst({
     where: { id: body.dogId, client: { trainerId: trainer.id } },
     select: { id: true, name: true, client: { select: { id: true, name: true } } },

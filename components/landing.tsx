@@ -106,7 +106,7 @@ const features: Feature[] = [
 
 const pains: string[] = [
   "Agenda espalhada entre caderno, WhatsApp e memória — e atendimento esquecido.",
-  "Tutor some entre uma aula e outra e não faz a tarefa de casa.",
+  "Cliente some entre uma aula e outra e não faz a tarefa de casa.",
   "Cobrança bagunçada: você não sabe quem pagou nem quem precisa renovar.",
   "Sem registro da evolução, fica difícil provar o resultado do seu trabalho.",
 ];
@@ -573,7 +573,7 @@ export function Landing() {
           <div className="relative order-last aspect-[4/3] w-full overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] shadow-md lg:order-first">
             <Image
               src={IMG.showcase}
-              alt="Tutor acompanhando o treino do cão"
+              alt="Cliente acompanhando o treino do cão"
               fill
               sizes="(max-width: 1024px) 100vw, 600px"
               className="object-cover"

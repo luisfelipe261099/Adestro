@@ -197,7 +197,7 @@ export async function PATCH(request: Request) {
   }
 
   // Remarcar: aceita nova data e/ou horário. Ao remarcar, o evento volta a
-  // "Pendente" (aguardando nova confirmação do tutor), salvo status explícito.
+  // "Pendente" (aguardando nova confirmação do cliente), salvo status explícito.
   if (body.day !== undefined && body.day.trim()) {
     data.day = body.day.trim();
     if (body.status === undefined) data.status = "Pendente";

@@ -53,7 +53,7 @@ export async function POST(request: Request, { params }: Params) {
   }
 
   const body = (await request.json()) as {
-    // Tutor
+    // Cliente
     clientName?: string;
     phone?: string;
     email?: string;

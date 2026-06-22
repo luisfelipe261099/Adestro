@@ -524,7 +524,7 @@ export default function ClientsPage() {
       setVeterinarian("");
       setShowForm(false);
       setFormStep(1);
-      setSaveMessage("Tutor e cão cadastrados com sucesso.");
+      setSaveMessage("Cliente e cão cadastrados com sucesso.");
       window.setTimeout(() => setSaveMessage(""), 3000);
     } finally {
       setIsSaving(false);
@@ -631,7 +631,7 @@ export default function ClientsPage() {
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <span className="text-xs font-bold text-[var(--foreground)]">Cadastro em Etapas (Etapa {formStep}/5)</span>
                 <span className="text-[10px] font-semibold text-[var(--muted)]">
-                  {formStep === 1 ? "Dados do Tutor" :
+                  {formStep === 1 ? "Dados do Cliente" :
                    formStep === 2 ? "Endereços" :
                    formStep === 3 ? "Dados do Cão" :
                    formStep === 4 ? "Saúde e Vacinas" :
@@ -1368,7 +1368,7 @@ export default function ClientsPage() {
                             ) : (
                               <Image
                                 src={task.evidenceUrl}
-                                alt="Evidência do Tutor"
+                                alt="Evidência do Cliente"
                                 fill
                                 unoptimized
                                 className="object-cover"
