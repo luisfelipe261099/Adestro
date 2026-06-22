@@ -14,45 +14,45 @@
 
 :root {
 	color-scheme: light;
-	/* superfícies */
-	--background: #fafafa;
-	--surface: #ffffff;
-	--surface-2: #f4f4f5;
-	--surface-3: #e4e4e7;
+	/* superfícies — neutros quentes (areia / branco quente) */
+	--background: #f4f1ea;
+	--surface: #fafaf7;
+	--surface-2: #efebe1;
+	--surface-3: #e2dccf;
 
-	/* texto */
-	--foreground: #09090b;
-	--foreground-strong: #000000;
-	--muted: #71717a;
-	--muted-strong: #52525b;
+	/* texto — grafite quente */
+	--foreground: #1c1917;
+	--foreground-strong: #0c0a09;
+	--muted: #726a62;
+	--muted-strong: #57514b;
 
-	/* bordas */
-	--border: #e4e4e7;
-	--border-strong: #d4d4d8;
+	/* bordas — stone (cinza quente) */
+	--border: #e7e1d6;
+	--border-strong: #d8d0c2;
 
-	/* accent — azul profissional vivo (mais atenção, ainda sóbrio) */
-	--accent: #2563eb;
-	--accent-strong: #1d4ed8;
-	--accent-soft: #eff6ff;
-	--accent-text: #1d4ed8;
+	/* accent — verde-petróleo (consultório / profissional, calmo) */
+	--accent: #1e3a3a;
+	--accent-strong: #163230;
+	--accent-soft: #e7eeec;
+	--accent-text: #1e3a3a;
 
-	/* semantic */
-	--success: #16a34a;
-	--success-bg: #f0fdf4;
-	--warning: #d97706;
-	--warning-bg: #fffbeb;
-	--danger: #dc2626;
-	--danger-bg: #fef2f2;
-	--info: #0284c7;
-	--info-bg: #f0f9ff;
+	/* semantic — sálvia para sucesso, tons terrosos quentes */
+	--success: #4f7355;
+	--success-bg: #eef3ee;
+	--warning: #b45309;
+	--warning-bg: #fbf1e2;
+	--danger: #b42318;
+	--danger-bg: #fbebe9;
+	--info: #2c6e6b;
+	--info-bg: #e8f1f0;
 
 	/* paleta dos cards do dashboard (TDAH-friendly: cor = foco)
-	   cada família tem cor forte (texto/ícone), fundo suave e borda. */
-	--card-blue: #2563eb;        --card-blue-bg: #eff6ff;      --card-blue-border: #bfdbfe;
-	--card-sky: #0ea5e9;         --card-sky-bg: #f0f9ff;       --card-sky-border: #bae6fd;
-	--card-green: #16a34a;       --card-green-bg: #f0fdf4;     --card-green-border: #bbf7d0;
-	--card-orange: #ea580c;      --card-orange-bg: #fff7ed;    --card-orange-border: #fed7aa;
-	--card-purple: #7c3aed;      --card-purple-bg: #f5f3ff;    --card-purple-border: #ddd6fe;
+	   re-harmonizada na família quente; cada cor ainda marca um foco distinto. */
+	--card-blue: #1e5f5b;        --card-blue-bg: #e7f0ef;      --card-blue-border: #bfd8d5;
+	--card-sky: #2c7a7b;         --card-sky-bg: #e6f1f0;       --card-sky-border: #bbdad8;
+	--card-green: #4f7355;       --card-green-bg: #ebf1eb;     --card-green-border: #c5d8c7;
+	--card-orange: #b5541e;      --card-orange-bg: #faf0e7;    --card-orange-border: #efd3bc;
+	--card-purple: #7c5a82;      --card-purple-bg: #f2ecf1;    --card-purple-border: #ddcbde;
 
 	/* sombras — quase invisíveis, separação por borda */
 	--shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
@@ -68,38 +68,39 @@
 
 html[data-theme="dark"] {
 	color-scheme: dark;
-	--background: #09090b;
-	--surface: #18181b;
-	--surface-2: #27272a;
-	--surface-3: #3f3f46;
+	--background: #1a1714;
+	--surface: #232019;
+	--surface-2: #2e2a22;
+	--surface-3: #3b362c;
 
-	--foreground: #fafafa;
+	--foreground: #f5f1e8;
 	--foreground-strong: #ffffff;
-	--muted: #a1a1aa;
-	--muted-strong: #d4d4d8;
+	--muted: #a8a095;
+	--muted-strong: #cfc8bc;
 
-	--border: #27272a;
-	--border-strong: #3f3f46;
+	--border: #322e26;
+	--border-strong: #46413a;
 
-	--accent: #3b82f6;
-	--accent-strong: #60a5fa;
-	--accent-soft: #1e3a8a;
-	--accent-text: #93c5fd;
+	/* accent escuro o bastante p/ texto branco no .btn-primary; texto/links usam --accent-text */
+	--accent: #2f7d74;
+	--accent-strong: #3d978c;
+	--accent-soft: #1e3a3a;
+	--accent-text: #9cc7c0;
 
-	--card-blue: #60a5fa;        --card-blue-bg: #172554;      --card-blue-border: #1e40af;
-	--card-sky: #38bdf8;         --card-sky-bg: #082f49;       --card-sky-border: #075985;
-	--card-green: #4ade80;       --card-green-bg: #052e16;     --card-green-border: #166534;
-	--card-orange: #fb923c;      --card-orange-bg: #431407;    --card-orange-border: #9a3412;
-	--card-purple: #a78bfa;      --card-purple-bg: #2e1065;    --card-purple-border: #6d28d9;
+	--card-blue: #6fa39c;        --card-blue-bg: #16302f;      --card-blue-border: #1e5f5b;
+	--card-sky: #6bb8b6;         --card-sky-bg: #102b2b;       --card-sky-border: #2c7a7b;
+	--card-green: #8fbe96;       --card-green-bg: #15271a;     --card-green-border: #3e6147;
+	--card-orange: #e08a4e;      --card-orange-bg: #341b0c;    --card-orange-border: #7a3e1a;
+	--card-purple: #c09bc6;      --card-purple-bg: #2a1e2d;    --card-purple-border: #6e4f73;
 
-	--success: #22c55e;
-	--success-bg: #052e16;
-	--warning: #f59e0b;
-	--warning-bg: #451a03;
-	--danger: #ef4444;
-	--danger-bg: #450a0a;
-	--info: #38bdf8;
-	--info-bg: #082f49;
+	--success: #7ba383;
+	--success-bg: #1e2a20;
+	--warning: #e0a33a;
+	--warning-bg: #3a2a10;
+	--danger: #e8736a;
+	--danger-bg: #3a1714;
+	--info: #6fb0ac;
+	--info-bg: #16302f;
 
 	--panel: var(--surface);
 	--panel-strong: var(--surface);
@@ -220,7 +221,7 @@ body {
 .input-field:focus {
 	outline: none;
 	border-color: var(--accent);
-	box-shadow: 0 0 0 3px rgb(37 99 235 / 0.12);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 /* ─── Cards coloridos do dashboard (atenção por cor) ───────────────────────── */
@@ -493,7 +494,7 @@ a:focus-visible {
 /* ─── Compat: classes legadas vão herdar tokens novos ────────────────────── */
 .pc-primary-action:hover { background-color: var(--accent-strong); }
 
-::selection { background: rgb(37 99 235 / 0.18); color: var(--foreground); }
+::selection { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--foreground); }
 
 /* Scrollbar discreto em desktop */
 @media (min-width: 768px) {

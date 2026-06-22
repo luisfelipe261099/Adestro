@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { AttentionDogs } from "@/components/attention-dogs";
 import { AuthGuard } from "@/components/auth-guard";
 import { DailyBriefCard } from "@/components/daily-brief-card";
 import {
@@ -19,6 +20,7 @@ import {
   IconSparkle,
   IconUsers,
 } from "@/components/icons";
+import { NextSessionCard } from "@/components/next-session-card";
 import { useTour } from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
 
@@ -109,7 +111,7 @@ export default function DashboardPage() {
   const upcomingEvents = events.slice(0, 5);
   const pendingEvents = events.filter((e) => e.status === "Pendente" || e.status === "Aguardando").length;
 
-  // Agenda do dia / da semana — casa nome do dia OU data (igual ao Brief).
+  // Agenda do dia — casa nome do dia OU data (igual ao Brief).
   const weekdayNames = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
   const today = new Date();
   const todayName = weekdayNames[today.getDay()] ?? "";
@@ -118,7 +120,6 @@ export default function DashboardPage() {
     const day = e.day.trim();
     return day === todayStr || day.toLowerCase().includes(todayName.toLowerCase());
   });
-  const eventsWeek = events; // visão semanal resumida (próximos eventos)
 
   // Treinos sem registro: aulas confirmadas cujo cão ainda não tem sessão.
   const sessionDogIds = new Set(sessions.map((s) => s.dogId).filter(Boolean) as string[]);
@@ -130,7 +131,17 @@ export default function DashboardPage() {
   // Checklist do dia — tarefas rápidas derivadas da rotina.
   const checklistTotal = eventsToday.length + treinosSemRegistro;
 
-  // Os 5 cards coloridos (cor = foco, conforme documento de cores).
+  // Resumo contextual do header (orienta ação, não só "resumo da operação").
+  const summary = useMemo(() => {
+    const parts: string[] = [];
+    parts.push(`${eventsToday.length} ${eventsToday.length === 1 ? "sessão" : "sessões"} hoje`);
+    parts.push(`${treinosSemRegistro} ${treinosSemRegistro === 1 ? "treino a registrar" : "treinos a registrar"}`);
+    if (finance) parts.push(finance.overdue > 0 ? `${brl(finance.overdue)} em atraso` : "0 em atraso");
+    return parts.join(" · ");
+  }, [eventsToday.length, treinosSemRegistro, finance]);
+
+  // 4 cards-foco (cor = foco, conforme documento de cores). "Agenda da semana"
+  // saiu por ser redundante com "Agenda do dia" e diluir a hierarquia.
   const statCards = useMemo(
     () => [
       {
@@ -140,16 +151,6 @@ export default function DashboardPage() {
         label: "Agenda do dia",
         value: eventsToday.length,
         sub: eventsToday.length === 0 ? "Sem atendimentos hoje" : `${eventsToday.length} atendimento(s) hoje`,
-        href: "/agenda",
-        Icon: IconCalendar,
-      },
-      {
-        key: "agenda-semana",
-        tone: "stat-card-sky",
-        emoji: "🗓️",
-        label: "Agenda da semana",
-        value: eventsWeek.length,
-        sub: `${pendingEvents} aguardando confirmação`,
         href: "/agenda",
         Icon: IconCalendar,
       },
@@ -184,21 +185,19 @@ export default function DashboardPage() {
         Icon: IconReport,
       },
     ],
-    [eventsToday.length, eventsWeek.length, pendingEvents, finance, pendenciasTotal, treinosSemRegistro, checklistTotal],
+    [eventsToday.length, pendenciasTotal, treinosSemRegistro, checklistTotal, finance],
   );
 
   return (
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-12">
-        {/* Header — saudação + ações */}
+        {/* Header — saudação contextual + ações */}
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-[22px] font-semibold tracking-tight text-[var(--foreground)] sm:text-[26px]">
               {getGreeting()}, {getFirstName(trainerName || "adestrador")}
             </h1>
-            <p className="mt-0.5 text-[13.5px] text-[var(--muted)]">
-              Aqui está o resumo da sua operação hoje.
-            </p>
+            <p className="mt-0.5 text-[13.5px] text-[var(--muted)]">Você tem {summary}.</p>
           </div>
           <div className="flex items-center gap-2">
             {!tourDone ? (
@@ -218,8 +217,13 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* Cards coloridos — cada cor marca um foco do dia (TDAH-friendly) */}
-        <section className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+        {/* Hero — o que fazer agora: próxima sessão (elemento dominante) */}
+        <div className="mt-6">
+          <NextSessionCard />
+        </div>
+
+        {/* Faixa compacta de cards-foco (cor = foco, TDAH-friendly) */}
+        <section className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {statCards.map((card) => (
             <Link key={card.key} href={card.href} className={`stat-card group ${card.tone}`}>
               <div className="flex items-center justify-between">
@@ -235,9 +239,8 @@ export default function DashboardPage() {
           ))}
         </section>
 
-        {/* Layout principal */}
+        {/* Próximos atendimentos + Brief do dia */}
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
-          {/* Coluna 1 e 2 — agenda do dia */}
           <section className="card lg:col-span-2">
             <header className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
               <div>
@@ -287,47 +290,17 @@ export default function DashboardPage() {
             )}
           </section>
 
-          {/* Coluna 3 — Brief do dia */}
+          {/* Brief do dia */}
           <div data-tour="brief">
             <DailyBriefCard />
           </div>
         </div>
 
-        {/* Linha 2: financeiro + pendências */}
+        {/* Cães em atenção + Pendências */}
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
-          <section className="card lg:col-span-2 p-4">
-            <header className="flex items-center justify-between">
-              <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Visão financeira</h2>
-              <Link href="/financeiro" className="text-[12px] font-medium text-[var(--muted)] hover:text-[var(--foreground)]">
-                Ir para Financeiro
-              </Link>
-            </header>
-            <div className="mt-4 grid grid-cols-3 gap-4">
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Recebido</p>
-                <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
-                  {finance ? brl(finance.received) : "—"}
-                </p>
-                <p className="text-[11px] text-[var(--success)]">Mês atual</p>
-              </div>
-              <div className="border-l border-[var(--border)] pl-4">
-                <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">A receber</p>
-                <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
-                  {finance ? brl(finance.pending) : "—"}
-                </p>
-                <p className="text-[11px] text-[var(--muted)]">Próximos vencimentos</p>
-              </div>
-              <div className="border-l border-[var(--border)] pl-4">
-                <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Em atraso</p>
-                <p className={`mt-1 text-[20px] font-semibold tracking-tight ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--foreground)]"}`}>
-                  {finance ? brl(finance.overdue) : "—"}
-                </p>
-                <p className={`text-[11px] ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--muted)]"}`}>
-                  {finance && finance.overdue > 0 ? "Requer atenção" : "Sem pendências"}
-                </p>
-              </div>
-            </div>
-          </section>
+          <div className="lg:col-span-2">
+            <AttentionDogs />
+          </div>
 
           <section className="card p-4">
             <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Pendências</h2>
@@ -368,7 +341,42 @@ export default function DashboardPage() {
           </section>
         </div>
 
-        {/* Linha 3: atalhos secundários */}
+        {/* Visão financeira (largura total) */}
+        <section className="card mt-4 p-4">
+          <header className="flex items-center justify-between">
+            <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Visão financeira</h2>
+            <Link href="/financeiro" className="text-[12px] font-medium text-[var(--muted)] hover:text-[var(--foreground)]">
+              Ir para Financeiro
+            </Link>
+          </header>
+          <div className="mt-4 grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Recebido</p>
+              <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
+                {finance ? brl(finance.received) : "—"}
+              </p>
+              <p className="text-[11px] text-[var(--success)]">Mês atual</p>
+            </div>
+            <div className="border-l border-[var(--border)] pl-4">
+              <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">A receber</p>
+              <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
+                {finance ? brl(finance.pending) : "—"}
+              </p>
+              <p className="text-[11px] text-[var(--muted)]">Próximos vencimentos</p>
+            </div>
+            <div className="border-l border-[var(--border)] pl-4">
+              <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Em atraso</p>
+              <p className={`mt-1 text-[20px] font-semibold tracking-tight ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--foreground)]"}`}>
+                {finance ? brl(finance.overdue) : "—"}
+              </p>
+              <p className={`text-[11px] ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--muted)]"}`}>
+                {finance && finance.overdue > 0 ? "Requer atenção" : "Sem pendências"}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Atalhos secundários */}
         <section className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { label: "Novo cliente", href: "/clientes?new=true", Icon: IconUsers },
