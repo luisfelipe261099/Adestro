@@ -73,7 +73,7 @@ export function NextSessionCard() {
   const total = parsePlanTotal(next.plan);
   const sessionLabel = next.sessionNumber
     ? total
-      ? `Sessão ${next.sessionNumber}/${total}`
+      ? `Sessão ${next.sessionNumber} de ${total}`
       : `Sessão ${next.sessionNumber}`
     : null;
   const trainingType = dog?.trainingTypes?.[0] || next.plan || null;
@@ -123,10 +123,10 @@ export function NextSessionCard() {
             {dog?.breed ? <span className="font-normal text-[var(--muted)]"> · {dog.breed}</span> : null}
             {dog?.age ? <span className="font-normal text-[var(--muted)]"> · {dog.age}</span> : null}
           </p>
+          <p className="mt-0.5 truncate text-[12.5px] text-[var(--muted)]">{next.client}</p>
           <p className="mt-0.5 truncate text-[12.5px] text-[var(--muted)]">
-            {next.client}
-            {sessionLabel ? ` · ${sessionLabel}` : ""}
-            {trainingType ? ` · ${trainingType}` : ""}
+            {sessionLabel ?? "Sessão avulsa"}
+            {trainingType ? <span> · Foco: {trainingType}</span> : null}
           </p>
         </div>
       </div>
@@ -134,14 +134,14 @@ export function NextSessionCard() {
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <Link href={registroHref} className="btn-primary text-[12.5px]">
           <IconArrowRight className="h-3.5 w-3.5" />
-          Registrar treino
+          Iniciar sessão
         </Link>
         <Link href="/clientes" className="btn-secondary text-[12.5px]">
-          Ver ficha
+          Ver ficha do cão
         </Link>
         <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary text-[12.5px]">
           <IconWhatsApp className="h-3.5 w-3.5" />
-          WhatsApp
+          Enviar WhatsApp
         </a>
         <Link href="/agenda" className="btn-secondary text-[12.5px]">
           Remarcar

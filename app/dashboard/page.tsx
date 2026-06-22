@@ -8,7 +8,6 @@ import { AttentionDogs } from "@/components/attention-dogs";
 import { AuthGuard } from "@/components/auth-guard";
 import { DailyBriefCard } from "@/components/daily-brief-card";
 import {
-  IconAlert,
   IconArrowRight,
   IconCalendar,
   IconChevronRight,
@@ -21,8 +20,11 @@ import {
   IconUsers,
 } from "@/components/icons";
 import { NextSessionCard } from "@/components/next-session-card";
+import { TodayChecklist } from "@/components/today-checklist";
+import { TodayTimeline } from "@/components/today-timeline";
 import { useTour } from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
+import { computeDogAttention, eventTimestamp } from "@/lib/home-agenda";
 
 function getFirstName(name: string): string {
   const first = name.trim().split(" ")[0];
@@ -54,6 +56,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const events = useAppStore((state) => state.calendarEvents);
   const sessions = useAppStore((state) => state.trainingSessions);
+  const clients = useAppStore((state) => state.clients);
   const trainerName = useAppStore((state) => state.trainerName);
   const startTour = useTour((s) => s.start);
 
@@ -109,9 +112,8 @@ export default function DashboardPage() {
   }, [router]);
 
   const upcomingEvents = events.slice(0, 5);
-  const pendingEvents = events.filter((e) => e.status === "Pendente" || e.status === "Aguardando").length;
 
-  // Agenda do dia — casa nome do dia OU data (igual ao Brief).
+  // Sessões de hoje — casa nome do dia OU data.
   const weekdayNames = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
   const today = new Date();
   const todayName = weekdayNames[today.getDay()] ?? "";
@@ -126,103 +128,119 @@ export default function DashboardPage() {
   const treinosSemRegistro = events.filter(
     (e) => e.status === "Confirmado" && e.dogId && !sessionDogIds.has(e.dogId),
   ).length;
-  const pendenciasTotal = treinosSemRegistro + pendingEvents;
 
-  // Checklist do dia — tarefas rápidas derivadas da rotina.
-  const checklistTotal = eventsToday.length + treinosSemRegistro;
+  // Cães em atenção (mesma regra do painel de evolução).
+  const caesAtencao = useMemo(
+    () => computeDogAttention(clients, events, sessions, new Date().getTime()).filter((d) => d.level !== "green").length,
+    [clients, events, sessions],
+  );
 
-  // Resumo contextual do header (orienta ação, não só "resumo da operação").
-  const summary = useMemo(() => {
-    const parts: string[] = [];
-    parts.push(`${eventsToday.length} ${eventsToday.length === 1 ? "sessão" : "sessões"} hoje`);
-    parts.push(`${treinosSemRegistro} ${treinosSemRegistro === 1 ? "treino a registrar" : "treinos a registrar"}`);
-    if (finance) parts.push(finance.overdue > 0 ? `${brl(finance.overdue)} em atraso` : "0 em atraso");
-    return parts.join(" · ");
-  }, [eventsToday.length, treinosSemRegistro, finance]);
+  // Próxima sessão — para a mensagem contextual do header.
+  const nextEvent = useMemo(() => {
+    const now = new Date().getTime();
+    return (
+      events
+        .map((event) => ({ event, ts: eventTimestamp(event.day, event.time) }))
+        .filter((item) => item.ts >= now - 90 * 60_000)
+        .sort((a, b) => a.ts - b.ts)[0]?.event ?? null
+    );
+  }, [events]);
 
-  // 4 cards-foco (cor = foco, conforme documento de cores). "Agenda da semana"
-  // saiu por ser redundante com "Agenda do dia" e diluir a hierarquia.
+  const contextLine = nextEvent
+    ? `A próxima é com ${nextEvent.dog} às ${nextEvent.time}.`
+    : "Sem sessões agendadas no momento.";
+
+  // 4 métricas do documento: cor = função, voltadas à ação imediata.
   const statCards = useMemo(
     () => [
       {
-        key: "agenda-dia",
+        key: "sessoes-hoje",
         tone: "stat-card-blue",
         emoji: "📅",
-        label: "Agenda do dia",
+        label: "Sessões hoje",
         value: eventsToday.length,
-        sub: eventsToday.length === 0 ? "Sem atendimentos hoje" : `${eventsToday.length} atendimento(s) hoje`,
+        sub: eventsToday.length === 0 ? "Nenhuma para hoje" : "Agendadas para hoje",
         href: "/agenda",
         Icon: IconCalendar,
       },
       {
-        key: "financeiro",
+        key: "relatorios",
+        tone: "stat-card-orange",
+        emoji: "📝",
+        label: "Relatórios pendentes",
+        value: treinosSemRegistro,
+        sub: treinosSemRegistro === 0 ? "Tudo registrado" : "Treinos a registrar",
+        href: "/treinos",
+        Icon: IconReport,
+      },
+      {
+        key: "a-receber",
         tone: "stat-card-green",
         emoji: "💰",
-        label: "Financeiro",
-        value: finance ? brl(finance.received) : "—",
-        sub: finance ? `${brl(finance.pending)} a receber · ${brl(finance.overdue)} em atraso` : "Carregando…",
+        label: "Pagamentos a receber",
+        value: finance ? brl(finance.pending) : "—",
+        sub: finance ? `${brl(finance.overdue)} em atraso` : "Carregando…",
         href: "/financeiro",
         Icon: IconDollar,
       },
       {
-        key: "pendencias",
-        tone: "stat-card-orange",
-        emoji: "🔔",
-        label: "Pendências",
-        value: pendenciasTotal,
-        sub: `${treinosSemRegistro} treino(s) sem registro`,
-        href: "/treinos",
-        Icon: IconAlert,
-      },
-      {
-        key: "checklist",
+        key: "caes-atencao",
         tone: "stat-card-purple",
-        emoji: "📋",
-        label: "Checklist do dia",
-        value: checklistTotal,
-        sub: checklistTotal === 0 ? "Tudo em dia 🎉" : "Tarefas rápidas de hoje",
-        href: "/agenda",
-        Icon: IconReport,
+        emoji: "🐶",
+        label: "Cães em atenção",
+        value: caesAtencao,
+        sub: caesAtencao === 0 ? "Todos em dia" : "Precisam de ação",
+        href: "/clientes",
+        Icon: IconDog,
       },
     ],
-    [eventsToday.length, pendenciasTotal, treinosSemRegistro, checklistTotal, finance],
+    [eventsToday.length, treinosSemRegistro, finance, caesAtencao],
   );
+
+  const quickActions = [
+    { label: "Novo cliente", href: "/clientes?new=true", Icon: IconUsers },
+    { label: "Registrar evolução", href: "/treinos/registro", Icon: IconDog },
+    { label: "Enviar cobrança", href: "/financeiro", Icon: IconDollar },
+    { label: "Gerar relatório", href: "/relatorios", Icon: IconReport },
+  ];
 
   return (
     <AuthGuard role="trainer">
       <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-12">
-        {/* Header — saudação contextual + ações */}
+        {/* Header — mensagem contextual + ações */}
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-[22px] font-semibold tracking-tight text-[var(--foreground)] sm:text-[26px]">
               {getGreeting()}, {getFirstName(trainerName || "adestrador")}
             </h1>
-            <p className="mt-0.5 text-[13.5px] text-[var(--muted)]">Você tem {summary}.</p>
+            <p className="mt-0.5 text-[13.5px] text-[var(--muted)]">
+              Você tem {eventsToday.length} {eventsToday.length === 1 ? "sessão" : "sessões"} hoje. {contextLine}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             {!tourDone ? (
-              <button
-                type="button"
-                onClick={() => startTour()}
-                className="btn-secondary text-[12.5px]"
-              >
+              <button type="button" onClick={() => startTour()} className="btn-secondary text-[12.5px]">
                 <IconSparkle className="h-3.5 w-3.5" />
                 Tour rápido
               </button>
             ) : null}
+            <Link href="/treinos/registro" className="btn-secondary text-[12.5px]">
+              <IconDog className="h-3.5 w-3.5" />
+              Registrar evolução
+            </Link>
             <Link href="/agenda?new=true" className="btn-primary text-[12.5px]">
               <IconPlus className="h-3.5 w-3.5" />
-              Novo agendamento
+              Novo atendimento
             </Link>
           </div>
         </header>
 
-        {/* Hero — o que fazer agora: próxima sessão (elemento dominante) */}
+        {/* Hero — próxima sessão (elemento dominante: "o que faço agora?") */}
         <div className="mt-6">
           <NextSessionCard />
         </div>
 
-        {/* Faixa compacta de cards-foco (cor = foco, TDAH-friendly) */}
+        {/* 4 métricas-foco (cor = função, TDAH-friendly) */}
         <section className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {statCards.map((card) => (
             <Link key={card.key} href={card.href} className={`stat-card group ${card.tone}`}>
@@ -239,12 +257,75 @@ export default function DashboardPage() {
           ))}
         </section>
 
-        {/* Próximos atendimentos + Brief do dia */}
+        {/* Agenda de hoje (timeline) + Checklist de hoje */}
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <TodayTimeline />
+          </div>
+          <TodayChecklist overdue={finance?.overdue} />
+        </div>
+
+        {/* O que precisa da sua atenção + Prioridades de hoje */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <section className="card lg:col-span-2 p-4">
+            <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">O que precisa da sua atenção</h2>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <Link
+                href="/relatorios"
+                className="flex items-center justify-between rounded-md border border-[var(--border)] px-3 py-2.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
+              >
+                <span className="flex items-center gap-2 text-[var(--foreground)]">
+                  <IconReport className="h-3.5 w-3.5 text-[var(--warning)]" />
+                  Relatórios pendentes
+                </span>
+                <span className="font-semibold text-[var(--foreground)]">{treinosSemRegistro}</span>
+              </Link>
+              <Link
+                href="/financeiro"
+                className="flex items-center justify-between rounded-md border border-[var(--border)] px-3 py-2.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
+              >
+                <span className="flex items-center gap-2 text-[var(--foreground)]">
+                  <IconClock className={`h-3.5 w-3.5 ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--muted)]"}`} />
+                  Pagamentos em atraso
+                </span>
+                <span className={`font-semibold ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--foreground)]"}`}>
+                  {finance ? brl(finance.overdue) : "—"}
+                </span>
+              </Link>
+              <Link
+                href="/clientes"
+                className="flex items-center justify-between rounded-md border border-[var(--border)] px-3 py-2.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
+              >
+                <span className="flex items-center gap-2 text-[var(--foreground)]">
+                  <IconUsers className="h-3.5 w-3.5 text-[var(--muted)]" />
+                  Tutores sem resposta
+                </span>
+                <span className="font-semibold text-[var(--foreground)]">0</span>
+              </Link>
+              <Link
+                href="/planos"
+                className="flex items-center justify-between rounded-md border border-[var(--border)] px-3 py-2.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
+              >
+                <span className="flex items-center gap-2 text-[var(--foreground)]">
+                  <IconCalendar className="h-3.5 w-3.5 text-[var(--muted)]" />
+                  Planos vencendo
+                </span>
+                <span className="font-semibold text-[var(--foreground)]">0</span>
+              </Link>
+            </div>
+          </section>
+
+          <div data-tour="brief">
+            <DailyBriefCard />
+          </div>
+        </div>
+
+        {/* Agenda das próximas sessões + Dinheiro a receber */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
           <section className="card lg:col-span-2">
             <header className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
               <div>
-                <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Próximos atendimentos</h2>
+                <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Agenda das próximas sessões</h2>
                 <p className="text-[11.5px] text-[var(--muted)]">{upcomingEvents.length} eventos nos próximos dias</p>
               </div>
               <Link href="/agenda" className="text-[12px] font-medium text-[var(--muted)] hover:text-[var(--foreground)]">
@@ -290,113 +371,65 @@ export default function DashboardPage() {
             )}
           </section>
 
-          {/* Brief do dia */}
-          <div data-tour="brief">
-            <DailyBriefCard />
-          </div>
-        </div>
-
-        {/* Cães em atenção + Pendências */}
-        <div className="mt-4 grid gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <AttentionDogs />
-          </div>
-
           <section className="card p-4">
-            <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Pendências</h2>
-            <div className="mt-3 space-y-2">
-              <Link
-                href="/portal"
-                className="flex items-center justify-between rounded-md px-2 py-1.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
-              >
-                <span className="flex items-center gap-2 text-[var(--foreground)]">
-                  <IconReport className="h-3.5 w-3.5 text-[var(--warning)]" />
-                  Relatórios aguardando aprovação
-                </span>
-                <span className="font-medium text-[var(--foreground)]">0</span>
+            <header className="flex items-center justify-between">
+              <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Dinheiro a receber</h2>
+              <Link href="/financeiro" className="text-[12px] font-medium text-[var(--muted)] hover:text-[var(--foreground)]">
+                Financeiro
               </Link>
-              <Link
-                href="/treinos"
-                className="flex items-center justify-between rounded-md px-2 py-1.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
-              >
-                <span className="flex items-center gap-2 text-[var(--foreground)]">
-                  <IconAlert className="h-3.5 w-3.5 text-[var(--warning)]" />
-                  Treinos sem registro
-                </span>
-                <span className="font-medium text-[var(--foreground)]">{pendingEvents}</span>
-              </Link>
-              <Link
-                href="/financeiro"
-                className="flex items-center justify-between rounded-md px-2 py-1.5 text-[12.5px] transition-colors hover:bg-[var(--surface-2)]/40"
-              >
-                <span className={`flex items-center gap-2 text-[var(--foreground)]`}>
-                  <IconClock className={`h-3.5 w-3.5 ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--muted)]"}`} />
-                  Cobranças em atraso
-                </span>
-                <span className={`font-medium ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--foreground)]"}`}>
+            </header>
+            <div className="mt-4 space-y-3">
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Recebido</p>
+                <p className="mt-0.5 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
+                  {finance ? brl(finance.received) : "—"}
+                </p>
+                <p className="text-[11px] text-[var(--success)]">Mês atual</p>
+              </div>
+              <div className="border-t border-[var(--border)] pt-3">
+                <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">A receber</p>
+                <p className="mt-0.5 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
+                  {finance ? brl(finance.pending) : "—"}
+                </p>
+                <p className="text-[11px] text-[var(--muted)]">Próximos vencimentos</p>
+              </div>
+              <div className="border-t border-[var(--border)] pt-3">
+                <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Em atraso</p>
+                <p className={`mt-0.5 text-[20px] font-semibold tracking-tight ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--foreground)]"}`}>
                   {finance ? brl(finance.overdue) : "—"}
-                </span>
-              </Link>
+                </p>
+                <p className={`text-[11px] ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--muted)]"}`}>
+                  {finance && finance.overdue > 0 ? "Requer atenção" : "Sem pendências"}
+                </p>
+              </div>
             </div>
           </section>
         </div>
 
-        {/* Visão financeira (largura total) */}
-        <section className="card mt-4 p-4">
-          <header className="flex items-center justify-between">
-            <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Visão financeira</h2>
-            <Link href="/financeiro" className="text-[12px] font-medium text-[var(--muted)] hover:text-[var(--foreground)]">
-              Ir para Financeiro
-            </Link>
-          </header>
-          <div className="mt-4 grid grid-cols-3 gap-4">
-            <div>
-              <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Recebido</p>
-              <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
-                {finance ? brl(finance.received) : "—"}
-              </p>
-              <p className="text-[11px] text-[var(--success)]">Mês atual</p>
-            </div>
-            <div className="border-l border-[var(--border)] pl-4">
-              <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">A receber</p>
-              <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--foreground)]">
-                {finance ? brl(finance.pending) : "—"}
-              </p>
-              <p className="text-[11px] text-[var(--muted)]">Próximos vencimentos</p>
-            </div>
-            <div className="border-l border-[var(--border)] pl-4">
-              <p className="text-[11px] uppercase tracking-wide text-[var(--muted)]">Em atraso</p>
-              <p className={`mt-1 text-[20px] font-semibold tracking-tight ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--foreground)]"}`}>
-                {finance ? brl(finance.overdue) : "—"}
-              </p>
-              <p className={`text-[11px] ${finance && finance.overdue > 0 ? "text-[var(--danger)]" : "text-[var(--muted)]"}`}>
-                {finance && finance.overdue > 0 ? "Requer atenção" : "Sem pendências"}
-              </p>
-            </div>
+        {/* Evolução dos cães + Ações rápidas */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <AttentionDogs />
           </div>
-        </section>
-
-        {/* Atalhos secundários */}
-        <section className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { label: "Novo cliente", href: "/clientes?new=true", Icon: IconUsers },
-            { label: "Registrar treino", href: "/treinos/registro", Icon: IconDog },
-            { label: "Enviar cobrança", href: "/financeiro", Icon: IconDollar },
-            { label: "Gerar relatório", href: "/relatorios", Icon: IconReport },
-          ].map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="card flex items-center justify-between px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/30"
-            >
-              <span className="flex items-center gap-2.5 text-[13px] font-medium text-[var(--foreground)]">
-                <item.Icon className="h-4 w-4 text-[var(--muted)]" />
-                {item.label}
-              </span>
-              <IconChevronRight className="h-3.5 w-3.5 text-[var(--muted)]" />
-            </Link>
-          ))}
-        </section>
+          <section className="card p-4">
+            <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Ações rápidas</h2>
+            <div className="mt-2 space-y-1">
+              {quickActions.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="-mx-2 flex items-center justify-between rounded-md px-2 py-2 transition-colors hover:bg-[var(--surface-2)]/40"
+                >
+                  <span className="flex items-center gap-2.5 text-[13px] font-medium text-[var(--foreground)]">
+                    <item.Icon className="h-4 w-4 text-[var(--muted)]" />
+                    {item.label}
+                  </span>
+                  <IconChevronRight className="h-3.5 w-3.5 text-[var(--muted)]" />
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
       </main>
     </AuthGuard>
   );

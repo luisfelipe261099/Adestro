@@ -1,3 +1,5 @@
+import type { CalendarEvent, ClientProfile, TrainingSession } from "@/lib/app-store";
+
 // Helpers puros para a home escolher e rotular a "próxima sessão".
 //
 // O campo `CalendarEvent.day` é heterogêneo: pode ser uma data ISO
@@ -71,4 +73,68 @@ export function parsePlanTotal(plan: string | undefined | null): number | null {
   if (!plan) return null;
   const match = plan.match(/(\d+)\s*aulas?/i);
   return match ? Number(match[1]) : null;
+}
+
+export type AttentionLevel = "red" | "amber" | "green";
+
+export type DogAttention = {
+  clientId: string;
+  clientName: string;
+  dog: ClientProfile["dogs"][number];
+  level: AttentionLevel;
+  label: string;
+  href: string;
+};
+
+const ATTENTION_ORDER: Record<AttentionLevel, number> = { red: 0, amber: 1, green: 2 };
+
+/**
+ * Carteira de cães com semáforo, derivada de sinais reais do store:
+ *  - vermelho: aula confirmada sem treino registrado (ação imediata);
+ *  - amarelo: cão sem próxima aula agendada (risco de esfriar);
+ *  - verde: em dia.
+ * Não atribui atraso de pagamento por cão (o store não liga pagamento a cliente).
+ * Função pura para que o painel e a métrica do dashboard usem a MESMA regra.
+ */
+export function computeDogAttention(
+  clients: ClientProfile[],
+  events: CalendarEvent[],
+  sessions: TrainingSession[],
+  now: number,
+): DogAttention[] {
+  const recorded = new Set(sessions.map((s) => s.dogId).filter(Boolean) as string[]);
+  const list: DogAttention[] = [];
+
+  for (const client of clients) {
+    for (const dog of client.dogs) {
+      const matches = (ev: CalendarEvent) => ev.dogId === dog.id || ev.dog === dog.name;
+      const hasFuture = events.some(
+        (ev) => matches(ev) && ev.status !== "Cancelado" && eventTimestamp(ev.day, ev.time) >= now,
+      );
+      const unregistered = events.some(
+        (ev) => ev.dogId === dog.id && ev.status === "Confirmado" && !recorded.has(dog.id),
+      );
+
+      let level: AttentionLevel;
+      let label: string;
+      let href: string;
+      if (unregistered) {
+        level = "red";
+        label = "Treino sem registro";
+        href = `/treinos/registro?clientId=${client.id}&dogId=${dog.id}`;
+      } else if (!hasFuture) {
+        level = "amber";
+        label = "Sem próxima aula";
+        href = "/agenda?new=true";
+      } else {
+        level = "green";
+        label = "Em dia";
+        href = "/clientes";
+      }
+
+      list.push({ clientId: client.id, clientName: client.name, dog, level, label, href });
+    }
+  }
+
+  return list.sort((a, b) => ATTENTION_ORDER[a.level] - ATTENTION_ORDER[b.level]);
 }

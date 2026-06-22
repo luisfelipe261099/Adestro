@@ -20,8 +20,8 @@
 	--surface-2: #efebe1;
 	--surface-3: #e2dccf;
 
-	/* texto — grafite quente */
-	--foreground: #1c1917;
+	/* texto — grafite (Opção A do documento) */
+	--foreground: #111827;
 	--foreground-strong: #0c0a09;
 	--muted: #726a62;
 	--muted-strong: #57514b;
@@ -36,8 +36,8 @@
 	--accent-soft: #e7eeec;
 	--accent-text: #1e3a3a;
 
-	/* semantic — sálvia para sucesso, tons terrosos quentes */
-	--success: #4f7355;
+	/* semantic — verde sálvia do documento para sucesso, tons terrosos quentes */
+	--success: #6b8f71;
 	--success-bg: #eef3ee;
 	--warning: #b45309;
 	--warning-bg: #fbf1e2;

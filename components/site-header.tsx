@@ -32,7 +32,7 @@ type NavItem = {
 };
 
 const TRAINER_NAV: NavItem[] = [
-  { href: "/dashboard", label: "Início", icon: IconHome },
+  { href: "/dashboard", label: "Hoje", icon: IconHome },
   { href: "/agenda", label: "Agenda", icon: IconCalendar },
   { href: "/clientes", label: "Clientes", icon: IconUsers },
   { href: "/treinos", label: "Treinos", icon: IconDog },

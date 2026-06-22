@@ -17,7 +17,7 @@ import {
 } from "@/components/icons";
 
 const PRIMARY = [
-  { href: "/dashboard", label: "Início", Icon: IconHome },
+  { href: "/dashboard", label: "Hoje", Icon: IconHome },
   { href: "/agenda", label: "Agenda", Icon: IconCalendar },
   { href: "/clientes", label: "Clientes", Icon: IconUsers },
   { href: "/financeiro", label: "Financeiro", Icon: IconDollar },

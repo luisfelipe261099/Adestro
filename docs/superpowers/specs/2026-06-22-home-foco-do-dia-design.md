@@ -67,3 +67,27 @@ versões equivalentes.
 Paleta é global (muda todas as telas — desejado). Só valores de cor → baixo risco
 técnico. Não há build/deploy local e o ambiente faz auto-push → master + Vercel.
 Implementar tudo, mostrar o diff e **só commitar com OK explícito**.
+
+## Atualização (2ª leva — "igual ao documento")
+
+A pedido do cliente, a home foi alinhada item a item ao wireframe do documento:
+- Mensagem contextual exata: "Você tem N sessões hoje. A próxima é com X às H".
+- Hero com campos "Sessão X de Y" + "Foco:" e ações Iniciar sessão / Ver ficha do
+  cão / Enviar WhatsApp / Remarcar.
+- 4 métricas do documento: Sessões hoje · Relatórios pendentes · Pagamentos a
+  receber · Cães em atenção.
+- Bloco "O que precisa da sua atenção" (Relatórios pendentes, Pagamentos em atraso,
+  Tutores sem resposta, Planos vencendo — os dois últimos sem fonte de dados ainda,
+  exibidos com 0).
+- "Agenda de hoje" em timeline Manhã/Tarde/Noite com cor de status
+  (`components/today-timeline.tsx`).
+- "Checklist de hoje" derivado de tarefas reais (`components/today-checklist.tsx`).
+- "Dinheiro a receber" (financeiro compacto) e "Evolução dos cães" (carteira/semáforo).
+- Copy: "Brief do dia" → "Prioridades de hoje"; "Próximos atendimentos" → "Agenda
+  das próximas sessões"; "Visão financeira" → "Dinheiro a receber".
+- Menu: "Início" → "Hoje" (site-header e mobile-navigation).
+- Paleta Opção A exata: grafite #111827, petróleo #1E3A3A, sálvia #6B8F71, areia
+  #F4F1EA, branco quente #FAFAF7.
+
+Fora de escopo (sem dado estruturado): radar de evolução comportamental por eixo e
+"Progresso %" exato na ficha do cão — exigem mudança de modelo de dados.
