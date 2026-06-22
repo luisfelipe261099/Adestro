@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 
 const devDemoUsers = [
   { id: "demo-trainer", email: "adestrador@adestro.com.br", name: "Adestrador Demo", role: "trainer" },
-  { id: "demo-client", email: "cliente@adestro.com.br", name: "Tutor Demo", role: "client" },
+  { id: "demo-client", email: "cliente@adestro.com.br", name: "Cliente Demo", role: "client" },
   { id: "demo-admin", email: "admin@adestro.com.br", name: "Admin Demo", role: "admin" },
 ];
 

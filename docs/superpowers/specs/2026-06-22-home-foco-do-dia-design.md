@@ -91,3 +91,29 @@ A pedido do cliente, a home foi alinhada item a item ao wireframe do documento:
 
 Fora de escopo (sem dado estruturado): radar de evolução comportamental por eixo e
 "Progresso %" exato na ficha do cão — exigem mudança de modelo de dados.
+
+## Atualização (3ª leva — 2º documento do chefe)
+
+O chefe enviou um 2º documento que **reespecifica os cards do dashboard** (conflito
+com a 1ª leva). Decisões do usuário: seguir os **5 cards** do 2º doc e fazer só
+layout + terminologia agora (treino/tarefas viram fase à parte).
+
+- Dashboard volta aos **5 cards** com cores VÍVIDAS/distintas (tabela do doc):
+  Agenda do dia (Azul) · Agenda da semana (Azul claro) · Financeiro (Verde) ·
+  Pendências (Laranja) · Checklist do dia (Roxo). Mantém o hero "Próxima sessão"
+  e a base quente (areia/petróleo); home enxuta = hero + 5 cards + Evolução dos
+  cães + Prioridades de hoje. Componentes `today-timeline`/`today-checklist`
+  removidos (duplicavam os cards).
+- Menu "Início" → "Hoje" (já feito na 2ª leva, mantido).
+- Terminologia: trocados os textos VISÍVEIS remanescentes de "Tutor" → "Cliente"
+  (nome do usuário demo, fallback em Treinos, título de notificação, badge de
+  gamificação). Valores de dado/tipos (`author: "Tutor"`), campos de DB
+  (`defaultTutorTasks`) e identificadores internos foram mantidos de propósito —
+  trocá-los quebraria dados/contratos.
+
+### Fase seguinte (a investigar, NÃO implementada ainda)
+- **Treinos (bugs/refatoração):** link do cão indo p/ agenda; edição cria treino
+  novo em vez de salvar; remover contador; página dedicada por treino editável em
+  tela cheia com data; atividades/comandos como seleção salva e editável; ordem em
+  números; "próximo treino" unificado; botão INCLUIR no foco.
+- **Tarefas de casa:** recorrência diária/semanal (pergunta aberta do chefe).

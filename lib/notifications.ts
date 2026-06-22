@@ -80,7 +80,7 @@ export function useNotifications(): NotificationSummary {
         id: `feedback-${fb.id}`,
         type: "portal",
         icon: "💬",
-        title: "Nova mensagem do tutor",
+        title: "Nova mensagem do cliente",
         detail: fb.message.length > 60 ? `${fb.message.slice(0, 60)}…` : fb.message,
         href: `/portal`,
         when: fb.createdAt,

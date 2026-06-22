@@ -47,12 +47,13 @@
 	--info-bg: #e8f1f0;
 
 	/* paleta dos cards do dashboard (TDAH-friendly: cor = foco)
-	   re-harmonizada na família quente; cada cor ainda marca um foco distinto. */
-	--card-blue: #1e5f5b;        --card-blue-bg: #e7f0ef;      --card-blue-border: #bfd8d5;
-	--card-sky: #2c7a7b;         --card-sky-bg: #e6f1f0;       --card-sky-border: #bbdad8;
-	--card-green: #4f7355;       --card-green-bg: #ebf1eb;     --card-green-border: #c5d8c7;
-	--card-orange: #b5541e;      --card-orange-bg: #faf0e7;    --card-orange-border: #efd3bc;
-	--card-purple: #7c5a82;      --card-purple-bg: #f2ecf1;    --card-purple-border: #ddcbde;
+	   cores VÍVIDAS e distintas — Azul / Azul claro / Verde / Laranja / Roxo —
+	   conforme a tabela do documento ("cor primordial para atenção em cada ponto"). */
+	--card-blue: #2563eb;        --card-blue-bg: #eff6ff;      --card-blue-border: #bfdbfe;
+	--card-sky: #0ea5e9;         --card-sky-bg: #f0f9ff;       --card-sky-border: #bae6fd;
+	--card-green: #16a34a;       --card-green-bg: #f0fdf4;     --card-green-border: #bbf7d0;
+	--card-orange: #ea580c;      --card-orange-bg: #fff7ed;    --card-orange-border: #fed7aa;
+	--card-purple: #7c3aed;      --card-purple-bg: #f5f3ff;    --card-purple-border: #ddd6fe;
 
 	/* sombras — quase invisíveis, separação por borda */
 	--shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
@@ -87,11 +88,11 @@ html[data-theme="dark"] {
 	--accent-soft: #1e3a3a;
 	--accent-text: #9cc7c0;
 
-	--card-blue: #6fa39c;        --card-blue-bg: #16302f;      --card-blue-border: #1e5f5b;
-	--card-sky: #6bb8b6;         --card-sky-bg: #102b2b;       --card-sky-border: #2c7a7b;
-	--card-green: #8fbe96;       --card-green-bg: #15271a;     --card-green-border: #3e6147;
-	--card-orange: #e08a4e;      --card-orange-bg: #341b0c;    --card-orange-border: #7a3e1a;
-	--card-purple: #c09bc6;      --card-purple-bg: #2a1e2d;    --card-purple-border: #6e4f73;
+	--card-blue: #60a5fa;        --card-blue-bg: #172554;      --card-blue-border: #1e40af;
+	--card-sky: #38bdf8;         --card-sky-bg: #082f49;       --card-sky-border: #075985;
+	--card-green: #4ade80;       --card-green-bg: #052e16;     --card-green-border: #166534;
+	--card-orange: #fb923c;      --card-orange-bg: #431407;    --card-orange-border: #9a3412;
+	--card-purple: #a78bfa;      --card-purple-bg: #2e1065;    --card-purple-border: #6d28d9;
 
 	--success: #7ba383;
 	--success-bg: #1e2a20;

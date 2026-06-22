@@ -617,7 +617,7 @@ export default function TrainingPage() {
                 const dogMeta = session.dogId ? dogDirectory.get(session.dogId) : undefined;
                 const dogName = session.dogName || dogMeta?.name || "Cão";
                 const breed = dogMeta?.breed || "Sem raca";
-                const clientName = session.clientName || dogMeta?.clientName || "Tutor";
+                const clientName = session.clientName || dogMeta?.clientName || "Cliente";
                 const firstNote = session.notes[0];
                 const isExpanded = expandedSessionId === session.id;
                 // @ts-ignore

@@ -275,7 +275,7 @@ export function applyAction(current: RawGamification, input: ApplyActionInput): 
     case "invite_tutor": {
       const count = input.count || 1;
       earned = POINTS.invite_tutor * count;
-      reason = `Convidou ${count} tutor(es)`;
+      reason = `Convidou ${count} cliente(s)`;
       next.points += earned;
       next.tutorsInvited += count;
       break;
