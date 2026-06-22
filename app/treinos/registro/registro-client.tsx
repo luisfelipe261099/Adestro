@@ -292,6 +292,14 @@ export default function RegistroTreinoClientPage() {
 
   const isEditing = Boolean(editingId);
 
+  // Treino já registrado para este cão NESTE dia? Evita duplicar: oferece editar
+  // o existente em vez de criar outro (corrige o "cada registro vira um novo").
+  const sameDateExisting = useMemo(() => {
+    if (!selectedDog || isEditing) return null;
+    const brDate = toBrDate(sessionDate);
+    return trainingSessions.find((s) => s.dogId === selectedDog.id && s.date === brDate) ?? null;
+  }, [selectedDog, isEditing, sessionDate, trainingSessions]);
+
   const nextSessionNumber = useMemo(() => {
     if (editingNumber) return editingNumber;
     if (!selectedDog) return 1;
@@ -737,6 +745,21 @@ export default function RegistroTreinoClientPage() {
                 />
               </label>
             </div>
+
+            {sameDateExisting ? (
+              <div
+                className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border bg-[var(--warning-bg)] px-3 py-2.5"
+                style={{ borderColor: "color-mix(in srgb, var(--warning) 35%, transparent)" }}
+              >
+                <p className="text-[12px] text-[var(--foreground)]">
+                  <strong>{selectedDog?.name}</strong> já tem um treino registrado em {sameDateExisting.date}. Edite o
+                  existente em vez de criar outro.
+                </p>
+                <a href={`/treinos/registro?sessionId=${sameDateExisting.id}`} className="btn-secondary text-[12px]">
+                  Editar este treino
+                </a>
+              </div>
+            ) : null}
 
             {/* SEÇÕES 1 a 8 */}
             <div className="mt-2 overflow-hidden rounded-md border border-[var(--border)] bg-white">

@@ -361,10 +361,6 @@ export default function TrainingPage() {
     window.open(`https://wa.me/55${normalizedPhone}?text=${message}`, "_blank", "noopener,noreferrer");
   }
 
-  const pendingSessionsCount = feedSessions.filter(
-    (session) => statusFromScore(averageSessionScore(session.notes)) === "pendente",
-  ).length;
-
   const feedTitle =
     feedFilter === "today"
       ? "Treinos de hoje"
@@ -589,17 +585,6 @@ export default function TrainingPage() {
                   {option.label}
                 </button>
               ))}
-            </section>
-
-            <section className="mt-3 grid grid-cols-2 gap-2">
-              <article className="rounded-md border border-[var(--border)] bg-white p-3">
-                <p className="text-2xl font-semibold text-[var(--foreground)]">{filteredFeed.length}</p>
-                <p className="text-xs text-[var(--muted)]">Treinos no filtro</p>
-              </article>
-              <article className="rounded-md border border-[var(--border)] bg-white p-3">
-                <p className="text-2xl font-semibold text-[var(--foreground)]">{pendingSessionsCount}</p>
-                <p className="text-xs text-[var(--muted)]">Pendentes</p>
-              </article>
             </section>
 
             <section className="mt-4 flex items-center justify-between">
