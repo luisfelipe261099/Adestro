@@ -233,7 +233,7 @@ export default function FinanceiroPage() {
   const handleSendChargeReminder = (inv: InvoiceInfo) => {
     const client = clients.find((c) => c.name === inv.clientName);
     if (!client?.phone) {
-      setError("Tutor sem WhatsApp cadastrado para envio da cobrança.");
+      setError("Cliente sem WhatsApp cadastrado para envio da cobrança.");
       return;
     }
     const today = new Date();
@@ -249,7 +249,7 @@ export default function FinanceiroPage() {
   const handleSendReceiptViaWhats = () => {
     const client = clients.find((c) => c.name === receiptClient);
     if (!client?.phone) {
-      setError("Tutor sem WhatsApp cadastrado para envio do recibo.");
+      setError("Cliente sem WhatsApp cadastrado para envio do recibo.");
       return;
     }
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";

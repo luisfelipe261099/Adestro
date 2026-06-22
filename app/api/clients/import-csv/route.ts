@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       const client = await prisma.clientProfile.create({
         data: {
           trainerId: trainer.id,
-          name: row.name?.slice(0, 120) || "Tutor sem nome",
+          name: row.name?.slice(0, 120) || "Cliente sem nome",
           phone: row.phone?.slice(0, 20) || "",
           email: row.email?.slice(0, 120) || "",
           privateNotes: row.notes?.slice(0, 500) || "",

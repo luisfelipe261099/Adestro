@@ -331,7 +331,7 @@ export default function SchedulePage() {
 
   function handleOpenWhatsApp(phone: string | undefined, dogName: string, event: { day: string; time: string }) {
     if (!phone) {
-      setAgendaMessage("Tutor sem WhatsApp válido.");
+      setAgendaMessage("Cliente sem WhatsApp válido.");
       window.setTimeout(() => setAgendaMessage(""), 3000);
       return;
     }
@@ -346,7 +346,7 @@ export default function SchedulePage() {
 
   function handleSendConfirmation(phone: string | undefined, dogName: string, event: { day: string; time: string }) {
     if (!phone) {
-      setAgendaMessage("Tutor sem WhatsApp válido para envio da confirmação.");
+      setAgendaMessage("Cliente sem WhatsApp válido para envio da confirmação.");
       window.setTimeout(() => setAgendaMessage(""), 3000);
       return;
     }

@@ -452,7 +452,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
         <header className="flex items-center justify-between border-b border-slate-100 pb-3">
           <span className="text-xs font-bold text-[var(--foreground)]">Ficha do Cliente & Cão (Etapa {formStep}/5)</span>
           <span className="text-[10px] font-semibold text-[var(--muted)]">
-            {formStep === 1 ? "Dados do Tutor" :
+            {formStep === 1 ? "Dados do Cliente" :
              formStep === 2 ? "Endereço" :
              formStep === 3 ? "Identificação do Cão" :
              formStep === 4 ? "Saúde e Vacinas" :

@@ -63,7 +63,7 @@ export function GlobalSearch() {
         id: "1",
         type: "client" as const,
         title: "Cliente: João Silva",
-        description: "Tutor do Cão: Rex (Golden Retriever)",
+        description: "Cliente do Cão: Rex (Golden Retriever)",
         href: "/clientes/1",
       },
       {

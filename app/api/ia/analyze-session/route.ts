@@ -79,7 +79,7 @@ function analyzeSessionWithAI(sessionData: SessionData): AIAnalysis {
     (strengths.length * 10 + (notes.length > 200 ? 10 : 0) + (sessionData.duration_minutes || 30) / 3);
   const estimatedProgress = Math.min(100, progressBase + progressBonus);
 
-  // Gerar resumo para o tutor
+  // Gerar resumo para o cliente
   const summary = `Na sessão de hoje, ${sessionData.duration_minutes || 30} minutos, seu cão demonstrou ${strengths[0]?.toLowerCase() || "bom desempenho"}. 
 Ponto de foco para casa: ${improvements[0] || "continue reforçando o aprendizado"}. 
 Próximo objetivo: ${nextSteps[0] || "melhorar o comportamento em ambientes novos"}.`;

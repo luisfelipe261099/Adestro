@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     return NextResponse.json(messages);
   }
 
-  // Senão, retorna a lista de contatos (tutores) ativos do adestrador com a última mensagem
+  // Senão, retorna a lista de contatos (clientes) ativos do adestrador com a última mensagem
   const clients = await prisma.clientProfile.findMany({
     where: { trainerId: trainer.id },
     select: {

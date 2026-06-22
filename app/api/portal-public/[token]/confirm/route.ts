@@ -80,8 +80,8 @@ export async function POST(request: Request, { params }: Params) {
 
   const reasonText = body.reason?.trim();
   const message = body.confirmed
-    ? `✅ Presença confirmada pelo tutor para ${event.dog} em ${event.day} às ${event.time}.`
-    : `❌ Tutor recusou presença para ${event.dog} em ${event.day} às ${event.time}.${reasonText ? ` Motivo: ${reasonText}` : ""}`;
+    ? `✅ Presença confirmada pelo cliente para ${event.dog} em ${event.day} às ${event.time}.`
+    : `❌ Cliente recusou presença para ${event.dog} em ${event.day} às ${event.time}.${reasonText ? ` Motivo: ${reasonText}` : ""}`;
 
   await prisma.portalFeedback.create({
     data: {

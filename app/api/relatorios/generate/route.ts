@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "dogId é obrigatório" }, { status: 400 });
   }
 
-  // Buscar cão e tutor
+  // Buscar cão e cliente
   const dog = await prisma.dog.findUnique({
     where: { id: dogId },
     include: {

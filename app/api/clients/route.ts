@@ -149,7 +149,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json() as {
-    // Dados do Tutor
+    // Dados do Cliente
     clientName: string;
     phone?: string;
     email?: string;

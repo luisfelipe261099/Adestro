@@ -349,7 +349,7 @@ export default function TrainingPage() {
   function handleOpenWhatsApp(phone?: string, dogName?: string) {
     const normalizedPhone = (phone ?? "").replace(/\D/g, "");
     if (!normalizedPhone) {
-      setSaveError("Tutor sem telefone válido para abrir WhatsApp.");
+      setSaveError("Cliente sem telefone válido para abrir WhatsApp.");
       window.setTimeout(() => setSaveError(""), 3000);
       return;
     }

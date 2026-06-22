@@ -46,7 +46,7 @@ function buildSystemPrompt(ctx: ChatContext): string {
   if (ctx.dogName) {
     lines.push(`Cão: ${[ctx.dogName, ctx.dogBreed, ctx.dogAge].filter(Boolean).join(", ")}`);
   }
-  if (ctx.tutorName) lines.push(`Tutor: ${ctx.tutorName}`);
+  if (ctx.tutorName) lines.push(`Cliente: ${ctx.tutorName}`);
   if (ctx.trainingTypes && ctx.trainingTypes.length) {
     lines.push(`Foco de treino: ${ctx.trainingTypes.join(", ")}`);
   }
@@ -183,7 +183,7 @@ function generateResponse(input: ChatRequest): string {
   if (message.includes("resum") || message.includes("analise") || message.includes("análise")) {
     const context = buildBriefContext(ctx);
     return `Análise rápida do treino de hoje: ${context || "(ainda sem dados estruturados — preencha comandos e descrição)"}. ` +
-      `Pontos fortes destacados, anote no campo "Resumo público" o que o tutor precisa reforçar em casa.`;
+      `Pontos fortes destacados, anote no campo "Resumo público" o que o cliente precisa reforçar em casa.`;
   }
 
   const context = buildBriefContext(ctx);

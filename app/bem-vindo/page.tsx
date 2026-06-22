@@ -38,7 +38,7 @@ export default function WelcomePage() {
     setError("");
     try {
       const result = await addClient({
-        clientName: clientName || "Tutor de exemplo",
+        clientName: clientName || "Cliente de exemplo",
         phone: clientPhone || "",
         dogName: dogName || "Cão de exemplo",
         breed: dogBreed || "Sem raça definida",
