@@ -519,10 +519,10 @@ export default function TrainingPage() {
       <main className="page">
         {clients.length === 0 ? (
           <section className="rounded-lg border border-dashed border-[var(--border)] bg-white p-8 text-center">
-            <p className="text-lg font-semibold text-[var(--foreground)]">Nenhum tutor cadastrado</p>
-            <p className="mt-2 text-sm text-[var(--muted)]">Cadastre um tutor e seu cão para começar os registros.</p>
+            <p className="text-lg font-semibold text-[var(--foreground)]">Nenhum cliente cadastrado</p>
+            <p className="mt-2 text-sm text-[var(--muted)]">Cadastre um cliente e seu cão para começar os registros.</p>
             <Link href="/clientes" className="pc-primary-action mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold">
-              Cadastrar tutor
+              Cadastrar cliente
             </Link>
           </section>
         ) : (
@@ -553,7 +553,7 @@ export default function TrainingPage() {
                 <input
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Buscar por cão ou tutor..."
+                  placeholder="Buscar por cão ou cliente..."
                   className="w-full border-none bg-transparent text-sm text-[var(--foreground)] outline-none"
                 />
               </label>
@@ -595,14 +595,6 @@ export default function TrainingPage() {
               <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-2xl font-semibold text-[var(--foreground)]">{filteredFeed.length}</p>
                 <p className="text-xs text-[var(--muted)]">Treinos no filtro</p>
-              </article>
-              <article className="rounded-md border border-[var(--border)] bg-white p-3">
-                <p className="text-2xl font-semibold text-[var(--foreground)]">{draftNotes.length}</p>
-                <p className="text-xs text-[var(--muted)]">Blocos do registro</p>
-              </article>
-              <article className="rounded-md border border-[var(--border)] bg-white p-3">
-                <p className="text-2xl font-semibold text-[var(--foreground)]">{trainingSessions.length}</p>
-                <p className="text-xs text-[var(--muted)]">Aulas registradas</p>
               </article>
               <article className="rounded-md border border-[var(--border)] bg-white p-3">
                 <p className="text-2xl font-semibold text-[var(--foreground)]">{pendingSessionsCount}</p>
@@ -670,7 +662,7 @@ export default function TrainingPage() {
                               {/* Seção A: Atividades */}
                               {ds.activities && ds.activities.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">A. Atividades Trabalhadas</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">1. Atividades Trabalhadas</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.activities.map((act: any, idx: number) => (
                                       <li key={idx} className="flex items-start gap-1.5">
@@ -688,7 +680,7 @@ export default function TrainingPage() {
                               {/* Seção B: Comandos */}
                               {ds.commands && ds.commands.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">B. Comandos & Evolução</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">2. Comandos & Evolução</p>
                                   <ul className="mt-1 space-y-1.5 pl-1">
                                     {ds.commands.map((cmd: any, idx: number) => (
                                       <li key={idx}>
@@ -706,7 +698,7 @@ export default function TrainingPage() {
                               {/* Seção C: Resumo Público */}
                               {ds.description && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">C. Resumo do Tutor</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">3. Resumo do Cliente</p>
                                   <p className="mt-1 text-slate-600 bg-slate-50 p-2 rounded-lg leading-relaxed">{ds.description}</p>
                                 </div>
                               )}
@@ -714,7 +706,7 @@ export default function TrainingPage() {
                               {/* Seção D: Notas Privadas */}
                               {ds.privateNotes && (
                                 <div>
-                                  <p className="font-bold text-rose-700 uppercase tracking-[0.08em] text-[10px]">D. Notas Privadas (Confidencial)</p>
+                                  <p className="font-bold text-rose-700 uppercase tracking-[0.08em] text-[10px]">4. Notas Privadas (Confidencial)</p>
                                   <p className="mt-1 text-rose-950 bg-rose-50/50 p-2 rounded-lg leading-relaxed border border-rose-100">{ds.privateNotes}</p>
                                 </div>
                               )}
@@ -723,7 +715,7 @@ export default function TrainingPage() {
                               {ds.aiSummary && (
                                 <div>
                                   <div className="flex items-center justify-between gap-2">
-                                    <p className="font-bold text-purple-800 uppercase tracking-[0.08em] text-[10px]">E. Análise e Resumo da IA</p>
+                                    <p className="font-bold text-purple-800 uppercase tracking-[0.08em] text-[10px]">5. Análise e Resumo da IA</p>
                                     <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold ${ds.aiApproved ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}>
                                       {ds.aiApproved ? "Aprovado p/ Portal" : "Não Aprovado"}
                                     </span>
@@ -732,30 +724,25 @@ export default function TrainingPage() {
                                 </div>
                               )}
 
-                              {/* Seção G: Próximo Foco */}
-                              {ds.nextFocus && (
+                              {/* Seção 7: Plano do Próximo Treino (Foco + comandos unificados) */}
+                              {((ds.nextFocus && ds.nextFocus.trim()) || (ds.nextCommands && ds.nextCommands.length > 0)) && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">G. Próximo Foco</p>
-                                  <p className="mt-1 text-slate-700 leading-relaxed font-semibold">🎯 {ds.nextFocus}</p>
-                                </div>
-                              )}
-
-                              {/* Seção H: Próximos Comandos */}
-                              {ds.nextCommands && ds.nextCommands.length > 0 && (
-                                <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">H. Próximos Comandos Recomendados</p>
-                                  <div className="mt-1 flex flex-wrap gap-1">
-                                    {ds.nextCommands.map((nc: string, idx: number) => (
-                                      <span key={idx} className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-800 border border-slate-200">{nc}</span>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">7. Plano do Próximo Treino</p>
+                                  <ul className="mt-1 space-y-1 pl-1">
+                                    {ds.nextFocus && ds.nextFocus.trim() && (
+                                      <li className="text-slate-700 font-semibold">🎯 {ds.nextFocus}</li>
+                                    )}
+                                    {(ds.nextCommands ?? []).map((nc: string, idx: number) => (
+                                      <li key={idx} className="text-slate-700">🎯 {nc}</li>
                                     ))}
-                                  </div>
+                                  </ul>
                                 </div>
                               )}
 
-                              {/* Seção I: Dever de Casa */}
+                              {/* Seção 8: Dever de Casa */}
                               {ds.nextTasks && ds.nextTasks.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">I. Dever de Casa para o Tutor</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">8. Dever de Casa para o Cliente</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.nextTasks.map((t: string, idx: number) => (
                                       <li key={idx} className="text-slate-700">🏠 {t}</li>
@@ -789,11 +776,11 @@ export default function TrainingPage() {
                         {isExpanded ? "Fechar" : "Detalhes"}
                       </button>
                       <Link
-                        href={session.clientId && session.dogId ? `/treinos/registro?clientId=${session.clientId}&dogId=${session.dogId}` : "/treinos/registro"}
+                        href={`/treinos/registro?sessionId=${session.id}`}
                         className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-[var(--foreground)]"
                       >
                         <TinyIcon name="list" />
-                        Registrar
+                        Editar
                       </Link>
                       <button
                         type="button"
@@ -837,7 +824,7 @@ export default function TrainingPage() {
                 <form onSubmit={onSubmit} className="mt-3 grid gap-3">
                   <div className="grid gap-2 sm:grid-cols-2">
                     <label className="grid gap-1">
-                      <span className="text-[11px] font-medium text-[var(--muted)]">Tutor</span>
+                      <span className="text-[11px] font-medium text-[var(--muted)]">Cliente</span>
                       <select
                         value={selectedClientValue}
                         onChange={(event) => {

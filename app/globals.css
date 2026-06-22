@@ -30,11 +30,11 @@
 	--border: #e4e4e7;
 	--border-strong: #d4d4d8;
 
-	/* accent — slate blue confiante (não pastel) */
-	--accent: #1e293b;
-	--accent-strong: #0f172a;
-	--accent-soft: #f1f5f9;
-	--accent-text: #1e40af;
+	/* accent — azul profissional vivo (mais atenção, ainda sóbrio) */
+	--accent: #2563eb;
+	--accent-strong: #1d4ed8;
+	--accent-soft: #eff6ff;
+	--accent-text: #1d4ed8;
 
 	/* semantic */
 	--success: #16a34a;
@@ -45,6 +45,14 @@
 	--danger-bg: #fef2f2;
 	--info: #0284c7;
 	--info-bg: #f0f9ff;
+
+	/* paleta dos cards do dashboard (TDAH-friendly: cor = foco)
+	   cada família tem cor forte (texto/ícone), fundo suave e borda. */
+	--card-blue: #2563eb;        --card-blue-bg: #eff6ff;      --card-blue-border: #bfdbfe;
+	--card-sky: #0ea5e9;         --card-sky-bg: #f0f9ff;       --card-sky-border: #bae6fd;
+	--card-green: #16a34a;       --card-green-bg: #f0fdf4;     --card-green-border: #bbf7d0;
+	--card-orange: #ea580c;      --card-orange-bg: #fff7ed;    --card-orange-border: #fed7aa;
+	--card-purple: #7c3aed;      --card-purple-bg: #f5f3ff;    --card-purple-border: #ddd6fe;
 
 	/* sombras — quase invisíveis, separação por borda */
 	--shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
@@ -73,10 +81,16 @@ html[data-theme="dark"] {
 	--border: #27272a;
 	--border-strong: #3f3f46;
 
-	--accent: #e2e8f0;
-	--accent-strong: #f8fafc;
-	--accent-soft: #1e293b;
+	--accent: #3b82f6;
+	--accent-strong: #60a5fa;
+	--accent-soft: #1e3a8a;
 	--accent-text: #93c5fd;
+
+	--card-blue: #60a5fa;        --card-blue-bg: #172554;      --card-blue-border: #1e40af;
+	--card-sky: #38bdf8;         --card-sky-bg: #082f49;       --card-sky-border: #075985;
+	--card-green: #4ade80;       --card-green-bg: #052e16;     --card-green-border: #166534;
+	--card-orange: #fb923c;      --card-orange-bg: #431407;    --card-orange-border: #9a3412;
+	--card-purple: #a78bfa;      --card-purple-bg: #2e1065;    --card-purple-border: #6d28d9;
 
 	--success: #22c55e;
 	--success-bg: #052e16;
@@ -206,8 +220,33 @@ body {
 .input-field:focus {
 	outline: none;
 	border-color: var(--accent);
-	box-shadow: 0 0 0 3px rgb(30 41 59 / 0.08);
+	box-shadow: 0 0 0 3px rgb(37 99 235 / 0.12);
 }
+
+/* ─── Cards coloridos do dashboard (atenção por cor) ───────────────────────── */
+.stat-card {
+	position: relative;
+	display: block;
+	border-radius: 0.75rem;
+	border: 1px solid var(--c-border, var(--border));
+	background: var(--c-bg, var(--surface));
+	padding: 1rem;
+	overflow: hidden;
+	transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.stat-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.stat-card::before {
+	content: "";
+	position: absolute;
+	left: 0; top: 0; bottom: 0;
+	width: 4px;
+	background: var(--c, var(--accent));
+}
+.stat-card-blue   { --c: var(--card-blue);   --c-bg: var(--card-blue-bg);   --c-border: var(--card-blue-border); }
+.stat-card-sky    { --c: var(--card-sky);    --c-bg: var(--card-sky-bg);    --c-border: var(--card-sky-border); }
+.stat-card-green  { --c: var(--card-green);  --c-bg: var(--card-green-bg);  --c-border: var(--card-green-border); }
+.stat-card-orange { --c: var(--card-orange); --c-bg: var(--card-orange-bg); --c-border: var(--card-orange-border); }
+.stat-card-purple { --c: var(--card-purple); --c-bg: var(--card-purple-bg); --c-border: var(--card-purple-border); }
 
 .card {
 	background: var(--surface);
@@ -454,7 +493,7 @@ a:focus-visible {
 /* ─── Compat: classes legadas vão herdar tokens novos ────────────────────── */
 .pc-primary-action:hover { background-color: var(--accent-strong); }
 
-::selection { background: rgb(30 41 59 / 0.15); color: var(--foreground); }
+::selection { background: rgb(37 99 235 / 0.18); color: var(--foreground); }
 
 /* Scrollbar discreto em desktop */
 @media (min-width: 768px) {

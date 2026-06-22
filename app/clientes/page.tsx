@@ -151,7 +151,7 @@ export default function ClientsPage() {
   // ─── ESTADO DO FORMULÁRIO EM 5 ETAPAS ────────────────────────────────
   const [formStep, setFormStep] = useState(1);
 
-  // Etapa 1: Dados do Tutor
+  // Etapa 1: Dados do Cliente
   const [clientName, setClientName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -159,7 +159,7 @@ export default function ClientsPage() {
   const [cpf, setCpf] = useState("");
   const [privateNotes, setPrivateNotes] = useState("");
 
-  // Etapa 2: Endereço do Tutor
+  // Etapa 2: Endereço do Cliente
   const [addrNickname, setAddrNickname] = useState("Casa");
   const [addrZipCode, setAddrZipCode] = useState("");
   const [addrStreet, setAddrStreet] = useState("");
@@ -429,7 +429,7 @@ export default function ClientsPage() {
     if (formStep !== 5) return;
 
     if (!clientName.trim() || !dogName.trim()) {
-      setSaveError("Nome do tutor e nome do cão são obrigatórios.");
+      setSaveError("Nome do cliente e nome do cão são obrigatórios.");
       return;
     }
 
@@ -538,9 +538,9 @@ export default function ClientsPage() {
           <div className="page-header-actions">
             <div className="min-w-0">
               <p className="text-eyebrow mb-1.5">Carteira</p>
-              <h1 className="text-display">Tutores e cães</h1>
+              <h1 className="text-display">Clientes e cães</h1>
               <p className="mt-1 text-subtitle">
-                {clients.length} tutor{clients.length === 1 ? "" : "es"} · {totalDogs} cão{totalDogs === 1 ? "" : "es"} cadastrado{totalDogs === 1 ? "" : "s"}
+                {clients.length} cliente{clients.length === 1 ? "" : "es"} · {totalDogs} cão{totalDogs === 1 ? "" : "es"} cadastrado{totalDogs === 1 ? "" : "s"}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -563,7 +563,7 @@ export default function ClientsPage() {
                 }}
                 className="btn-primary text-[12.5px]"
               >
-                + Novo tutor
+                + Novo cliente
               </button>
             </div>
           </div>
@@ -576,7 +576,7 @@ export default function ClientsPage() {
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder={entityKind === "humanos" ? "Buscar tutor pelo nome" : "Buscar cão pelo nome ou raça"}
+              placeholder={entityKind === "humanos" ? "Buscar cliente pelo nome" : "Buscar cão pelo nome ou raça"}
               className="w-full border-none bg-transparent text-[13px] text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
             />
           </label>
@@ -588,7 +588,7 @@ export default function ClientsPage() {
               data-active={entityKind === "humanos"}
               className="tab-trigger"
             >
-              Tutores
+              Clientes
             </button>
             <button
               type="button"
@@ -663,13 +663,13 @@ export default function ClientsPage() {
                 className="mt-4 space-y-3"
               >
 
-                {/* ETAPA 1: Dados do Tutor */}
+                {/* ETAPA 1: Dados do Cliente */}
                 {formStep === 1 && (
                   <div className="grid gap-2.5 animate-in fade-in duration-200">
                     <input
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      placeholder="Nome completo do tutor *"
+                      placeholder="Nome completo do cliente *"
                       required
                       className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
@@ -704,14 +704,14 @@ export default function ClientsPage() {
                     <textarea
                       value={privateNotes}
                       onChange={(e) => setPrivateNotes(e.target.value)}
-                      placeholder="Observações confidenciais do adestrador (não visíveis ao tutor)..."
+                      placeholder="Observações confidenciais do adestrador (não visíveis ao cliente)..."
                       rows={3}
                       className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
                   </div>
                 )}
 
-                {/* ETAPA 2: Endereço do Tutor */}
+                {/* ETAPA 2: Endereço do Cliente */}
                 {formStep === 2 && (
                   <div className="grid gap-2.5 animate-in fade-in duration-200">
                     <div className="flex gap-2">
@@ -1126,7 +1126,7 @@ export default function ClientsPage() {
           <section data-tour="clients-list" className="mt-3 space-y-2">
             {filteredClients.length === 0 ? (
               <article className="rounded-md border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
-                Nenhum {entityKind === "humanos" ? "tutor" : "cão"} encontrado com os filtros atuais.
+                Nenhum {entityKind === "humanos" ? "cliente" : "cão"} encontrado com os filtros atuais.
               </article>
             ) : null}
 
@@ -1149,7 +1149,7 @@ export default function ClientsPage() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-[var(--foreground)]">{dog.name}</p>
-                      <p className="text-xs text-[var(--muted)]">Tutor: {client.name} • {dog.breed || "Raça não informada"}</p>
+                      <p className="text-xs text-[var(--muted)]">Cliente: {client.name} • {dog.breed || "Raça não informada"}</p>
                     </div>
                   </div>
                   <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${statusStyle(status)}`}>
@@ -1305,7 +1305,7 @@ export default function ClientsPage() {
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Tarefas de Casa</h3>
                 <p className="text-xs text-[var(--muted)]">
-                  Tutor: {activeClientForTasks?.name}
+                  Cliente: {activeClientForTasks?.name}
                 </p>
               </div>
               <button
@@ -1322,7 +1322,7 @@ export default function ClientsPage() {
               {loadingTasks ? (
                 <p className="text-center text-xs text-[var(--muted)] py-6">Carregando tarefas...</p>
               ) : clientTasks.length === 0 ? (
-                <p className="text-center text-xs text-[var(--muted)] py-8">Nenhuma tarefa cadastrada para este tutor.</p>
+                <p className="text-center text-xs text-[var(--muted)] py-8">Nenhuma tarefa cadastrada para este cliente.</p>
               ) : (
                 clientTasks.map((task) => (
                   <div key={task.id} className="rounded-md border border-slate-100 bg-slate-50/50 p-3.5 space-y-3">
@@ -1376,7 +1376,7 @@ export default function ClientsPage() {
                             )}
                           </button>
                           <div>
-                            <p className="text-[10px] font-bold text-emerald-700">Evidência enviada pelo tutor</p>
+                            <p className="text-[10px] font-bold text-emerald-700">Evidência enviada pelo cliente</p>
                             <p className="text-[9px] text-[var(--muted)]">Clique na miniatura para expandir</p>
                           </div>
                         </div>
@@ -1399,7 +1399,7 @@ export default function ClientsPage() {
                   className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400 w-full"
                 />
                 <textarea
-                  placeholder="Instruções adicionais para o tutor (opcional)"
+                  placeholder="Instruções adicionais para o cliente (opcional)"
                   value={newPortalTaskDesc}
                   onChange={(e) => setNewPortalTaskDesc(e.target.value)}
                   rows={2}

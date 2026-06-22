@@ -112,7 +112,7 @@ export function PlanUsageCard() {
             </div>
             <div className="rounded-lg bg-white px-2 py-1.5 text-center">
               <span className="block font-bold">{data.limits.dogsPerClient}</span>
-              <span>Cães/tutor</span>
+              <span>Cães/cliente</span>
             </div>
             <div className="rounded-lg bg-white px-2 py-1.5 text-center">
               <span className="block font-bold">{data.limits.storageMb}MB</span>

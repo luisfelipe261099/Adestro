@@ -57,7 +57,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   // --- FORM STATES ---
-  // Step 1: Tutor
+  // Step 1: Cliente
   const [clientName, setClientName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -141,7 +141,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
         setPinRequired(false);
         setData(payload);
 
-        // Pre-populate Tutor Form
+        // Pre-populate Cliente Form
         if (payload.client) {
           setClientName(payload.client.name || "");
           setPhone(payload.client.phone || "");
@@ -438,7 +438,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
               href={`/portal/cliente/${token}${pinQuery}`}
               className="inline-block rounded-full bg-[var(--accent)] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white"
             >
-              Ir para o Portal do Tutor
+              Ir para o Portal do Cliente
             </Link>
           </div>
         </article>
@@ -450,7 +450,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
     <PageShell kicker={`Adestrador: ${data.trainer.name}`} title="Ficha de Onboarding do Cão" description="Preencha as informações detalhadas sobre a rotina, saúde e temperamento do seu pet.">
       <section className="mx-auto max-w-md rounded-lg border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-sm sm:max-w-xl">
         <header className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <span className="text-xs font-bold text-[var(--foreground)]">Ficha do Tutor & Cão (Etapa {formStep}/5)</span>
+          <span className="text-xs font-bold text-[var(--foreground)]">Ficha do Cliente & Cão (Etapa {formStep}/5)</span>
           <span className="text-[10px] font-semibold text-[var(--muted)]">
             {formStep === 1 ? "Dados do Tutor" :
              formStep === 2 ? "Endereço" :
@@ -478,7 +478,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
           {formStep === 1 && (
             <div className="grid gap-3 animate-in fade-in duration-200">
               <label className="grid gap-1 text-xs font-semibold text-slate-700">
-                Nome completo do Tutor
+                Nome completo do Cliente
                 <input
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}

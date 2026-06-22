@@ -31,7 +31,7 @@ const PROMPT_TEXTS: Record<string, string> = {
   plano: "Sugira o plano da próxima aula considerando o contexto.",
   ansiedade: "Como trabalhar ansiedade de separação?",
   recall: "O recall não está funcionando. O que fazer?",
-  latido: "Latido excessivo está incomodando o tutor. Como tratar?",
+  latido: "Latido excessivo está incomodando o cliente. Como tratar?",
   socializacao: "Quero trabalhar socialização. Por onde começar?",
   analise: "Analise esta sessão e me dê próximos passos.",
 };

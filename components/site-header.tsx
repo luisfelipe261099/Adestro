@@ -41,7 +41,7 @@ const TRAINER_NAV: NavItem[] = [
 ];
 
 const TRAINER_SECONDARY: NavItem[] = [
-  { href: "/portal", label: "Portal do tutor", icon: IconLink, description: "Link compartilhado" },
+  { href: "/portal", label: "Portal do cliente", icon: IconLink, description: "Link compartilhado" },
   { href: "/ia", label: "Assistente IA", icon: IconSparkle, description: "Sugestões para casos complexos" },
   { href: "/planos", label: "Meu plano", icon: IconReceipt, description: "Assinatura" },
   { href: "/tutorial", label: "Tutorial", icon: IconChat, description: "Manuais e guia rápido" },

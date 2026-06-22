@@ -9,7 +9,7 @@ const clientSteps = [
     details: [
       "Abra o link enviado pelo adestrador no WhatsApp, e-mail ou mensagem.",
       "Se aparecer um campo de PIN, digite o código informado pelo adestrador.",
-      "Confira se o nome do cão e do tutor estão corretos antes de continuar.",
+      "Confira se o nome do cão e do cliente estão corretos antes de continuar.",
     ],
   },
   {
@@ -60,14 +60,14 @@ const goodPractices = [
 export default function ClientTutorialPage() {
   return (
     <PageShell
-      kicker="Tutorial do tutor"
+      kicker="Tutorial do cliente"
       title="Como acompanhar o treino pelo portal"
-      description="Guia simples para o tutor entender tarefas, progresso, avaliações e rotina de prática em casa."
+      description="Guia simples para o cliente entender tarefas, progresso, avaliações e rotina de prática em casa."
     >
       <div className="grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
         <aside className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Visão geral</p>
-          <h2 className="mt-2 text-2xl font-semibold text-[var(--foreground)]">O portal é o caderno de treino do tutor</h2>
+          <h2 className="mt-2 text-2xl font-semibold text-[var(--foreground)]">O portal é o caderno de treino do cliente</h2>
           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
             Ele mostra o que foi combinado com o adestrador, quais exercícios devem ser feitos em casa e como o cão está evoluindo ao longo das aulas.
           </p>
@@ -127,7 +127,7 @@ export default function ClientTutorialPage() {
 
       <section className="mt-4 rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Boas práticas</p>
-        <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">Como o tutor ajuda o cão a evoluir</h2>
+        <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">Como o cliente ajuda o cão a evoluir</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {goodPractices.map((practice) => (
             <div key={practice} className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-4 text-sm leading-6 text-[var(--muted)]">

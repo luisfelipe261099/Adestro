@@ -12,7 +12,7 @@ export type TourStep = {
   id: string;
   // Rota onde o passo acontece. Se diferente da atual, o tour navega antes.
   // Opcional: se ausente, o passo roda na página ATUAL sem navegar — usado em
-  // tours de página única (ex.: portal do tutor, que tem rota com token).
+  // tours de página única (ex.: portal do cliente, que tem rota com token).
   route?: string;
   // CSS selector que destaca o elemento (procuramos `data-tour="<id>"`
   // por padrão; também aceita selector arbitrário se começar com "." ou "#")
@@ -58,9 +58,9 @@ const DEFAULT_STEPS: TourStep[] = [
     id: "brief",
     route: "/dashboard",
     selector: '[data-tour="brief"]',
-    title: "Brief do Dia",
+    title: "Brief do Dia (resumo automático)",
     description:
-      "Lembretes prontos pra disparar. Cada item abre o seu WhatsApp já com a mensagem preenchida — você só revisa e envia.",
+      "É o resumo automático do seu dia: lembretes de WhatsApp para os clientes que têm aula amanhã e treinos que faltam registrar. Cada item já abre o WhatsApp com a mensagem pronta — você só revisa e envia.",
     placement: "top",
   },
   {
@@ -76,9 +76,9 @@ const DEFAULT_STEPS: TourStep[] = [
     id: "clientes",
     route: "/clientes",
     selector: '[data-tour="clients-list"]',
-    title: "Tutores e cães",
+    title: "Clientes e cães",
     description:
-      "Ficha completa: dados do tutor, endereços (com link pro Google Maps), cão (vacinas, temperamento, rotinas, objetivos) e tags pra organizar.",
+      "Ficha completa: dados do cliente, endereços (com link pro Google Maps), cão (vacinas, temperamento, rotinas, objetivos) e tags pra organizar.",
     placement: "top",
   },
   {
@@ -167,45 +167,45 @@ export const ADMIN_STEPS: TourStep[] = [
 // Tour do PORTAL DO TUTOR — página única (sem route, não navega).
 export const TUTOR_STEPS: TourStep[] = [
   {
-    id: "tutor-welcome",
+    id: "cliente-welcome",
     title: "Bem-vindo ao portal do seu cão! 🐾",
     description:
       "Aqui você acompanha os treinos, faz as tarefas de casa e fala com o adestrador. Vou te mostrar rapidinho.",
     fullScreen: true,
   },
   {
-    id: "tutor-dog",
-    selector: '[data-tour="tutor-dog"]',
+    id: "cliente-dog",
+    selector: '[data-tour="cliente-dog"]',
     title: "Seu cão e a sequência",
     description:
       "Resumo do seu pet e a sequência diária de atividades — manter a rotina rende pontos e mantém o treino vivo.",
     placement: "bottom",
   },
   {
-    id: "tutor-tasks",
-    selector: '[data-tour="tutor-tasks"]',
+    id: "cliente-tasks",
+    selector: '[data-tour="cliente-tasks"]',
     title: "Tarefas de casa",
     description:
       "O que o adestrador passou para praticar entre as aulas. Marque conforme for fazendo.",
     placement: "top",
   },
   {
-    id: "tutor-sessions",
-    selector: '[data-tour="tutor-sessions"]',
+    id: "cliente-sessions",
+    selector: '[data-tour="cliente-sessions"]',
     title: "Histórico de treinos",
     description:
       "Cada aula com fotos, vídeos e avaliação. Você pode dar estrelas para cada treino.",
     placement: "top",
   },
   {
-    id: "tutor-chat",
-    selector: '[data-tour="tutor-chat"]',
+    id: "cliente-chat",
+    selector: '[data-tour="cliente-chat"]',
     title: "Fale com o adestrador",
     description: "Mande dúvidas e recados por aqui — as respostas aparecem em tempo real.",
     placement: "top",
   },
   {
-    id: "tutor-done",
+    id: "cliente-done",
     title: "Pronto! 🎉",
     description: "Bons treinos! Você pode reabrir este guia pelo botão “Como usar” no topo.",
     fullScreen: true,

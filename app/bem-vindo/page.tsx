@@ -12,8 +12,8 @@ type Step = 1 | 2 | 3 | 4;
 const STEP_INFO: Record<Step, { title: string; description: string }> = {
   1: { title: "Seu negócio", description: "Identifique o nome usado nos recibos e mensagens." },
   2: { title: "Recebimento", description: "Cadastre sua chave Pix para gerar Pix Copia e Cola no recibo." },
-  3: { title: "Primeiro tutor", description: "Cadastre seu primeiro cliente. Você pode mudar depois." },
-  4: { title: "Primeiro cão", description: "Vincule o cão atendido ao tutor." },
+  3: { title: "Primeiro cliente", description: "Cadastre seu primeiro cliente. Você pode mudar depois." },
+  4: { title: "Primeiro cão", description: "Vincule o cão atendido ao cliente." },
 };
 
 export default function WelcomePage() {
@@ -131,7 +131,7 @@ export default function WelcomePage() {
                     placeholder="(11) 99999-9999"
                     className="input-field"
                   />
-                  <p className="help-text">Aparece nos recibos e mensagens enviadas ao tutor.</p>
+                  <p className="help-text">Aparece nos recibos e mensagens enviadas ao cliente.</p>
                 </label>
               </>
             )}
@@ -154,7 +154,7 @@ export default function WelcomePage() {
             {step === 3 && (
               <>
                 <label className="block">
-                  <span className="label">Nome do tutor</span>
+                  <span className="label">Nome do cliente</span>
                   <input
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
@@ -163,7 +163,7 @@ export default function WelcomePage() {
                   />
                 </label>
                 <label className="block">
-                  <span className="label">WhatsApp do tutor</span>
+                  <span className="label">WhatsApp do cliente</span>
                   <input
                     value={clientPhone}
                     onChange={(e) => setClientPhone(e.target.value)}

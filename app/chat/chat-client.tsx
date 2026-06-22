@@ -38,7 +38,7 @@ export default function ChatClientPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Carregar contatos (tutores)
+  // Carregar contatos (clientes)
   async function fetchContacts() {
     try {
       const res = await fetch("/api/chat");
@@ -159,7 +159,7 @@ export default function ChatClientPage() {
               </Link>
               <div>
                 <h1 className="text-base font-semibold text-[var(--foreground)]">Chat Integrado</h1>
-                <p className="text-[10px] text-[var(--muted)]">Comunicação direta com o Tutor</p>
+                <p className="text-[10px] text-[var(--muted)]">Comunicação direta com o Cliente</p>
               </div>
             </div>
             {selectedContact && (
@@ -174,7 +174,7 @@ export default function ChatClientPage() {
             {loadingContacts ? (
               <span className="text-xs text-[var(--muted)] px-2">Carregando contatos...</span>
             ) : contacts.length === 0 ? (
-              <span className="text-xs text-[var(--muted)] px-2">Nenhum tutor cadastrado.</span>
+              <span className="text-xs text-[var(--muted)] px-2">Nenhum cliente cadastrado.</span>
             ) : (
               contacts.map((c) => {
                 const isSelected = c.id === selectedClientId;

@@ -15,15 +15,15 @@ type FlowStep = {
 
 const trainerFlow: FlowStep[] = [
   {
-    title: "1) Cadastrar tutor e cão",
+    title: "1) Cadastrar cliente e cão",
     why: "Base de todo o acompanhamento — todo registro futuro liga aqui.",
     how: [
-      "Em /clientes toque em '+' e preencha tutor, endereços (com link pro Google Maps) e ficha completa do cão.",
+      "Em /clientes toque em '+' e preencha cliente, endereços (com link pro Google Maps) e ficha completa do cão.",
       "Vacinas têm alerta de vencimento automático. Temperamento, rotinas e objetivos viram contexto pra IA.",
-      "Use o link de onboarding pro próprio tutor preencher os dados antes da 1ª aula (modo rascunho até você aprovar).",
+      "Use o link de onboarding pro próprio cliente preencher os dados antes da 1ª aula (modo rascunho até você aprovar).",
       "Tags (VIP, Inadimplente, Filhote, Sênior, etc) ajudam a filtrar — pode editar inline no card.",
     ],
-    shortcut: "Atalho: Ctrl+K → 'Novo tutor'",
+    shortcut: "Atalho: Ctrl+K → 'Novo cliente'",
   },
   {
     title: "2) Agendar o treino",
@@ -32,12 +32,12 @@ const trainerFlow: FlowStep[] = [
       "Em /agenda escolha Dia, Semana ou Mês. O '+' superior cria agendamento novo.",
       "Cada card de evento tem 6 ações: ✅ Confirmação WhatsApp, 💬 WhatsApp geral, 📍 Mapa, 📆 Google Calendar, .ics (Apple), 📝 Registrar.",
       "Recorrência semanal/quinzenal gera a série de eventos automaticamente.",
-      "Quando o tutor clica em ✅ pelo portal, o status muda pra 'Confirmado' e aparece no seu sininho.",
+      "Quando o cliente clica em ✅ pelo portal, o status muda pra 'Confirmado' e aparece no seu sininho.",
     ],
   },
   {
     title: "3) Registrar o treino realizado",
-    why: "Transforma a aula em histórico técnico — e vira insumo da IA, do relatório mensal e da nota do tutor.",
+    why: "Transforma a aula em histórico técnico — e vira insumo da IA, do relatório mensal e da nota do cliente.",
     how: [
       "Em /treinos/registro escolha o cão e preencha as 9 seções (A-I).",
       "🎙️ Grave nota por voz: a Web Speech API transcreve em tempo real (Chrome, Edge, Safari iOS).",
@@ -49,21 +49,21 @@ const trainerFlow: FlowStep[] = [
   },
   {
     title: "4) Aprovar resumo IA + planejar próxima aula",
-    why: "A IA monta um rascunho, mas só o adestrador aprova o que o tutor vai ver.",
+    why: "A IA monta um rascunho, mas só o adestrador aprova o que o cliente vai ver.",
     how: [
       "Na Seção F após registrar, toque em 'Gerar análise IA' — o resumo aparece pra revisão.",
-      "Marque 'Aprovar e liberar para o tutor' só quando o texto refletir sua leitura técnica.",
-      "Na Seção H, defina foco da próxima sessão e tarefas pro tutor fazer em casa.",
+      "Marque 'Aprovar e liberar para o cliente' só quando o texto refletir sua leitura técnica.",
+      "Na Seção H, defina foco da próxima sessão e tarefas pro cliente fazer em casa.",
       "Notas confidenciais (Seção D) NUNCA são compartilhadas — só você vê.",
     ],
   },
   {
-    title: "5) Compartilhar o portal do tutor",
-    why: "O tutor acompanha tarefas, evolução e gamificação por um link único — sem login, com PIN opcional.",
+    title: "5) Compartilhar o portal do cliente",
+    why: "O cliente acompanha tarefas, evolução e gamificação por um link único — sem login, com PIN opcional.",
     how: [
       "Em /portal gere/copie o link único do cliente e envie pelo WhatsApp (template já pronto).",
-      "O tutor vê: nível do cão, streak diário 🔥, tarefas de hoje (com upload de foto), histórico, badges.",
-      "Quando o tutor responde NPS após cada aula, você recebe a média no comparativo mensal.",
+      "O cliente vê: nível do cão, streak diário 🔥, tarefas de hoje (com upload de foto), histórico, badges.",
+      "Quando o cliente responde NPS após cada aula, você recebe a média no comparativo mensal.",
       "Banner azul de 'Confirmar presença' aparece no portal quando há evento pendente.",
     ],
   },
@@ -73,7 +73,7 @@ const trainerFlow: FlowStep[] = [
     how: [
       "Em /financeiro cadastre pacotes (sessões, valor, fracionamento, validade).",
       "Vender pacote gera contrato e cobranças automaticamente.",
-      "No recibo, se sua chave Pix estiver configurada, gera o BR Code Copia e Cola — o tutor cola no banco e pronto.",
+      "No recibo, se sua chave Pix estiver configurada, gera o BR Code Copia e Cola — o cliente cola no banco e pronto.",
       "Botão 💬 Lembrar em cada cobrança abre WhatsApp com texto pronto (cobrança pendente ou em atraso).",
       "Cron diário às 07h gera os lembretes do dia automaticamente.",
     ],
@@ -114,7 +114,7 @@ const featureHighlights = [
   {
     icon: "📋",
     title: "Templates editáveis",
-    text: "Em /admin/templates você edita atividades, comandos padrão, tarefas do tutor e o texto de cada mensagem WhatsApp.",
+    text: "Em /admin/templates você edita atividades, comandos padrão, tarefas do cliente e o texto de cada mensagem WhatsApp.",
   },
   {
     icon: "🏷️",
@@ -139,7 +139,7 @@ const featureHighlights = [
   {
     icon: "🔍",
     title: "Cmd+K busca global",
-    text: "Aperta Ctrl+K (ou ⌘K) em qualquer tela: busca tutor, cão, sessão ou tela.",
+    text: "Aperta Ctrl+K (ou ⌘K) em qualquer tela: busca cliente, cão, sessão ou tela.",
   },
   {
     icon: "🌙",
@@ -170,8 +170,8 @@ const assistantExamples = [
 
 const statusLabels = [
   {
-    label: "Tutores cadastrados",
-    getValue: (clients: number, dogs: number) => `${clients} tutor(es), ${dogs} cão(es)`,
+    label: "Clientes cadastrados",
+    getValue: (clients: number, dogs: number) => `${clients} cliente(es), ${dogs} cão(es)`,
   },
   {
     label: "Sessões registradas",
@@ -182,7 +182,7 @@ const statusLabels = [
     getValue: (_c: number, _d: number, _s: number, events: number) => `${events} agendamento(s)`,
   },
   {
-    label: "Tarefas para tutores",
+    label: "Tarefas para clientes",
     getValue: (_c: number, _d: number, _s: number, _e: number, tasks: number) => `${tasks} tarefa(s)`,
   },
 ];
@@ -200,7 +200,7 @@ export default function TutorialPage() {
     <PageShell
       kicker="Tutorial do adestrador"
       title="Como o Adestro organiza sua rotina"
-      description="Guia completo do fluxo de atendimento, do portal do tutor, das integrações e da IA."
+      description="Guia completo do fluxo de atendimento, do portal do cliente, das integrações e da IA."
       requireAuth="trainer"
     >
       {/* CTA do tour guiado */}
@@ -232,11 +232,11 @@ export default function TutorialPage() {
         <div className="mt-2 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
             <h2 className="text-2xl font-semibold text-[var(--foreground)]">
-              O sistema acompanha do cadastro à confirmação de presença do tutor
+              O sistema acompanha do cadastro à confirmação de presença do cliente
             </h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              O Adestro funciona como uma rotina contínua: cadastrar tutor → agendar → registrar treino → aprovar
-              resumo IA → enviar tarefas pro tutor → emitir recibo → gerar relatório mensal. Em cada etapa há
+              O Adestro funciona como uma rotina contínua: cadastrar cliente → agendar → registrar treino → aprovar
+              resumo IA → enviar tarefas pro cliente → emitir recibo → gerar relatório mensal. Em cada etapa há
               automações para reduzir cliques e mensagens prontas pra WhatsApp.
             </p>
           </div>
@@ -325,7 +325,7 @@ export default function TutorialPage() {
 
         <div className="grid gap-4">
           <section className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Portal do tutor</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Portal do cliente</p>
             <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">
               Como orientar o cliente
             </h2>
@@ -340,14 +340,14 @@ export default function TutorialPage() {
                 Use linguagem clara. Uma tarefa bem feita vale mais que cinco mal explicadas.
               </p>
               <p className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
-                Notas confidenciais NUNCA aparecem pro tutor — só na sua ficha de adestrador.
+                Notas confidenciais NUNCA aparecem pro cliente — só na sua ficha de adestrador.
               </p>
             </div>
             <Link
               href="/tutorial/cliente"
               className="mt-3 inline-block text-xs font-semibold text-[var(--foreground)] hover:underline"
             >
-              Ver guia separado pro tutor →
+              Ver guia separado pro cliente →
             </Link>
           </section>
 
@@ -361,13 +361,13 @@ export default function TutorialPage() {
                 <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-xs">Ctrl</kbd>
                 {" + "}
                 <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-xs">K</kbd>
-                {" — abre a busca global (tutor, cão, sessão, tela)"}
+                {" — abre a busca global (cliente, cão, sessão, tela)"}
               </p>
               <p>
                 <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-xs">Esc</kbd>
                 {" — fecha modais e overlays"}
               </p>
-              <p>Long-press no ícone do PWA: atalhos rápidos (nova sessão, agenda, novo tutor, financeiro)</p>
+              <p>Long-press no ícone do PWA: atalhos rápidos (nova sessão, agenda, novo cliente, financeiro)</p>
               <p>Notificações push: ative em /configuracoes → toque "Ativar agora"</p>
             </div>
           </section>

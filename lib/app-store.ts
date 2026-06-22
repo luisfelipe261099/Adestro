@@ -198,8 +198,27 @@ type AppState = {
     notes: TrainingNote[];
     media?: TrainingMediaItem[];
   }) => Promise<boolean>;
+  updateTrainingSession: (payload: {
+    id: string;
+    title?: string;
+    date?: string;
+    location?: string;
+    type?: string;
+    status?: string;
+    clientName?: string;
+    dogId?: string;
+    dogName?: string;
+    notes?: TrainingNote[];
+    media?: TrainingMediaItem[];
+    dogSessions?: unknown[];
+  }) => Promise<boolean>;
   toggleTask: (taskId: string) => void;
-  addPortalTask: (title: string, description: string, clientId?: string) => Promise<void>;
+  addPortalTask: (
+    title: string,
+    description: string,
+    clientId?: string,
+    options?: { recurrence?: string; weekdays?: number[] },
+  ) => Promise<void>;
   addPortalFeedback: (message: string, author?: PortalFeedback["author"], clientId?: string) => Promise<void>;
   setEventStatus: (eventId: string, status: SessionStatus) => Promise<boolean>;
   toggleEventStatus: (eventId: string) => void;
@@ -666,6 +685,21 @@ export const useAppStore = create<AppState>()(
           return false;
         }
       },
+      updateTrainingSession: async (payload) => {
+        try {
+          const response = await fetch("/api/sessions", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (!response.ok) return false;
+          await get().loadFromDB();
+          return true;
+        } catch {
+          return false;
+        }
+      },
       toggleTask: async (taskId) => {
         const current = get().portalTasks.find((t) => t.id === taskId);
         if (!current) return;
@@ -685,7 +719,7 @@ export const useAppStore = create<AppState>()(
           // keep optimistic state
         }
       },
-      addPortalTask: async (title, description, clientId) => {
+      addPortalTask: async (title, description, clientId, options) => {
         const tempId = createId("task");
         const tempTask: PortalTask = { id: tempId, clientId, title, description, completed: false };
 
@@ -696,7 +730,13 @@ export const useAppStore = create<AppState>()(
           const response = await fetch("/api/portal-tasks", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title, description, clientId }),
+            body: JSON.stringify({
+              title,
+              description,
+              clientId,
+              recurrence: options?.recurrence ?? "once",
+              weekdays: options?.weekdays ?? [],
+            }),
           });
           if (!response.ok) {
             set((state) => ({ portalTasks: state.portalTasks.filter((t) => t.id !== tempId) }));
@@ -1000,6 +1040,7 @@ export const useAppStore = create<AppState>()(
             dogName:    String(s.dogName ?? ""),
             notes:      Array.isArray(s.notes) ? (s.notes as TrainingNote[]) : [],
             media:      Array.isArray(s.media) ? (s.media as TrainingMediaItem[]) : [],
+            dogSessions: Array.isArray(s.dogSessions) ? (s.dogSessions as DogTrainingSession[]) : [],
           }));
 
           const calendarEvents: CalendarEvent[] = (rawEvents as Array<Record<string, unknown>>).map((e) => ({

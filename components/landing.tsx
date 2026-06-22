@@ -52,7 +52,7 @@ const features: Feature[] = [
     icon: IconUsers,
     title: "Clientes & cães",
     description:
-      "Cadastro completo de tutores e cães: raça, idade, histórico de treinos e observações de cada caso.",
+      "Cadastro completo de clientes e cães: raça, idade, histórico de treinos e observações de cada caso.",
   },
   {
     icon: IconCalendar,
@@ -68,9 +68,9 @@ const features: Feature[] = [
   },
   {
     icon: IconLink,
-    title: "Portal do tutor",
+    title: "Portal do cliente",
     description:
-      "Gere um link exclusivo para o tutor acompanhar tarefas, vídeos e o progresso — sem precisar instalar nada.",
+      "Gere um link exclusivo para o cliente acompanhar tarefas, vídeos e o progresso — sem precisar instalar nada.",
   },
   {
     icon: IconSparkle,
@@ -82,7 +82,7 @@ const features: Feature[] = [
     icon: IconStar,
     title: "Gamificação",
     description:
-      "Pontos e conquistas que engajam o tutor a fazer as tarefas de casa e manter o treino vivo.",
+      "Pontos e conquistas que engajam o cliente a fazer as tarefas de casa e manter o treino vivo.",
   },
   {
     icon: IconReport,
@@ -122,19 +122,19 @@ const steps: Step[] = [
     number: "1",
     title: "Cadastre o cliente e o cão",
     description:
-      "Em minutos você monta a ficha do tutor e do cão, com histórico e observações do caso.",
+      "Em minutos você monta a ficha do cliente e do cão, com histórico e observações do caso.",
   },
   {
     number: "2",
     title: "Registre os treinos e abra o portal",
     description:
-      "Anote cada sessão com fotos e vídeos e gere o link do portal para o tutor acompanhar.",
+      "Anote cada sessão com fotos e vídeos e gere o link do portal para o cliente acompanhar.",
   },
   {
     number: "3",
     title: "Acompanhe, cobre e fidelize",
     description:
-      "Veja a evolução, controle pagamentos e mantenha o tutor engajado com tarefas e conquistas.",
+      "Veja a evolução, controle pagamentos e mantenha o cliente engajado com tarefas e conquistas.",
   },
 ];
 
@@ -254,9 +254,9 @@ const faqs: Faq[] = [
       "Sim. A plataforma é totalmente responsiva e funciona bem em celular, tablet e computador. Você atende em campo e registra tudo na hora.",
   },
   {
-    question: "Como o tutor acompanha o treino?",
+    question: "Como o cliente acompanha o treino?",
     answer:
-      "Você gera um link exclusivo do portal e envia ao tutor. Ele acessa tarefas, vídeos e a evolução do cão sem precisar criar conta nem instalar nada.",
+      "Você gera um link exclusivo do portal e envia ao cliente. Ele acessa tarefas, vídeos e a evolução do cão sem precisar criar conta nem instalar nada.",
   },
   {
     question: "Meus dados estão seguros?",
@@ -284,7 +284,7 @@ const stats: Stat[] = [
   { value: "9", label: "módulos integrados: agenda, treinos, financeiro, IA e mais" },
   { value: "90 dias", label: "grátis para testar — sem cartão de crédito" },
   { value: "100%", label: "no navegador · instala como app e funciona offline" },
-  { value: "1 link", label: "e o tutor acompanha treinos, tarefas e evolução" },
+  { value: "1 link", label: "e o cliente acompanha treinos, tarefas e evolução" },
 ];
 
 type Testimonial = { quote: string; author: string; role: string };
@@ -295,7 +295,7 @@ type Testimonial = { quote: string; author: string; role: string };
 const testimonials: Testimonial[] = [
   {
     quote:
-      "Saí do caderno e do WhatsApp e finalmente tenho a operação organizada. O tutor adora acompanhar a evolução pelo portal.",
+      "Saí do caderno e do WhatsApp e finalmente tenho a operação organizada. O cliente adora acompanhar a evolução pelo portal.",
     author: "Adestradora autônoma",
     role: "São Paulo · SP",
   },
@@ -373,11 +373,11 @@ export function Landing() {
             <h1 className="mt-6 text-[34px] font-semibold leading-[1.05] tracking-tight text-[var(--foreground)] sm:text-[54px] md:text-[60px]">
               Menos caderno e WhatsApp.{" "}
               <span className="text-[var(--accent)]">Mais cães treinados</span> e
-              tutores fiéis.
+              clientes fiéis.
             </h1>
 
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
-              O Adestro reúne agenda, registro de treinos, portal do tutor,
+              O Adestro reúne agenda, registro de treinos, portal do cliente,
               cobrança e IA num só lugar — pra você profissionalizar o
               atendimento e provar a evolução de cada cão.
             </p>
@@ -539,7 +539,7 @@ export function Landing() {
           </h2>
           <p className="mt-3 text-[var(--muted)]">
             Uma plataforma completa para você trabalhar melhor e encantar o
-            tutor.
+            cliente.
           </p>
         </div>
         <div className="mt-12 grid gap-px overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--border)] sm:grid-cols-2 lg:grid-cols-3">
@@ -565,7 +565,7 @@ export function Landing() {
         </div>
       </section>
 
-      {/* ── Showcase (portal do tutor) ───────────────────────────────────── */}
+      {/* ── Showcase (portal do cliente) ───────────────────────────────────── */}
       <section className="border-y border-[var(--border)] bg-[var(--surface)]">
         <div
           className={`${container} grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2`}
@@ -580,20 +580,20 @@ export function Landing() {
             />
           </div>
           <div>
-            <p className="text-eyebrow">Portal do tutor</p>
+            <p className="text-eyebrow">Portal do cliente</p>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
               Um acompanhamento que encanta o cliente
             </h2>
             <p className="mt-3 text-[var(--muted)]">
-              O tutor recebe um link e vê tudo: tarefas de casa, vídeos, fotos e
+              O cliente recebe um link e vê tudo: tarefas de casa, vídeos, fotos e
               a evolução do cão. Mais transparência, mais confiança e mais
               renovações para você.
             </p>
             <ul className="mt-6 space-y-3">
               {[
-                "Tarefas e vídeos de treino para o tutor praticar em casa",
+                "Tarefas e vídeos de treino para o cliente praticar em casa",
                 "Linha do tempo com a evolução do cão em fotos",
-                "Gamificação que mantém o tutor engajado",
+                "Gamificação que mantém o cliente engajado",
                 "Sem instalar nada — abre direto no navegador",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-sm">

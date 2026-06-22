@@ -57,7 +57,7 @@ const PANELS: Array<{
   {
     key: "defaultTutorTasks",
     title: "Tarefas do dono (gamificação)",
-    description: "Tarefas pré-definidas que viram opções no portal do tutor (módulo 9.4).",
+    description: "Tarefas pré-definidas que viram opções no portal do cliente (módulo 9.4).",
     placeholder: "Ex: Passeio, Alimentação no horário, Treino de senta",
     accent: "amber",
     emoji: "🐶",
@@ -208,7 +208,7 @@ export default function AdminTemplatesPage() {
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Operacional</p>
               <h1 className="text-2xl font-semibold text-[var(--foreground)]">Templates do sistema</h1>
-              <p className="mt-1 text-xs text-[var(--muted)]">Edite as listas que alimentam sessões e tarefas do tutor.</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">Edite as listas que alimentam sessões e tarefas do cliente.</p>
             </div>
             <Link
               href="/configuracoes"

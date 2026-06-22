@@ -11,7 +11,6 @@ import { SessionAiChat } from "@/components/session-ai-chat";
 import { type TrainingMediaItem, useAppStore } from "@/lib/app-store";
 
 const MAX_IMAGES = 4;
-const MAX_RAW_IMAGE_SIZE_BYTES = 25 * 1024 * 1024;
 const MAX_DIMENSION = 1280;
 
 type StarRatingProps = {
@@ -100,66 +99,98 @@ interface CommandItem {
   notes: string;
 }
 
-type AccordionSection = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I";
+// Seções numeradas (1 a 8) — antes eram letras A–I.
+type AccordionSection = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
+
+function todayInputValue(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// "yyyy-mm-dd" (input date) -> "dd/mm/yyyy" (formato salvo no histórico)
+function toBrDate(value: string): string {
+  if (!value) return new Date().toLocaleDateString("pt-BR");
+  const [y, m, d] = value.split("-");
+  if (!y || !m || !d) return value;
+  return `${d}/${m}/${y}`;
+}
+
+// "dd/mm/yyyy" -> "yyyy-mm-dd" para preencher o input ao editar
+function toInputDate(value: string): string {
+  if (!value) return todayInputValue();
+  const [d, m, y] = value.split("/");
+  if (!y || !m || !d) return todayInputValue();
+  return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
 
 export default function RegistroTreinoClientPage() {
   const searchParams = useSearchParams();
   const clients = useAppStore((state) => state.clients);
   const addTrainingSession = useAppStore((state) => state.addTrainingSession);
+  const updateTrainingSession = useAppStore((state) => state.updateTrainingSession);
   const trainingSessions = useAppStore((state) => state.trainingSessions);
 
   const requestedClientId = searchParams.get("clientId") ?? "";
   const requestedDogId = searchParams.get("dogId") ?? "";
+  // sessionId presente => modo edição (atualiza o MESMO treino, não cria novo).
+  const requestedSessionId = searchParams.get("sessionId") ?? "";
 
   const [selectedClientId, setSelectedClientId] = useState(requestedClientId || clients[0]?.id || "");
   const [selectedDogId, setSelectedDogId] = useState(requestedDogId || clients[0]?.dogs[0]?.id || "");
-  
+
+  // Edição
+  const [editingId, setEditingId] = useState<string>("");
+  const [editingNumber, setEditingNumber] = useState<number | null>(null);
+  const [hydratedEdit, setHydratedEdit] = useState(false);
+
   // Dados Gerais da Sessão
   const [title, setTitle] = useState("Sessão prática estruturada");
+  const [sessionDate, setSessionDate] = useState(todayInputValue());
   const [sessionType, setSessionType] = useState<"Individual" | "Coletivo">("Individual");
-  // Coletivo (turma): cães adicionais além do principal. O conteúdo (atividades,
-  // comandos, etc.) é compartilhado, mas cada cão recebe seu próprio registro.
   const [collectiveDogIds, setCollectiveDogIds] = useState<string[]>([]);
   const [sessionLocation, setSessionLocation] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Accordion de navegação
-  const [expandedSection, setExpandedSection] = useState<AccordionSection>("A");
+  // Modelos salvos do adestrador (seleção reutilizável, editável)
+  const [savedActivities, setSavedActivities] = useState<string[]>([]);
+  const [savedCommands, setSavedCommands] = useState<string[]>([]);
+  const [savedTasks, setSavedTasks] = useState<string[]>([]);
+  const [templatesMsg, setTemplatesMsg] = useState("");
 
-  // SEÇÃO A: Atividades Trabalhadas
+  // Accordion de navegação
+  const [expandedSection, setExpandedSection] = useState<AccordionSection>("1");
+
+  // SEÇÃO 1: Atividades Trabalhadas
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [newActivityName, setNewActivityName] = useState("");
 
-  // SEÇÃO B: Comandos de Obediência/Evolução
+  // SEÇÃO 2: Comandos de Obediência/Evolução
   const [commands, setCommands] = useState<CommandItem[]>([]);
   const [newCommandName, setNewCommandName] = useState("");
 
-  // SEÇÃO C: Descrição / Resumo Público
+  // SEÇÃO 3: Descrição / Resumo Público
   const [description, setDescription] = useState("");
 
-  // SEÇÃO D: Notas Privadas
+  // SEÇÃO 4: Notas Privadas
   const [privateNotes, setPrivateNotes] = useState("");
 
-  // SEÇÃO E: Transcrição & IA
+  // SEÇÃO 5: Transcrição & IA
   const [audioTranscription, setAudioTranscription] = useState("");
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiSummary, setAiSummary] = useState("");
   const [aiApproved, setAiApproved] = useState(false);
 
-  // SEÇÃO F: Galeria de Mídias
+  // SEÇÃO 6: Galeria de Mídias
   const [draftMedia, setDraftMedia] = useState<TrainingMediaItem[]>([]);
   const [isProcessingImages, setIsProcessingImages] = useState(false);
 
-  // SEÇÃO G: Próximo Foco
-  const [nextFocus, setNextFocus] = useState("");
+  // SEÇÃO 7: Plano do Próximo Treino (Foco + comandos unificados, com INCLUIR)
+  const [nextPlan, setNextPlan] = useState<string[]>([]);
+  const [newNextPlanItem, setNewNextPlanItem] = useState("");
 
-  // SEÇÃO H: Próximos Comandos
-  const [nextCommands, setNextCommands] = useState<string[]>([]);
-  const [newNextCommandName, setNewNextCommandName] = useState("");
-
-  // SEÇÃO I: Tarefas de Casa (Tutor)
+  // SEÇÃO 8: Tarefas de Casa (Cliente)
   const [nextTasks, setNextTasks] = useState<string[]>([]);
   const [newNextTaskText, setNewNextTaskText] = useState("");
 
@@ -173,8 +204,73 @@ export default function RegistroTreinoClientPage() {
     [selectedClient, selectedDogId]
   );
 
+  // Carrega os modelos salvos (atividades/comandos/tarefas) do adestrador.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/trainer/settings", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        if (Array.isArray(data.defaultActivities)) setSavedActivities(data.defaultActivities);
+        if (Array.isArray(data.defaultCommands)) setSavedCommands(data.defaultCommands);
+        if (Array.isArray(data.defaultTutorTasks)) setSavedTasks(data.defaultTutorTasks);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Pré-seleção de cliente/cão (criação) e carga do treino (edição).
   useEffect(() => {
     if (!clients.length) return;
+
+    if (requestedSessionId && !hydratedEdit) {
+      const found = trainingSessions.find((s) => s.id === requestedSessionId);
+      if (found) {
+        setEditingId(found.id);
+        setEditingNumber(found.number);
+        setTitle(found.title || "Sessão prática estruturada");
+        setSessionDate(toInputDate(found.date));
+        setSessionLocation(found.location ?? "");
+        if (found.clientId) setSelectedClientId(found.clientId);
+        if (found.dogId) setSelectedDogId(found.dogId);
+
+        const ds = found.dogSessions?.[0];
+        if (ds) {
+          setActivities(
+            (ds.activities ?? []).map((a, i) => ({
+              id: `act-${i}-${Date.now()}`,
+              name: a.name,
+              completed: a.completed,
+              notes: a.notes ?? "",
+            }))
+          );
+          setCommands(
+            (ds.commands ?? []).map((c, i) => ({
+              id: `cmd-${i}-${Date.now()}`,
+              command: c.command,
+              rating: c.rating ?? 3,
+              notes: c.notes ?? "",
+            }))
+          );
+          setDescription(ds.description ?? "");
+          setPrivateNotes(ds.privateNotes ?? "");
+          setAiSummary(ds.aiSummary ?? "");
+          setAiApproved(Boolean(ds.aiApproved));
+          if (Array.isArray(ds.media)) setDraftMedia(ds.media as TrainingMediaItem[]);
+          // Plano do próximo treino = comandos recomendados + foco antigo (compat).
+          const plan = [...(ds.nextCommands ?? [])];
+          if (ds.nextFocus && !plan.includes(ds.nextFocus)) plan.unshift(ds.nextFocus);
+          setNextPlan(plan);
+          setNextTasks(ds.nextTasks ?? []);
+        }
+        setHydratedEdit(true);
+        return;
+      }
+    }
+
+    if (requestedSessionId) return; // aguardando o treino carregar do banco
 
     if (requestedClientId) {
       const requestedClient = clients.find((client) => client.id === requestedClientId);
@@ -192,9 +288,12 @@ export default function RegistroTreinoClientPage() {
       setSelectedClientId(clients[0].id);
       setSelectedDogId(clients[0].dogs[0]?.id ?? "");
     }
-  }, [clients, requestedClientId, requestedDogId, selectedClientId]);
+  }, [clients, requestedClientId, requestedDogId, requestedSessionId, selectedClientId, trainingSessions, hydratedEdit]);
+
+  const isEditing = Boolean(editingId);
 
   const nextSessionNumber = useMemo(() => {
+    if (editingNumber) return editingNumber;
     if (!selectedDog) return 1;
 
     const list = trainingSessions.filter((session) => {
@@ -204,10 +303,39 @@ export default function RegistroTreinoClientPage() {
 
     if (!list.length) return 1;
     return Math.max(...list.map((session) => session.number)) + 1;
-  }, [selectedDog, trainingSessions]);
+  }, [selectedDog, trainingSessions, editingNumber]);
 
-  // Análise por IA — chama o endpoint /api/ia/analyze-session com os dados reais
-  // que o adestrador acabou de preencher na sessão.
+  // Salva a lista atual de atividades/comandos/tarefas nos modelos do adestrador.
+  async function saveTemplates(kind: "activities" | "commands" | "tasks") {
+    setTemplatesMsg("");
+    let payload: Record<string, string[]> = {};
+    if (kind === "activities") {
+      const merged = Array.from(new Set([...savedActivities, ...activities.map((a) => a.name)]));
+      payload = { defaultActivities: merged };
+      setSavedActivities(merged);
+    } else if (kind === "commands") {
+      const merged = Array.from(new Set([...savedCommands, ...commands.map((c) => c.command)]));
+      payload = { defaultCommands: merged };
+      setSavedCommands(merged);
+    } else {
+      const merged = Array.from(new Set([...savedTasks, ...nextTasks]));
+      payload = { defaultTutorTasks: merged };
+      setSavedTasks(merged);
+    }
+    try {
+      const res = await fetch("/api/trainer/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      setTemplatesMsg(res.ok ? "Modelos atualizados ✓" : "Não foi possível salvar os modelos.");
+    } catch {
+      setTemplatesMsg("Falha ao salvar os modelos.");
+    }
+    window.setTimeout(() => setTemplatesMsg(""), 2500);
+  }
+
+  // Análise por IA
   async function generateMockAIAnalysis() {
     if (!selectedDog) return;
     setIsGeneratingAI(true);
@@ -238,14 +366,16 @@ export default function RegistroTreinoClientPage() {
         const analysis = payload?.analysis;
         if (analysis) {
           setAiSummary(analysis.summary_for_tutor || "");
-          if (analysis.next_steps?.[0]) setNextFocus(analysis.next_steps[0]);
+          const plan: string[] = [];
+          if (analysis.next_steps?.[0]) plan.push(analysis.next_steps[0]);
+          const lowRated = commands.filter((c) => c.rating <= 3).map((c) => c.command);
+          for (const cmd of lowRated) if (!plan.includes(cmd)) plan.push(cmd);
+          if (plan.length > 0) setNextPlan((prev) => Array.from(new Set([...prev, ...plan])));
           if (Array.isArray(analysis.recommended_exercises) && analysis.recommended_exercises.length > 0) {
             setNextTasks(analysis.recommended_exercises);
           }
-          const lowRated = commands.filter((c) => c.rating <= 3).map((c) => c.command);
-          if (lowRated.length > 0) setNextCommands(lowRated);
           setAiApproved(false);
-          setExpandedSection("E");
+          setExpandedSection("5");
           return;
         }
       }
@@ -257,53 +387,47 @@ export default function RegistroTreinoClientPage() {
     }
   }
 
-  // Funções Auxiliares SEÇÃO A
-  const addActivity = () => {
-    if (!newActivityName.trim()) return;
-    setActivities([
-      ...activities,
-      {
-        id: `act-${Date.now()}`,
-        name: newActivityName.trim(),
-        completed: false,
-        notes: ""
-      }
-    ]);
-    setNewActivityName("");
+  // SEÇÃO 1
+  const addActivity = (name?: string) => {
+    const value = (name ?? newActivityName).trim();
+    if (!value) return;
+    if (activities.some((a) => a.name.toLowerCase() === value.toLowerCase())) {
+      if (!name) setNewActivityName("");
+      return;
+    }
+    setActivities((prev) => [...prev, { id: `act-${Date.now()}`, name: value, completed: false, notes: "" }]);
+    if (!name) setNewActivityName("");
   };
 
   const removeActivity = (id: string) => {
     setActivities(activities.filter((act) => act.id !== id));
   };
 
-  const updateActivity = (id: string, field: keyof ActivityItem, value: any) => {
+  const updateActivity = (id: string, field: keyof ActivityItem, value: string | boolean) => {
     setActivities(activities.map((act) => (act.id === id ? { ...act, [field]: value } : act)));
   };
 
-  // Funções Auxiliares SEÇÃO B
-  const addCommand = () => {
-    if (!newCommandName.trim()) return;
-    setCommands([
-      ...commands,
-      {
-        id: `cmd-${Date.now()}`,
-        command: newCommandName.trim(),
-        rating: 3,
-        notes: ""
-      }
-    ]);
-    setNewCommandName("");
+  // SEÇÃO 2
+  const addCommand = (name?: string) => {
+    const value = (name ?? newCommandName).trim();
+    if (!value) return;
+    if (commands.some((c) => c.command.toLowerCase() === value.toLowerCase())) {
+      if (!name) setNewCommandName("");
+      return;
+    }
+    setCommands((prev) => [...prev, { id: `cmd-${Date.now()}`, command: value, rating: 3, notes: "" }]);
+    if (!name) setNewCommandName("");
   };
 
   const removeCommand = (id: string) => {
     setCommands(commands.filter((cmd) => cmd.id !== id));
   };
 
-  const updateCommand = (id: string, field: keyof CommandItem, value: any) => {
+  const updateCommand = (id: string, field: keyof CommandItem, value: string | number) => {
     setCommands(commands.map((cmd) => (cmd.id === id ? { ...cmd, [field]: value } : cmd)));
   };
 
-  // Imagens do treino
+  // Imagens
   async function handleImages(event: ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
     if (!files?.length) return;
@@ -332,13 +456,31 @@ export default function RegistroTreinoClientPage() {
     setDraftMedia((current) => current.filter((item) => item.id !== mediaId));
   }
 
-  // Submit Geral
+  function resetForm() {
+    setTitle("Sessão prática estruturada");
+    setSessionDate(todayInputValue());
+    setActivities([]);
+    setCommands([]);
+    setDescription("");
+    setPrivateNotes("");
+    setAiSummary("");
+    setAiApproved(false);
+    setAudioTranscription("");
+    setDraftMedia([]);
+    setNextPlan([]);
+    setNextTasks([]);
+    setExpandedSection("1");
+    setCollectiveDogIds([]);
+    setSessionType("Individual");
+  }
+
+  // Submit — cria OU edita o mesmo treino.
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSaving) return;
 
     if (!selectedClient || !selectedDog) {
-      setError("Selecione tutor e cão para registrar o treino.");
+      setError("Selecione cliente e cão para registrar o treino.");
       return;
     }
 
@@ -346,8 +488,6 @@ export default function RegistroTreinoClientPage() {
     setMessage("");
     setIsSaving(true);
 
-    // Cães da sessão: o principal + (se coletivo) os demais marcados. Cada cão
-    // recebe seu próprio DogTrainingSession; o conteúdo é compartilhado na turma.
     const sessionDogIds =
       sessionType === "Coletivo" ? [selectedDog.id, ...collectiveDogIds] : [selectedDog.id];
 
@@ -360,53 +500,65 @@ export default function RegistroTreinoClientPage() {
       aiSummary: aiSummary.trim(),
       aiApproved,
       media: draftMedia,
-      nextFocus: nextFocus.trim(),
-      nextCommands,
-      nextTasks
+      nextFocus: "",
+      nextCommands: nextPlan,
+      nextTasks,
+    }));
+
+    const dogNameLabel =
+      sessionType === "Coletivo" && collectiveDogIds.length > 0
+        ? `${selectedDog.name} + ${collectiveDogIds.length} (turma)`
+        : selectedDog.name;
+
+    const notesPayload = commands.map((c) => ({
+      block: c.command,
+      score: c.rating * 2,
+      comment: c.notes,
     }));
 
     try {
-      const ok = await addTrainingSession({
-        number: nextSessionNumber,
-        title: title.trim(),
-        date: new Date().toLocaleDateString("pt-BR"),
-        clientId: selectedClient.id,
-        clientName: selectedClient.name,
-        dogId: selectedDog.id,
-        dogName:
-          sessionType === "Coletivo" && collectiveDogIds.length > 0
-            ? `${selectedDog.name} + ${collectiveDogIds.length} (turma)`
-            : selectedDog.name,
-        notes: commands.map((c) => ({
-          block: c.command,
-          score: c.rating * 2, // Converte 1-5 estrelas para nota 1-10 herdada
-          comment: c.notes
-        })),
-        media: draftMedia,
-        // Enviar os dados estendidos suportados pela nova API
-        // @ts-ignore
-        dogSessions: dogSessionsPayload,
-        type: sessionType,
-        location: sessionLocation,
-        status: "Realizado"
-      });
+      let ok = false;
+      if (isEditing) {
+        ok = await updateTrainingSession({
+          id: editingId,
+          title: title.trim(),
+          date: toBrDate(sessionDate),
+          clientName: selectedClient.name,
+          dogId: selectedDog.id,
+          dogName: dogNameLabel,
+          notes: notesPayload,
+          media: draftMedia,
+          dogSessions: dogSessionsPayload,
+          location: sessionLocation,
+          type: sessionType,
+          status: "Realizado",
+        });
+      } else {
+        ok = await addTrainingSession({
+          number: nextSessionNumber,
+          title: title.trim(),
+          date: toBrDate(sessionDate),
+          clientId: selectedClient.id,
+          clientName: selectedClient.name,
+          dogId: selectedDog.id,
+          dogName: dogNameLabel,
+          notes: notesPayload,
+          media: draftMedia,
+          // @ts-expect-error — campos estendidos suportados pela API
+          dogSessions: dogSessionsPayload,
+          type: sessionType,
+          location: sessionLocation,
+          status: "Realizado",
+        });
+      }
 
       if (!ok) {
-        setError("Erro ao salvar o treino estruturado. Verifique a conexão.");
+        setError(isEditing ? "Erro ao atualizar o treino. Verifique a conexão." : "Erro ao salvar o treino. Verifique a conexão.");
         return;
       }
 
-      setMessage("Treino estruturado (Seções A a I) registrado com sucesso!");
-      // Resetar form estruturado
-      setDescription("");
-      setPrivateNotes("");
-      setAiSummary("");
-      setAiApproved(false);
-      setAudioTranscription("");
-      setDraftMedia([]);
-      setExpandedSection("A");
-      setCollectiveDogIds([]);
-      setSessionType("Individual");
+      setMessage(isEditing ? "Treino atualizado com sucesso!" : "Treino registrado com sucesso!");
+      if (!isEditing) resetForm();
     } catch {
       setError("Ocorreu um erro no processamento.");
     } finally {
@@ -414,17 +566,17 @@ export default function RegistroTreinoClientPage() {
     }
   }
 
-  const renderSectionHeader = (letter: AccordionSection, name: string) => {
-    const isExpanded = expandedSection === letter;
+  const renderSectionHeader = (num: AccordionSection, name: string) => {
+    const isExpanded = expandedSection === num;
     return (
       <button
         type="button"
-        onClick={() => setExpandedSection(isExpanded ? "A" : letter)}
-        className="flex w-full items-center justify-between border-b border-[var(--border)] bg-[#fcfdfe] px-4 py-3.5 text-left font-semibold text-[var(--foreground)] hover:bg-[#f5fafe] transition-colors"
+        onClick={() => setExpandedSection(isExpanded ? "1" : num)}
+        className="flex w-full items-center justify-between border-b border-[var(--border)] bg-[var(--surface-2)]/40 px-4 py-3.5 text-left font-semibold text-[var(--foreground)] hover:bg-[var(--accent-soft)] transition-colors"
       >
         <span className="flex items-center gap-2.5 text-sm">
-          <span className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-sky-100 text-[11px] font-bold text-[var(--foreground)]">
-            {letter}
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-[11px] font-bold text-white">
+            {num}
           </span>
           {name}
         </span>
@@ -433,6 +585,15 @@ export default function RegistroTreinoClientPage() {
     );
   };
 
+  // Sugestões (modelos salvos) ainda não usadas na lista atual.
+  const activitySuggestions = savedActivities.filter(
+    (s) => !activities.some((a) => a.name.toLowerCase() === s.toLowerCase())
+  );
+  const commandSuggestions = savedCommands.filter(
+    (s) => !commands.some((c) => c.command.toLowerCase() === s.toLowerCase())
+  );
+  const taskSuggestions = savedTasks.filter((s) => !nextTasks.includes(s));
+
   return (
     <AuthGuard role="trainer">
       <main className="page">
@@ -440,20 +601,23 @@ export default function RegistroTreinoClientPage() {
           <div className="page-header-actions">
             <div className="min-w-0">
               <p className="text-eyebrow mb-1.5">Treinos</p>
-              <h1 className="text-display">Registrar sessão</h1>
-              <p className="mt-1 text-subtitle">Preenchimento guiado das seções A a I da página de treino.</p>
+              <h1 className="text-display">{isEditing ? "Editar treino" : "Registrar sessão"}</h1>
+              <p className="mt-1 text-subtitle">
+                {isEditing
+                  ? `Editando o treino #${nextSessionNumber} — as alterações salvam no mesmo registro.`
+                  : "Preenchimento guiado das seções 1 a 8 da página de treino."}
+              </p>
             </div>
             <Link href="/treinos" className="btn-secondary text-[12.5px]">Ver histórico</Link>
           </div>
         </header>
 
         <div className="card p-5">
-
-          <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
+          <form onSubmit={handleSubmit} className="mt-1 grid gap-3">
             {/* Metadados Básicos */}
             <div className="grid gap-2 sm:grid-cols-2">
               <label className="grid gap-1">
-                <span className="text-xs font-medium text-[var(--muted)]">Tutor</span>
+                <span className="text-xs font-medium text-[var(--muted)]">Cliente</span>
                 <select
                   value={selectedClientId}
                   onChange={(event) => {
@@ -462,7 +626,8 @@ export default function RegistroTreinoClientPage() {
                     setSelectedClientId(nextClientId);
                     setSelectedDogId(nextClient?.dogs[0]?.id ?? "");
                   }}
-                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  disabled={isEditing}
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)] disabled:opacity-60"
                 >
                   {clients.map((client) => (
                     <option key={client.id} value={client.id}>{client.name}</option>
@@ -475,7 +640,8 @@ export default function RegistroTreinoClientPage() {
                 <select
                   value={selectedDogId}
                   onChange={(event) => setSelectedDogId(event.target.value)}
-                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  disabled={isEditing}
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)] disabled:opacity-60"
                 >
                   {(selectedClient?.dogs ?? []).map((dog) => (
                     <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
@@ -484,7 +650,7 @@ export default function RegistroTreinoClientPage() {
               </label>
             </div>
 
-            {/* Tipo de sessão: Individual ou Coletivo (turma) */}
+            {/* Tipo de sessão */}
             <div className="grid gap-2">
               <span className="text-xs font-medium text-[var(--muted)]">Tipo de sessão</span>
               <div className="flex gap-2">
@@ -496,7 +662,7 @@ export default function RegistroTreinoClientPage() {
                       setSessionType(t);
                       if (t === "Individual") setCollectiveDogIds([]);
                     }}
-                    className={`flex-1 rounded-md border px-3 py-2 text-sm font-semibold ${sessionType === t ? "border-sky-400 bg-sky-50 text-sky-800" : "border-[var(--border)] text-[var(--muted)]"}`}
+                    className={`flex-1 rounded-md border px-3 py-2 text-sm font-semibold ${sessionType === t ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]" : "border-[var(--border)] text-[var(--muted)]"}`}
                   >
                     {t === "Individual" ? "🐕 Individual" : "🐕‍🦺 Coletivo (turma)"}
                   </button>
@@ -532,7 +698,7 @@ export default function RegistroTreinoClientPage() {
                     )}
                   </div>
                   {collectiveDogIds.length > 0 && (
-                    <p className="mt-2 text-[11px] font-semibold text-sky-700">
+                    <p className="mt-2 text-[11px] font-semibold text-[var(--accent-text)]">
                       Turma: {collectiveDogIds.length + 1} cães (incluindo {selectedDog?.name}).
                     </p>
                   )}
@@ -540,46 +706,74 @@ export default function RegistroTreinoClientPage() {
               )}
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-2">
-              <label className="grid gap-1">
-                <span className="text-xs font-medium text-[var(--muted)]">Título da Sessão</span>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <label className="grid gap-1 sm:col-span-1">
+                <span className="text-xs font-medium text-[var(--muted)]">Data do treino</span>
                 <input
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  type="date"
+                  value={sessionDate}
+                  onChange={(event) => setSessionDate(event.target.value)}
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
                   required
                 />
               </label>
 
-              <label className="grid gap-1">
+              <label className="grid gap-1 sm:col-span-1">
+                <span className="text-xs font-medium text-[var(--muted)]">Título da Sessão</span>
+                <input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+                  required
+                />
+              </label>
+
+              <label className="grid gap-1 sm:col-span-1">
                 <span className="text-xs font-medium text-[var(--muted)]">Local do Treino</span>
                 <input
                   value={sessionLocation}
                   onChange={(event) => setSessionLocation(event.target.value)}
-                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
                 />
               </label>
             </div>
 
-            {/* SEÇÕES ACORDEÃO A a I */}
+            {/* SEÇÕES 1 a 8 */}
             <div className="mt-2 overflow-hidden rounded-md border border-[var(--border)] bg-white">
-              
-              {/* SEÇÃO A: Atividades Trabalhadas */}
-              {renderSectionHeader("A", "Atividades Trabalhadas")}
-              {expandedSection === "A" && (
+
+              {/* SEÇÃO 1: Atividades Trabalhadas */}
+              {renderSectionHeader("1", "Atividades Trabalhadas")}
+              {expandedSection === "1" && (
                 <div className="p-4 space-y-3">
-                  <p className="text-[11px] text-[var(--muted)]">Adicione as atividades executadas no treino e relate se foram concluídas ou necessitam ajustes.</p>
-                  
+                  <p className="text-[11px] text-[var(--muted)]">
+                    Selecione das suas atividades salvas ou adicione novas. A seleção fica guardada para reutilizar nos próximos treinos.
+                  </p>
+
+                  {activitySuggestions.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {activitySuggestions.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => addActivity(s)}
+                          className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-2.5 py-1 text-[11px] font-medium text-[var(--accent-text)] hover:bg-[var(--accent)]/10"
+                        >
+                          + {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     {activities.map((act) => (
-                      <div key={act.id} className="flex flex-col gap-2 rounded-md border border-slate-100 bg-[#fafcff] p-3">
+                      <div key={act.id} className="flex flex-col gap-2 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 p-3">
                         <div className="flex items-center justify-between">
-                          <label className="flex items-center gap-2.5 text-xs font-semibold text-[#1e5272] cursor-pointer">
+                          <label className="flex items-center gap-2.5 text-xs font-semibold text-[var(--foreground)] cursor-pointer">
                             <input
                               type="checkbox"
                               checked={act.completed}
                               onChange={(e) => updateActivity(act.id, "completed", e.target.checked)}
-                              className="rounded border-[var(--border)] text-[var(--foreground)] focus:ring-sky-400"
+                              className="rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
                             />
                             {act.name}
                           </label>
@@ -595,7 +789,7 @@ export default function RegistroTreinoClientPage() {
                           placeholder="Observações da atividade..."
                           value={act.notes}
                           onChange={(e) => updateActivity(act.id, "notes", e.target.value)}
-                          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-sky-300"
+                          className="rounded-lg border border-[var(--border)] bg-white px-2 py-1 text-xs outline-none focus:border-[var(--accent)]"
                         />
                       </div>
                     ))}
@@ -606,30 +800,49 @@ export default function RegistroTreinoClientPage() {
                       placeholder="Nova atividade (Ex: Foco no portão)"
                       value={newActivityName}
                       onChange={(e) => setNewActivityName(e.target.value)}
-                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addActivity(); } }}
+                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-[var(--accent)]"
                     />
-                    <button
-                      type="button"
-                      onClick={addActivity}
-                      className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white"
-                    >
+                    <button type="button" onClick={() => addActivity()} className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white">
                       Incluir
                     </button>
                   </div>
+                  {activities.length > 0 && (
+                    <button type="button" onClick={() => saveTemplates("activities")} className="text-[11px] font-semibold text-[var(--accent-text)] hover:underline">
+                      💾 Salvar estas nos meus modelos
+                    </button>
+                  )}
                 </div>
               )}
 
-              {/* SEÇÃO B: Comandos de Obediência/Evolução */}
-              {renderSectionHeader("B", "Comandos de Obediência / Evolução")}
-              {expandedSection === "B" && (
+              {/* SEÇÃO 2: Comandos de Obediência/Evolução */}
+              {renderSectionHeader("2", "Comandos de Obediência / Evolução")}
+              {expandedSection === "2" && (
                 <div className="p-4 space-y-3">
-                  <p className="text-[11px] text-[var(--muted)]">Defina estrelas de desempenho (1-5) para cada comando de obediência trabalhado.</p>
-                  
+                  <p className="text-[11px] text-[var(--muted)]">
+                    Escolha dos seus comandos salvos ou adicione novos e dê estrelas (1-5) ao desempenho.
+                  </p>
+
+                  {commandSuggestions.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {commandSuggestions.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => addCommand(s)}
+                          className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-2.5 py-1 text-[11px] font-medium text-[var(--accent-text)] hover:bg-[var(--accent)]/10"
+                        >
+                          + {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="space-y-3">
                     {commands.map((cmd) => (
-                      <div key={cmd.id} className="rounded-md border border-slate-100 bg-[#fafcff] p-3 space-y-2">
+                      <div key={cmd.id} className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 p-3 space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#1e5272]">{cmd.command}</span>
+                          <span className="text-xs font-bold text-[var(--foreground)]">{cmd.command}</span>
                           <button
                             type="button"
                             onClick={() => removeCommand(cmd.id)}
@@ -646,7 +859,7 @@ export default function RegistroTreinoClientPage() {
                           placeholder="Observações da evolução..."
                           value={cmd.notes}
                           onChange={(e) => updateCommand(cmd.id, "notes", e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-sky-300"
+                          className="w-full rounded-lg border border-[var(--border)] bg-white px-2 py-1 text-xs outline-none focus:border-[var(--accent)]"
                         />
                       </div>
                     ))}
@@ -657,55 +870,57 @@ export default function RegistroTreinoClientPage() {
                       placeholder="Novo comando (Ex: Junto, Fica, Solta)"
                       value={newCommandName}
                       onChange={(e) => setNewCommandName(e.target.value)}
-                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCommand(); } }}
+                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-[var(--accent)]"
                     />
-                    <button
-                      type="button"
-                      onClick={addCommand}
-                      className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white"
-                    >
+                    <button type="button" onClick={() => addCommand()} className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white">
                       Incluir
                     </button>
                   </div>
+                  {commands.length > 0 && (
+                    <button type="button" onClick={() => saveTemplates("commands")} className="text-[11px] font-semibold text-[var(--accent-text)] hover:underline">
+                      💾 Salvar estes nos meus modelos
+                    </button>
+                  )}
                 </div>
               )}
 
-              {/* SEÇÃO C: Descrição / Resumo Público */}
-              {renderSectionHeader("C", "Resumo Público para o Tutor")}
-              {expandedSection === "C" && (
+              {/* SEÇÃO 3: Resumo Público */}
+              {renderSectionHeader("3", "Resumo Público para o Cliente")}
+              {expandedSection === "3" && (
                 <div className="p-4">
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
-                    className="w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
-                    placeholder="Descreva de forma simples e estimulante o resumo do treino que o tutor verá no portal."
+                    className="w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
+                    placeholder="Descreva de forma simples e estimulante o resumo do treino que o cliente verá no portal."
                   />
                 </div>
               )}
 
-              {/* SEÇÃO D: Notas Privadas */}
-              {renderSectionHeader("D", "Notas Privadas (Confidencial)")}
-              {expandedSection === "D" && (
+              {/* SEÇÃO 4: Notas Privadas */}
+              {renderSectionHeader("4", "Notas Privadas (Confidencial)")}
+              {expandedSection === "4" && (
                 <div className="p-4">
-                  <p className="mb-2 text-[10px] text-rose-700">⚠️ Visível apenas para adestradores. Nunca compartilhado com o tutor.</p>
+                  <p className="mb-2 text-[10px] text-rose-700">⚠️ Visível apenas para adestradores. Nunca compartilhado com o cliente.</p>
                   <textarea
                     value={privateNotes}
                     onChange={(e) => setPrivateNotes(e.target.value)}
                     rows={3}
                     className="w-full rounded-md border border-rose-100 bg-rose-50/20 px-3 py-2 text-xs outline-none focus:border-rose-300 text-slate-800"
-                    placeholder="Comportamentos observados, anotações de temperamento, observações sobre o tutor, etc."
+                    placeholder="Comportamentos observados, anotações de temperamento, observações sobre o cliente, etc."
                   />
                 </div>
               )}
 
-              {/* SEÇÃO E: Transcrição & IA */}
-              {renderSectionHeader("E", "Transcrição de Áudio e Análise de IA")}
-              {expandedSection === "E" && (
+              {/* SEÇÃO 5: Transcrição & IA */}
+              {renderSectionHeader("5", "Transcrição de Áudio e Análise de IA")}
+              {expandedSection === "5" && (
                 <div className="p-4 space-y-3.5">
                   <div>
                     <h4 className="text-xs font-bold text-[var(--foreground)]">🎤 Ditado de Notas por Voz</h4>
-                    <p className="text-[10px] text-[var(--muted)]">Use o microfone do dispositivo para transcrever observações. O áudio fica no seu navegador — não enviamos nada para serviços pagos.</p>
+                    <p className="text-[10px] text-[var(--muted)]">Use o microfone do dispositivo para transcrever observações. O áudio fica no seu navegador.</p>
 
                     <AudioTranscriber
                       className="mt-2"
@@ -720,7 +935,7 @@ export default function RegistroTreinoClientPage() {
                       value={audioTranscription}
                       onChange={(e) => setAudioTranscription(e.target.value)}
                       rows={3}
-                      className="mt-3 w-full rounded-md border border-[var(--border)] bg-[#fafcff] px-3 py-2 text-xs outline-none"
+                      className="mt-3 w-full rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-2 text-xs outline-none"
                       placeholder="A transcrição em tempo real aparece aqui — você pode editar livremente."
                     />
                   </div>
@@ -729,8 +944,8 @@ export default function RegistroTreinoClientPage() {
 
                   <div>
                     <h4 className="text-xs font-bold text-[var(--foreground)]">🤖 Análise por Inteligência Artificial (Adestro AI)</h4>
-                    <p className="text-[10px] text-[var(--muted)]">Gera automaticamente o resumo para o tutor, foco das próximas aulas e checklist de tarefas a partir dos dados do treino.</p>
-                    
+                    <p className="text-[10px] text-[var(--muted)]">Gera automaticamente o resumo para o cliente, plano do próximo treino e checklist de tarefas.</p>
+
                     <button
                       type="button"
                       onClick={generateMockAIAnalysis}
@@ -743,8 +958,8 @@ export default function RegistroTreinoClientPage() {
                     {aiSummary && (
                       <div className="mt-3 rounded-md border border-purple-200 bg-purple-50/55 p-3 space-y-2">
                         <p className="text-xs font-bold text-purple-900">✨ Resumo Gerado pela IA:</p>
-                        <p className="text-xs text-purple-950 italic">"{aiSummary}"</p>
-                        
+                        <p className="text-xs text-purple-950 italic">&quot;{aiSummary}&quot;</p>
+
                         <div className="rounded-lg border border-purple-100 bg-white p-2">
                           <label className="flex items-center gap-2 text-xs font-semibold text-purple-900 cursor-pointer">
                             <input
@@ -753,7 +968,7 @@ export default function RegistroTreinoClientPage() {
                               onChange={(e) => setAiApproved(e.target.checked)}
                               className="rounded border-purple-300 text-purple-600 focus:ring-purple-400"
                             />
-                            Aprovar resumo da IA e dever de casa para o Portal do Tutor
+                            Aprovar resumo da IA e dever de casa para o Portal do Cliente
                           </label>
                         </div>
                       </div>
@@ -762,12 +977,12 @@ export default function RegistroTreinoClientPage() {
                 </div>
               )}
 
-              {/* SEÇÃO F: Galeria de Mídias */}
-              {renderSectionHeader("F", "Galeria de Mídias do Treino")}
-              {expandedSection === "F" && (
+              {/* SEÇÃO 6: Galeria */}
+              {renderSectionHeader("6", "Galeria de Mídias do Treino")}
+              {expandedSection === "6" && (
                 <div className="p-4 space-y-3">
-                  <p className="text-[11px] text-[var(--muted)]">Anexe fotos demonstrativas da aula. O sistema comprime as imagens de forma eficiente.</p>
-                  
+                  <p className="text-[11px] text-[var(--muted)]">Anexe fotos demonstrativas da aula. O sistema comprime as imagens.</p>
+
                   <input
                     type="file"
                     accept="image/*"
@@ -776,7 +991,7 @@ export default function RegistroTreinoClientPage() {
                     className="block w-full text-xs text-[var(--muted)] file:mr-2 file:rounded-lg file:border file:border-[var(--border)] file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold"
                   />
 
-                  {isProcessingImages && <p className="text-xs text-sky-700">Compactando imagens...</p>}
+                  {isProcessingImages && <p className="text-xs text-[var(--accent-text)]">Compactando imagens...</p>}
 
                   {draftMedia.length > 0 && (
                     <div className="grid grid-cols-2 gap-2 mt-2">
@@ -799,68 +1014,83 @@ export default function RegistroTreinoClientPage() {
                 </div>
               )}
 
-              {/* SEÇÃO G: Próximo Foco */}
-              {renderSectionHeader("G", "Foco do Próximo Treino")}
-              {expandedSection === "G" && (
-                <div className="p-4">
-                  <input
-                    value={nextFocus}
-                    onChange={(e) => setNextFocus(e.target.value)}
-                    className="w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
-                    placeholder="Ex: Treinar permanência com o comando Fica"
-                  />
-                </div>
-              )}
-
-              {/* SEÇÃO H: Próximos Comandos */}
-              {renderSectionHeader("H", "Próximos Comandos Recomendados")}
-              {expandedSection === "H" && (
+              {/* SEÇÃO 7: Plano do Próximo Treino (Foco + comandos, com INCLUIR) */}
+              {renderSectionHeader("7", "Plano do Próximo Treino")}
+              {expandedSection === "7" && (
                 <div className="p-4 space-y-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {nextCommands.map((cmd, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-bold text-[var(--foreground)] border border-[var(--border)]">
-                        {cmd}
+                  <p className="text-[11px] text-[var(--muted)]">
+                    Liste o que fazer no próximo encontro (foco + comandos a reforçar). Use <strong>Incluir</strong> para adicionar cada item.
+                  </p>
+                  <div className="space-y-1.5">
+                    {nextPlan.map((item, i) => (
+                      <div key={i} className="flex items-center justify-between gap-2 rounded-md bg-[var(--surface-2)]/50 p-2 text-xs text-[var(--foreground)]">
+                        <span className="flex-1 leading-snug">🎯 {item}</span>
                         <button
                           type="button"
-                          onClick={() => setNextCommands(nextCommands.filter((_, idx) => idx !== i))}
-                          className="font-semibold text-rose-500 hover:text-rose-700 ml-0.5"
+                          onClick={() => setNextPlan(nextPlan.filter((_, idx) => idx !== i))}
+                          className="text-[10px] font-bold text-rose-500 hover:underline"
                         >
-                          ×
+                          Excluir
                         </button>
-                      </span>
+                      </div>
                     ))}
                   </div>
                   <div className="flex gap-2">
                     <input
-                      placeholder="Novo comando recomendado"
-                      value={newNextCommandName}
-                      onChange={(e) => setNewNextCommandName(e.target.value)}
-                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                      placeholder="Ex: Reforçar permanência no comando Fica"
+                      value={newNextPlanItem}
+                      onChange={(e) => setNewNextPlanItem(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (!newNextPlanItem.trim()) return;
+                          setNextPlan([...nextPlan, newNextPlanItem.trim()]);
+                          setNewNextPlanItem("");
+                        }
+                      }}
+                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-[var(--accent)]"
                     />
                     <button
                       type="button"
                       onClick={() => {
-                        if (!newNextCommandName.trim()) return;
-                        setNextCommands([...nextCommands, newNextCommandName.trim()]);
-                        setNewNextCommandName("");
+                        if (!newNextPlanItem.trim()) return;
+                        setNextPlan([...nextPlan, newNextPlanItem.trim()]);
+                        setNewNextPlanItem("");
                       }}
                       className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white"
                     >
-                      Adicionar
+                      Incluir
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* SEÇÃO I: Dever de Casa (Tarefas do Tutor) */}
-              {renderSectionHeader("I", "Dever de Casa — Tarefas do Tutor")}
-              {expandedSection === "I" && (
+              {/* SEÇÃO 8: Dever de Casa */}
+              {renderSectionHeader("8", "Dever de Casa — Tarefas do Cliente")}
+              {expandedSection === "8" && (
                 <div className="p-4 space-y-3">
-                  <p className="text-[11px] text-[var(--muted)]">Checklist de tarefas de casa que serão recomendadas ao tutor no portal.</p>
-                  
+                  <p className="text-[11px] text-[var(--muted)]">
+                    Checklist de tarefas de casa recomendadas ao cliente no portal. Você pode definir a frequência (diária / dias da semana) lá no Portal.
+                  </p>
+
+                  {taskSuggestions.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {taskSuggestions.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setNextTasks((prev) => (prev.includes(s) ? prev : [...prev, s]))}
+                          className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-2.5 py-1 text-[11px] font-medium text-[var(--accent-text)] hover:bg-[var(--accent)]/10"
+                        >
+                          + {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="space-y-1.5">
                     {nextTasks.map((task, i) => (
-                      <div key={i} className="flex items-center justify-between gap-2 rounded-md bg-slate-50 p-2 text-xs text-slate-800">
+                      <div key={i} className="flex items-center justify-between gap-2 rounded-md bg-[var(--surface-2)]/50 p-2 text-xs text-[var(--foreground)]">
                         <span className="flex-1 leading-snug">🏠 {task}</span>
                         <button
                           type="button"
@@ -875,10 +1105,18 @@ export default function RegistroTreinoClientPage() {
 
                   <div className="flex gap-2">
                     <input
-                      placeholder="Nova tarefa de casa para o tutor..."
+                      placeholder="Nova tarefa de casa para o cliente..."
                       value={newNextTaskText}
                       onChange={(e) => setNewNextTaskText(e.target.value)}
-                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (!newNextTaskText.trim()) return;
+                          setNextTasks([...nextTasks, newNextTaskText.trim()]);
+                          setNewNextTaskText("");
+                        }
+                      }}
+                      className="flex-1 rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-[var(--accent)]"
                     />
                     <button
                       type="button"
@@ -889,23 +1127,31 @@ export default function RegistroTreinoClientPage() {
                       }}
                       className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white"
                     >
-                      Adicionar
+                      Incluir
                     </button>
                   </div>
+                  {nextTasks.length > 0 && (
+                    <button type="button" onClick={() => saveTemplates("tasks")} className="text-[11px] font-semibold text-[var(--accent-text)] hover:underline">
+                      💾 Salvar estas nos meus modelos
+                    </button>
+                  )}
                 </div>
               )}
 
             </div>
 
+            {templatesMsg && <p className="text-[11px] font-medium text-[var(--accent-text)]">{templatesMsg}</p>}
             {error && <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
             {message && <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p>}
 
             <button
               type="submit"
               disabled={isSaving || isProcessingImages}
-              className="pc-primary-action rounded-full py-2.5 text-sm font-semibold disabled:opacity-60 mt-3"
+              className="pc-primary-action rounded-full py-2.5 text-sm font-semibold disabled:opacity-60 mt-1"
             >
-              {isSaving ? "Salvando treino estruturado..." : "Salvar Evolução Estruturada"}
+              {isSaving
+                ? (isEditing ? "Atualizando treino..." : "Salvando treino...")
+                : (isEditing ? "Salvar alterações deste treino" : "Salvar Evolução Estruturada")}
             </button>
           </form>
         </div>

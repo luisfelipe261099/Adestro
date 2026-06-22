@@ -40,7 +40,7 @@ export function MonthlyReport({ report, onDownloadPDF }: MonthlyReportProps) {
             <h2 className="text-2xl font-bold text-gray-900">{report.dogName}</h2>
             <p className="text-gray-600">Relatório mensal de progresso</p>
             <p className="mt-2 text-sm font-semibold text-gray-700">
-              Tutor: {report.ownerName} | Período: {report.month}
+              Cliente: {report.ownerName} | Período: {report.month}
             </p>
           </div>
           <div className={`rounded-lg px-4 py-2 text-center ${getGradeColor(report.overallGrade)}`}>

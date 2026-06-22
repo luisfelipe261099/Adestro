@@ -19,6 +19,9 @@ type PortalTask = {
   description: string | null;
   completed: boolean;
   evidenceUrl: string | null;
+  recurrence?: string | null;   // once | daily | weekly
+  weekdays?: string | null;     // JSON [0..6]
+  completions?: string | null;  // JSON ["YYYY-MM-DD", ...]
 };
 
 type PortalFeedback = {
@@ -465,7 +468,7 @@ export function PortalPublicClient({ token }: { token: string }) {
     return (
       <PageShell
         kicker="Portal"
-        title="Carregando portal do tutor"
+        title="Carregando portal do cliente"
         description="Validando acesso e carregando os dados do acompanhamento."
       >
         <p className="text-sm text-[var(--muted)]">Aguarde alguns segundos...</p>
@@ -537,7 +540,7 @@ export function PortalPublicClient({ token }: { token: string }) {
 
   return (
     <PageShell
-      kicker="Portal do tutor"
+      kicker="Portal do cliente"
       title={`${featuredDog?.name || "Seu cão"}: tarefas e próxima aula`}
       description="Veja o que fazer em casa, quando será a próxima aula e o resumo mais recente do treino."
     >
@@ -647,7 +650,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           </Link>
         </div>
 
-        <article data-tour="tutor-dog" className="rounded-lg border border-[var(--border)] bg-slate-950 p-5 text-white shadow-sm">
+        <article data-tour="cliente-dog" className="rounded-lg border border-[var(--border)] bg-slate-950 p-5 text-white shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-4">
               {featuredDog?.photoUrl ? (
@@ -679,7 +682,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-xs text-slate-300">Tutor: {data.client.name}</p>
+                <p className="mt-1 text-xs text-slate-300">Cliente: {data.client.name}</p>
                 <p className="text-xs text-slate-300">Adestrador: {data.trainer.name}</p>
                 
                 {/* Informações de Nível do Cão */}
@@ -763,7 +766,7 @@ export function PortalPublicClient({ token }: { token: string }) {
         })()}
 
         <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-          <article data-tour="tutor-tasks" className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+          <article data-tour="cliente-tasks" className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Tarefas de casa</p>
             <div className="mt-4 space-y-3">
               {data.tasks.length === 0 ? <p className="text-sm text-[var(--muted)]">Sem tarefas registradas para este caso.</p> : null}
@@ -785,6 +788,39 @@ export function PortalPublicClient({ token }: { token: string }) {
                     <div className="flex-1">
                       <p className={`font-semibold ${task.completed ? "line-through text-slate-400" : "text-slate-800"}`}>{task.title}</p>
                       <p className="text-xs text-[var(--muted)] mt-0.5">{task.description || "Sem descrição."}</p>
+                      {task.recurrence && task.recurrence !== "once" && (() => {
+                        const names = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+                        let wd: number[] = [];
+                        try { wd = JSON.parse(task.weekdays || "[]"); } catch { wd = []; }
+                        let comps: string[] = [];
+                        try { comps = JSON.parse(task.completions || "[]"); } catch { comps = []; }
+                        const label = task.recurrence === "daily" ? "Todos os dias" : wd.map((i) => names[i]).join(" · ");
+                        const days = Array.from({ length: 7 }).map((_, k) => {
+                          const d = new Date();
+                          d.setDate(d.getDate() - (6 - k));
+                          const s = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                          return { s, name: names[d.getDay()], done: comps.includes(s) };
+                        });
+                        const doneCount = days.filter((d) => d.done).length;
+                        return (
+                          <div className="mt-1.5">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-semibold text-[var(--accent-text)]">
+                              🔁 {label}
+                            </span>
+                            <div className="mt-1.5 flex items-center gap-1">
+                              {days.map((d, idx) => (
+                                <div key={idx} className="flex flex-col items-center">
+                                  <span className="text-[8px] text-[var(--muted)]">{d.name}</span>
+                                  <span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold ${d.done ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                                    {d.done ? "✓" : ""}
+                                  </span>
+                                </div>
+                              ))}
+                              <span className="ml-1 text-[10px] font-semibold text-[var(--muted)]">{doneCount}/7 dias</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
 
@@ -1005,7 +1041,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           </article>
         </div>
 
-        <article data-tour="tutor-sessions" className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <article data-tour="cliente-sessions" className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Avaliacao e evidencias</p>
           <div className="mt-3 rounded-md border border-[var(--border)] bg-white p-3">
             {latestSessionScore ? (
@@ -1093,10 +1129,10 @@ export function PortalPublicClient({ token }: { token: string }) {
             body * {
               visibility: hidden;
             }
-            #printable-report-container-tutor, #printable-report-container-tutor * {
+            #printable-report-container-cliente, #printable-report-container-cliente * {
               visibility: visible;
             }
-            #printable-report-container-tutor {
+            #printable-report-container-cliente {
               position: absolute;
               left: 0;
               top: 0;
@@ -1106,8 +1142,8 @@ export function PortalPublicClient({ token }: { token: string }) {
               padding: 0;
               margin: 0;
             }
-            #printable-report-container-tutor button,
-            #printable-report-container-tutor .flex.gap-3 {
+            #printable-report-container-cliente button,
+            #printable-report-container-cliente .flex.gap-3 {
               display: none !important;
             }
           }
@@ -1151,7 +1187,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           ) : reportError ? (
             <p className="text-center text-xs text-rose-600 py-6">{reportError}</p>
           ) : reportData ? (
-            <div id="printable-report-container-tutor" className="rounded-md border border-slate-100 bg-white p-4 shadow-2xs">
+            <div id="printable-report-container-cliente" className="rounded-md border border-slate-100 bg-white p-4 shadow-2xs">
               <MonthlyReport
                 report={reportData}
                 onDownloadPDF={() => window.print()}
@@ -1162,7 +1198,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           )}
         </article>
 
-        <article data-tour="tutor-chat" className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm h-[420px] flex flex-col">
+        <article data-tour="cliente-chat" className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm h-[420px] flex flex-col">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Central de Mensagens</p>
           
           {/* Scrolling messages list */}
