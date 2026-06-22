@@ -626,7 +626,12 @@ export default function TrainingPage() {
                           />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-[var(--foreground)]">{dogName}</p>
+                          <Link
+                            href={`/treinos/registro?sessionId=${session.id}`}
+                            className="text-sm font-semibold text-[var(--foreground)] hover:underline"
+                          >
+                            {dogName}
+                          </Link>
                           <p className="text-[11px] text-[var(--muted)]">{clientName} • {breed}</p>
                           <p className="mt-0.5 text-[11px] text-[var(--foreground)]">
                             {firstNote?.block || "Treino geral"} • {score.toFixed(1)}/10
