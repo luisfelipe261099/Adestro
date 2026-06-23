@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { AttentionDogs } from "@/components/attention-dogs";
 import { AuthGuard } from "@/components/auth-guard";
 import { DailyBriefCard } from "@/components/daily-brief-card";
+import { DayBoard } from "@/components/day-board";
 import {
   IconAlert,
   IconCalendar,
@@ -235,6 +236,11 @@ export default function DashboardPage() {
             </Link>
           ))}
         </section>
+
+        {/* Quadro do dia — kanban de status das aulas (integra com o foco do dia) */}
+        <div className="mt-4">
+          <DayBoard />
+        </div>
 
         {/* Evolução dos cães + Prioridades de hoje */}
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
