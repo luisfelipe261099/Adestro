@@ -43,6 +43,8 @@ const TRAINER_NAV: NavItem[] = [
 const TRAINER_SECONDARY: NavItem[] = [
   { href: "/portal", label: "Portal do cliente", icon: IconLink, description: "Link compartilhado" },
   { href: "/ia", label: "Assistente IA", icon: IconSparkle, description: "Sugestões para casos complexos" },
+  { href: "/evolucao", label: "Evolução", icon: IconReport, description: "Evolução comportamental dos cães" },
+  { href: "/planos-treino", label: "Planos de treino", icon: IconDog, description: "Pacotes e contratos de sessões" },
   { href: "/planos", label: "Meu plano", icon: IconReceipt, description: "Assinatura" },
   { href: "/tutorial", label: "Tutorial", icon: IconChat, description: "Manuais e guia rápido" },
 ];
