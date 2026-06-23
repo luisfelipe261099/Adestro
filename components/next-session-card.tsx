@@ -83,7 +83,7 @@ export function NextSessionCard() {
     client?.phone,
     waTemplates.lembreteTreino({ cao: next.dog, hora: next.time, adestrador: trainerName || "Adestrador" }),
   );
-  const registroHref = `/treinos/registro?clientId=${next.clientId ?? ""}&dogId=${next.dogId ?? ""}`;
+  const registroHref = `/treinos/registro?clientId=${next.clientId ?? ""}&dogId=${next.dogId ?? ""}&eventId=${next.id ?? ""}`;
 
   return (
     <section className="card relative overflow-hidden p-5 sm:p-6" data-tour="next-session">

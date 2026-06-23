@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getSession, signIn, useSession } from "next-auth/react";
 
 import { homeRouteForRoleStrict } from "@/lib/routes";
+import { BrandMark } from "@/components/brand-mark";
 
 async function resolveRole(): Promise<string | null> {
   // getSession() faz GET em /api/auth/session com o cookie recém-criado pelo
@@ -64,9 +65,7 @@ export function LoginClient() {
     <main className="mx-auto flex min-h-[calc(100dvh-56px)] w-full max-w-md flex-col justify-center px-4 py-12 sm:px-6">
       <div className="w-full">
         <div className="mb-8 flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--accent)] text-xs font-semibold text-white">
-            A
-          </span>
+          <BrandMark className="h-8 w-8" />
           <span className="text-base font-semibold tracking-tight text-[var(--foreground)]">Adestro</span>
         </div>
 

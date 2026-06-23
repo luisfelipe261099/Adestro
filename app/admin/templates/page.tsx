@@ -22,11 +22,11 @@ const EMPTY: SettingsState = {
 };
 
 const WA_TEMPLATE_FIELDS: Array<{ key: WaTemplateKey; label: string; placeholder: string }> = [
-  { key: "agendamento", label: "Agendamento criado", placeholder: "Olá {tutor}! Seu treino com {cao} foi agendado para {data} às {hora}." },
+  { key: "agendamento", label: "Agendamento criado", placeholder: "Olá {cliente}! Seu treino com {cao} foi agendado para {data} às {hora}." },
   { key: "lembrete", label: "Lembrete de treino", placeholder: "Lembrete: treino do(a) {cao} amanhã às {hora}." },
   { key: "confirmacao", label: "Pedido de confirmação", placeholder: "Por favor, confirme a presença do(a) {cao} em {data}: {link}" },
   { key: "treinoRealizado", label: "Após o treino", placeholder: "Ótimo treino hoje com {cao}! Veja o resumo: {link}" },
-  { key: "cobranca", label: "Cobrança pendente", placeholder: "Olá {tutor}! Sua cobrança de R$ {valor} vence em {data}." },
+  { key: "cobranca", label: "Cobrança pendente", placeholder: "Olá {cliente}! Sua cobrança de R$ {valor} vence em {data}." },
   { key: "relatorio", label: "Relatório mensal", placeholder: "O relatório de {cao} de {mes} já está disponível: {link}" },
 ];
 
@@ -235,7 +235,7 @@ export default function AdminTemplatesPage() {
                   <h2 className="text-sm font-bold text-slate-900">💬 Templates de mensagem WhatsApp</h2>
                   <p className="text-[11px] text-slate-700">
                     Personalize o tom das mensagens enviadas via wa.me. Deixe em branco para usar o padrão do sistema.
-                    Variáveis disponíveis: <code className="rounded bg-white px-1 text-[10px]">{"{tutor} {cao} {data} {hora} {link} {valor} {mes}"}</code>
+                    Variáveis disponíveis: <code className="rounded bg-white px-1 text-[10px]">{"{cliente} {cao} {data} {hora} {link} {valor} {mes}"}</code>
                   </p>
                 </header>
                 <div className="mt-3 grid gap-3">

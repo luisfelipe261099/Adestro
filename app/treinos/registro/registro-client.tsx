@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
@@ -131,11 +131,14 @@ export default function RegistroTreinoClientPage() {
   const addTrainingSession = useAppStore((state) => state.addTrainingSession);
   const updateTrainingSession = useAppStore((state) => state.updateTrainingSession);
   const trainingSessions = useAppStore((state) => state.trainingSessions);
+  const setEventStatus = useAppStore((state) => state.setEventStatus);
+  const router = useRouter();
 
   const requestedClientId = searchParams.get("clientId") ?? "";
   const requestedDogId = searchParams.get("dogId") ?? "";
   // sessionId presente => modo edição (atualiza o MESMO treino, não cria novo).
   const requestedSessionId = searchParams.get("sessionId") ?? "";
+  const requestedEventId = searchParams.get("eventId") ?? "";
 
   const [selectedClientId, setSelectedClientId] = useState(requestedClientId || clients[0]?.id || "");
   const [selectedDogId, setSelectedDogId] = useState(requestedDogId || clients[0]?.dogs[0]?.id || "");
@@ -576,8 +579,15 @@ export default function RegistroTreinoClientPage() {
         return;
       }
 
-      setMessage(isEditing ? "Treino atualizado com sucesso!" : "Treino registrado com sucesso!");
-      if (!isEditing) resetForm();
+      // Veio de um agendamento? Marca o evento como "Confirmado" — assim ele
+      // deixa de aparecer como "Pendente" na agenda depois do treino registrado.
+      if (requestedEventId) {
+        await setEventStatus(requestedEventId, "Confirmado");
+      }
+      // Volta para a lista de treinos do MESMO cão.
+      const backUrl = `/treinos?clientId=${selectedClientId}&dogId=${selectedDogId}`;
+      resetForm();
+      router.push(backUrl);
     } catch {
       setError("Ocorreu um erro no processamento.");
     } finally {

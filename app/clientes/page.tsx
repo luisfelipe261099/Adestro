@@ -222,8 +222,8 @@ export default function ClientsPage() {
   const [saveError, setSaveError] = useState("");
 
   // Busca Automática de CEP
-  const handleLookupCEP = async () => {
-    const cleanCEP = addrZipCode.replace(/\D/g, "");
+  const handleLookupCEP = async (cepValue?: string) => {
+    const cleanCEP = (cepValue ?? addrZipCode).replace(/\D/g, "");
     if (cleanCEP.length !== 8) return;
     setIsCEPLoading(true);
     try {
@@ -718,13 +718,18 @@ export default function ClientsPage() {
                     <div className="flex gap-2">
                       <input
                         value={addrZipCode}
-                        onChange={(e) => setAddrZipCode(maskCEP(e.target.value))}
+                        onChange={(e) => {
+                          const masked = maskCEP(e.target.value);
+                          setAddrZipCode(masked);
+                          // Busca automática assim que completa os 8 dígitos.
+                          if (masked.replace(/\D/g, "").length === 8) handleLookupCEP(masked);
+                        }}
                         placeholder="CEP (somente números)"
                         className="flex-1 min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                       />
                       <button
                         type="button"
-                        onClick={handleLookupCEP}
+                        onClick={() => handleLookupCEP()}
                         disabled={isCEPLoading}
                         className="rounded-md bg-sky-100 px-3 text-xs font-semibold text-[var(--foreground)] hover:bg-sky-200"
                       >

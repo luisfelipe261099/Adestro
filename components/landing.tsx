@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { BrandMark } from "@/components/brand-mark";
+
 import {
   IconArrowRight,
   IconCalendar,
@@ -819,9 +821,7 @@ export function Landing() {
           className={`${container} flex flex-col items-center justify-between gap-6 py-10 sm:flex-row`}
         >
           <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--accent)] text-[11px] font-bold text-white">
-              A
-            </span>
+            <BrandMark className="h-7 w-7" />
             <span className="text-[15px] font-semibold tracking-tight">
               Adestro
             </span>

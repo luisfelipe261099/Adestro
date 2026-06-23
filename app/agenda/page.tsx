@@ -9,7 +9,7 @@ import { DateField } from "@/components/date-field";
 import { EventParticipants } from "@/components/event-participants";
 import { useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
-import { downloadIcs, googleCalendarUrl, googleMapsLink, type IcsEvent } from "@/lib/calendar-ics";
+import { googleCalendarUrl, googleMapsLink, type IcsEvent } from "@/lib/calendar-ics";
 
 type EventStatus = "Confirmado" | "Pendente" | "Cancelado" | "Aguardando" | "Recorrente";
 type ViewMode = "dia" | "semana" | "mes";
@@ -368,11 +368,6 @@ export default function SchedulePage() {
     window.open(googleMapsLink(address), "_blank", "noopener,noreferrer");
   }
 
-  // Export iCal .ics file
-  function handleExportICS(event: { id: string; day: string; time: string; dog: string; client: string; plan?: string }) {
-    downloadIcs(`evento-adestramento-${event.id}`, [eventToIcs(event)]);
-  }
-
   function handleOpenGoogleCalendar(event: { id: string; day: string; time: string; dog: string; client: string; plan?: string }) {
     window.open(googleCalendarUrl(eventToIcs(event)), "_blank", "noopener,noreferrer");
   }
@@ -693,15 +688,6 @@ export default function SchedulePage() {
                               title="Abrir no Google Calendar"
                             >
                               📆 Google
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleExportICS(event)}
-                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-indigo-700 hover:bg-indigo-50"
-                              title="Baixar .ics para Apple Calendar / Outlook"
-                            >
-                              <TinyIcon name="export" />
-                              .ics
                             </button>
                           </div>
 

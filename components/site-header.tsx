@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
 import { homeRouteForRole } from "@/lib/routes";
+import { BrandMark } from "@/components/brand-mark";
 import { NotificationsBell } from "@/components/notifications-bell";
 import {
   IconCalendar,
@@ -144,9 +145,7 @@ export function SiteHeader() {
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           {/* Logo */}
           <Link href={isAuthenticated ? homeRouteForRole(userRole) : "/"} className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--accent)] text-[11px] font-bold text-white">
-              A
-            </span>
+            <BrandMark className="h-7 w-7" />
             <span className="text-[15px] font-semibold tracking-tight text-[var(--foreground)]">Adestro</span>
           </Link>
 
