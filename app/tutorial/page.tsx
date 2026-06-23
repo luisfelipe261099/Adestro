@@ -98,7 +98,7 @@ const featureHighlights = [
   },
   {
     icon: "☀️",
-    title: "Brief do dia no Dashboard",
+    title: "Resumo do dia no Dashboard",
     text: "Cron prepara lembretes wa.me prontos pra disparar. Você abre o app de manhã e dispara em 3-4 toques.",
   },
   {
@@ -212,7 +212,7 @@ export default function TutorialPage() {
               Quer um tour de 2 minutos pelo sistema?
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-700">
-              Em 10 passos eu te mostro o sininho, o brief do dia, a agenda, o registro de treino com IA, o
+              Em 10 passos eu te mostro o sininho, o resumo do dia, a agenda, o registro de treino com IA, o
               financeiro e o admin. O app navega sozinho — você só clica em Próximo.
             </p>
           </div>

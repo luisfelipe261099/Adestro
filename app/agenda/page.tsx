@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { DateField } from "@/components/date-field";
 import { EventParticipants } from "@/components/event-participants";
 import { useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
@@ -1094,11 +1095,10 @@ export default function SchedulePage() {
               <div className="mt-4 grid gap-3">
                 <div className="grid gap-1">
                   <label className="text-[11px] font-medium text-[var(--muted)]">Nova data</label>
-                  <input
-                    type="date"
+                  <DateField
                     value={reschedDay}
                     onChange={(e) => setReschedDay(e.target.value)}
-                    className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                    className="w-full"
                   />
                 </div>
                 <div className="grid gap-1">

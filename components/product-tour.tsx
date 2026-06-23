@@ -58,7 +58,7 @@ const DEFAULT_STEPS: TourStep[] = [
     id: "brief",
     route: "/dashboard",
     selector: '[data-tour="brief"]',
-    title: "Brief do Dia (resumo automático)",
+    title: "Resumo do Dia (automático)",
     description:
       "É o resumo automático do seu dia: lembretes de WhatsApp para os clientes que têm aula amanhã e treinos que faltam registrar. Cada item já abre o WhatsApp com a mensagem pronta — você só revisa e envia.",
     placement: "top",
@@ -113,7 +113,7 @@ const DEFAULT_STEPS: TourStep[] = [
     selector: '[data-tour="settings-alerts"]',
     title: "Personalizar alertas",
     description:
-      "Configure quando os lembretes saem, horário do brief matinal, % mínimo do streak. Tudo se adapta ao seu fluxo.",
+      "Configure quando os lembretes saem, horário do resumo matinal, % mínimo do streak. Tudo se adapta ao seu fluxo.",
     placement: "top",
   },
   {

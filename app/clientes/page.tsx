@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { DateField } from "@/components/date-field";
 import { TagsEditor } from "@/components/tags-editor";
 import { useAppStore } from "@/lib/app-store";
 import { googleMapsLink } from "@/lib/calendar-ics";
@@ -832,8 +833,7 @@ export default function ClientsPage() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="grid gap-1">
                         <label className="text-[10px] font-medium text-[var(--muted)]">Nascimento (calcula idade)</label>
-                        <input
-                          type="date"
+                        <DateField
                           value={dogBirthDate}
                           max={new Date().toISOString().slice(0, 10)}
                           onChange={(e) => {
@@ -841,7 +841,7 @@ export default function ClientsPage() {
                             const computed = dogAgeFromBirthDate(e.target.value);
                             if (computed) setAge(computed);
                           }}
-                          className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                          className="w-full min-w-0"
                         />
                       </div>
                       <div className="grid gap-1">

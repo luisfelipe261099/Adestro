@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { DateField } from "@/components/date-field";
 import { AudioTranscriber } from "@/components/audio-transcriber";
 import { SessionAiChat } from "@/components/session-ai-chat";
 import { type TrainingMediaItem, useAppStore } from "@/lib/app-store";
@@ -717,11 +718,10 @@ export default function RegistroTreinoClientPage() {
             <div className="grid gap-2 sm:grid-cols-3">
               <label className="grid gap-1 sm:col-span-1">
                 <span className="text-xs font-medium text-[var(--muted)]">Data do treino</span>
-                <input
-                  type="date"
+                <DateField
                   value={sessionDate}
                   onChange={(event) => setSessionDate(event.target.value)}
-                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+                  className="w-full"
                   required
                 />
               </label>

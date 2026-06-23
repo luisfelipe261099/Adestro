@@ -463,7 +463,7 @@ export default function ConfiguracoesPage() {
                 <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Operacional</p>
                 <h2 className="text-base font-semibold text-amber-950">Configurações de alertas</h2>
                 <p className="mt-0.5 text-[11px] text-amber-800">
-                  Define quando o brief diário e os lembretes do cliente são preparados.
+                  Define quando o resumo diário e os lembretes do cliente são preparados.
                 </p>
               </div>
               <Link
@@ -514,7 +514,7 @@ export default function ConfiguracoesPage() {
                 </label>
 
                 <label className="grid gap-1 text-[10px] font-bold uppercase text-amber-900">
-                  Horário do brief matinal
+                  Horário do resumo matinal
                   <select
                     value={alerts.morningBriefHour}
                     onChange={(event) =>

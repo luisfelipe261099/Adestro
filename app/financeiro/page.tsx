@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
+import { DateField } from "@/components/date-field";
 import { useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
 import { buildPixPayload, isPixKey } from "@/lib/pix";
@@ -478,12 +479,11 @@ export default function FinanceiroPage() {
 
                         <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
                           Data de Início
-                          <input
-                            type="date"
+                          <DateField
                             value={contractStartDate}
                             onChange={(e) => setContractStartDate(e.target.value)}
                             required
-                            className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                            className="w-full"
                           />
                         </label>
                       </div>
@@ -818,9 +818,9 @@ export default function FinanceiroPage() {
                       ))}
                       {extratoPeriod === "intervalo" && (
                         <div className="flex items-center gap-2">
-                          <input type="date" value={extratoStart} onChange={(e) => setExtratoStart(e.target.value)} className="rounded-md border border-[var(--border)] px-2 py-1 text-xs" />
+                          <DateField value={extratoStart} onChange={(e) => setExtratoStart(e.target.value)} />
                           <span className="text-xs text-[var(--muted)]">até</span>
-                          <input type="date" value={extratoEnd} onChange={(e) => setExtratoEnd(e.target.value)} className="rounded-md border border-[var(--border)] px-2 py-1 text-xs" />
+                          <DateField value={extratoEnd} onChange={(e) => setExtratoEnd(e.target.value)} />
                         </div>
                       )}
                     </div>

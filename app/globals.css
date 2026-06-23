@@ -225,6 +225,29 @@ body {
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
+/* ─── Campo de data unificado (componente <DateField>) ─────────────────────── */
+.date-field {
+	border-radius: 0.375rem;
+	border: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--foreground);
+	padding: 0.5rem 0.75rem;
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+	transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.date-field:focus {
+	outline: none;
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.date-field::-webkit-calendar-picker-indicator {
+	cursor: pointer;
+	opacity: 0.55;
+	transition: opacity 120ms ease;
+}
+.date-field::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
 /* ─── Cards coloridos do dashboard (atenção por cor) ───────────────────────── */
 .stat-card {
 	position: relative;

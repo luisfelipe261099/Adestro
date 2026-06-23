@@ -122,7 +122,7 @@ export async function GET(request: Request) {
         for (const sub of subs) {
           const result = await sendPush(
             { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.authKey } },
-            { title: "☀️ Brief do dia — Adestro", body, url: "/dashboard", tag: "daily-brief" },
+            { title: "☀️ Resumo do dia — Adestro", body, url: "/dashboard", tag: "daily-brief" },
           );
           if (!result.ok && (result.status === 404 || result.status === 410)) {
             await prisma.pushSubscription.deleteMany({
