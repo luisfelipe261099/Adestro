@@ -66,6 +66,7 @@ export type DogTrainingSession = {
   nextFocus?: string;
   nextCommands: string[];
   nextTasks: string[];
+  behaviorScores?: Record<string, number>;
   dog?: {
     name: string;
     breed: string;

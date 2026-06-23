@@ -43,6 +43,7 @@ export async function GET() {
         media: JSON.parse(ds.media || "[]"),
         nextCommands: JSON.parse(ds.nextCommands || "[]"),
         nextTasks: JSON.parse(ds.nextTasks || "[]"),
+        behaviorScores: JSON.parse(ds.behaviorScores || "{}"),
       })),
     }))
   );
@@ -85,6 +86,7 @@ export async function POST(request: Request) {
       nextFocus?: string;
       nextCommands?: string[];
       nextTasks?: string[];
+      behaviorScores?: Record<string, number>;
     }>;
   };
 
@@ -126,6 +128,7 @@ export async function POST(request: Request) {
           nextFocus: ds.nextFocus ?? "",
           nextCommands: JSON.stringify(ds.nextCommands ?? []),
           nextTasks: JSON.stringify(ds.nextTasks ?? []),
+          behaviorScores: JSON.stringify(ds.behaviorScores ?? {}),
         },
       });
 
@@ -231,6 +234,7 @@ export async function PATCH(request: Request) {
       nextFocus?: string;
       nextCommands?: string[];
       nextTasks?: string[];
+      behaviorScores?: Record<string, number>;
     }>;
   };
 
@@ -279,6 +283,7 @@ export async function PATCH(request: Request) {
           nextFocus: ds.nextFocus ?? "",
           nextCommands: JSON.stringify(ds.nextCommands ?? []),
           nextTasks: JSON.stringify(ds.nextTasks ?? []),
+          behaviorScores: JSON.stringify(ds.behaviorScores ?? {}),
         },
       });
     }
