@@ -1056,7 +1056,7 @@ export function PortalPublicClient({ token }: { token: string }) {
             )}
           </div>
 
-          <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
             {sessionGallery.map((item) => (
               <button
                 key={item.id}

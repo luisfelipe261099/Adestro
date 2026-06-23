@@ -572,7 +572,7 @@ export default function ClientsPage() {
 
         {/* Toolbar: busca + tabs + filtros */}
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <label className="flex h-9 flex-1 min-w-[200px] items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--muted)]">
+          <label className="flex h-9 flex-1 min-w-[120px] sm:min-w-[200px] items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--muted)]">
             <SmallIcon name="search" />
             <input
               value={searchTerm}
@@ -1003,7 +1003,7 @@ export default function ClientsPage() {
                   <div className="grid gap-2.5 animate-in fade-in duration-200">
                     
                     {/* Temperamento básico */}
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <label className="grid gap-1 text-[9px] font-bold uppercase text-[var(--muted)]">
                         Energia
                         <select

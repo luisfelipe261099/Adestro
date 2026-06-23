@@ -51,7 +51,7 @@ export function MonthlyReport({ report, onDownloadPDF }: MonthlyReportProps) {
       </div>
 
       {/* Métricas Principais */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="rounded-lg bg-white p-4 shadow">
           <p className="text-sm text-gray-600">Sessões Realizadas</p>
           <p className="text-3xl font-bold text-blue-600">{report.sessionsCompleted}</p>
