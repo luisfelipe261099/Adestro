@@ -7,6 +7,7 @@ import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DateField } from "@/components/date-field";
+import { BEHAVIOR_CATEGORIES } from "@/lib/behavior";
 import { AudioTranscriber } from "@/components/audio-transcriber";
 import { SessionAiChat } from "@/components/session-ai-chat";
 import { type TrainingMediaItem, useAppStore } from "@/lib/app-store";
@@ -101,7 +102,7 @@ interface CommandItem {
 }
 
 // Seções numeradas (1 a 8) — antes eram letras A–I.
-type AccordionSection = "1" | "2" | "3" | "4" | "5" | "6" | "7";
+type AccordionSection = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 
 function todayInputValue(): string {
   const d = new Date();
@@ -198,6 +199,9 @@ export default function RegistroTreinoClientPage() {
   const [nextTasks, setNextTasks] = useState<NextHomeworkTask[]>([]);
   const [newNextTaskText, setNewNextTaskText] = useState("");
 
+  // SEÇÃO 8: Evolução comportamental (nota 0-5 por categoria)
+  const [behaviorScores, setBehaviorScores] = useState<Record<string, number>>({});
+
   const selectedClient = useMemo(
     () => clients.find((client) => client.id === selectedClientId) ?? clients[0],
     [clients, selectedClientId]
@@ -268,6 +272,7 @@ export default function RegistroTreinoClientPage() {
           if (ds.nextFocus && !plan.includes(ds.nextFocus)) plan.unshift(ds.nextFocus);
           setNextPlan(plan);
           setNextTasks((ds.nextTasks ?? []).map((t: string) => ({ text: t, recurrence: "daily" as const, weekdays: [] })));
+          setBehaviorScores(ds.behaviorScores ?? {});
         }
         setHydratedEdit(true);
         return;
@@ -516,6 +521,7 @@ export default function RegistroTreinoClientPage() {
       nextCommands: nextPlan,
       nextTasks: nextTasks.map((t) => t.text),
       nextTaskOptions: nextTasks.map((t) => ({ text: t.text, recurrence: t.recurrence, weekdays: t.weekdays })),
+      behaviorScores,
     }));
 
     const dogNameLabel =
@@ -1218,6 +1224,35 @@ export default function RegistroTreinoClientPage() {
                       💾 Salvar estas nos meus modelos
                     </button>
                   )}
+                </div>
+              )}
+
+              {/* SEÇÃO 8: Evolução Comportamental (nota 0-5 por categoria) */}
+              {renderSectionHeader("8", "Evolução Comportamental")}
+              {expandedSection === "8" && (
+                <div className="p-4 space-y-3">
+                  <p className="text-[11px] text-[var(--muted)]">
+                    Dê uma nota (0–5) para cada área. Isso alimenta a evolução do cão ao longo das sessões.
+                  </p>
+                  <div className="space-y-2">
+                    {BEHAVIOR_CATEGORIES.map((cat) => (
+                      <div
+                        key={cat.key}
+                        className="flex items-center justify-between gap-2 rounded-md bg-[var(--surface-2)]/40 p-2.5"
+                      >
+                        <span className="text-xs font-medium text-[var(--foreground)]">{cat.label}</span>
+                        <div className="flex items-center gap-2">
+                          <StarRating
+                            value={behaviorScores[cat.key] ?? 0}
+                            onChange={(rating) => setBehaviorScores((prev) => ({ ...prev, [cat.key]: rating }))}
+                          />
+                          <span className="w-7 text-right text-xs font-bold text-[var(--foreground)]">
+                            {behaviorScores[cat.key] ?? 0}/5
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

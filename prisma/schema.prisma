@@ -359,6 +359,7 @@ model DogTrainingSession {
   nextFocus   String?         @db.Text
   nextCommands String?        @db.Text     // JSON list
   nextTasks   String?         @db.Text     // JSON list
+  behaviorScores String?      @db.Text     // JSON { categoria: nota 0-5 } — evolução comportamental
 
   createdAt   DateTime        @default(now())
 

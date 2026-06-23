@@ -7,6 +7,7 @@ import { FormEvent, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { useAppStore } from "@/lib/app-store";
+import { behaviorLabel } from "@/lib/behavior";
 
 type DraftTrainingNote = {
   id: string;
@@ -737,6 +738,23 @@ export default function TrainingPage() {
                                     {ds.nextTasks.map((t: string, idx: number) => (
                                       <li key={idx} className="text-slate-700">🏠 {t}</li>
                                     ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* Evolução Comportamental (notas 0-5) */}
+                              {ds.behaviorScores && Object.keys(ds.behaviorScores).length > 0 && (
+                                <div>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">Evolução Comportamental</p>
+                                  <ul className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 pl-1">
+                                    {Object.entries(ds.behaviorScores)
+                                      .filter(([, v]) => Number(v) > 0)
+                                      .map(([k, v]) => (
+                                        <li key={k} className="flex items-center justify-between text-slate-700">
+                                          <span>{behaviorLabel(k)}</span>
+                                          <span className="font-semibold">{Number(v)}/5</span>
+                                        </li>
+                                      ))}
                                   </ul>
                                 </div>
                               )}

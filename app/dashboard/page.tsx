@@ -8,6 +8,7 @@ import { AttentionDogs } from "@/components/attention-dogs";
 import { AuthGuard } from "@/components/auth-guard";
 import { DailyBriefCard } from "@/components/daily-brief-card";
 import { DayBoard } from "@/components/day-board";
+import { ClientFollowup } from "@/components/client-followup";
 import {
   IconAlert,
   IconCalendar,
@@ -250,6 +251,11 @@ export default function DashboardPage() {
           <div data-tour="brief">
             <DailyBriefCard />
           </div>
+        </div>
+
+        {/* Acompanhamento dos clientes — adesão e silêncio (Fase 2) */}
+        <div className="mt-6">
+          <ClientFollowup />
         </div>
       </main>
     </AuthGuard>

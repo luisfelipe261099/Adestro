@@ -19,6 +19,7 @@ export type DogProfile = {
   weight: string;
   photoUrl?: string;
   trainingTypes: string[];
+  sessionsTotal?: number; // total de sessões do(s) contrato(s) ativo(s) — p/ progresso
 };
 
 export type ClientProfile = {
@@ -65,6 +66,7 @@ export type DogTrainingSession = {
   nextFocus?: string;
   nextCommands: string[];
   nextTasks: string[];
+  behaviorScores?: Record<string, number>;
   dog?: {
     name: string;
     breed: string;
@@ -1026,6 +1028,7 @@ export const useAppStore = create<AppState>()(
                 try { return JSON.parse(String(d.trainingTypes ?? "[]")); }
                 catch { return []; }
               })(),
+              sessionsTotal: Number(d.sessionsTotal) || 0,
             })),
           }));
 
