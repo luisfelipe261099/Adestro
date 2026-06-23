@@ -595,21 +595,35 @@ export default function RegistroTreinoClientPage() {
     }
   }
 
-  const renderSectionHeader = (num: AccordionSection, name: string) => {
+  const renderSectionHeader = (num: AccordionSection, name: string, optional = false) => {
     const isExpanded = expandedSection === num;
     return (
       <button
         type="button"
         onClick={() => setExpandedSection(isExpanded ? "1" : num)}
-        className="flex w-full items-center justify-between border-b border-[var(--border)] bg-[var(--surface-2)]/40 px-4 py-3.5 text-left font-semibold text-[var(--foreground)] hover:bg-[var(--accent-soft)] transition-colors"
+        className={`flex w-full items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3 text-left transition-colors hover:bg-[var(--surface-2)] ${
+          isExpanded ? "bg-[var(--surface-2)]" : "bg-[var(--surface)]"
+        }`}
       >
-        <span className="flex items-center gap-2.5 text-sm">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-[11px] font-bold text-white">
-            {num}
-          </span>
+        <span className="flex items-center gap-2 text-sm font-semibold text-[var(--foreground)]">
           {name}
+          {optional ? (
+            <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
+              opcional
+            </span>
+          ) : null}
         </span>
-        <span className="text-xs text-[var(--muted)]">{isExpanded ? "Recolher ▲" : "Expandir ▼"}</span>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`h-4 w-4 shrink-0 text-[var(--muted)] transition-transform ${isExpanded ? "rotate-180" : ""}`}
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
       </button>
     );
   };
@@ -944,7 +958,7 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 4: Notas Privadas */}
-              {renderSectionHeader("3", "Notas Privadas (Confidencial)")}
+              {renderSectionHeader("3", "Notas Privadas (Confidencial)", true)}
               {expandedSection === "3" && (
                 <div className="p-4">
                   <p className="mb-2 text-[10px] text-rose-700">⚠️ Visível apenas para adestradores. Nunca compartilhado com o cliente.</p>
@@ -959,7 +973,7 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 5: Transcrição & IA */}
-              {renderSectionHeader("4", "Transcrição de Áudio e Análise de IA")}
+              {renderSectionHeader("4", "Transcrição de Áudio e Análise de IA", true)}
               {expandedSection === "4" && (
                 <div className="p-4 space-y-3.5">
                   <div>
@@ -1022,7 +1036,7 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 6: Galeria */}
-              {renderSectionHeader("5", "Galeria de Mídias do Treino")}
+              {renderSectionHeader("5", "Galeria de Mídias do Treino", true)}
               {expandedSection === "5" && (
                 <div className="p-4 space-y-3">
                   <p className="text-[11px] text-[var(--muted)]">Anexe fotos demonstrativas da aula. O sistema comprime as imagens.</p>
@@ -1059,7 +1073,7 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 7: Plano do Próximo Treino (Foco + comandos, com INCLUIR) */}
-              {renderSectionHeader("6", "Plano do Próximo Treino")}
+              {renderSectionHeader("6", "Plano do Próximo Treino", true)}
               {expandedSection === "6" && (
                 <div className="p-4 space-y-2">
                   <p className="text-[11px] text-[var(--muted)]">
@@ -1110,7 +1124,7 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 8: Dever de Casa */}
-              {renderSectionHeader("7", "Dever de Casa — Tarefas do Cliente")}
+              {renderSectionHeader("7", "Dever de Casa — Tarefas do Cliente", true)}
               {expandedSection === "7" && (
                 <div className="p-4 space-y-3">
                   <p className="text-[11px] text-[var(--muted)]">
@@ -1238,7 +1252,7 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 8: Evolução Comportamental (nota 0-5 por categoria) */}
-              {renderSectionHeader("8", "Evolução Comportamental")}
+              {renderSectionHeader("8", "Evolução Comportamental", true)}
               {expandedSection === "8" && (
                 <div className="p-4 space-y-3">
                   <p className="text-[11px] text-[var(--muted)]">
