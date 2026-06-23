@@ -81,6 +81,10 @@ export function AttentionDogs() {
                     {item.clientName}
                     {item.dog.breed ? ` · ${item.dog.breed}` : ""}
                   </p>
+                  <p className="truncate text-[10.5px] text-[var(--muted)]">
+                    {item.plan ? `Plano ${item.plan}` : "Sem plano"} · {item.sessionCount}{" "}
+                    {item.sessionCount === 1 ? "treino" : "treinos"}
+                  </p>
                 </div>
                 <span className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium text-[var(--muted-strong)]">
                   <span className={`h-2 w-2 rounded-full ${DOT[item.level]}`} />

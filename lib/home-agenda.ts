@@ -84,6 +84,8 @@ export type DogAttention = {
   level: AttentionLevel;
   label: string;
   href: string;
+  sessionCount: number; // treinos já registrados deste cão (progresso)
+  plan: string; // plano do cliente
 };
 
 const ATTENTION_ORDER: Record<AttentionLevel, number> = { red: 0, amber: 1, green: 2 };
@@ -103,6 +105,10 @@ export function computeDogAttention(
   now: number,
 ): DogAttention[] {
   const recorded = new Set(sessions.map((s) => s.dogId).filter(Boolean) as string[]);
+  const countByDog = new Map<string, number>();
+  for (const s of sessions) {
+    if (s.dogId) countByDog.set(s.dogId, (countByDog.get(s.dogId) ?? 0) + 1);
+  }
   const list: DogAttention[] = [];
 
   for (const client of clients) {
@@ -132,7 +138,16 @@ export function computeDogAttention(
         href = "/clientes";
       }
 
-      list.push({ clientId: client.id, clientName: client.name, dog, level, label, href });
+      list.push({
+        clientId: client.id,
+        clientName: client.name,
+        dog,
+        level,
+        label,
+        href,
+        sessionCount: countByDog.get(dog.id) ?? 0,
+        plan: client.plan,
+      });
     }
   }
 
