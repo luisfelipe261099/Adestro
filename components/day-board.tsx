@@ -1,37 +1,31 @@
 "use client";
 
-// Quadro do Dia — kanban de status das aulas de hoje (Frente 5 da revisão).
-// As colunas são DERIVADAS da realidade do dia (horário + se o treino do cão já
-// foi registrado), então os cards fluem sozinhos "A fazer → Em andamento →
-// Concluído" conforme o dia anda. Clicar num card abre a ação real (registrar /
-// ver histórico), em vez de um arrastar que precisaria mutar dados.
+// Quadro do Dia — kanban de status do dia (Frente 5 da revisão).
+// Colunas A fazer / Em andamento / Concluído. As AULAS são derivadas da realidade
+// do dia (horário + se o treino do cão já foi registrado), então fluem sozinhas
+// conforme o dia anda. Somam-se a elas as pendências do dia: cobranças a enviar
+// (do store) e relatórios a aprovar/enviar (status != "Enviado"). Clicar abre a
+// ação real — nada de arrastar que precisaria mutar dados.
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppStore } from "@/lib/app-store";
 import { eventTimestamp } from "@/lib/home-agenda";
 
-type CardKind = "agendada" | "em-aula" | "registrar" | "registrado";
-
 type BoardCard = {
   id: string;
-  time: string;
-  dog: string;
-  client: string;
+  lead: string; // chip à esquerda: horário "09:00" ou emoji
+  label: string; // linha principal
+  sub?: string; // linha secundária
+  tag: string; // etiqueta à direita
   href: string;
-  ts: number;
-  kind: CardKind;
+  sortKey: number; // ordenação dentro da coluna
 };
+
+type ReportRow = { id: string; month?: string; status?: string };
 
 const WEEKDAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const WINDOW_MS = 90 * 60_000; // aula "em andamento" até 90min após o início
-
-const KIND_LABEL: Record<CardKind, string> = {
-  agendada: "Agendada",
-  "em-aula": "Em aula",
-  registrar: "Registrar",
-  registrado: "✓ Registrado",
-};
 
 function registroHref(clientId?: string, dogId?: string): string {
   const params = new URLSearchParams();
@@ -41,11 +35,31 @@ function registroHref(clientId?: string, dogId?: string): string {
   return qs ? `/treinos/registro?${qs}` : "/treinos/registro";
 }
 
+function brl(value: number): string {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
+}
+
 export function DayBoard() {
   const events = useAppStore((s) => s.calendarEvents);
   const sessions = useAppStore((s) => s.trainingSessions);
+  const payments = useAppStore((s) => s.payments);
 
-  const { todo, doing, done, total } = useMemo(() => {
+  // Relatórios não ficam no store — busca leve só para o quadro.
+  const [reports, setReports] = useState<ReportRow[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/relatorios", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (!cancelled && Array.isArray(data)) setReports(data as ReportRow[]);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const { todo, doing, done } = useMemo(() => {
     const now = Date.now();
     const today = new Date();
     const todayName = WEEKDAYS[today.getDay()] ?? "";
@@ -55,66 +69,100 @@ export function DayBoard() {
 
     const sessionDogIds = new Set(sessions.map((s) => s.dogId).filter(Boolean) as string[]);
 
+    const todo: BoardCard[] = [];
+    const doing: BoardCard[] = [];
+    const done: BoardCard[] = [];
+
+    // 1) Aulas de hoje
     const todayEvents = events.filter((e) => {
       if (/cancel/i.test(e.status)) return false;
       const day = e.day.trim();
       return day === todayStr || day.toLowerCase().includes(todayName.toLowerCase());
     });
 
-    const todo: BoardCard[] = [];
-    const doing: BoardCard[] = [];
-    const done: BoardCard[] = [];
-
     for (const e of todayEvents) {
       const ts = eventTimestamp(e.day, e.time);
       const registered = e.dogId ? sessionDogIds.has(e.dogId) : false;
-      const base = {
-        id: e.id,
-        time: e.time,
-        dog: e.dog || "Cão",
-        client: e.client || "",
-        ts,
+      const card: BoardCard = {
+        id: `aula-${e.id}`,
+        lead: e.time || "—",
+        label: `🐕 ${e.dog || "Cão"}`,
+        sub: e.client || undefined,
+        tag: "",
+        href: registroHref(e.clientId, e.dogId),
+        sortKey: ts,
       };
 
       if (registered) {
-        done.push({ ...base, kind: "registrado", href: registroHref(e.clientId, e.dogId) });
+        done.push({ ...card, tag: "✓ Registrado" });
       } else if (ts <= now && now <= ts + WINDOW_MS) {
-        doing.push({ ...base, kind: "em-aula", href: registroHref(e.clientId, e.dogId) });
+        doing.push({ ...card, tag: "Em aula" });
       } else if (now < ts) {
-        todo.push({ ...base, kind: "agendada", href: registroHref(e.clientId, e.dogId) });
+        todo.push({ ...card, tag: "Agendada" });
       } else {
-        // já passou e não foi registrada → precisa registrar
-        todo.push({ ...base, kind: "registrar", href: registroHref(e.clientId, e.dogId) });
+        todo.push({ ...card, tag: "Registrar" });
       }
     }
 
-    const byTime = (a: BoardCard, b: BoardCard) => a.ts - b.ts;
-    todo.sort(byTime);
-    doing.sort(byTime);
-    done.sort(byTime);
+    // 2) Cobranças a enviar (pendentes) → A fazer
+    for (const p of payments) {
+      if (p.status === "Pago") continue;
+      todo.push({
+        id: `cobranca-${p.id}`,
+        lead: "💰",
+        label: p.description || "Cobrança",
+        sub: brl(p.amount),
+        tag: "Cobrar",
+        href: "/financeiro",
+        sortKey: 10 ** 13, // depois das aulas
+      });
+    }
 
-    return { todo, doing, done, total: todayEvents.length };
-  }, [events, sessions]);
+    // 3) Relatórios a aprovar/enviar (status != "Enviado") → A fazer
+    for (const r of reports) {
+      if ((r.status ?? "") === "Enviado") continue;
+      todo.push({
+        id: `relatorio-${r.id}`,
+        lead: "📄",
+        label: "Relatório mensal",
+        sub: r.month ? `${r.month} · ${r.status ?? "Rascunho"}` : r.status,
+        tag: "Aprovar",
+        href: "/relatorios",
+        sortKey: 10 ** 13 + 1,
+      });
+    }
 
-  const columns: { key: string; title: string; accent: string; cards: BoardCard[] }[] = [
+    const byKey = (a: BoardCard, b: BoardCard) => a.sortKey - b.sortKey;
+    todo.sort(byKey);
+    doing.sort(byKey);
+    done.sort(byKey);
+
+    return { todo, doing, done };
+  }, [events, sessions, payments, reports]);
+
+  const columns = [
     { key: "todo", title: "A fazer", accent: "text-amber-700 bg-amber-50 border-amber-200", cards: todo },
     { key: "doing", title: "Em andamento", accent: "text-sky-700 bg-sky-50 border-sky-200", cards: doing },
     { key: "done", title: "Concluído", accent: "text-emerald-700 bg-emerald-50 border-emerald-200", cards: done },
   ];
+
+  const totalCards = todo.length + doing.length + done.length;
 
   return (
     <section className="card p-4">
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-[var(--foreground)]">🗂️ Quadro do dia</h2>
-          <p className="text-[11px] text-[var(--muted)]">As aulas de hoje se movem sozinhas conforme você as registra.</p>
+          <p className="text-[11px] text-[var(--muted)]">
+            Aulas, cobranças e relatórios do dia — os cards se movem conforme você resolve cada um.
+          </p>
         </div>
-        <span className="text-[11px] font-medium text-[var(--muted)]">{total} aula(s)</span>
+        <span className="text-[11px] font-medium text-[var(--muted)]">{totalCards} item(ns)</span>
       </header>
 
-      {total === 0 ? (
+      {totalCards === 0 ? (
         <p className="mt-4 rounded-md bg-[var(--surface-2)]/50 p-4 text-center text-xs text-[var(--muted)]">
-          Nenhuma aula agendada para hoje. 🎉
+          Nada pendente para hoje. 🎉
         </p>
       ) : (
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -135,11 +183,11 @@ export function DayBoard() {
                       className="block rounded-md border border-[var(--border)] bg-white p-2 text-xs transition-colors hover:border-[var(--accent)]"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-[11px] font-semibold text-[var(--foreground)]">{c.time}</span>
-                        <span className="text-[9px] font-semibold text-[var(--muted)]">{KIND_LABEL[c.kind]}</span>
+                        <span className="font-mono text-[11px] font-semibold text-[var(--foreground)]">{c.lead}</span>
+                        <span className="text-[9px] font-semibold text-[var(--muted)]">{c.tag}</span>
                       </div>
-                      <p className="mt-0.5 font-semibold leading-snug text-[var(--foreground)]">🐕 {c.dog}</p>
-                      {c.client ? <p className="text-[10px] text-[var(--muted)]">{c.client}</p> : null}
+                      <p className="mt-0.5 font-semibold leading-snug text-[var(--foreground)]">{c.label}</p>
+                      {c.sub ? <p className="text-[10px] text-[var(--muted)]">{c.sub}</p> : null}
                     </Link>
                   ))
                 )}
