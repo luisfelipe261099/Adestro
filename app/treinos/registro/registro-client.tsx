@@ -101,7 +101,7 @@ interface CommandItem {
 }
 
 // Seções numeradas (1 a 8) — antes eram letras A–I.
-type AccordionSection = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
+type AccordionSection = "1" | "2" | "3" | "4" | "5" | "6" | "7";
 
 function todayInputValue(): string {
   const d = new Date();
@@ -387,7 +387,7 @@ export default function RegistroTreinoClientPage() {
             setNextTasks(analysis.recommended_exercises);
           }
           setAiApproved(false);
-          setExpandedSection("5");
+          setExpandedSection("4");
           return;
         }
       }
@@ -768,13 +768,14 @@ export default function RegistroTreinoClientPage() {
             {/* SEÇÕES 1 a 8 */}
             <div className="mt-2 overflow-hidden rounded-md border border-[var(--border)] bg-white">
 
-              {/* SEÇÃO 1: Atividades Trabalhadas */}
-              {renderSectionHeader("1", "Atividades Trabalhadas")}
+              {/* SEÇÃO 1: Atividades e Comandos Trabalhados (Atividades + Comandos unificados na mesma seção) */}
+              {renderSectionHeader("1", "Atividades e Comandos Trabalhados")}
               {expandedSection === "1" && (
                 <div className="p-4 space-y-3">
                   <p className="text-[11px] text-[var(--muted)]">
-                    Selecione das suas atividades salvas ou adicione novas. A seleção fica guardada para reutilizar nos próximos treinos.
+                    Tudo o que foi trabalhado nesta sessão, em duas partes: <b>atividades praticadas</b> (exercícios, com observações) e, mais abaixo, <b>comandos de obediência</b> (avaliados por estrelas). A seleção fica salva para reutilizar.
                   </p>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--accent-text)]">Atividades praticadas</p>
 
                   {activitySuggestions.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
@@ -842,10 +843,10 @@ export default function RegistroTreinoClientPage() {
                 </div>
               )}
 
-              {/* SEÇÃO 2: Comandos de Obediência/Evolução */}
-              {renderSectionHeader("2", "Comandos de Obediência / Evolução")}
-              {expandedSection === "2" && (
-                <div className="p-4 space-y-3">
+              {/* Comandos de obediência — 2ª parte da Seção 1 (mesmo acordeão, sem header próprio) */}
+              {expandedSection === "1" && (
+                <div className="px-4 pb-4 space-y-3 border-t border-[var(--border)] pt-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--accent-text)]">Comandos de obediência (avalie por estrelas)</p>
                   <p className="text-[11px] text-[var(--muted)]">
                     Escolha dos seus comandos salvos ou adicione novos e dê estrelas (1-5) ao desempenho.
                   </p>
@@ -913,8 +914,8 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 3: Resumo Público */}
-              {renderSectionHeader("3", "Resumo Público para o Cliente")}
-              {expandedSection === "3" && (
+              {renderSectionHeader("2", "Resumo Público para o Cliente")}
+              {expandedSection === "2" && (
                 <div className="p-4">
                   <textarea
                     value={description}
@@ -927,8 +928,8 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 4: Notas Privadas */}
-              {renderSectionHeader("4", "Notas Privadas (Confidencial)")}
-              {expandedSection === "4" && (
+              {renderSectionHeader("3", "Notas Privadas (Confidencial)")}
+              {expandedSection === "3" && (
                 <div className="p-4">
                   <p className="mb-2 text-[10px] text-rose-700">⚠️ Visível apenas para adestradores. Nunca compartilhado com o cliente.</p>
                   <textarea
@@ -942,8 +943,8 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 5: Transcrição & IA */}
-              {renderSectionHeader("5", "Transcrição de Áudio e Análise de IA")}
-              {expandedSection === "5" && (
+              {renderSectionHeader("4", "Transcrição de Áudio e Análise de IA")}
+              {expandedSection === "4" && (
                 <div className="p-4 space-y-3.5">
                   <div>
                     <h4 className="text-xs font-bold text-[var(--foreground)]">🎤 Ditado de Notas por Voz</h4>
@@ -1005,8 +1006,8 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 6: Galeria */}
-              {renderSectionHeader("6", "Galeria de Mídias do Treino")}
-              {expandedSection === "6" && (
+              {renderSectionHeader("5", "Galeria de Mídias do Treino")}
+              {expandedSection === "5" && (
                 <div className="p-4 space-y-3">
                   <p className="text-[11px] text-[var(--muted)]">Anexe fotos demonstrativas da aula. O sistema comprime as imagens.</p>
 
@@ -1042,8 +1043,8 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 7: Plano do Próximo Treino (Foco + comandos, com INCLUIR) */}
-              {renderSectionHeader("7", "Plano do Próximo Treino")}
-              {expandedSection === "7" && (
+              {renderSectionHeader("6", "Plano do Próximo Treino")}
+              {expandedSection === "6" && (
                 <div className="p-4 space-y-2">
                   <p className="text-[11px] text-[var(--muted)]">
                     Liste o que fazer no próximo encontro (foco + comandos a reforçar). Use <strong>Incluir</strong> para adicionar cada item.
@@ -1093,8 +1094,8 @@ export default function RegistroTreinoClientPage() {
               )}
 
               {/* SEÇÃO 8: Dever de Casa */}
-              {renderSectionHeader("8", "Dever de Casa — Tarefas do Cliente")}
-              {expandedSection === "8" && (
+              {renderSectionHeader("7", "Dever de Casa — Tarefas do Cliente")}
+              {expandedSection === "7" && (
                 <div className="p-4 space-y-3">
                   <p className="text-[11px] text-[var(--muted)]">
                     Checklist de tarefas de casa para o cliente no portal. Defina a frequência de cada tarefa abaixo — assim o cliente marca todos os dias (ou nos dias certos), não só uma vez.
