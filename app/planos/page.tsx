@@ -189,7 +189,7 @@ export default function TrainerPlansPage() {
             <div className="mt-5 space-y-4">
               <div>
                 <p className="text-sm font-medium text-[var(--muted)]">Forma de pagamento</p>
-                <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {paymentMethods.map((method) => (
                     <button
                       key={method}
@@ -215,7 +215,7 @@ export default function TrainerPlansPage() {
 
               <div>
                 <p className="text-sm font-medium text-[var(--muted)]">Quantidade de aulas</p>
-                <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {lessonPackages.map((lessonPackage) => (
                     <button
                       key={lessonPackage}

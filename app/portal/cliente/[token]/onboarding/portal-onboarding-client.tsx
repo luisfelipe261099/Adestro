@@ -838,7 +838,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
           {formStep === 5 && (
             <div className="grid gap-3 animate-in fade-in duration-200">
               
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <label className="grid gap-1 text-[10px] font-semibold text-slate-500 uppercase">
                   Nível de Energia
                   <select

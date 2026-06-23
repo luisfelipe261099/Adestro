@@ -775,7 +775,7 @@ export default function TrainingPage() {
                       </div>
                     )}
 
-                    <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
                       <button
                         type="button"
                         onClick={() => setExpandedSessionId(isExpanded ? null : session.id)}
@@ -952,7 +952,7 @@ export default function TrainingPage() {
                     </div>
                     {mediaError ? <p className="mt-2 text-xs text-rose-700">{mediaError}</p> : null}
                     {draftMedia.length ? (
-                      <div className="mt-2 grid grid-cols-3 gap-2">
+                      <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {draftMedia.map((media) => (
                           <div key={media.id} className="overflow-hidden rounded-lg border border-[var(--border)] bg-white">
                             <div className="relative h-16 w-full">

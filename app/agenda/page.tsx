@@ -592,7 +592,7 @@ export default function SchedulePage() {
             <section className="mt-3 space-y-2">
               
               {/* Daily Statistics */}
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <article className="rounded-md border border-[var(--border)] bg-white p-2.5 text-center">
                   <p className="text-xl font-bold text-[var(--foreground)]">{eventsForSelectedDay.length}</p>
                   <p className="text-[10px] text-[var(--muted)]">Aulas no dia</p>
@@ -658,7 +658,7 @@ export default function SchedulePage() {
                             </p>
                           )}
 
-                          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-[10px] font-semibold">
+                          <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[10px] font-semibold">
                             <Link href={relatedMeta ? `/treinos/registro?clientId=${relatedMeta.clientId}&dogId=${relatedMeta.dogId}` : "/treinos/registro"} className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-[var(--foreground)] hover:bg-[var(--surface-2)]">
                               <TinyIcon name="notes" />
                               Registrar
