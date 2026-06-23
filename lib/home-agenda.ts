@@ -86,6 +86,9 @@ export type DogAttention = {
   href: string;
   sessionCount: number; // treinos já registrados deste cão (progresso)
   plan: string; // plano do cliente
+  sessionsTotal: number; // total de sessões do contrato ativo (0 = sem plano)
+  progressPct: number; // 0-100 (sessionCount / sessionsTotal)
+  phaseLabel: string; // Inicial / Intermediário / Avançado / Formado / Sem plano
 };
 
 const ATTENTION_ORDER: Record<AttentionLevel, number> = { red: 0, amber: 1, green: 2 };
@@ -138,6 +141,21 @@ export function computeDogAttention(
         href = "/clientes";
       }
 
+      const sessionCount = countByDog.get(dog.id) ?? 0;
+      const sessionsTotal = dog.sessionsTotal ?? 0;
+      const progressPct =
+        sessionsTotal > 0 ? Math.min(100, Math.round((sessionCount / sessionsTotal) * 100)) : 0;
+      const phaseLabel =
+        sessionsTotal === 0
+          ? "Sem plano"
+          : progressPct >= 100
+            ? "Formado"
+            : progressPct >= 67
+              ? "Avançado"
+              : progressPct >= 34
+                ? "Intermediário"
+                : "Inicial";
+
       list.push({
         clientId: client.id,
         clientName: client.name,
@@ -145,8 +163,11 @@ export function computeDogAttention(
         level,
         label,
         href,
-        sessionCount: countByDog.get(dog.id) ?? 0,
+        sessionCount,
         plan: client.plan,
+        sessionsTotal,
+        progressPct,
+        phaseLabel,
       });
     }
   }

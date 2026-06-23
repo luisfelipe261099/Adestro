@@ -82,9 +82,19 @@ export function AttentionDogs() {
                     {item.dog.breed ? ` · ${item.dog.breed}` : ""}
                   </p>
                   <p className="truncate text-[10.5px] text-[var(--muted)]">
-                    {item.plan ? `Plano ${item.plan}` : "Sem plano"} · {item.sessionCount}{" "}
-                    {item.sessionCount === 1 ? "treino" : "treinos"}
+                    {item.plan ? `Plano ${item.plan}` : "Sem plano"} ·{" "}
+                    {item.sessionsTotal > 0
+                      ? `Sessão ${item.sessionCount}/${item.sessionsTotal} · ${item.phaseLabel}`
+                      : `${item.sessionCount} ${item.sessionCount === 1 ? "treino" : "treinos"}`}
                   </p>
+                  {item.sessionsTotal > 0 && (
+                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-2)]">
+                      <div
+                        className="h-full rounded-full bg-[var(--accent)]"
+                        style={{ width: `${item.progressPct}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
                 <span className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium text-[var(--muted-strong)]">
                   <span className={`h-2 w-2 rounded-full ${DOT[item.level]}`} />

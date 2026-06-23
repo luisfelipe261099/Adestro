@@ -19,6 +19,7 @@ export type DogProfile = {
   weight: string;
   photoUrl?: string;
   trainingTypes: string[];
+  sessionsTotal?: number; // total de sessões do(s) contrato(s) ativo(s) — p/ progresso
 };
 
 export type ClientProfile = {
@@ -1026,6 +1027,7 @@ export const useAppStore = create<AppState>()(
                 try { return JSON.parse(String(d.trainingTypes ?? "[]")); }
                 catch { return []; }
               })(),
+              sessionsTotal: Number(d.sessionsTotal) || 0,
             })),
           }));
 

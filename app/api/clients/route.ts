@@ -121,7 +121,23 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(clients);
+  // Total de sessões por cão = soma de sessionsCount dos contratos ATIVOS.
+  // Alimenta "Sessão X de Y" e o progresso do card do cão (Fase 2 — análise GPT).
+  const contracts = await prisma.clientContract.findMany({
+    where:  { trainerId: trainer.id, status: "Ativo" },
+    select: { dogId: true, sessionsCount: true },
+  });
+  const totalByDog = new Map<string, number>();
+  for (const c of contracts) {
+    if (c.dogId) totalByDog.set(c.dogId, (totalByDog.get(c.dogId) ?? 0) + c.sessionsCount);
+  }
+
+  const withTotals = clients.map((client) => ({
+    ...client,
+    dogs: client.dogs.map((dog) => ({ ...dog, sessionsTotal: totalByDog.get(dog.id) ?? 0 })),
+  }));
+
+  return NextResponse.json(withTotals);
 }
 
 // POST /api/clients
