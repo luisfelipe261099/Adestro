@@ -134,7 +134,7 @@ export function NextSessionCard() {
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <Link href={registroHref} className="btn-primary text-[12.5px]">
           <IconArrowRight className="h-3.5 w-3.5" />
-          Iniciar sessão
+          Registrar sessão
         </Link>
         <Link href="/clientes" className="btn-secondary text-[12.5px]">
           Ver ficha do cão

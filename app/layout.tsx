@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 
 import { AppSessionProvider } from "@/components/app-session-provider";
@@ -16,14 +16,14 @@ import { WhatsAppTemplatesLoader } from "@/components/whatsapp-templates-loader"
 
 import "./globals.css";
 
-const inter = Inter({
+const inter = Geist({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
   preload: true,
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains",
   display: "swap",

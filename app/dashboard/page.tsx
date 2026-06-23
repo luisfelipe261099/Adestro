@@ -205,13 +205,19 @@ export default function DashboardPage() {
                 Tour rápido
               </button>
             ) : null}
-            <Link href="/treinos/registro" className="btn-secondary text-[12.5px]">
-              <IconDog className="h-3.5 w-3.5" />
-              Registrar evolução
+            <Link
+              href="/treinos/registro"
+              className="inline-flex h-11 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-5 text-[14px] font-semibold text-[var(--foreground)] shadow-sm transition-colors hover:bg-[var(--surface-2)]"
+            >
+              <IconDog className="h-4 w-4" />
+              Registrar treino
             </Link>
-            <Link href="/agenda?new=true" className="btn-primary text-[12.5px]">
-              <IconPlus className="h-3.5 w-3.5" />
-              Novo atendimento
+            <Link
+              href="/agenda?new=true"
+              className="inline-flex h-11 items-center gap-2 rounded-md bg-[var(--accent)] px-5 text-[14px] font-semibold text-white shadow-sm transition-colors hover:bg-[var(--accent-strong)]"
+            >
+              <IconPlus className="h-4 w-4" />
+              Novo agendamento
             </Link>
           </div>
         </header>

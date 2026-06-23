@@ -15,45 +15,45 @@
 :root {
 	color-scheme: light;
 	/* superfícies — neutros quentes (areia / branco quente) */
-	--background: #f4f1ea;
-	--surface: #fafaf7;
-	--surface-2: #efebe1;
-	--surface-3: #e2dccf;
+	--background: #ffffff;
+	--surface: #ffffff;
+	--surface-2: #f4f4f5;
+	--surface-3: #e4e4e7;
 
 	/* texto — grafite (Opção A do documento) */
-	--foreground: #111827;
-	--foreground-strong: #0c0a09;
-	--muted: #726a62;
-	--muted-strong: #57514b;
+	--foreground: #09090b;
+	--foreground-strong: #000000;
+	--muted: #71717a;
+	--muted-strong: #52525b;
 
 	/* bordas — stone (cinza quente) */
-	--border: #e7e1d6;
-	--border-strong: #d8d0c2;
+	--border: #e4e4e7;
+	--border-strong: #d4d4d8;
 
 	/* accent — verde-petróleo (consultório / profissional, calmo) */
-	--accent: #1e3a3a;
-	--accent-strong: #163230;
-	--accent-soft: #e7eeec;
-	--accent-text: #1e3a3a;
+	--accent: #18181b;
+	--accent-strong: #000000;
+	--accent-soft: #f4f4f5;
+	--accent-text: #18181b;
 
 	/* semantic — verde sálvia do documento para sucesso, tons terrosos quentes */
-	--success: #6b8f71;
-	--success-bg: #eef3ee;
+	--success: #16a34a;
+	--success-bg: #f0fdf4;
 	--warning: #b45309;
-	--warning-bg: #fbf1e2;
-	--danger: #b42318;
-	--danger-bg: #fbebe9;
-	--info: #2c6e6b;
-	--info-bg: #e8f1f0;
+	--warning-bg: #fffbeb;
+	--danger: #dc2626;
+	--danger-bg: #fef2f2;
+	--info: #2563eb;
+	--info-bg: #eff6ff;
 
 	/* paleta dos cards do dashboard (TDAH-friendly: cor = foco)
 	   cores VÍVIDAS e distintas — Azul / Azul claro / Verde / Laranja / Roxo —
 	   conforme a tabela do documento ("cor primordial para atenção em cada ponto"). */
-	--card-blue: #2563eb;        --card-blue-bg: #eff6ff;      --card-blue-border: #bfdbfe;
-	--card-sky: #0ea5e9;         --card-sky-bg: #f0f9ff;       --card-sky-border: #bae6fd;
-	--card-green: #16a34a;       --card-green-bg: #f0fdf4;     --card-green-border: #bbf7d0;
-	--card-orange: #ea580c;      --card-orange-bg: #fff7ed;    --card-orange-border: #fed7aa;
-	--card-purple: #7c3aed;      --card-purple-bg: #f5f3ff;    --card-purple-border: #ddd6fe;
+	--card-blue: #18181b;        --card-blue-bg: #fafafa;      --card-blue-border: #e4e4e7;
+	--card-sky: #3f3f46;         --card-sky-bg: #fafafa;       --card-sky-border: #e4e4e7;
+	--card-green: #16a34a;       --card-green-bg: #f6fef9;     --card-green-border: #dcecdf;
+	--card-orange: #b45309;      --card-orange-bg: #fdfbf5;    --card-orange-border: #ece2d0;
+	--card-purple: #3f3f46;      --card-purple-bg: #fafafa;    --card-purple-border: #e4e4e7;
 
 	/* sombras — quase invisíveis, separação por borda */
 	--shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
@@ -69,30 +69,30 @@
 
 html[data-theme="dark"] {
 	color-scheme: dark;
-	--background: #1a1714;
-	--surface: #232019;
-	--surface-2: #2e2a22;
-	--surface-3: #3b362c;
+	--background: #09090b;
+	--surface: #18181b;
+	--surface-2: #27272a;
+	--surface-3: #3f3f46;
 
-	--foreground: #f5f1e8;
+	--foreground: #fafafa;
 	--foreground-strong: #ffffff;
-	--muted: #a8a095;
-	--muted-strong: #cfc8bc;
+	--muted: #a1a1aa;
+	--muted-strong: #d4d4d8;
 
-	--border: #322e26;
-	--border-strong: #46413a;
+	--border: #27272a;
+	--border-strong: #3f3f46;
 
 	/* accent escuro o bastante p/ texto branco no .btn-primary; texto/links usam --accent-text */
-	--accent: #2f7d74;
-	--accent-strong: #3d978c;
-	--accent-soft: #1e3a3a;
-	--accent-text: #9cc7c0;
+	--accent: #3f3f46;
+	--accent-strong: #52525b;
+	--accent-soft: #27272a;
+	--accent-text: #e4e4e7;
 
-	--card-blue: #60a5fa;        --card-blue-bg: #172554;      --card-blue-border: #1e40af;
-	--card-sky: #38bdf8;         --card-sky-bg: #082f49;       --card-sky-border: #075985;
-	--card-green: #4ade80;       --card-green-bg: #052e16;     --card-green-border: #166534;
-	--card-orange: #fb923c;      --card-orange-bg: #431407;    --card-orange-border: #9a3412;
-	--card-purple: #a78bfa;      --card-purple-bg: #2e1065;    --card-purple-border: #6d28d9;
+	--card-blue: #d4d4d8;        --card-blue-bg: #18181b;      --card-blue-border: #27272a;
+	--card-sky: #a1a1aa;         --card-sky-bg: #18181b;       --card-sky-border: #27272a;
+	--card-green: #4ade80;       --card-green-bg: #0c1f14;     --card-green-border: #14532d;
+	--card-orange: #fb923c;      --card-orange-bg: #271603;    --card-orange-border: #7c2d12;
+	--card-purple: #a1a1aa;      --card-purple-bg: #18181b;    --card-purple-border: #27272a;
 
 	--success: #7ba383;
 	--success-bg: #1e2a20;
