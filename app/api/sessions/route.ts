@@ -148,6 +148,19 @@ export async function POST(request: Request) {
                 },
               });
               if (!existingTask) {
+                // Frequência escolhida no registro (Seção 8) → recorrência do PortalTask,
+                // para o cliente marcar todos os dias / nos dias certos, não só uma vez.
+                const opts = (ds as {
+                  nextTaskOptions?: Array<{ text?: string; recurrence?: string; weekdays?: number[] }>;
+                }).nextTaskOptions;
+                const opt = Array.isArray(opts) ? opts.find((o) => o?.text === textStr) : undefined;
+                const recurrence = ["once", "daily", "weekly"].includes(opt?.recurrence ?? "")
+                  ? (opt!.recurrence as string)
+                  : "once";
+                const weekdays =
+                  recurrence === "weekly" && Array.isArray(opt?.weekdays)
+                    ? opt!.weekdays.filter((d) => Number.isInteger(d) && d >= 0 && d <= 6)
+                    : [];
                 await prisma.portalTask.create({
                   data: {
                     trainerId: trainer.id,
@@ -155,6 +168,8 @@ export async function POST(request: Request) {
                     title: textStr.trim(),
                     description: "Tarefa recomendada de dever de casa.",
                     completed: false,
+                    recurrence,
+                    weekdays: recurrence === "weekly" ? JSON.stringify(weekdays) : null,
                   },
                 });
               }

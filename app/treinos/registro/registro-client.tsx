@@ -191,8 +191,11 @@ export default function RegistroTreinoClientPage() {
   const [nextPlan, setNextPlan] = useState<string[]>([]);
   const [newNextPlanItem, setNewNextPlanItem] = useState("");
 
-  // SEÇÃO 8: Tarefas de Casa (Cliente)
-  const [nextTasks, setNextTasks] = useState<string[]>([]);
+  // SEÇÃO 8: Tarefas de Casa (Cliente) — cada tarefa carrega a frequência
+  // (once / daily / weekly + dias). Vira a recorrência do PortalTask no portal,
+  // pra o cliente não marcar só uma vez quando a tarefa é recorrente.
+  type NextHomeworkTask = { text: string; recurrence: "once" | "daily" | "weekly"; weekdays: number[] };
+  const [nextTasks, setNextTasks] = useState<NextHomeworkTask[]>([]);
   const [newNextTaskText, setNewNextTaskText] = useState("");
 
   const selectedClient = useMemo(
@@ -264,7 +267,7 @@ export default function RegistroTreinoClientPage() {
           const plan = [...(ds.nextCommands ?? [])];
           if (ds.nextFocus && !plan.includes(ds.nextFocus)) plan.unshift(ds.nextFocus);
           setNextPlan(plan);
-          setNextTasks(ds.nextTasks ?? []);
+          setNextTasks((ds.nextTasks ?? []).map((t: string) => ({ text: t, recurrence: "daily" as const, weekdays: [] })));
         }
         setHydratedEdit(true);
         return;
@@ -327,7 +330,7 @@ export default function RegistroTreinoClientPage() {
       payload = { defaultCommands: merged };
       setSavedCommands(merged);
     } else {
-      const merged = Array.from(new Set([...savedTasks, ...nextTasks]));
+      const merged = Array.from(new Set([...savedTasks, ...nextTasks.map((t) => t.text)]));
       payload = { defaultTutorTasks: merged };
       setSavedTasks(merged);
     }
@@ -511,7 +514,8 @@ export default function RegistroTreinoClientPage() {
       media: draftMedia,
       nextFocus: "",
       nextCommands: nextPlan,
-      nextTasks,
+      nextTasks: nextTasks.map((t) => t.text),
+      nextTaskOptions: nextTasks.map((t) => ({ text: t.text, recurrence: t.recurrence, weekdays: t.weekdays })),
     }));
 
     const dogNameLabel =
@@ -601,7 +605,7 @@ export default function RegistroTreinoClientPage() {
   const commandSuggestions = savedCommands.filter(
     (s) => !commands.some((c) => c.command.toLowerCase() === s.toLowerCase())
   );
-  const taskSuggestions = savedTasks.filter((s) => !nextTasks.includes(s));
+  const taskSuggestions = savedTasks.filter((s) => !nextTasks.some((t) => t.text === s));
 
   return (
     <AuthGuard role="trainer">
@@ -1093,7 +1097,7 @@ export default function RegistroTreinoClientPage() {
               {expandedSection === "8" && (
                 <div className="p-4 space-y-3">
                   <p className="text-[11px] text-[var(--muted)]">
-                    Checklist de tarefas de casa recomendadas ao cliente no portal. Você pode definir a frequência (diária / dias da semana) lá no Portal.
+                    Checklist de tarefas de casa para o cliente no portal. Defina a frequência de cada tarefa abaixo — assim o cliente marca todos os dias (ou nos dias certos), não só uma vez.
                   </p>
 
                   {taskSuggestions.length > 0 && (
@@ -1102,7 +1106,11 @@ export default function RegistroTreinoClientPage() {
                         <button
                           key={s}
                           type="button"
-                          onClick={() => setNextTasks((prev) => (prev.includes(s) ? prev : [...prev, s]))}
+                          onClick={() =>
+                            setNextTasks((prev) =>
+                              prev.some((t) => t.text === s) ? prev : [...prev, { text: s, recurrence: "daily", weekdays: [] }],
+                            )
+                          }
                           className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-2.5 py-1 text-[11px] font-medium text-[var(--accent-text)] hover:bg-[var(--accent)]/10"
                         >
                           + {s}
@@ -1111,17 +1119,68 @@ export default function RegistroTreinoClientPage() {
                     </div>
                   )}
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {nextTasks.map((task, i) => (
-                      <div key={i} className="flex items-center justify-between gap-2 rounded-md bg-[var(--surface-2)]/50 p-2 text-xs text-[var(--foreground)]">
-                        <span className="flex-1 leading-snug">🏠 {task}</span>
-                        <button
-                          type="button"
-                          onClick={() => setNextTasks(nextTasks.filter((_, idx) => idx !== i))}
-                          className="text-[10px] font-bold text-rose-500 hover:underline"
-                        >
-                          Excluir
-                        </button>
+                      <div key={i} className="rounded-md bg-[var(--surface-2)]/50 p-2 text-xs text-[var(--foreground)]">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="flex-1 leading-snug">🏠 {task.text}</span>
+                          <button
+                            type="button"
+                            onClick={() => setNextTasks(nextTasks.filter((_, idx) => idx !== i))}
+                            className="text-[10px] font-bold text-rose-500 hover:underline"
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          {([
+                            { key: "daily", label: "Todos os dias" },
+                            { key: "weekly", label: "Dias da semana" },
+                            { key: "once", label: "Uma vez" },
+                          ] as const).map((opt) => (
+                            <button
+                              key={opt.key}
+                              type="button"
+                              onClick={() =>
+                                setNextTasks((prev) => prev.map((t, idx) => (idx === i ? { ...t, recurrence: opt.key } : t)))
+                              }
+                              className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
+                                task.recurrence === opt.key
+                                  ? "bg-[var(--accent)] text-white"
+                                  : "border border-[var(--border)] bg-white text-[var(--muted)]"
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                        {task.recurrence === "weekly" && (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d, wi) => {
+                              const on = task.weekdays.includes(wi);
+                              return (
+                                <button
+                                  key={d}
+                                  type="button"
+                                  onClick={() =>
+                                    setNextTasks((prev) =>
+                                      prev.map((t, idx) =>
+                                        idx === i
+                                          ? { ...t, weekdays: on ? t.weekdays.filter((x) => x !== wi) : [...t.weekdays, wi] }
+                                          : t,
+                                      ),
+                                    )
+                                  }
+                                  className={`h-6 w-8 rounded-md text-[10px] font-semibold ${
+                                    on ? "bg-[var(--accent)] text-white" : "border border-[var(--border)] bg-white text-[var(--muted)]"
+                                  }`}
+                                >
+                                  {d}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1135,7 +1194,7 @@ export default function RegistroTreinoClientPage() {
                         if (e.key === "Enter") {
                           e.preventDefault();
                           if (!newNextTaskText.trim()) return;
-                          setNextTasks([...nextTasks, newNextTaskText.trim()]);
+                          setNextTasks([...nextTasks, { text: newNextTaskText.trim(), recurrence: "daily", weekdays: [] }]);
                           setNewNextTaskText("");
                         }
                       }}
@@ -1145,7 +1204,7 @@ export default function RegistroTreinoClientPage() {
                       type="button"
                       onClick={() => {
                         if (!newNextTaskText.trim()) return;
-                        setNextTasks([...nextTasks, newNextTaskText.trim()]);
+                        setNextTasks([...nextTasks, { text: newNextTaskText.trim(), recurrence: "daily", weekdays: [] }]);
                         setNewNextTaskText("");
                       }}
                       className="rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-white"
