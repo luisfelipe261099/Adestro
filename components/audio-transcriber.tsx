@@ -45,6 +45,7 @@ export function AudioTranscriber({ value, onAppend, lang = "pt-BR", hint, classN
   const [error, setError] = useState("");
   const [interim, setInterim] = useState("");
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const timeoutRef = useRef<number>(0);
 
   useEffect(() => {
     setSupported(Boolean(getRecognitionCtor()));
@@ -64,8 +65,15 @@ export function AudioTranscriber({ value, onAppend, lang = "pt-BR", hint, classN
 
     const recognition = new Ctor();
     recognition.lang = lang;
-    recognition.continuous = true;
-    recognition.interimResults = true;
+    // iOS Safari TRAVA o app com reconhecimento contínuo + resultados interinos
+    // (bug conhecido do WebView). No iOS usamos modo de UMA FRASE por vez, que é
+    // estável; no desktop (Chrome/Edge) mantemos o contínuo, que funciona bem.
+    const isIOS =
+      typeof navigator !== "undefined" &&
+      (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
+    recognition.continuous = !isIOS;
+    recognition.interimResults = !isIOS;
 
     recognition.onresult = (event) => {
       let finalText = "";
@@ -88,11 +96,13 @@ export function AudioTranscriber({ value, onAppend, lang = "pt-BR", hint, classN
     };
 
     recognition.onerror = (event) => {
+      window.clearTimeout(timeoutRef.current);
       setError(event.error ? `Erro: ${event.error}` : "Erro ao gravar.");
       setRecording(false);
     };
 
     recognition.onend = () => {
+      window.clearTimeout(timeoutRef.current);
       setRecording(false);
       setInterim("");
     };
@@ -101,12 +111,21 @@ export function AudioTranscriber({ value, onAppend, lang = "pt-BR", hint, classN
       recognition.start();
       recognitionRef.current = recognition;
       setRecording(true);
+      // Backstop: para sozinho após 60s — nunca fica preso "gravando".
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = window.setTimeout(() => recognitionRef.current?.stop(), 60000);
     } catch {
       setError("Não foi possível iniciar a gravação. Verifique a permissão de microfone.");
     }
   }, [lang, onAppend]);
 
-  useEffect(() => () => recognitionRef.current?.abort(), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(timeoutRef.current);
+      recognitionRef.current?.abort();
+    },
+    [],
+  );
 
   if (supported === false) {
     return (
