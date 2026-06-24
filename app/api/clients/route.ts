@@ -309,18 +309,82 @@ export async function PATCH(request: Request) {
   const trainer = await ensureTrainer(session.user.id);
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
-  const body = await request.json() as { clientId: string; status?: string };
+  const body = (await request.json()) as {
+    clientId: string;
+    status?: string;
+    // Edição dos dados do cliente:
+    name?: string;
+    phone?: string;
+    email?: string;
+    propertyType?: string;
+    environment?: string;
+    // Edição de UM cão existente:
+    dog?: { id: string; name?: string; breed?: string; age?: string };
+    // Adicionar um cão novo a este cliente:
+    addDog?: { name: string; breed?: string; age?: string };
+  };
   if (!body.clientId) {
     return NextResponse.json({ error: "clientId é obrigatório" }, { status: 400 });
   }
 
-  const updatedClient = await prisma.clientProfile.update({
+  // Confirma que o cliente pertence a este adestrador (segurança).
+  const owned = await prisma.clientProfile.findFirst({
     where: { id: body.clientId, trainerId: trainer.id },
-    data: {
-      status: body.status ?? "Ativo",
-    },
+    select: { id: true },
   });
+  if (!owned) {
+    return NextResponse.json({ error: "Cliente não encontrado" }, { status: 404 });
+  }
 
-  return NextResponse.json(updatedClient);
+  try {
+    // Campos do cliente (só os que vieram).
+    const clientData: {
+      status?: string; name?: string; phone?: string; email?: string;
+      propertyType?: string; environment?: string;
+    } = {};
+    if (body.status !== undefined) clientData.status = body.status;
+    if (body.name !== undefined) clientData.name = body.name;
+    if (body.phone !== undefined) clientData.phone = body.phone;
+    if (body.email !== undefined) clientData.email = body.email;
+    if (body.propertyType !== undefined) clientData.propertyType = body.propertyType;
+    if (body.environment !== undefined) clientData.environment = body.environment;
+    if (Object.keys(clientData).length > 0) {
+      await prisma.clientProfile.update({ where: { id: body.clientId }, data: clientData });
+    }
+
+    // Editar um cão existente (garante que é deste cliente).
+    if (body.dog?.id) {
+      const dogData: { name?: string; breed?: string; age?: string } = {};
+      if (body.dog.name !== undefined) dogData.name = body.dog.name;
+      if (body.dog.breed !== undefined) dogData.breed = body.dog.breed;
+      if (body.dog.age !== undefined) dogData.age = body.dog.age;
+      if (Object.keys(dogData).length > 0) {
+        await prisma.dog.updateMany({ where: { id: body.dog.id, clientId: body.clientId }, data: dogData });
+      }
+    }
+
+    // Adicionar um cão novo.
+    if (body.addDog?.name) {
+      await prisma.dog.create({
+        data: {
+          clientId: body.clientId,
+          name: body.addDog.name,
+          breed: body.addDog.breed ?? "",
+          age: body.addDog.age ?? "",
+          trainingTypes: JSON.stringify([]),
+        },
+      });
+    }
+
+    const updatedClient = await prisma.clientProfile.findUnique({
+      where: { id: body.clientId },
+      include: { dogs: true },
+    });
+    return NextResponse.json(updatedClient);
+  } catch (err) {
+    console.error("[clients.PATCH] erro ao editar:", err);
+    const detail = err instanceof Error ? err.message : "erro desconhecido";
+    return NextResponse.json({ error: `Não foi possível salvar. ${detail}` }, { status: 500 });
+  }
 }
 
