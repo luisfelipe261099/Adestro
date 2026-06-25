@@ -1252,10 +1252,16 @@ export default function ClientsPage() {
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       <Link
-                        href={`/treinos?clientId=${client.id}&dogId=${dog.id}`}
+                        href={`/caes/${dog.id}`}
                         className="rounded-full border border-[var(--border)] bg-[var(--accent)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white whitespace-nowrap"
                       >
-                        Ver histórico
+                        Ver ficha
+                      </Link>
+                      <Link
+                        href={`/treinos?clientId=${client.id}&dogId=${dog.id}`}
+                        className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
+                      >
+                        Histórico
                       </Link>
                       <button
                         type="button"

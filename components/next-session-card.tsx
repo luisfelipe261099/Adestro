@@ -136,7 +136,7 @@ export function NextSessionCard() {
           <IconArrowRight className="h-3.5 w-3.5" />
           Registrar sessão
         </Link>
-        <Link href="/clientes" className="btn-secondary text-[12.5px]">
+        <Link href={next.dogId ? `/caes/${next.dogId}` : "/clientes"} className="btn-secondary text-[12.5px]">
           Ver ficha do cão
         </Link>
         <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary text-[12.5px]">
