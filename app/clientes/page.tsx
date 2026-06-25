@@ -625,54 +625,64 @@ export default function ClientsPage() {
           </div>
         </header>
 
-        {/* Toolbar: busca + tabs + filtros */}
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <label className="flex h-9 flex-1 min-w-[120px] sm:min-w-[200px] items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--muted)]">
-            <SmallIcon name="search" />
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder={entityKind === "humanos" ? "Buscar cliente pelo nome" : "Buscar cão pelo nome ou raça"}
-              className="w-full border-none bg-transparent text-[13px] text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
-            />
-          </label>
-
-          <div className="tabs">
+        {/* Toolbar: seletor Clientes/Cães em destaque no topo; busca + filtros abaixo */}
+        <div className="mb-4 space-y-3">
+          {/* Seletor principal — Clientes x Cães (destaque) */}
+          <div className="inline-flex rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-1">
             <button
               type="button"
               onClick={() => setEntityKind("humanos")}
-              data-active={entityKind === "humanos"}
-              className="tab-trigger"
+              className={`rounded-md px-5 py-2 text-[13px] font-semibold transition ${
+                entityKind === "humanos"
+                  ? "bg-[var(--accent)] text-white shadow-sm"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
             >
               Clientes
             </button>
             <button
               type="button"
               onClick={() => setEntityKind("caes")}
-              data-active={entityKind === "caes"}
-              className="tab-trigger"
+              className={`rounded-md px-5 py-2 text-[13px] font-semibold transition ${
+                entityKind === "caes"
+                  ? "bg-[var(--accent)] text-white shadow-sm"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
             >
               Cães
             </button>
           </div>
 
-          <div className="tabs">
-            {[
-              { value: "todos", label: "Todos" },
-              { value: "ativos", label: "Ativos" },
-              { value: "rascunho", label: "Rascunhos" },
-              { value: "inativos", label: "Inativos" },
-            ].map((item) => (
-              <button
-                key={item.value}
-                type="button"
-                data-active={statusFilter === item.value}
-                onClick={() => setStatusFilter(item.value as "todos" | ClientStatus)}
-                className="tab-trigger"
-              >
-                {item.label}
-              </button>
-            ))}
+          {/* Busca (larga) + filtros de status (sem destaque, ao lado) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="flex h-10 flex-1 min-w-[160px] sm:min-w-[240px] items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--muted)]">
+              <SmallIcon name="search" />
+              <input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder={entityKind === "humanos" ? "Buscar cliente pelo nome" : "Buscar cão pelo nome ou raça"}
+                className="w-full border-none bg-transparent text-[13px] text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
+              />
+            </label>
+
+            <div className="tabs">
+              {[
+                { value: "todos", label: "Todos" },
+                { value: "ativos", label: "Ativos" },
+                { value: "rascunho", label: "Rascunhos" },
+                { value: "inativos", label: "Inativos" },
+              ].map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  data-active={statusFilter === item.value}
+                  onClick={() => setStatusFilter(item.value as "todos" | ClientStatus)}
+                  className="tab-trigger"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
