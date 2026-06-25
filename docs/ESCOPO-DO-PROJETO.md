@@ -19,7 +19,7 @@
 7. Inventário de telas (31)
 8. Inventário de endpoints de API (40)
 9. Modelo de dados — diagrama ER + dicionário (26 entidades)
-10. Fluxos de processo (diagramas)
+10. Fluxos de processo e **jornadas por perfil** (adestrador, cliente, administrador)
 11. Regras de negócio relevantes
 12. Integrações
 13. Arquitetura técnica
@@ -309,7 +309,7 @@ erDiagram
 
 ---
 
-## 10. Fluxos de processo
+## 10. Fluxos de processo e jornadas por perfil
 
 ### 10.1 Cadastro de cliente e cão
 
@@ -385,6 +385,102 @@ flowchart TD
     E --> G[Tarefas de casa - marca concluido]
     E --> H[Feedback / chat com o adestrador]
     E --> I[Gamificacao + NPS]
+```
+
+---
+
+### 10.6 Jornada completa do **Adestrador**
+
+O adestrador é o usuário central: ele opera todo o negócio dentro da plataforma. Fluxo de ponta a ponta:
+
+1. **Acesso** — cria a conta (ou faz login) e cai no **Dashboard / Foco do Dia**.
+2. **Configuração do negócio** — em *Configurações*, define dados do negócio (nome, documento, endereço, horário, logo), parâmetros de alertas (antecedência de lembrete e cobrança, hora do resumo diário) e **modelos** (atividades, comandos, tarefas, mensagens de WhatsApp).
+3. **Captação / cadastro** — em *Clientes*, cadastra o cliente em **5 etapas** (dados → endereço com **CEP automático** → cão → plano → revisão). Pode adicionar **vários cães** ao mesmo dono e editar tudo depois.
+4. **Comercial** — em *Financeiro*, cria **pacotes de serviço** e **vende contratos** (sessões, valor, fracionamento).
+5. **Agenda** — agenda aulas **individuais** ou **turmas**, em **qualquer data**, com **aviso de conflito** e **recorrência** (4/8/12 semanas).
+6. **No dia** — o Dashboard mostra a **próxima sessão** e o **Quadro do dia** (kanban). Notificações *push* e o **resumo diário** ajudam a não perder nada.
+7. **Execução** — abre o **Registro do treino**: atividades e comandos (modelos salvos), **nota em estrelas**, **resumo público × notas privadas**, **gravação por voz**, **fotos**, **plano do próximo treino**, **dever de casa** e **evolução comportamental**. Ao salvar, o treino vira **Registrado** e a tela volta à lista do cão.
+8. **IA** — pode gerar um **resumo automático** da sessão, **revisar** e **aprovar** antes de publicar para o cliente.
+9. **Relacionamento** — gera o **link do portal** do cliente, define **tarefas de casa**, responde **feedback/chat** e emite **relatórios de evolução**.
+10. **Faturamento** — gera **faturas** (Pix e outros), marca como pagas e envia **recibo via WhatsApp**.
+11. **Gestão** — acompanha métricas, **"cães em atenção"**, adesão dos clientes e **NPS**.
+
+```mermaid
+flowchart TD
+    A[Cria conta / Login] --> B[Configura o negocio<br/>dados, logo, templates, alertas]
+    B --> C[Cadastra clientes e caes<br/>5 etapas, CEP automatico]
+    C --> D[Cria pacotes e vende contratos]
+    D --> E[Agenda aulas<br/>individual ou turma, data livre, conflito]
+    E --> F[Foco do Dia: proxima sessao + quadro do dia]
+    F --> G[Registra o treino<br/>atividades, estrelas, resumo, midias, evolucao]
+    G --> H[IA gera resumo, adestrador aprova]
+    H --> I[Publica no portal do cliente]
+    I --> J[Define tarefas de casa + acompanha feedback]
+    J --> K[Emite e envia relatorio de evolucao]
+    K --> L[Cobra via fatura/Pix + envia recibo WhatsApp]
+    L --> M[Acompanha metricas, caes em atencao, NPS]
+    M --> F
+```
+
+### 10.7 Jornada completa do **Cliente** (dono do cão)
+
+O cliente acessa apenas o **portal próprio**, por link seguro, sem precisar criar senha:
+
+1. **Convite** — recebe do adestrador o **link do portal** (normalmente por WhatsApp).
+2. **Acesso seguro** — abre o link (**token** com *hash*, **PIN opcional**, expiração e revogação).
+3. **Onboarding** — na primeira vez, **preenche/confirma a própria ficha** e a do cão.
+4. **Acompanhamento** — vê a **evolução** do cão, as **próximas sessões** e os **relatórios** liberados.
+5. **Tarefas de casa** — recebe as tarefas (com recorrência: uma vez / todo dia / dias específicos), **marca como concluídas** e pode anexar **evidência**.
+6. **Confirmação** — confirma a **presença** nas aulas.
+7. **Comunicação** — envia **feedback** e conversa com o adestrador pelo **chat**.
+8. **Engajamento** — acompanha a **gamificação** (pontos, *streak*, conquistas) e responde a **pesquisa de satisfação (NPS)** após a sessão.
+
+```mermaid
+flowchart TD
+    A[Recebe link do portal por WhatsApp] --> B[Abre o link<br/>token + PIN opcional]
+    B --> C{Onboarding pendente?}
+    C -- sim --> D[Preenche ficha do cliente e do cao]
+    C -- nao --> E[Painel do cliente]
+    D --> E
+    E --> F[Ve evolucao do cao + relatorios]
+    E --> G[Recebe tarefas de casa<br/>marca concluido + evidencia]
+    E --> H[Confirma presenca nas aulas]
+    E --> I[Feedback / chat com o adestrador]
+    E --> J[Gamificacao: pontos e streak]
+    E --> K[Responde NPS pos-sessao]
+```
+
+### 10.8 Jornada completa do **Administrador** (operação da plataforma)
+
+O administrador cuida da plataforma como negócio SaaS — não opera clientes/treinos, e sim as **contas dos adestradores**:
+
+1. **Acesso** — faz login e entra no **painel administrativo** (`/admin`), com a visão geral (*overview*).
+2. **Adestradores** — gerencia as **contas** dos adestradores e suas **permissões** internas.
+3. **Planos** — define os **planos** da plataforma (limites e preços).
+4. **Faturamento** — acompanha o **faturamento** e as **renovações** de assinatura dos adestradores.
+5. **Auditoria** — consulta a **trilha de auditoria** (quem fez o quê, com ator e IP).
+6. **Padronização** — gerencia **modelos/templates** disponíveis.
+7. **Relatórios** — acessa **relatórios administrativos** da operação.
+
+```mermaid
+flowchart TD
+    A[Login do administrador] --> B[Painel /admin - overview]
+    B --> C[Gerencia adestradores<br/>contas e permissoes]
+    B --> D[Define planos da plataforma]
+    B --> E[Acompanha faturamento + renovacoes]
+    B --> F[Consulta auditoria<br/>acao, ator, IP]
+    B --> G[Gerencia modelos/templates]
+    B --> H[Relatorios administrativos]
+```
+
+> **Como os três perfis se conectam:** o **administrador** habilita e cobra o **adestrador**; o **adestrador** opera o negócio e gera o acesso do **cliente**; o **cliente** acompanha a evolução e devolve engajamento (tarefas, feedback, NPS) que retroalimenta o trabalho do adestrador.
+
+```mermaid
+flowchart LR
+    ADM[Administrador<br/>plataforma SaaS] -- habilita e cobra --> ADE[Adestrador<br/>opera o negocio]
+    ADE -- gera acesso/portal --> CLI[Cliente<br/>dono do cao]
+    CLI -- tarefas, feedback, NPS --> ADE
+    ADE -- assinatura/uso --> ADM
 ```
 
 ---
