@@ -78,6 +78,17 @@ function statusClass(status: FeedStatus): string {
   return "bg-rose-100 text-rose-800";
 }
 
+// Nota do treino (0-10) renderizada como estrelas (0-5). Cada estrela = 2 pontos.
+function StarRating({ score, className = "" }: { score: number; className?: string }) {
+  const filled = Math.max(0, Math.min(5, Math.round(score / 2)));
+  return (
+    <span className={`tracking-tight ${className}`} aria-label={`Nota ${score.toFixed(1)} de 10`}>
+      <span className="text-amber-500">{"★".repeat(filled)}</span>
+      <span className="text-[var(--border)]">{"★".repeat(5 - filled)}</span>
+    </span>
+  );
+}
+
 function TinyIcon({ name }: { name: "search" | "filter" | "back" | "plus" | "play" | "list" | "whats" }) {
   if (name === "search") {
     return (
@@ -368,7 +379,7 @@ export default function TrainingPage() {
       : feedFilter === "week"
       ? "Treinos da semana"
       : feedFilter === "pending"
-      ? "Treinos pendentes"
+      ? "Treinos que precisam de atenção"
       : "Todos os treinos";
 
   const averageDraftScore = draftNotes.length
@@ -569,7 +580,7 @@ export default function TrainingPage() {
                 { value: "today", label: "Hoje" },
                 { value: "week", label: "Semana" },
                 { value: "all", label: "Todos" },
-                { value: "pending", label: "Pendentes" },
+                { value: "pending", label: "Atenção" },
               ].map((option) => (
                 <button
                   key={option.value}
@@ -599,15 +610,18 @@ export default function TrainingPage() {
             <section className="mt-2 space-y-2.5">
               {filteredFeed.slice(0, 8).map((session) => {
                 const score = averageSessionScore(session.notes);
-                const status = statusFromScore(score);
                 const dogMeta = session.dogId ? dogDirectory.get(session.dogId) : undefined;
                 const dogName = session.dogName || dogMeta?.name || "Cão";
                 const breed = dogMeta?.breed || "Sem raca";
                 const clientName = session.clientName || dogMeta?.clientName || "Cliente";
                 const firstNote = session.notes[0];
                 const isExpanded = expandedSessionId === session.id;
-                // @ts-ignore
-                const hasDetailedSessions = Array.isArray(session.dogSessions) && session.dogSessions.length > 0;
+                const detailedSessions = session.dogSessions ?? [];
+                const firstDetailed = detailedSessions[0];
+                const hasDetailedSessions = detailedSessions.length > 0;
+                // Resumo público e comandos aparecem inline — sem precisar abrir "Detalhes".
+                const publicSummary = firstDetailed?.description || firstNote?.comment || "";
+                const topCommands = (firstDetailed?.commands ?? []).slice(0, 4);
 
                 return (
                   <article key={session.id} className="rounded-md border border-[var(--border)] bg-white p-3">
@@ -634,15 +648,39 @@ export default function TrainingPage() {
                             {dogName}
                           </Link>
                           <p className="text-[11px] text-[var(--muted)]">{clientName} • {breed}</p>
-                          <p className="mt-0.5 text-[11px] text-[var(--foreground)]">
-                            {firstNote?.block || "Treino geral"} • {score.toFixed(1)}/10
-                          </p>
+                          <div className="mt-1 flex items-center gap-1.5">
+                            <StarRating score={score} className="text-[13px]" />
+                            <span className="text-[11px] text-[var(--muted)]">{score.toFixed(1)}/10</span>
+                          </div>
                         </div>
                       </div>
-                      <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${statusClass(status)}`}>
-                        {statusLabel(status)}
-                      </span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="rounded-full bg-[var(--surface-2)] px-2 py-1 text-[10px] font-semibold text-[var(--foreground)]">
+                          Registrado
+                        </span>
+                        <span className="text-[11px] text-[var(--muted)]">{session.date}</span>
+                      </div>
                     </div>
+
+                    {publicSummary && (
+                      <p className="mt-2.5 line-clamp-2 text-[12px] leading-relaxed text-[var(--muted-strong)]">
+                        {publicSummary}
+                      </p>
+                    )}
+
+                    {topCommands.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {topCommands.map((cmd, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[10px] text-[var(--foreground)]"
+                          >
+                            {cmd.command}
+                            <span className="text-amber-500">{"★".repeat(cmd.rating || 0)}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
 
                     {isExpanded && (
                       <div className="mt-3.5 border-t border-slate-100 pt-3 space-y-3 text-xs text-slate-700 animate-in fade-in duration-200">
@@ -781,7 +819,7 @@ export default function TrainingPage() {
                         onClick={() => setExpandedSessionId(isExpanded ? null : session.id)}
                         className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-[var(--foreground)] font-semibold"
                       >
-                        {isExpanded ? "Fechar" : "Detalhes"}
+                        {isExpanded ? "Recolher" : "Ver ficha completa"}
                       </button>
                       <Link
                         href={`/treinos/registro?sessionId=${session.id}`}
