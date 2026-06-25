@@ -695,7 +695,7 @@ export default function TrainingPage() {
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.activities.map((act: any, idx: number) => (
                                       <li key={idx} className="flex items-start gap-1.5">
-                                        <span>{act.completed ? "✅" : "❌"}</span>
+                                        <span>{act.completed ? "✓" : "—"}</span>
                                         <div>
                                           <span className="font-semibold text-slate-800">{act.name}</span>
                                           {act.notes && <p className="text-[10px] text-slate-500 italic mt-0.5">{act.notes}</p>}
@@ -759,10 +759,10 @@ export default function TrainingPage() {
                                   <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">7. Plano do Próximo Treino</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.nextFocus && ds.nextFocus.trim() && (
-                                      <li className="text-slate-700 font-semibold">🎯 {ds.nextFocus}</li>
+                                      <li className="text-slate-700 font-semibold">{ds.nextFocus}</li>
                                     )}
                                     {(ds.nextCommands ?? []).map((nc: string, idx: number) => (
-                                      <li key={idx} className="text-slate-700">🎯 {nc}</li>
+                                      <li key={idx} className="text-slate-700">{nc}</li>
                                     ))}
                                   </ul>
                                 </div>
@@ -774,7 +774,7 @@ export default function TrainingPage() {
                                   <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">8. Dever de Casa para o Cliente</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.nextTasks.map((t: string, idx: number) => (
-                                      <li key={idx} className="text-slate-700">🏠 {t}</li>
+                                      <li key={idx} className="text-slate-700">{t}</li>
                                     ))}
                                   </ul>
                                 </div>

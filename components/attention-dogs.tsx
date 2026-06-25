@@ -52,7 +52,7 @@ export function AttentionDogs() {
       ) : needAttention.length === 0 ? (
         <div className="mt-3 flex items-center gap-2 text-[12.5px] text-[var(--muted)]">
           <span className="h-2 w-2 rounded-full bg-[var(--success)]" />
-          Todos os cães estão em dia. 🎉
+          Todos os cães estão em dia.
         </div>
       ) : (
         <ul className="mt-3 divide-y divide-[var(--border)]">

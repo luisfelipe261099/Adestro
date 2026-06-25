@@ -61,7 +61,7 @@ export default function EvolucaoPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {dogs.map((dog) => (
               <section key={dog.id} className="card p-4">
-                <h2 className="text-sm font-semibold text-[var(--foreground)]">🐕 {dog.name}</h2>
+                <h2 className="text-sm font-semibold text-[var(--foreground)]">{dog.name}</h2>
                 <p className="text-[11.5px] text-[var(--muted)]">
                   {dog.clientName}
                   {dog.breed ? ` · ${dog.breed}` : ""}

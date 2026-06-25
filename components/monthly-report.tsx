@@ -83,7 +83,6 @@ export function MonthlyReport({ report, onDownloadPDF }: MonthlyReportProps) {
       {/* Destaques */}
       <div className="rounded-lg bg-green-50 p-6 shadow">
         <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-green-900">
-          <span>✨</span>
           Destaques do Mês
         </h3>
         <ul className="space-y-2">
@@ -99,7 +98,6 @@ export function MonthlyReport({ report, onDownloadPDF }: MonthlyReportProps) {
       {/* Áreas para Melhoria */}
       <div className="rounded-lg bg-yellow-50 p-6 shadow">
         <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-yellow-900">
-          <span>⚠️</span>
           Áreas para Melhoria
         </h3>
         <ul className="space-y-2">
@@ -115,7 +113,6 @@ export function MonthlyReport({ report, onDownloadPDF }: MonthlyReportProps) {
       {/* Próximos Objetivos */}
       <div className="rounded-lg bg-blue-50 p-6 shadow">
         <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-blue-900">
-          <span>🎯</span>
           Objetivos para Próximo Mês
         </h3>
         <ul className="space-y-2">
@@ -147,11 +144,10 @@ export function MonthlyReport({ report, onDownloadPDF }: MonthlyReportProps) {
           onClick={onDownloadPDF}
           className="flex items-center gap-2 rounded-lg bg-purple-600 px-6 py-3 font-semibold text-white hover:bg-purple-700"
         >
-          <span>📥</span>
           Baixar Relatório em PDF
         </button>
         <button className="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50">
-          📧 Enviar por E-mail
+          Enviar por E-mail
         </button>
       </div>
 

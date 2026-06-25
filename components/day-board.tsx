@@ -86,7 +86,7 @@ export function DayBoard() {
       const card: BoardCard = {
         id: `aula-${e.id}`,
         lead: e.time || "—",
-        label: `🐕 ${e.dog || "Cão"}`,
+        label: `${e.dog || "Cão"}`,
         sub: e.client || undefined,
         tag: "",
         href: registroHref(e.clientId, e.dogId),
@@ -109,7 +109,7 @@ export function DayBoard() {
       if (p.status === "Pago") continue;
       todo.push({
         id: `cobranca-${p.id}`,
-        lead: "💰",
+        lead: "R$",
         label: p.description || "Cobrança",
         sub: brl(p.amount),
         tag: "Cobrar",
@@ -123,7 +123,7 @@ export function DayBoard() {
       if ((r.status ?? "") === "Enviado") continue;
       todo.push({
         id: `relatorio-${r.id}`,
-        lead: "📄",
+        lead: "Rel",
         label: "Relatório mensal",
         sub: r.month ? `${r.month} · ${r.status ?? "Rascunho"}` : r.status,
         tag: "Aprovar",
@@ -152,7 +152,7 @@ export function DayBoard() {
     <section className="card p-4">
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-[var(--foreground)]">🗂️ Quadro do dia</h2>
+          <h2 className="text-sm font-semibold text-[var(--foreground)]">Quadro do dia</h2>
           <p className="text-[11px] text-[var(--muted)]">
             Aulas, cobranças e relatórios do dia — os cards se movem conforme você resolve cada um.
           </p>
@@ -162,7 +162,7 @@ export function DayBoard() {
 
       {totalCards === 0 ? (
         <p className="mt-4 rounded-md bg-[var(--surface-2)]/50 p-4 text-center text-xs text-[var(--muted)]">
-          Nada pendente para hoje. 🎉
+          Nada pendente para hoje.
         </p>
       ) : (
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">

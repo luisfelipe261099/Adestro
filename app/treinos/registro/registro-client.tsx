@@ -707,7 +707,7 @@ export default function RegistroTreinoClientPage() {
                     }}
                     className={`flex-1 rounded-md border px-3 py-2 text-sm font-semibold ${sessionType === t ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]" : "border-[var(--border)] text-[var(--muted)]"}`}
                   >
-                    {t === "Individual" ? "🐕 Individual" : "🐕‍🦺 Coletivo (turma)"}
+                    {t === "Individual" ? "Individual" : "Coletivo (turma)"}
                   </button>
                 ))}
               </div>
@@ -867,7 +867,7 @@ export default function RegistroTreinoClientPage() {
                   </div>
                   {activities.length > 0 && (
                     <button type="button" onClick={() => saveTemplates("activities")} className="text-[11px] font-semibold text-[var(--accent-text)] hover:underline">
-                      💾 Salvar estas nos meus modelos
+                      Salvar estas nos meus modelos
                     </button>
                   )}
                 </div>
@@ -937,7 +937,7 @@ export default function RegistroTreinoClientPage() {
                   </div>
                   {commands.length > 0 && (
                     <button type="button" onClick={() => saveTemplates("commands")} className="text-[11px] font-semibold text-[var(--accent-text)] hover:underline">
-                      💾 Salvar estes nos meus modelos
+                      Salvar estes nos meus modelos
                     </button>
                   )}
                 </div>
@@ -961,7 +961,7 @@ export default function RegistroTreinoClientPage() {
               {renderSectionHeader("3", "Notas Privadas (Confidencial)", true)}
               {expandedSection === "3" && (
                 <div className="p-4">
-                  <p className="mb-2 text-[10px] text-rose-700">⚠️ Visível apenas para adestradores. Nunca compartilhado com o cliente.</p>
+                  <p className="mb-2 text-[10px] text-rose-700">Visível apenas para adestradores. Nunca compartilhado com o cliente.</p>
                   <textarea
                     value={privateNotes}
                     onChange={(e) => setPrivateNotes(e.target.value)}
@@ -977,7 +977,7 @@ export default function RegistroTreinoClientPage() {
               {expandedSection === "4" && (
                 <div className="p-4 space-y-3.5">
                   <div>
-                    <h4 className="text-xs font-bold text-[var(--foreground)]">🎤 Ditado de Notas por Voz</h4>
+                    <h4 className="text-xs font-bold text-[var(--foreground)]">Ditado de Notas por Voz</h4>
                     <p className="text-[10px] text-[var(--muted)]">Use o microfone do dispositivo para transcrever observações. O áudio fica no seu navegador.</p>
 
                     <AudioTranscriber
@@ -1001,7 +1001,7 @@ export default function RegistroTreinoClientPage() {
                   <hr className="border-[var(--border)]" />
 
                   <div>
-                    <h4 className="text-xs font-bold text-[var(--foreground)]">🤖 Análise por Inteligência Artificial (Adestro AI)</h4>
+                    <h4 className="text-xs font-bold text-[var(--foreground)]">Análise por Inteligência Artificial (Adestro AI)</h4>
                     <p className="text-[10px] text-[var(--muted)]">Gera automaticamente o resumo para o cliente, plano do próximo treino e checklist de tarefas.</p>
 
                     <button
@@ -1010,12 +1010,12 @@ export default function RegistroTreinoClientPage() {
                       disabled={isGeneratingAI}
                       className="mt-2.5 w-full rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 py-2 text-xs font-bold text-white shadow-sm hover:from-purple-700 transition"
                     >
-                      {isGeneratingAI ? "Gerando Análise..." : "✨ Gerar Relatório e Análise IA"}
+                      {isGeneratingAI ? "Gerando Análise..." : "Gerar Relatório e Análise IA"}
                     </button>
 
                     {aiSummary && (
                       <div className="mt-3 rounded-md border border-purple-200 bg-purple-50/55 p-3 space-y-2">
-                        <p className="text-xs font-bold text-purple-900">✨ Resumo Gerado pela IA:</p>
+                        <p className="text-xs font-bold text-purple-900">Resumo Gerado pela IA:</p>
                         <p className="text-xs text-purple-950 italic">&quot;{aiSummary}&quot;</p>
 
                         <div className="rounded-lg border border-purple-100 bg-white p-2">
@@ -1082,7 +1082,7 @@ export default function RegistroTreinoClientPage() {
                   <div className="space-y-1.5">
                     {nextPlan.map((item, i) => (
                       <div key={i} className="flex items-center justify-between gap-2 rounded-md bg-[var(--surface-2)]/50 p-2 text-xs text-[var(--foreground)]">
-                        <span className="flex-1 leading-snug">🎯 {item}</span>
+                        <span className="flex-1 leading-snug">{item}</span>
                         <button
                           type="button"
                           onClick={() => setNextPlan(nextPlan.filter((_, idx) => idx !== i))}
@@ -1154,7 +1154,7 @@ export default function RegistroTreinoClientPage() {
                     {nextTasks.map((task, i) => (
                       <div key={i} className="rounded-md bg-[var(--surface-2)]/50 p-2 text-xs text-[var(--foreground)]">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="flex-1 leading-snug">🏠 {task.text}</span>
+                          <span className="flex-1 leading-snug">{task.text}</span>
                           <button
                             type="button"
                             onClick={() => setNextTasks(nextTasks.filter((_, idx) => idx !== i))}
@@ -1245,7 +1245,7 @@ export default function RegistroTreinoClientPage() {
                   </div>
                   {nextTasks.length > 0 && (
                     <button type="button" onClick={() => saveTemplates("tasks")} className="text-[11px] font-semibold text-[var(--accent-text)] hover:underline">
-                      💾 Salvar estas nos meus modelos
+                      Salvar estas nos meus modelos
                     </button>
                   )}
                 </div>

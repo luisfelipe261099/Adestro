@@ -684,14 +684,14 @@ export default function SchedulePage() {
                               className="inline-flex items-center justify-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 py-1.5 text-emerald-700 hover:bg-emerald-100"
                               title="Solicita confirmação de presença via WhatsApp"
                             >
-                              ✅ Confirmação
+                              Confirmação
                             </button>
                             <button
                               type="button"
                               onClick={() => handleOpenMap(event)}
                               className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-rose-700 hover:bg-rose-50"
                             >
-                              📍 Mapa
+                              Mapa
                             </button>
                             <button
                               type="button"
@@ -699,7 +699,7 @@ export default function SchedulePage() {
                               className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-blue-700 hover:bg-blue-50"
                               title="Abrir no Google Calendar"
                             >
-                              📆 Google
+                              Google
                             </button>
                           </div>
 

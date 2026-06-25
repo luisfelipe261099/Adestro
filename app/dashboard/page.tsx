@@ -134,7 +134,7 @@ export default function DashboardPage() {
       {
         key: "agenda-dia",
         tone: "stat-card-blue",
-        emoji: "📅",
+        emoji: "",
         label: "Agenda do dia",
         value: eventsToday.length,
         sub: eventsToday.length === 0 ? "Sem atendimentos hoje" : `${eventsToday.length} atendimento(s) hoje`,
@@ -144,7 +144,7 @@ export default function DashboardPage() {
       {
         key: "agenda-semana",
         tone: "stat-card-sky",
-        emoji: "🗓️",
+        emoji: "",
         label: "Agenda da semana",
         value: events.length,
         sub: `${pendingEvents} aguardando confirmação`,
@@ -154,7 +154,7 @@ export default function DashboardPage() {
       {
         key: "financeiro",
         tone: "stat-card-green",
-        emoji: "💰",
+        emoji: "",
         label: "Financeiro",
         value: finance ? brl(finance.received) : "—",
         sub: finance ? `${brl(finance.pending)} a receber · ${brl(finance.overdue)} em atraso` : "Carregando…",
@@ -164,7 +164,7 @@ export default function DashboardPage() {
       {
         key: "pendencias",
         tone: "stat-card-orange",
-        emoji: "🔔",
+        emoji: "",
         label: "Pendências",
         value: pendenciasTotal,
         sub: `${treinosSemRegistro} treino(s) sem registro`,
@@ -174,10 +174,10 @@ export default function DashboardPage() {
       {
         key: "checklist",
         tone: "stat-card-purple",
-        emoji: "📋",
+        emoji: "",
         label: "Checklist do dia",
         value: checklistTotal,
-        sub: checklistTotal === 0 ? "Tudo em dia 🎉" : "Tarefas rápidas de hoje",
+        sub: checklistTotal === 0 ? "Tudo em dia" : "Tarefas rápidas de hoje",
         href: "/agenda",
         Icon: IconReport,
       },
@@ -233,7 +233,6 @@ export default function DashboardPage() {
             <Link key={card.key} href={card.href} className={`stat-card group ${card.tone}`}>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-[12px] font-semibold" style={{ color: "var(--c)" }}>
-                  <span className="text-[15px] leading-none">{card.emoji}</span>
                   {card.label}
                 </span>
                 <card.Icon className="h-4 w-4" style={{ color: "var(--c)" }} />

@@ -87,7 +87,7 @@ export function PlanUsageCard() {
         <div className="grid gap-2">
           <div>
             <div className="flex items-center justify-between text-[11px] font-semibold text-indigo-900">
-              <span>👥 Clientes</span>
+              <span>Clientes</span>
               <span>{data.usage.clients} / {data.limits.clients}</span>
             </div>
             <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-indigo-100">
@@ -97,7 +97,7 @@ export function PlanUsageCard() {
 
           <div>
             <div className="flex items-center justify-between text-[11px] font-semibold text-indigo-900">
-              <span>📝 Sessões este mês</span>
+              <span>Sessões este mês</span>
               <span>{data.usage.sessionsThisMonth} / {data.limits.monthlySessions}</span>
             </div>
             <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-indigo-100">

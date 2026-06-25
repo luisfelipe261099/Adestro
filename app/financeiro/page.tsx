@@ -371,22 +371,22 @@ export default function FinanceiroPage() {
                   {/* Grid de faturamento */}
                   <div className="grid grid-cols-2 gap-3">
                     <article className="rounded-md border border-emerald-100 bg-emerald-50/50 p-3.5">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-emerald-800">💰 Recebido</span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-emerald-800">Recebido</span>
                       <p className="mt-1 text-xl font-bold text-emerald-950">R$ {stats.metrics.received.toFixed(2)}</p>
                       <span className="text-[9px] text-emerald-700">Parcelas quitadas</span>
                     </article>
                     <article className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-3.5">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-sky-800">⏳ A Receber</span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-sky-800">A Receber</span>
                       <p className="mt-1 text-xl font-bold text-sky-950">R$ {stats.metrics.pending.toFixed(2)}</p>
                       <span className="text-[9px] text-sky-700">Faturas em aberto</span>
                     </article>
                     <article className="rounded-md border border-rose-100 bg-rose-50/50 p-3.5">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-rose-800">🔴 Em Atraso</span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-rose-800">Em Atraso</span>
                       <p className="mt-1 text-xl font-bold text-rose-950">R$ {stats.metrics.overdue.toFixed(2)}</p>
                       <span className="text-[9px] text-rose-700">Faturas vencidas</span>
                     </article>
                     <article className="rounded-md border border-purple-100 bg-purple-50/50 p-3.5">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-purple-800">📦 Contratos</span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-purple-800">Contratos</span>
                       <p className="mt-1 text-xl font-bold text-purple-950">{stats.metrics.activeContracts} Ativos</p>
                       <span className="text-[9px] text-purple-700">Pacotes ativos vendidos</span>
                     </article>
@@ -733,7 +733,7 @@ export default function FinanceiroPage() {
                                 className="flex-1 rounded-lg bg-[var(--surface-2)] border border-[var(--border-strong)] text-sky-700 py-1 font-bold text-center"
                                 title="Enviar cobrança via WhatsApp"
                               >
-                                💬 Lembrar
+                                Lembrar
                               </button>
                               {inv.status !== "Atrasado" && (
                                 <button
@@ -1014,14 +1014,14 @@ export default function FinanceiroPage() {
                           onClick={() => window.print()}
                           className="rounded-md border border-[#145a82] bg-white py-2 text-center text-xs font-bold text-[var(--foreground)]"
                         >
-                          🖨️ PDF
+                          PDF
                         </button>
                         <button
                           type="button"
                           onClick={handleSendReceiptViaWhats}
                           className="rounded-md bg-emerald-600 py-2 text-center text-xs font-bold text-white"
                         >
-                          💬 WhatsApp
+                          WhatsApp
                         </button>
                       </div>
                     </div>

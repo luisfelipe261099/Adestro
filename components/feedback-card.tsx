@@ -60,7 +60,7 @@ export function FeedbackCard({ feedback }: FeedbackCardProps) {
             rel="noopener noreferrer"
             className="flex items-center gap-2 rounded-lg bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 hover:bg-purple-200"
           >
-            🎥 Ver vídeo
+            Ver vídeo
           </a>
         )}
       </div>
@@ -100,7 +100,6 @@ export function FeedbackCard({ feedback }: FeedbackCardProps) {
       {feedback.nextGoals.length > 0 && (
         <div className="rounded-lg bg-green-50 p-4">
           <h4 className="mb-2 flex items-center gap-2 font-semibold text-green-900">
-            <span>🎯</span>
             Próximos Objetivos
           </h4>
           <ul className="space-y-2">

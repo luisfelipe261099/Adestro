@@ -15,7 +15,6 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
   return (
     <nav className="mb-4 flex items-center gap-2 text-sm">
       <Link href="/" className="flex items-center gap-1 text-purple-600 hover:text-purple-800">
-        <span>🏠</span>
         <span>Home</span>
       </Link>
 
@@ -86,10 +85,10 @@ export function GlobalSearch() {
   };
 
   const typeIcons: Record<string, string> = {
-    client: "👥",
-    trainer: "👨‍🏫",
-    training: "🎯",
-    schedule: "📅",
+    client: "",
+    trainer: "",
+    training: "",
+    schedule: "",
   };
 
   return (
@@ -104,7 +103,7 @@ export function GlobalSearch() {
           onBlur={() => setTimeout(() => setIsOpen(false), 100)}
           className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 pl-10 text-sm text-gray-900 placeholder-gray-500 focus:border-purple-500 focus:outline-none"
         />
-        <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+        <span className="absolute left-3 top-2.5 text-gray-400"></span>
       </div>
 
       {/* Dropdown com Resultados */}

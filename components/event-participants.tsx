@@ -24,9 +24,9 @@ const STATUS_STYLE: Record<Participant["status"], string> = {
 };
 
 const STATUS_ICON: Record<Participant["status"], string> = {
-  Confirmado: "✅",
-  Pendente: "⏳",
-  Recusado: "❌",
+  Confirmado: "✓",
+  Pendente: "•",
+  Recusado: "✕",
 };
 
 /**
@@ -133,9 +133,9 @@ export function EventParticipants({ eventId, clients }: { eventId: string; clien
                     <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${STATUS_STYLE[p.status]}`}>
                       {STATUS_ICON[p.status]} {p.status}
                     </span>
-                    <button type="button" onClick={() => setStatus(p.id, "Confirmado")} disabled={busy} className="rounded border border-emerald-300 px-1 text-[10px] text-emerald-700 disabled:opacity-50" title="Confirmar">✅</button>
-                    <button type="button" onClick={() => setStatus(p.id, "Recusado")} disabled={busy} className="rounded border border-rose-300 px-1 text-[10px] text-rose-700 disabled:opacity-50" title="Recusar">❌</button>
-                    <button type="button" onClick={() => removeDog(p.id)} disabled={busy} className="rounded border border-slate-300 px-1 text-[10px] text-slate-500 disabled:opacity-50" title="Remover">🗑</button>
+                    <button type="button" onClick={() => setStatus(p.id, "Confirmado")} disabled={busy} className="rounded border border-emerald-300 px-1 text-[10px] text-emerald-700 disabled:opacity-50" title="Confirmar">Sim</button>
+                    <button type="button" onClick={() => setStatus(p.id, "Recusado")} disabled={busy} className="rounded border border-rose-300 px-1 text-[10px] text-rose-700 disabled:opacity-50" title="Recusar">Não</button>
+                    <button type="button" onClick={() => removeDog(p.id)} disabled={busy} className="rounded border border-slate-300 px-1 text-[10px] text-slate-500 disabled:opacity-50" title="Remover">Excluir</button>
                   </div>
                 </li>
               ))}

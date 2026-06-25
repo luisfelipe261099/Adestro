@@ -12,28 +12,28 @@ export function QuickActionsPanel() {
   const quickActions: QuickAction[] = [
     {
       label: "Novo Cliente",
-      icon: "👥",
+      icon: "",
       href: "/clientes/novo",
       description: "Registrar novo cliente",
       color: "bg-blue-100 text-blue-700 hover:bg-blue-200",
     },
     {
       label: "Agendar Treino",
-      icon: "📅",
+      icon: "",
       href: "/agenda",
       description: "Criar agendamento",
       color: "bg-purple-100 text-purple-700 hover:bg-purple-200",
     },
     {
       label: "Registrar Treino",
-      icon: "🎯",
+      icon: "",
       href: "/treinos/novo",
       description: "Registrar sessão",
       color: "bg-green-100 text-green-700 hover:bg-green-200",
     },
     {
       label: "Ver Relatório",
-      icon: "📊",
+      icon: "",
       href: "/financeiro",
       description: "Gerar relatório",
       color: "bg-orange-100 text-orange-700 hover:bg-orange-200",

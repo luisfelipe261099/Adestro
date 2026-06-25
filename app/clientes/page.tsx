@@ -868,7 +868,7 @@ export default function ClientsPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-700 hover:bg-rose-100"
                       >
-                        📍 Ver no Google Maps
+                        Ver no Google Maps
                       </a>
                     ) : null}
                   </div>
@@ -1255,7 +1255,7 @@ export default function ClientsPage() {
                         }}
                         className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
                       >
-                        📋 Tarefas
+                        Tarefas
                       </button>
                     </div>
                   )}
@@ -1340,7 +1340,7 @@ export default function ClientsPage() {
                           }}
                           className="rounded-full border border-[#145a82] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
                         >
-                          📋 Tarefas
+                          Tarefas
                         </button>
                         <button
                           type="button"
@@ -1583,7 +1583,7 @@ export default function ClientsPage() {
                           >
                             {task.evidenceUrl.startsWith("data:video") ? (
                               <div className="h-full w-full flex items-center justify-center bg-slate-900 text-white text-[8px] font-bold">
-                                🎥 Vídeo
+                                Vídeo
                               </div>
                             ) : (
                               <Image
