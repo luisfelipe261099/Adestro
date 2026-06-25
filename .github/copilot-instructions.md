@@ -1,0 +1,5 @@
+- Projeto atual: protótipo visual em Next.js para plataforma SaaS de adestradores.
+- Objetivo imediato: apresentar páginas responsivas com dados mockados para validação comercial.
+- Rotas principais: `/`, `/dashboard`, `/clientes`, `/treinos`, `/agenda`, `/portal`, `/financeiro`.
+- Evitar adicionar backend real, autenticação real ou integrações externas nesta fase.
+- Priorizar responsividade, clareza de navegação e coerência visual entre módulos.

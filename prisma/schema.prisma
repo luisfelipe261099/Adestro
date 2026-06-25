@@ -1,0 +1,609 @@
+// Adestro – Prisma schema para TiDB Cloud (MySQL compatível)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+// ─── NextAuth obrigatórios ────────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Usuários ─────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  TRAINER
+  CLIENT
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  role          UserRole  @default(TRAINER)
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  trainer  Trainer?
+  client   Client?
+}
+
+// ─── Adestrador ───────────────────────────────────────────────────────────────
+
+model Trainer {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String?
+  plan        String    @default("Trial")
+  trialEndsAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  // Permissão do adestrador na conta (módulo 10.2 - multi-usuário).
+  // "admin" | "standard" | "viewer". Hoje é um rótulo (enforcement é follow-up).
+  permission        String  @default("standard")
+
+  // Dados do negócio (módulo 10.1 - configurações do negócio)
+  businessName      String?
+  businessDocument  String?          // CNPJ ou CPF
+  businessAddress   String?  @db.Text
+  businessHours     String?          // ex: "Seg-Sex 8h-18h"
+  logoUrl           String?  @db.LongText // base64 (mesma estratégia das demais mídias)
+
+  // Configurações de alertas (módulo 10.3 - configurações operacionais)
+  reminderHoursBefore       Int @default(24)
+  chargeReminderDaysBefore  Int @default(3)
+  morningBriefHour          Int @default(7)
+  defaultStreakTolerance    Int @default(100)
+
+  // Templates operacionais (módulo 10.3) - JSON serializado
+  defaultActivities         String? @db.Text
+  defaultCommands           String? @db.Text
+  defaultTutorTasks         String? @db.Text
+
+  // Templates WhatsApp customizáveis (texto livre por tipo de mensagem)
+  whatsappTemplates         String? @db.Text  // JSON: { agendamento: "...", lembrete: "...", ... }
+
+  // Relations
+  pushSubscriptions PushSubscription[]
+  auditLogs         AuditLog[]
+
+  clients         ClientProfile[]
+  trainingSessions TrainingSession[]
+  calendarEvents  CalendarEvent[]
+  payments        Payment[]
+  portalTasks     PortalTask[]
+  portalFeedbacks PortalFeedback[]
+  portalAccessLinks PortalAccessLink[]
+  clientGamifications ClientGamification[]
+  renewals        SubscriptionRenewal[]
+  
+  // Financeiro de clientes
+  servicePackages  ServicePackage[]
+  clientContracts  ClientContract[]
+  clientInvoices   ClientInvoice[]
+  evolutionReports EvolutionReport[]
+
+  @@index([userId])
+}
+
+model SubscriptionRenewal {
+  id            String   @id @default(cuid())
+  trainerId     String
+  trainer       Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  planName      String
+  lessonPackage String
+  paymentMethod String
+  amount        Float
+  status        String   @default("Gerada")
+  reference     String?
+  dueDate       String?
+  createdAt     DateTime @default(now())
+
+  @@index([trainerId])
+}
+
+// ─── Cliente/Tutor ────────────────────────────────────────────────────────────
+
+model Client {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  profiles ClientProfile[]
+
+  @@index([userId])
+}
+
+model ClientProfile {
+  id             String   @id @default(cuid())
+  trainerId      String
+  trainer        Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  name           String
+  phone          String?
+  email          String?
+  birthDate      String?
+  cpf            String?
+  photoUrl       String?
+  privateNotes   String?  @db.Text
+  status         String   @default("Ativo") // Ativo / Inativo
+  propertyType   String?
+  environment    String?  @db.Text
+  plan           String?
+  createdAt      DateTime @default(now())
+
+  dogs     Dog[]
+  addresses Address[]
+  calendarEvents CalendarEvent[]
+  portalTasks     PortalTask[]
+  portalFeedbacks PortalFeedback[]
+  portalAccessLink PortalAccessLink?
+  gamification    ClientGamification?
+  clientContracts ClientContract[]
+
+  clientUserId String?
+  clientUser   Client? @relation(fields: [clientUserId], references: [id])
+
+  // Tags livres para filtrar (ex: VIP, Inadimplente, Alta-complexidade)
+  tags         String? @db.Text   // JSON list
+
+  npsResponses NpsResponse[]
+
+  @@index([trainerId])
+  @@index([clientUserId])
+}
+
+// ─── Push Subscription (Web Push API) ────────────────────────────────────────
+
+model PushSubscription {
+  id           String   @id @default(cuid())
+  trainerId    String
+  trainer      Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  endpointHash String   @db.VarChar(64)  // sha256 do endpoint para unicidade
+  endpoint     String   @db.Text
+  p256dh       String   @db.Text
+  authKey      String   @db.Text
+  userAgent    String?  @db.Text
+  createdAt    DateTime @default(now())
+  lastUsedAt   DateTime?
+
+  @@unique([trainerId, endpointHash], map: "push_trainer_endpoint")
+  @@index([trainerId])
+}
+
+// ─── Audit log de ações importantes (módulo 10.2) ──────────────────────────
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  trainerId   String
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  action      String   // ex: "client.created", "session.deleted", "plan.upgraded"
+  resourceId  String?
+  detail      String?  @db.Text   // JSON ou texto livre
+  actorEmail  String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([trainerId])
+  @@index([createdAt])
+}
+
+// ─── NPS pós sessão ──────────────────────────────────────────────────────
+
+model NpsResponse {
+  id         String   @id @default(cuid())
+  clientId   String
+  client     ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  sessionId  String
+  session    TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  score      Int
+  comment    String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@unique([sessionId, clientId])
+  @@index([clientId])
+  @@index([sessionId])
+}
+
+// ─── Endereços do Tutor ───────────────────────────────────────────────────────
+
+model Address {
+  id              String        @id @default(cuid())
+  clientProfileId String
+  clientProfile   ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+  nickname        String        // Ex: Casa, Trabalho, Sítio
+  zipCode         String?
+  street          String
+  number          String?
+  complement      String?
+  neighborhood    String?
+  city            String?
+  state           String?
+  isDefault       Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+
+  @@index([clientProfileId])
+}
+
+// ─── Cão ──────────────────────────────────────────────────────────────────────
+
+model Dog {
+  id            String        @id @default(cuid())
+  clientId      String
+  client        ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  name          String
+  breed         String?
+  age           String?
+  weight        String?
+  photoUrl      String?
+  trainingTypes String        @db.Text // JSON serializado
+
+  // Novos campos estruturados
+  sex                    String?       // Macho / Fêmea
+  castrated              Boolean       @default(false)
+  microchip              String?
+  color                  String?
+  photos                 String?       @db.Text // JSON list de URLs de fotos
+  videos                 String?       @db.Text // JSON list de URLs de vídeos
+  vaccines               String?       @db.LongText // JSON serializado
+  dietRestrictions       String?       @db.Text
+  healthConditions       String?       @db.Text
+  veterinarian           String?       @db.Text // Nome + Telefone
+  temperament            String?       @db.Text // JSON de categorias
+  routine                String?       @db.LongText // JSON de rotinas
+  trainingGoals          String?       @db.Text // JSON de objetivos
+  environmentalAnalysis  String?       @db.LongText // JSON de análise ambiental
+
+  sessions TrainingSession[]
+  dogSessions DogTrainingSession[]
+  calendarEvents CalendarEvent[]
+  clientContracts ClientContract[]
+  evolutionReports EvolutionReport[]
+
+  @@index([clientId])
+}
+
+// ─── Sessão de treino ─────────────────────────────────────────────────────────
+
+model TrainingSession {
+  id          String   @id @default(cuid())
+  trainerId   String
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  title       String
+  date        String
+  time        String?
+  duration    String?
+  location    String?
+  type        String   @default("Individual") // Individual / Coletivo
+  status      String   @default("Realizado")  // Agendado / Realizado / Cancelado / Remarcado
+  createdAt   DateTime @default(now())
+
+  dogSessions DogTrainingSession[]
+  npsResponses NpsResponse[]
+
+  // Compatibilidade com histórico
+  dogId       String?
+  dog         Dog?     @relation(fields: [dogId], references: [id])
+  clientName  String?
+  dogName     String?
+  number      Int      @default(1)
+  notes       String?  @db.LongText // JSON serializado
+  media       String?  @db.LongText // JSON serializado de imagens comprimidas
+
+  @@index([trainerId])
+  @@index([dogId])
+}
+
+// ─── Registro Individual na Sessão (Turma/Grupo) ──────────────────────────────
+
+model DogTrainingSession {
+  id          String          @id @default(cuid())
+  sessionId   String
+  session     TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  dogId       String
+  dog         Dog             @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  
+  activities  String?         @db.LongText // JSON list de atividades (realizado? / notas)
+  commands    String?         @db.LongText // JSON list de comandos (obediência / evolução / notas)
+  description String?         @db.LongText // Compartilhado com o dono
+  privateNotes String?        @db.Text     // Somente adestrador
+  aiSummary   String?         @db.LongText // Resumo IA
+  aiApproved  Boolean         @default(false)
+  media       String?         @db.LongText // JSON list de fotos/vídeos
+  nextFocus   String?         @db.Text
+  nextCommands String?        @db.Text     // JSON list
+  nextTasks   String?         @db.Text     // JSON list
+  behaviorScores String?      @db.Text     // JSON { categoria: nota 0-5 } — evolução comportamental
+
+  createdAt   DateTime        @default(now())
+
+  @@index([sessionId])
+  @@index([dogId])
+}
+
+// ─── Evento de calendário ─────────────────────────────────────────────────────
+
+model CalendarEvent {
+  id            String   @id @default(cuid())
+  trainerId     String
+  trainer       Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  clientId      String?
+  clientProfile ClientProfile? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  dogId         String?
+  dogProfile    Dog?     @relation(fields: [dogId], references: [id], onDelete: SetNull)
+  day           String
+  time          String
+  dog           String
+  client        String
+  plan          String?
+  sessionNumber Int      @default(1)
+  status        String   @default("Confirmado")
+  createdAt     DateTime @default(now())
+
+  participants  EventParticipant[]
+
+  @@index([trainerId])
+  @@index([clientId])
+  @@index([dogId])
+}
+
+// ─── Participante de turma (módulo 5.5 - confirmação individual por cão) ──────
+model EventParticipant {
+  id          String        @id @default(cuid())
+  eventId     String
+  event       CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  dogId       String?
+  clientId    String?
+  dogName     String
+  clientName  String
+  status      String        @default("Pendente") // Pendente / Confirmado / Recusado
+  createdAt   DateTime      @default(now())
+
+  @@index([eventId])
+}
+
+// ─── Pagamento do Adestrador (SaaS) ───────────────────────────────────────────
+
+model Payment {
+  id            String   @id @default(cuid())
+  trainerId     String
+  trainer       Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  description   String
+  amount        Float
+  status        String   @default("Pendente")
+  paymentMethod String?
+  dueDate       String?
+  reference     String?
+  createdAt     DateTime @default(now())
+
+  @@index([trainerId])
+}
+
+// ─── Pacotes de Serviço ───────────────────────────────────────────────────────
+
+model ServicePackage {
+  id              String   @id @default(cuid())
+  trainerId       String
+  trainer         Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  name            String
+  type            String   @default("Pacote") // Pacote / Avulsa
+  sessionsCount   Int      @default(1)
+  amount          Float
+  isFractioned    Boolean  @default(false)
+  fractionSessions Int     @default(1) // Cobrar a cada X sessões
+  validityDays    Int      @default(60)
+  description     String?  @db.Text
+  status          String   @default("Ativo") // Ativo / Inativo
+  createdAt       DateTime @default(now())
+
+  clientContracts ClientContract[]
+
+  @@index([trainerId])
+}
+
+// ─── Venda / Contratação de Pacotes ──────────────────────────────────────────
+
+model ClientContract {
+  id              String        @id @default(cuid())
+  trainerId       String
+  trainer         Trainer       @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  clientId        String
+  client          ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dogId           String?
+  dog             Dog?          @relation(fields: [dogId], references: [id], onDelete: SetNull)
+  packageId       String?
+  servicePackage  ServicePackage? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  name            String        // Nome do pacote no momento da venda
+  sessionsCount   Int           // Total de sessões
+  amount          Float         // Valor total cobrado
+  isFractioned    Boolean       @default(false)
+  fractionSessions Int          @default(1)
+  startDate       String        // YYYY-MM-DD
+  status          String        @default("Ativo") // Ativo / Encerrado
+  notes           String?       @db.Text
+  createdAt       DateTime      @default(now())
+
+  invoices        ClientInvoice[]
+
+  @@index([trainerId])
+  @@index([clientId])
+  @@index([dogId])
+  @@index([packageId])
+}
+
+// ─── Cobranças e Recibos do Tutor ────────────────────────────────────────────
+
+model ClientInvoice {
+  id              String          @id @default(cuid())
+  trainerId       String
+  trainer         Trainer         @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  contractId      String
+  contract        ClientContract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  description     String
+  amount          Float
+  status          String          @default("Pendente") // Pendente / Pago / Atrasado
+  paymentMethod   String?         // PIX / Dinheiro / Cartao / Transferencia / Outro
+  dueDate         String?         // Atrelada às sessões ou data
+  paidAt          String?         // YYYY-MM-DD
+  invoiceNumber   Int?            // Sequência para recibo
+  createdAt       DateTime        @default(now())
+
+  @@index([trainerId])
+  @@index([contractId])
+}
+
+// ─── Tarefa do portal ─────────────────────────────────────────────────────────
+
+model PortalTask {
+  id          String   @id @default(cuid())
+  trainerId   String
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  clientId    String?
+  client      ClientProfile? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  title       String
+  description String?  @db.Text
+  completed   Boolean  @default(false)
+  evidenceUrl String?  @db.Text
+  // Recorrência: "once" (uma vez) | "daily" (todo dia) | "weekly" (dias específicos)
+  recurrence  String   @default("once")
+  weekdays    String?  @db.Text   // JSON [0..6] (0=Domingo) quando recurrence="weekly"
+  completions String?  @db.Text   // JSON ["YYYY-MM-DD", ...] datas concluídas (recorrentes)
+  createdAt   DateTime @default(now())
+
+  @@index([trainerId])
+  @@index([clientId])
+}
+
+// ─── Feedback do portal ───────────────────────────────────────────────────────
+
+model PortalFeedback {
+  id        String   @id @default(cuid())
+  trainerId String
+  trainer   Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  clientId  String?
+  client    ClientProfile? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  author    String   @default("Tutor")
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([trainerId])
+  @@index([clientId])
+}
+
+// ─── Link mágico do portal do tutor ──────────────────────────────────────────
+
+model PortalAccessLink {
+  id          String   @id @default(cuid())
+  trainerId   String
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  clientId    String   @unique
+  client      ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tokenHash   String   @unique
+  pinHash     String?
+  tokenPrefix String
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  lastAccessAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([trainerId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+}
+
+// ─── Gamificação do cliente ───────────────────────────────────────────────
+
+model ClientGamification {
+  id                      String   @id @default(cuid())
+  clientId                String   @unique
+  client                  ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  trainerId               String
+  trainer                 Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  points                  Int      @default(0)
+  streakDays              Int      @default(0)
+  lastVisitDate           String?  // YYYY-MM-DD
+  streakTolerance         Int      @default(100)
+  lastStreakUpdateDate    String?  @default("")
+  trainerRating           Int      @default(0)
+  totalTasksCompleted     Int      @default(0)
+  totalFeedbacks          Int      @default(0)
+  totalTrainingsCompleted Int      @default(0)
+  totalFeedbacksReceived  Int      @default(0)
+  tutorsInvited           Int      @default(0)
+  weeklyTasksCompleted    Int      @default(0)
+  successfulTrainings     Int      @default(0)
+  videosShared            Int      @default(0)
+  monthlyProgress         Int      @default(0)
+  watchedVideos           String?  @db.Text
+  sessionRatings          String?  @db.Text
+  techniquesUsed          String?  @db.Text
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([trainerId])
+}
+
+// ─── Relatório de Evolução (módulo 5 - ciclo de vida do relatório) ──────────
+model EvolutionReport {
+  id          String   @id @default(cuid())
+  trainerId   String
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  dogId       String
+  dog         Dog      @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  month       String   // rótulo do período (ex: "Junho de 2026")
+  status      String   @default("Rascunho") // Rascunho / Aguardando / Enviado
+  content     String   @db.LongText          // JSON do relatório gerado/editado
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([trainerId])
+  @@index([dogId])
+}
