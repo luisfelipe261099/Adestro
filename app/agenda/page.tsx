@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DateField } from "@/components/date-field";
@@ -200,6 +200,9 @@ export default function SchedulePage() {
   const [selectedClientId, setSelectedClientId] = useState(clients[0]?.id ?? "");
   const [selectedDogId, setSelectedDogId] = useState(clients[0]?.dogs[0]?.id ?? "");
   const [time, setTime] = useState("09:30");
+  // Data livre do formulário: permite agendar para QUALQUER dia (não só o selecionado no calendário).
+  const [formDateISO, setFormDateISO] = useState(() => formatISODate(new Date()));
+  const formRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<EventStatus>("Pendente");
   const [busyEventId, setBusyEventId] = useState<string | null>(null);
   // Participantes da turma (qual evento está com a lista aberta)
@@ -229,6 +232,23 @@ export default function SchedulePage() {
   const selectedDog = useMemo(
     () => selectedClient?.dogs.find((dog) => dog.id === selectedDogId) ?? selectedClient?.dogs[0],
     [selectedClient, selectedDogId],
+  );
+
+  // Ao abrir o formulário: sincroniza a data com o dia selecionado e rola a tela até ele.
+  useEffect(() => {
+    if (!showForm) return;
+    setFormDateISO(formatISODate(currentDate));
+    const id = requestAnimationFrame(() =>
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showForm]);
+
+  // Conflito de horário: aulas no mesmo dia e hora (ignora canceladas).
+  const timeConflicts = useMemo(
+    () => events.filter((e) => e.day === formDateISO && e.time === time && e.status !== "Cancelado"),
+    [events, formDateISO, time],
   );
 
   const weekDates = useMemo(() => buildWeekDates(currentDate), [currentDate]);
@@ -440,7 +460,7 @@ export default function SchedulePage() {
     }
 
     setIsCreating(true);
-    const dayStr = formatISODate(currentDate);
+    const dayStr = formDateISO;
 
     try {
       const ok = await addCalendarEvent({
@@ -665,14 +685,6 @@ export default function SchedulePage() {
                               title="Solicita confirmação de presença via WhatsApp"
                             >
                               ✅ Confirmação
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleOpenWhatsApp(relatedMeta?.phone, event.dog, { day: event.day, time: event.time })}
-                              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-emerald-700 hover:bg-emerald-50"
-                            >
-                              <TinyIcon name="whats" />
-                              WhatsApp
                             </button>
                             <button
                               type="button"
@@ -905,7 +917,7 @@ export default function SchedulePage() {
           </section>
 
           {showForm && (
-            <section className="mt-3 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm animate-in slide-in-from-top-4 duration-200">
+            <section ref={formRef} className="mt-3 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm animate-in slide-in-from-top-4 duration-200">
               <p className="text-xs font-bold uppercase tracking-wide text-[var(--foreground)] border-b border-slate-100 pb-2">Agendar Aula</p>
               
               <form onSubmit={onSubmit} className="mt-3.5 space-y-3.5">
@@ -1006,9 +1018,11 @@ export default function SchedulePage() {
                   <label className="grid gap-1">
                     <span className="text-[11px] font-medium text-[var(--muted)]">Dia do Agendamento</span>
                     <input
-                      value={currentDate.toLocaleDateString("pt-BR")}
-                      readOnly
-                      className="rounded-md border border-[var(--border)] bg-slate-50 px-3 py-2 text-sm text-[var(--foreground)]"
+                      type="date"
+                      value={formDateISO}
+                      onChange={(event) => setFormDateISO(event.target.value)}
+                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
+                      required
                     />
                   </label>
 
@@ -1053,6 +1067,13 @@ export default function SchedulePage() {
                     </select>
                   </label>
                 </div>
+
+                {timeConflicts.length > 0 && (
+                  <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900">
+                    <span className="font-semibold">Atenção:</span>{" "}
+                    já existe {timeConflicts.length === 1 ? "uma aula marcada" : `${timeConflicts.length} aulas marcadas`} neste dia e horário ({timeConflicts.map((e) => e.dog).join(", ")}). Confira se não há choque antes de confirmar.
+                  </div>
+                )}
 
                 <button
                   type="submit"
