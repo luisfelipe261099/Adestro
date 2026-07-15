@@ -36,13 +36,13 @@ type TourState = {
   jumpTo: (index: number) => void;
 };
 
-const DEFAULT_STEPS: TourStep[] = [
+export const TRAINER_STEPS: TourStep[] = [
   {
     id: "welcome",
     route: "/dashboard",
     title: "Bem-vindo ao Adestro! 🐾",
     description:
-      "Vou te guiar em 10 passos pelas principais funcionalidades. Pode pausar ou pular a qualquer momento.",
+      "Vou te guiar pelas principais telas do sistema. O app navega sozinho — você só clica em Próximo. Pode pausar ou pular a qualquer momento.",
     fullScreen: true,
   },
   {
@@ -82,6 +82,14 @@ const DEFAULT_STEPS: TourStep[] = [
     placement: "top",
   },
   {
+    id: "treinos",
+    route: "/treinos",
+    title: "Feed de treinos",
+    description:
+      "Linha do tempo dos treinos realizados, com fotos, notas e filtros (hoje, semana, pendentes). Na aba 'Quadro' em Clientes você também arrasta cada cão entre as fases do adestramento.",
+    fullScreen: true,
+  },
+  {
     id: "registro",
     route: "/treinos/registro",
     selector: '[data-tour="ia-chat"]',
@@ -89,6 +97,14 @@ const DEFAULT_STEPS: TourStep[] = [
     description:
       "Grave notas por voz (transcrição automática), avalie comandos com estrelas e use o assistente IA ✨ no canto pra sugestões técnicas.",
     placement: "left",
+  },
+  {
+    id: "portal",
+    route: "/portal",
+    title: "Portal do cliente",
+    description:
+      "Gere o link único de cada cliente e envie pelo WhatsApp. Lá o tutor vê tarefas de casa, evolução, gamificação e confirma presença — sem precisar de login.",
+    fullScreen: true,
   },
   {
     id: "financeiro",
@@ -121,10 +137,13 @@ const DEFAULT_STEPS: TourStep[] = [
     route: "/dashboard",
     title: "Pronto! Você já sabe o essencial 🎉",
     description:
-      "Atalhos úteis: Ctrl+K abre a busca global · ícone ✨ na sessão chama a IA · clique no sininho pra ver pendências. Bom adestramento!",
+      "Atalhos úteis: Ctrl+K abre a busca global · ícone ✨ na sessão chama a IA · clique no sininho pra ver pendências. O guia completo fica em Mais → Tutorial. Bom adestramento!",
     fullScreen: true,
   },
 ];
+
+// Compat: nome antigo usado por quem inicia o tour sem passar steps.
+const DEFAULT_STEPS = TRAINER_STEPS;
 
 // Tour do ADMIN — roda nas páginas /admin.
 export const ADMIN_STEPS: TourStep[] = [
@@ -155,11 +174,59 @@ export const ADMIN_STEPS: TourStep[] = [
     placement: "bottom",
   },
   {
+    id: "admin-adestradores",
+    route: "/admin/adestradores",
+    title: "Adestradores",
+    description:
+      "Todas as contas de adestrador: crie novas, redefina senha, ative/desative acesso e acompanhe o plano de cada um.",
+    fullScreen: true,
+  },
+  {
+    id: "admin-planos",
+    route: "/admin/planos",
+    title: "Planos",
+    description:
+      "Defina o plano de cada conta (limites, valores e status da assinatura). Mudanças aqui refletem na hora para o adestrador.",
+    fullScreen: true,
+  },
+  {
+    id: "admin-faturamento",
+    route: "/admin/faturamento",
+    title: "Faturamento",
+    description:
+      "Visão consolidada de pagamentos: o que já entrou, o que está pendente e o histórico por adestrador.",
+    fullScreen: true,
+  },
+  {
+    id: "admin-relatorios",
+    route: "/admin/relatorios",
+    title: "Relatórios de uso",
+    description:
+      "Métricas de uso e desempenho da operação — sessões registradas, clientes ativos e engajamento por conta.",
+    fullScreen: true,
+  },
+  {
+    id: "admin-templates",
+    route: "/admin/templates",
+    title: "Templates",
+    description:
+      "Edite os padrões usados por todos: atividades, comandos, tarefas do cliente e o texto de cada mensagem de WhatsApp.",
+    fullScreen: true,
+  },
+  {
+    id: "admin-audit",
+    route: "/admin/audit",
+    title: "Auditoria",
+    description:
+      "Histórico de quem fez o quê no sistema. Essencial para operação com vários adestradores e para investigar problemas.",
+    fullScreen: true,
+  },
+  {
     id: "admin-done",
     route: "/admin",
     title: "Pronto! 🎉",
     description:
-      "Explore cada aba no seu ritmo. Você pode reabrir este tour quando quiser pelo botão “Tutorial”.",
+      "Explore cada aba no seu ritmo. Você pode reabrir este tour quando quiser pelo botão “Tutorial” ou pela página Tutorial no menu.",
     fullScreen: true,
   },
 ];
@@ -357,6 +424,16 @@ export function ProductTour() {
       }
     };
   }, [step, pathname]);
+
+  // Esc encerra o tour (mesma convenção dos modais do app)
+  useEffect(() => {
+    if (!active) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") stop();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [active, stop]);
 
   // Reposiciona em resize / scroll
   useEffect(() => {
