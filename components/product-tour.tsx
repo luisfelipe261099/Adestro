@@ -29,12 +29,19 @@ type TourState = {
   active: boolean;
   stepIndex: number;
   steps: TourStep[];
-  start: (steps?: TourStep[]) => void;
+  doneKey: string;
+  start: (steps?: TourStep[], doneKey?: string) => void;
   next: () => void;
   prev: () => void;
   stop: () => void;
   jumpTo: (index: number) => void;
 };
+
+// Chave localStorage de conclusão POR TOUR — concluir o tour do admin não pode
+// marcar o do adestrador como visto (e vice-versa).
+export const TRAINER_TOUR_DONE_KEY = "adestro-tour-done";
+export const ADMIN_TOUR_DONE_KEY = "adestro-tour-admin-done";
+export const TUTOR_TOUR_DONE_KEY = "adestro-tour-portal-done";
 
 export const TRAINER_STEPS: TourStep[] = [
   {
@@ -176,50 +183,56 @@ export const ADMIN_STEPS: TourStep[] = [
   {
     id: "admin-adestradores",
     route: "/admin/adestradores",
+    selector: '[data-tour="admin-adestradores"]',
     title: "Adestradores",
     description:
       "Todas as contas de adestrador: crie novas, redefina senha, ative/desative acesso e acompanhe o plano de cada um.",
-    fullScreen: true,
+    placement: "bottom",
   },
   {
     id: "admin-planos",
     route: "/admin/planos",
+    selector: '[data-tour="admin-planos"]',
     title: "Planos",
     description:
       "Defina o plano de cada conta (limites, valores e status da assinatura). Mudanças aqui refletem na hora para o adestrador.",
-    fullScreen: true,
+    placement: "bottom",
   },
   {
     id: "admin-faturamento",
     route: "/admin/faturamento",
+    selector: '[data-tour="admin-faturamento"]',
     title: "Faturamento",
     description:
       "Visão consolidada de pagamentos: o que já entrou, o que está pendente e o histórico por adestrador.",
-    fullScreen: true,
+    placement: "bottom",
   },
   {
     id: "admin-relatorios",
     route: "/admin/relatorios",
+    selector: '[data-tour="admin-relatorios"]',
     title: "Relatórios de uso",
     description:
       "Métricas de uso e desempenho da operação — sessões registradas, clientes ativos e engajamento por conta.",
-    fullScreen: true,
+    placement: "bottom",
   },
   {
     id: "admin-templates",
     route: "/admin/templates",
+    selector: '[data-tour="admin-templates"]',
     title: "Templates",
     description:
       "Edite os padrões usados por todos: atividades, comandos, tarefas do cliente e o texto de cada mensagem de WhatsApp.",
-    fullScreen: true,
+    placement: "bottom",
   },
   {
     id: "admin-audit",
     route: "/admin/audit",
+    selector: '[data-tour="admin-audit"]',
     title: "Auditoria",
     description:
       "Histórico de quem fez o quê no sistema. Essencial para operação com vários adestradores e para investigar problemas.",
-    fullScreen: true,
+    placement: "bottom",
   },
   {
     id: "admin-done",
@@ -279,22 +292,24 @@ export const TUTOR_STEPS: TourStep[] = [
   },
 ];
 
-export const useTour = create<TourState>((set) => ({
+export const useTour = create<TourState>((set, get) => ({
   active: false,
   stepIndex: 0,
   steps: DEFAULT_STEPS,
-  start: (steps) =>
+  doneKey: TRAINER_TOUR_DONE_KEY,
+  start: (steps, doneKey) =>
     set((state) => ({
       active: true,
       stepIndex: 0,
       steps: steps ?? state.steps,
+      doneKey: doneKey ?? TRAINER_TOUR_DONE_KEY,
     })),
   next: () =>
     set((state) => {
       const nextIndex = state.stepIndex + 1;
       if (nextIndex >= state.steps.length) {
         if (typeof window !== "undefined") {
-          window.localStorage.setItem("adestro-tour-done", "1");
+          window.localStorage.setItem(state.doneKey, "1");
         }
         return { active: false, stepIndex: 0 };
       }
@@ -303,7 +318,7 @@ export const useTour = create<TourState>((set) => ({
   prev: () => set((state) => ({ stepIndex: Math.max(0, state.stepIndex - 1) })),
   stop: () => {
     if (typeof window !== "undefined") {
-      window.localStorage.setItem("adestro-tour-done", "1");
+      window.localStorage.setItem(get().doneKey, "1");
     }
     set({ active: false, stepIndex: 0 });
   },
@@ -373,8 +388,15 @@ export function ProductTour() {
   const [targetRect, setTargetRect] = useState<Rect | null>(null);
   const [waitingForElement, setWaitingForElement] = useState(false);
   const pollRef = useRef<number | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
 
   const step = active ? steps[stepIndex] : null;
+
+  // Move o foco pro card a cada passo — leitores de tela anunciam o conteúdo
+  // e as teclas de navegação funcionam sem clique prévio.
+  useEffect(() => {
+    if (active) tooltipRef.current?.focus();
+  }, [active, stepIndex]);
 
   // Navega para a rota do passo atual quando necessário
   useEffect(() => {
@@ -384,20 +406,13 @@ export function ProductTour() {
     }
   }, [step, pathname, router]);
 
-  // Procura elemento alvo (com polling para dar tempo da página carregar)
+  // Procura elemento alvo (com polling para dar tempo da página carregar).
+  // Todo setState roda em callbacks agendados — nunca síncrono no corpo do
+  // efeito — para não disparar renders em cascata.
   useEffect(() => {
-    if (!step || step.fullScreen) {
-      setTargetRect(null);
-      setWaitingForElement(false);
-      return;
-    }
-    if (step.route && pathname !== step.route) {
-      setWaitingForElement(true);
-      return;
-    }
-    setWaitingForElement(true);
     let attempts = 0;
     const tryLocate = () => {
+      if (!step) return;
       attempts += 1;
       const rect = getRect(step.selector);
       if (rect) {
@@ -410,13 +425,27 @@ export function ProductTour() {
         }
         return;
       }
-      if (attempts < 30) {
+      // 10 × 200ms = 2s de espera máxima; depois desiste e mostra o card
+      // flutuante centralizado (melhor que prender o usuário no "Carregando").
+      if (attempts < 10) {
         pollRef.current = window.setTimeout(tryLocate, 200);
       } else {
-        setWaitingForElement(false); // desiste, mostra tooltip flutuante
+        setWaitingForElement(false);
       }
     };
-    tryLocate();
+    pollRef.current = window.setTimeout(() => {
+      if (!step || step.fullScreen) {
+        setTargetRect(null);
+        setWaitingForElement(false);
+        return;
+      }
+      if (step.route && pathname !== step.route) {
+        setWaitingForElement(true);
+        return;
+      }
+      setWaitingForElement(true);
+      tryLocate();
+    }, 0);
     return () => {
       if (pollRef.current) {
         window.clearTimeout(pollRef.current);
@@ -425,15 +454,17 @@ export function ProductTour() {
     };
   }, [step, pathname]);
 
-  // Esc encerra o tour (mesma convenção dos modais do app)
+  // Teclado: Esc encerra (convenção dos modais), setas navegam entre passos.
   useEffect(() => {
     if (!active) return;
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") stop();
+      else if (event.key === "ArrowRight") next();
+      else if (event.key === "ArrowLeft") prev();
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [active, stop]);
+  }, [active, stop, next, prev]);
 
   // Reposiciona em resize / scroll
   useEffect(() => {
@@ -495,7 +526,12 @@ export function ProductTour() {
 
       {/* Tooltip */}
       <div
-        className={`pointer-events-auto fixed max-h-[calc(100dvh-2rem)] max-w-sm overflow-y-auto rounded-md border border-purple-200 bg-white p-4 shadow-2xl ${
+        ref={tooltipRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={step.title}
+        tabIndex={-1}
+        className={`pointer-events-auto fixed max-h-[calc(100dvh-2rem)] max-w-sm overflow-y-auto rounded-md border border-purple-200 bg-white p-4 shadow-2xl outline-none ${
           tooltipPos ? "" : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
         }`}
         style={tooltipPos ? { top: tooltipPos.top, left: tooltipPos.left, width: "min(320px, calc(100vw - 32px))" } : { width: "min(360px, calc(100vw - 32px))" }}

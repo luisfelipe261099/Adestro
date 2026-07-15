@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { ADMIN_STEPS, useTour } from "@/components/product-tour";
+import { ADMIN_STEPS, ADMIN_TOUR_DONE_KEY, useTour } from "@/components/product-tour";
 
 type OverviewResponse = {
   metrics: {
@@ -104,7 +104,7 @@ export function AdminDashboard() {
           </div>
           <button
             type="button"
-            onClick={() => startAdminTour(ADMIN_STEPS)}
+            onClick={() => startAdminTour(ADMIN_STEPS, ADMIN_TOUR_DONE_KEY)}
             className="shrink-0 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
           >
             ✨ Tutorial

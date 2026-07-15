@@ -19,7 +19,7 @@ import {
   IconSparkle,
 } from "@/components/icons";
 import { NextSessionCard } from "@/components/next-session-card";
-import { useTour } from "@/components/product-tour";
+import { TRAINER_TOUR_DONE_KEY, useTour } from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
 import { eventTimestamp } from "@/lib/home-agenda";
 
@@ -47,7 +47,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setTourDone(window.localStorage.getItem("adestro-tour-done") === "1");
+      setTourDone(window.localStorage.getItem(TRAINER_TOUR_DONE_KEY) === "1");
     }
   }, []);
 

@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import { PageShell } from "@/components/page-shell";
-import { ADMIN_STEPS, TRAINER_STEPS, useTour } from "@/components/product-tour";
+import {
+  ADMIN_STEPS,
+  ADMIN_TOUR_DONE_KEY,
+  TRAINER_STEPS,
+  TRAINER_TOUR_DONE_KEY,
+  useTour,
+} from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
 
 type FlowStep = {
@@ -324,7 +330,7 @@ function AdminTutorial() {
           </div>
           <button
             type="button"
-            onClick={() => startAdminTour(ADMIN_STEPS)}
+            onClick={() => startAdminTour(ADMIN_STEPS, ADMIN_TOUR_DONE_KEY)}
             className="inline-flex items-center gap-1.5 rounded-full bg-purple-600 px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-purple-700"
           >
             ▶ Iniciar tour guiado
@@ -418,7 +424,7 @@ function TrainerTutorial() {
           </div>
           <button
             type="button"
-            onClick={() => startTour(TRAINER_STEPS)}
+            onClick={() => startTour(TRAINER_STEPS, TRAINER_TOUR_DONE_KEY)}
             className="inline-flex items-center gap-1.5 rounded-full bg-purple-600 px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-purple-700"
           >
             ▶ Iniciar tour guiado
