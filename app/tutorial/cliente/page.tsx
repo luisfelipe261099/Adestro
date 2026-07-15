@@ -101,6 +101,10 @@ const clientFaq = [
     q: "Marquei uma tarefa sem querer",
     a: "Sem problema: toque de novo para desmarcar, ou avise o adestrador pelo chat.",
   },
+  {
+    q: "Tem modo escuro?",
+    a: "Sim. Toque no ícone de lua/sol no topo da página para alternar entre claro e escuro — a escolha fica salva no seu aparelho.",
+  },
 ];
 
 export default function ClientTutorialPage() {

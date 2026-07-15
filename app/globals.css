@@ -107,6 +107,94 @@ html[data-theme="dark"] {
 	--panel-strong: var(--surface);
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Camada de compatibilidade do modo escuro.
+
+   Boa parte do código usa utilitários fixos (bg-white, text-slate-900,
+   border-slate-100, tints amber/rose/emerald/sky…) em vez das variáveis do
+   tema. Em vez de reescrever centenas de call sites, remapeamos os
+   utilitários mais comuns aqui, só no dark. Código novo deve usar as
+   variáveis (--panel, --surface, --foreground, --muted, --border).
+
+   NÃO remapeados de propósito: bg-slate-900/950 e text-white/slate-300
+   (elementos deliberadamente escuros, continuam corretos no dark) e
+   bg-white/10 (véu sobre cards escuros).
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* neutros — superfícies */
+html[data-theme="dark"] .bg-white { background-color: var(--panel); }
+html[data-theme="dark"] .bg-white\/95 { background-color: color-mix(in srgb, var(--panel) 95%, transparent); }
+html[data-theme="dark"] .bg-white\/90 { background-color: color-mix(in srgb, var(--panel) 90%, transparent); }
+html[data-theme="dark"] .bg-white\/85 { background-color: color-mix(in srgb, var(--panel) 85%, transparent); }
+html[data-theme="dark"] .bg-white\/60 { background-color: color-mix(in srgb, var(--panel) 60%, transparent); }
+html[data-theme="dark"] .bg-slate-50,
+html[data-theme="dark"] .bg-slate-50\/40,
+html[data-theme="dark"] .bg-slate-50\/50,
+html[data-theme="dark"] .bg-slate-100 { background-color: var(--surface-2); }
+html[data-theme="dark"] .bg-slate-200 { background-color: var(--surface-3); }
+html[data-theme="dark"] .hover\:bg-slate-50:hover { background-color: var(--surface-2); }
+html[data-theme="dark"] .hover\:bg-slate-100:hover { background-color: var(--surface-3); }
+
+/* neutros — texto */
+html[data-theme="dark"] .text-slate-900,
+html[data-theme="dark"] .text-slate-800 { color: var(--foreground); }
+html[data-theme="dark"] .text-slate-700,
+html[data-theme="dark"] .text-slate-600 { color: var(--muted-strong); }
+html[data-theme="dark"] .text-slate-500,
+html[data-theme="dark"] .text-slate-400 { color: var(--muted); }
+
+/* neutros — bordas */
+html[data-theme="dark"] .border-slate-50,
+html[data-theme="dark"] .border-slate-100,
+html[data-theme="dark"] .border-slate-200 { border-color: var(--border); }
+html[data-theme="dark"] .border-slate-300 { border-color: var(--border-strong); }
+html[data-theme="dark"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border); }
+
+/* avisos âmbar */
+html[data-theme="dark"] .bg-amber-50,
+html[data-theme="dark"] .bg-amber-50\/40,
+html[data-theme="dark"] .bg-amber-100 { background-color: var(--warning-bg); }
+html[data-theme="dark"] .border-amber-100,
+html[data-theme="dark"] .border-amber-200,
+html[data-theme="dark"] .border-amber-300 { border-color: #78350f; }
+html[data-theme="dark"] .text-amber-900,
+html[data-theme="dark"] .text-amber-800 { color: #fcd34d; }
+html[data-theme="dark"] .text-amber-700 { color: #fbbf24; }
+
+/* sucesso esmeralda */
+html[data-theme="dark"] .bg-emerald-50,
+html[data-theme="dark"] .bg-emerald-100 { background-color: var(--success-bg); }
+html[data-theme="dark"] .border-emerald-200 { border-color: #14532d; }
+html[data-theme="dark"] .text-emerald-950,
+html[data-theme="dark"] .text-emerald-800 { color: #86efac; }
+html[data-theme="dark"] .text-emerald-700,
+html[data-theme="dark"] .text-emerald-600 { color: #6ee7b7; }
+
+/* erro/atraso rosa */
+html[data-theme="dark"] .bg-rose-50,
+html[data-theme="dark"] .bg-rose-100 { background-color: var(--danger-bg); }
+html[data-theme="dark"] .border-rose-200 { border-color: #7f1d1d; }
+html[data-theme="dark"] .text-rose-800,
+html[data-theme="dark"] .text-rose-700,
+html[data-theme="dark"] .text-rose-600 { color: #fda4af; }
+
+/* informativos sky (banner de confirmação do portal) */
+html[data-theme="dark"] .bg-sky-100 { background-color: #0c4a6e; }
+html[data-theme="dark"] .text-sky-900 { color: #e0f2fe; }
+html[data-theme="dark"] .text-sky-800 { color: #bae6fd; }
+html[data-theme="dark"] .text-sky-700 { color: #7dd3fc; }
+
+/* roxo (tour guiado e CTAs do tutorial) */
+html[data-theme="dark"] .bg-purple-50,
+html[data-theme="dark"] .bg-purple-100 { background-color: #2e1065; }
+html[data-theme="dark"] .border-purple-100,
+html[data-theme="dark"] .border-purple-200 { border-color: #581c87; }
+html[data-theme="dark"] .text-purple-800,
+html[data-theme="dark"] .text-purple-700 { color: #d8b4fe; }
+html[data-theme="dark"] .from-purple-50 { --tw-gradient-from: #1e1b4b; }
+html[data-theme="dark"] .via-white { --tw-gradient-via: #18181b; }
+html[data-theme="dark"] .to-indigo-50 { --tw-gradient-to: #1e1b4b; }
+
 * { box-sizing: border-box; }
 
 html {
