@@ -95,7 +95,7 @@ export default function PlanosPage() {
       <AdminContextNav />
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-          <div className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
+          <div data-tour="admin-planos" className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
           <h3 className="mb-6 text-xl font-semibold">Distribuição real dos planos</h3>
           <p className="mb-6 text-sm text-[var(--muted)]">Contagem por plano com base na base real de adestradores.</p>
           
