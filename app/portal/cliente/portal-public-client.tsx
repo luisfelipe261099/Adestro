@@ -7,7 +7,7 @@ import Link from "next/link";
 
 
 import { PageShell } from "@/components/page-shell";
-import { TUTOR_STEPS, useTour } from "@/components/product-tour";
+import { TUTOR_STEPS, TUTOR_TOUR_DONE_KEY, useTour } from "@/components/product-tour";
 import { GamificationPanel } from "@/components/gamification-panel";
 import { MonthlyReport } from "@/components/monthly-report";
 import { NpsPrompt } from "@/components/nps-prompt";
@@ -545,10 +545,16 @@ export function PortalPublicClient({ token }: { token: string }) {
       description="Veja o que fazer em casa, quando será a próxima aula e o resumo mais recente do treino."
     >
       <section className="space-y-4">
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <Link
+            href="/tutorial/cliente"
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--muted)] shadow-sm transition hover:bg-slate-50 hover:text-[var(--foreground)]"
+          >
+            📖 Guia completo
+          </Link>
           <button
             type="button"
-            onClick={() => startTutorTour(TUTOR_STEPS)}
+            onClick={() => startTutorTour(TUTOR_STEPS, TUTOR_TOUR_DONE_KEY)}
             className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--muted)] shadow-sm transition hover:bg-slate-50 hover:text-[var(--foreground)]"
           >
             ✨ Como usar

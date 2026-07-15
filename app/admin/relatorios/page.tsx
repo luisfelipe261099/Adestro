@@ -56,7 +56,7 @@ export default function RelatoriosPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Crescimento de Usuários */}
-          <div className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
+          <div data-tour="admin-relatorios" className="rounded-md border border-[var(--border)] bg-[var(--panel-strong)] p-6">
             <h3 className="mb-4 text-xl font-semibold">Crescimento de Adestradores</h3>
             <div className="space-y-3">
               {[
