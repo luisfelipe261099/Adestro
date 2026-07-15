@@ -234,6 +234,15 @@ export default function SchedulePage() {
     [selectedClient, selectedDogId],
   );
 
+  // ?new=true (vindo do dashboard/card Próxima ação) abre o formulário direto.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("new") !== "true") return;
+    const id = window.setTimeout(() => setShowForm(true), 0);
+    return () => window.clearTimeout(id);
+  }, []);
+
   // Ao abrir o formulário: sincroniza a data com o dia selecionado e rola a tela até ele.
   useEffect(() => {
     if (!showForm) return;
@@ -757,8 +766,15 @@ export default function SchedulePage() {
                 })}
 
                 {eventsForSelectedDay.length === 0 ? (
-                  <article className="rounded-md border border-dashed border-[var(--border)] bg-white p-6 text-center text-xs text-[var(--muted)]">
-                    Nenhuma aula agendada para este dia.
+                  <article className="rounded-md border border-dashed border-[var(--border)] bg-white p-6 text-center">
+                    <p className="text-xs text-[var(--muted)]">Nenhuma aula agendada para este dia.</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowForm(true)}
+                      className="btn-primary mt-3 text-[12.5px]"
+                    >
+                      + Agendar aula neste dia
+                    </button>
                   </article>
                 ) : null}
               </div>

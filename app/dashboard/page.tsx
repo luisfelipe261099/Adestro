@@ -18,6 +18,7 @@ import {
   IconReport,
   IconSparkle,
 } from "@/components/icons";
+import { NextActionCard } from "@/components/next-action-card";
 import { NextSessionCard } from "@/components/next-session-card";
 import { TRAINER_TOUR_DONE_KEY, useTour } from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
@@ -50,6 +51,23 @@ export default function DashboardPage() {
       setTourDone(window.localStorage.getItem(TRAINER_TOUR_DONE_KEY) === "1");
     }
   }, []);
+
+  // Tour automático na 1ª entrada: só para conta nova (0-1 clientes), depois do
+  // wizard de boas-vindas, uma única vez. Usuário estabelecido nunca é interrompido.
+  const clients = useAppStore((state) => state.clients);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storage = window.localStorage;
+    if (storage.getItem(TRAINER_TOUR_DONE_KEY) === "1") return;
+    if (storage.getItem("adestro-tour-autostarted") === "1") return;
+    if (!storage.getItem("adestro-onboarding-done")) return;
+    if (clients.length > 1) return;
+    const timer = window.setTimeout(() => {
+      storage.setItem("adestro-tour-autostarted", "1");
+      startTour();
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [clients.length, startTour]);
 
   useEffect(() => {
     let cancelled = false;
@@ -221,6 +239,9 @@ export default function DashboardPage() {
             </Link>
           </div>
         </header>
+
+        {/* Jornada inicial — 1 ação por vez até a conta engrenar (some quando completa) */}
+        <NextActionCard />
 
         {/* Hero — próxima sessão (elemento dominante: "o que faço agora?") */}
         <div className="mt-6">
