@@ -559,7 +559,19 @@ export default function FinanceiroPage() {
                   <section className="space-y-2">
                     <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Cobranças Recentes</h3>
                     {invoices.length === 0 ? (
-                      <p className="text-xs text-[var(--muted)] py-4">Nenhuma cobrança registrada.</p>
+                      <div className="rounded-md border border-dashed border-[var(--border)] bg-white p-5 text-center">
+                        <p className="text-xs text-[var(--muted)]">
+                          Nenhuma cobrança ainda. Cadastre um pacote e venda para um tutor — as cobranças
+                          (com parcelas e lembretes de WhatsApp) são geradas automaticamente.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("pacotes")}
+                          className="btn-primary mt-3 text-[12.5px]"
+                        >
+                          Criar primeiro pacote
+                        </button>
+                      </div>
                     ) : (
                       invoices.slice(0, 5).map((inv) => (
                         <div key={inv.id} className="flex justify-between items-center rounded-md border border-slate-100 bg-white p-3 text-xs">
