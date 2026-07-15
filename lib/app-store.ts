@@ -205,6 +205,7 @@ type AppState = {
     addDog?: { name: string; breed?: string; age?: string };
   }) => Promise<{ ok: true } | { ok: false; error: string }>;
   setDogTrainingStatus: (clientId: string, dogId: string, status: DogTrainingStatus) => Promise<boolean>;
+  deleteClient: (clientId: string) => Promise<{ ok: true } | { ok: false; error: string }>;
   addTrainingSession: (payload: {
     number?: number;
     title: string;
@@ -1014,6 +1015,33 @@ export const useAppStore = create<AppState>()(
         } catch {
           set({ clients: previous });
           return false;
+        }
+      },
+      deleteClient: async (clientId) => {
+        try {
+          const response = await fetchWithRetry(
+            `/api/clients?clientId=${encodeURIComponent(clientId)}`,
+            { method: "DELETE" },
+          );
+          if (!response.ok) {
+            let error = "Não foi possível excluir o cliente. Tente novamente.";
+            try {
+              const data = (await response.json()) as { error?: string };
+              if (data?.error) error = data.error;
+            } catch {
+              // resposta sem corpo JSON
+            }
+            return { ok: false as const, error };
+          }
+          // Remove localmente na hora e ressincroniza com o banco.
+          set({ clients: get().clients.filter((c) => c.id !== clientId) });
+          await get().loadFromDB();
+          return { ok: true as const };
+        } catch {
+          return {
+            ok: false as const,
+            error: "Falha de conexão com o servidor. Verifique sua internet e tente de novo.",
+          };
         }
       },
       clearAppData: () =>

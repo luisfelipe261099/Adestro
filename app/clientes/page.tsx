@@ -132,6 +132,7 @@ export default function ClientsPage() {
   const addClientWithDog = useAppStore((state) => state.addClientWithDog);
   const approveClient = useAppStore((state) => state.approveClient);
   const updateClient = useAppStore((state) => state.updateClient);
+  const deleteClient = useAppStore((state) => state.deleteClient);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"todos" | ClientStatus>("todos");
@@ -149,6 +150,26 @@ export default function ClientsPage() {
   } | null>(null);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
+
+  // Exclusão de cliente (destrutiva): pede confirmação com aviso do que cascata.
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; dogsCount: number } | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    setDeleteBusy(true);
+    setDeleteError("");
+    const result = await deleteClient(deleteTarget.id);
+    setDeleteBusy(false);
+    if (!result.ok) {
+      setDeleteError(result.error);
+      return;
+    }
+    setSaveMessage(`Cliente "${deleteTarget.name}" excluído.`);
+    window.setTimeout(() => setSaveMessage(""), 4000);
+    setDeleteTarget(null);
+  }
 
   async function handleSaveEdit() {
     if (!editDraft) return;
@@ -1409,6 +1430,20 @@ export default function ClientsPage() {
                         >
                           Editar
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteError("");
+                            setDeleteTarget({
+                              id: item.client.id,
+                              name: item.client.name,
+                              dogsCount: item.client.dogs.length,
+                            });
+                          }}
+                          className="rounded-full border border-rose-200 bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-rose-700 hover:bg-rose-50 transition whitespace-nowrap"
+                        >
+                          Excluir
+                        </button>
                       </div>
                     )}
                     <Link href="/portal" className="text-xs font-semibold text-[var(--foreground)] whitespace-nowrap">Portal</Link>
@@ -1419,6 +1454,47 @@ export default function ClientsPage() {
           </section>
           )}
       </main>
+
+      {/* Confirmação de exclusão de cliente (ação destrutiva) */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default"
+            onClick={() => (deleteBusy ? undefined : setDeleteTarget(null))}
+            aria-label="Fechar"
+          />
+          <div className="relative w-full max-w-md rounded-lg border border-[var(--border)] bg-white p-5 shadow-2xl">
+            <h3 className="text-base font-semibold text-[var(--foreground)]">Excluir cliente</h3>
+            <p className="mt-2 text-[13px] text-[var(--muted-strong)]">
+              Tem certeza que deseja excluir <span className="font-semibold text-[var(--foreground)]">{deleteTarget.name}</span>?
+            </p>
+            <p className="mt-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] text-rose-800">
+              Isto remove também {deleteTarget.dogsCount === 1 ? "o cão" : `os ${deleteTarget.dogsCount} cães`} do cliente,
+              contratos e tarefas. O histórico de treinos é preservado na sua conta. Esta ação não pode ser desfeita.
+            </p>
+            {deleteError && <p className="mt-2 text-[12px] text-[var(--danger)]">{deleteError}</p>}
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleteBusy}
+                className="btn-secondary text-[12.5px] disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={deleteBusy}
+                className="rounded-md bg-rose-600 px-4 py-2 text-[12.5px] font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
+              >
+                {deleteBusy ? "Excluindo…" : "Excluir cliente"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Edição de Cliente / Cão */}
       {editDraft && (
