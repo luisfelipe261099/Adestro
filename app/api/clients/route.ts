@@ -396,9 +396,11 @@ export async function PATCH(request: Request) {
 }
 
 // DELETE /api/clients?clientId=... — exclui o cliente e, por cascade, seus cães,
-// contratos, tarefas e gamificação. As sessões de treino ficam com dogId nulo
-// (histórico preservado na conta do adestrador). Ação destrutiva: a confirmação
-// é responsabilidade da UI.
+// contratos, tarefas e gamificação. Os agendamentos (CalendarEvent) são removidos
+// EXPLICITAMENTE antes da exclusão: a relação usa onDelete:SetNull, então sem isso
+// o evento viraria órfão (clientId nulo, mas nome do cliente/cão ainda gravado) e
+// continuaria aparecendo na agenda e no dashboard. As sessões de treino ficam com
+// dogId nulo (histórico preservado). Ação destrutiva: a confirmação é da UI.
 export async function DELETE(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
@@ -423,6 +425,9 @@ export async function DELETE(request: Request) {
   }
 
   try {
+    // Remove os agendamentos do cliente ANTES de excluí-lo — senão o onDelete:SetNull
+    // deixaria eventos órfãos ainda visíveis na agenda/dashboard.
+    await prisma.calendarEvent.deleteMany({ where: { clientId } });
     await prisma.clientProfile.delete({ where: { id: clientId } });
     await audit({
       trainerId: trainer.id,

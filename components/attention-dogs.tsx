@@ -27,7 +27,8 @@ export function AttentionDogs() {
   );
 
   const needAttention = items.filter((item) => item.level !== "green");
-  const shown = needAttention.slice(0, 6);
+  const shown = needAttention.slice(0, 4);
+  const remaining = needAttention.length - shown.length;
 
   return (
     <section className="card p-4">
@@ -55,6 +56,7 @@ export function AttentionDogs() {
           Todos os cães estão em dia.
         </div>
       ) : (
+        <>
         <ul className="mt-3 divide-y divide-[var(--border)]">
           {shown.map((item) => (
             <li key={`${item.clientId}-${item.dog.id}`}>
@@ -81,11 +83,10 @@ export function AttentionDogs() {
                     {item.clientName}
                     {item.dog.breed ? ` · ${item.dog.breed}` : ""}
                   </p>
-                  <p className="truncate text-[10.5px] text-[var(--muted)]">
-                    {item.plan ? `Plano ${item.plan}` : "Sem plano"} ·{" "}
+                  <p className="truncate text-[11px] text-[var(--muted)]">
                     {item.sessionsTotal > 0
                       ? `Sessão ${item.sessionCount}/${item.sessionsTotal} · ${item.phaseLabel}`
-                      : `${item.sessionCount} ${item.sessionCount === 1 ? "treino" : "treinos"}`}
+                      : `${item.sessionCount} ${item.sessionCount === 1 ? "treino registrado" : "treinos registrados"}`}
                   </p>
                   {item.sessionsTotal > 0 && (
                     <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-2)]">
@@ -96,7 +97,7 @@ export function AttentionDogs() {
                     </div>
                   )}
                 </div>
-                <span className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium text-[var(--muted-strong)]">
+                <span className="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap text-[11px] font-medium text-[var(--muted-strong)]">
                   <span className={`h-2 w-2 rounded-full ${DOT[item.level]}`} />
                   {item.label}
                 </span>
@@ -105,6 +106,16 @@ export function AttentionDogs() {
             </li>
           ))}
         </ul>
+        {remaining > 0 && (
+          <Link
+            href="/evolucao"
+            className="mt-1 flex items-center justify-center gap-1 rounded-md py-2 text-[12px] font-medium text-[var(--accent)] transition-colors hover:bg-[var(--surface-2)]"
+          >
+            Ver todos os {needAttention.length} cães
+            <IconChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
+        </>
       )}
     </section>
   );
