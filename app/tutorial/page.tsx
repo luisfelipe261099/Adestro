@@ -198,8 +198,8 @@ const featureHighlights = [
   },
   {
     icon: "🌙",
-    title: "Dark mode",
-    text: "Toggle em /configuracoes. Sem flicker no carregamento.",
+    title: "Tema claro/escuro",
+    text: "Botão ☀️/🌙 no topo de qualquer tela (e em /configuracoes). A escolha fica salva e vale pra todos os perfis — sem flicker no carregamento.",
   },
   {
     icon: "📜",
