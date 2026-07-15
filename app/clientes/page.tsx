@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DateField } from "@/components/date-field";
@@ -140,6 +140,19 @@ export default function ClientsPage() {
   const [showQuickFilters, setShowQuickFilters] = useState(true);
   const [sortMode, setSortMode] = useState<SortMode>("recentes");
   const [showForm, setShowForm] = useState(false);
+
+  // ?new=true (vindo do dashboard/card Próxima ação) abre o cadastro direto.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("new") !== "true") return;
+    const id = window.setTimeout(() => {
+      setShowForm(true);
+      setEntityKind("humanos");
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
+
   // Edição de cliente/cão: corrige cadastro errado e adiciona 2º cão ao mesmo dono.
   const [editDraft, setEditDraft] = useState<{
     clientId: string;
@@ -1246,9 +1259,30 @@ export default function ClientsPage() {
           {entityKind !== "quadro" && (
           <section data-tour="clients-list" className="mt-3 space-y-2">
             {filteredClients.length === 0 ? (
-              <article className="rounded-md border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
-                Nenhum {entityKind === "humanos" ? "cliente" : "cão"} encontrado com os filtros atuais.
-              </article>
+              clients.length === 0 ? (
+                <article className="rounded-lg border border-dashed border-[var(--border-strong)] bg-white p-8 text-center">
+                  <p className="text-3xl" aria-hidden>🐾</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">Comece cadastrando seu primeiro tutor</p>
+                  <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-[var(--muted)]">
+                    A ficha do tutor e do cão é a base de tudo: agenda, registro de treino, portal e financeiro
+                    ligam nela. Leva menos de 2 minutos.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(true);
+                      setFormStep(1);
+                    }}
+                    className="btn-primary mt-4 text-[13px]"
+                  >
+                    + Cadastrar primeiro tutor
+                  </button>
+                </article>
+              ) : (
+                <article className="rounded-md border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
+                  Nenhum {entityKind === "humanos" ? "cliente" : "cão"} encontrado com os filtros atuais.
+                </article>
+              )
             ) : null}
 
             {entityKind === "caes" ? filteredDogs.map(({ client, dog, status }) => (
