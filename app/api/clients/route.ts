@@ -173,6 +173,8 @@ export async function POST(request: Request) {
     cpf?: string;
     clientPhotoUrl?: string;
     privateNotes?: string;
+    secondContactName?: string;
+    secondContactPhone?: string;
     status?: string;
     propertyType?: string;
     environment?: string;
@@ -225,6 +227,8 @@ export async function POST(request: Request) {
       cpf:            body.cpf            ?? "",
       photoUrl:       sanitizePhotoUrl(body.clientPhotoUrl) ?? "",
       privateNotes:   body.privateNotes   ?? "",
+      secondContactName:  body.secondContactName  ?? "",
+      secondContactPhone: body.secondContactPhone ?? "",
       status:         body.status         ?? "Ativo",
       propertyType:   body.propertyType   ?? "",
       environment:    body.environment    ?? "",

@@ -151,7 +151,8 @@ export default function DashboardPage() {
     () => [
       {
         key: "agenda-dia",
-        tone: "stat-card-blue",
+        // valor 0 = card apagado (não compete por atenção); >0 = cor plena
+        tone: eventsToday.length === 0 ? "stat-card-dim" : "stat-card-blue",
         emoji: "",
         label: "Agenda do dia",
         value: eventsToday.length,
@@ -161,7 +162,7 @@ export default function DashboardPage() {
       },
       {
         key: "agenda-semana",
-        tone: "stat-card-sky",
+        tone: events.length === 0 ? "stat-card-dim" : "stat-card-sky",
         emoji: "",
         label: "Agenda da semana",
         value: events.length,
@@ -181,7 +182,8 @@ export default function DashboardPage() {
       },
       {
         key: "pendencias",
-        tone: "stat-card-orange",
+        // pendência > 0 muda o ESTADO do card: borda grossa + fundo alerta
+        tone: pendenciasTotal > 0 ? "stat-card-orange stat-card-alert" : "stat-card-dim",
         emoji: "",
         label: "Pendências",
         value: pendenciasTotal,
@@ -191,7 +193,7 @@ export default function DashboardPage() {
       },
       {
         key: "checklist",
-        tone: "stat-card-purple",
+        tone: checklistTotal === 0 ? "stat-card-dim" : "stat-card-purple",
         emoji: "",
         label: "Checklist do dia",
         value: checklistTotal,
@@ -230,10 +232,7 @@ export default function DashboardPage() {
               <IconDog className="h-4 w-4" />
               Registrar treino
             </Link>
-            <Link
-              href="/agenda?new=true"
-              className="inline-flex h-11 items-center gap-2 rounded-md bg-[var(--accent)] px-5 text-[14px] font-semibold text-white shadow-sm transition-colors hover:bg-[var(--accent-strong)]"
-            >
+            <Link href="/agenda?new=true" className="btn-action">
               <IconPlus className="h-4 w-4" />
               Novo agendamento
             </Link>
@@ -253,13 +252,13 @@ export default function DashboardPage() {
           {statCards.map((card) => (
             <Link key={card.key} href={card.href} className={`stat-card group ${card.tone}`}>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-[12px] font-semibold" style={{ color: "var(--c)" }}>
+                <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--c)" }}>
                   {card.label}
                 </span>
                 <card.Icon className="h-4 w-4" style={{ color: "var(--c)" }} />
               </div>
-              <p className="mt-2.5 text-[22px] font-bold tracking-tight text-[var(--foreground)]">{card.value}</p>
-              <p className="mt-0.5 text-[11px] text-[var(--muted)]">{card.sub}</p>
+              <p className="mt-2.5 text-[26px] font-extrabold tracking-tight text-[var(--foreground)]">{card.value}</p>
+              <p className="mt-0.5 text-[11px] font-medium text-[var(--muted)]">{card.sub}</p>
             </Link>
           ))}
         </section>
