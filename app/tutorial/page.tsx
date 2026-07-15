@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -199,6 +200,34 @@ const featureHighlights = [
     icon: "📜",
     title: "Audit log",
     text: "Histórico de quem fez o quê em /admin/audit. Essencial pra multi-adestrador.",
+  },
+];
+
+// Screenshots reais do app (mobile) — ilustram as telas principais.
+const screenshots = [
+  {
+    src: "/images/tutorial/dashboard.jpeg",
+    alt: "Tela Hoje (Dashboard) do Adestro com resumo da operação, clientes ativos e próximos atendimentos",
+    label: "Hoje (Dashboard)",
+    caption: "Resumo da operação assim que você abre o app.",
+  },
+  {
+    src: "/images/tutorial/agenda.jpeg",
+    alt: "Tela de Agenda do Adestro com visão por dia, semana e mês e criação de agendamento",
+    label: "Agenda",
+    caption: "Dia, semana ou mês — e novo agendamento em 1 toque.",
+  },
+  {
+    src: "/images/tutorial/financeiro.jpeg",
+    alt: "Painel Financeiro do Adestro com recebido, a receber, em atraso e contratos ativos",
+    label: "Financeiro",
+    caption: "Recebido, a receber, atrasos e contratos num painel só.",
+  },
+  {
+    src: "/images/tutorial/assistente-ia.jpeg",
+    alt: "Assistente IA do Adestro com atalhos de plano de aula, ansiedade, recall e latido",
+    label: "Assistente IA",
+    caption: "Sugestões técnicas com atalhos pros casos mais comuns.",
   },
 ];
 
@@ -487,6 +516,33 @@ function TrainerTutorial() {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* Screenshots das telas principais */}
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">O sistema em telas</p>
+        <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
+          Como o app aparece no celular
+        </h2>
+        <div className="mt-4 grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {screenshots.map((shot) => (
+            <figure key={shot.src} className="min-w-0">
+              <div className="overflow-hidden rounded-lg border border-[var(--border)] shadow-sm">
+                <Image
+                  src={shot.src}
+                  alt={shot.alt}
+                  width={440}
+                  height={800}
+                  className="h-auto w-full"
+                />
+              </div>
+              <figcaption className="mt-2">
+                <p className="text-sm font-semibold text-[var(--foreground)]">{shot.label}</p>
+                <p className="text-[12px] leading-5 text-[var(--muted)]">{shot.caption}</p>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </section>
 
       {/* Mapa de telas */}
