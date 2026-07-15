@@ -1,0 +1,65 @@
+{
+  "_comment": "Mapa curado da importação ClickUp (lista Clientes 901321279780). Chave = id do card. 'group' funde cards do mesmo cliente+cão (etapas). Curado manualmente em 2026-07-14 a partir dos títulos e fichas.",
+  "86acjecu3": { "skip": true, "reason": "card-modelo '01 Ficha padrão'" },
+
+  "86acnzb40": { "group": "amanda|sol", "client": "Amanda", "dogs": [{ "name": "Sol" }], "etapa": 2 },
+  "wdpu2ya777": { "group": "anah|schnauzer", "client": "Anah Horbatiuk", "dogs": [{ "name": "Schnauzer", "breed": "Schnauzer" }], "etapa": 1, "review": "nome do cão não informado no ClickUp (usada a raça como nome provisório)" },
+  "86ah9evu4": { "group": "anaxandre|charlote", "client": "Anaxandre Ise", "dogs": [{ "name": "Charlote", "breed": "Beagle" }], "etapa": 1 },
+  "86aet2ffq": { "group": "bruna-alberto|lowie", "client": "Bruna e Alberto", "dogs": [{ "name": "Lowie", "breed": "Chihuahua" }], "etapa": 1 },
+  "86aga21rt": { "group": "camila|chico", "client": "Camila Bittencourt", "dogs": [{ "name": "Chico", "breed": "Chihuahua" }], "etapa": 1 },
+  "86agn8c15": { "group": "dafna|luna", "client": "Dafna", "dogs": [{ "name": "Luna", "breed": "Schnauzer" }], "etapa": 1 },
+  "wdpu2ya789": { "group": "daiana|duck-nala", "client": "Daiana", "dogs": [{ "name": "Duck", "breed": "Border Collie" }, { "name": "Nala", "breed": "Border Collie" }], "etapa": 1 },
+
+  "86aet1a44": { "group": "daniel|chico", "client": "Daniel", "dogs": [{ "name": "Chico", "breed": "SRD/Labrador" }], "etapa": 1 },
+  "86acjfxge": { "group": "daniel|chico", "client": "Daniel", "dogs": [{ "name": "Chico", "breed": "SRD/Labrador" }], "etapa": 2 },
+  "86aege91a": { "group": "daniel|chico", "client": "Daniel", "dogs": [{ "name": "Chico", "breed": "SRD/Labrador" }], "etapa": 3 },
+  "86ah491gx": { "group": "daniel|chico", "client": "Daniel", "dogs": [{ "name": "Chico", "breed": "SRD/Labrador" }], "etapa": 4 },
+
+  "86ahhg27p": { "group": "daniela|online", "client": "Daniela", "dogs": [{ "name": "(não informado)" }], "etapa": 1, "review": "atendimento online; nome do cão não consta no ClickUp" },
+  "86afcr7w9": { "group": "digo|vicky", "client": "Digo", "dogs": [{ "name": "Vicky" }], "etapa": 1 },
+  "wdpu2ya79j": { "group": "fabiula|blue-heeler", "client": "Fabiula", "dogs": [{ "name": "Blue Heeler", "breed": "Blue Heeler" }], "etapa": 1, "review": "nome do cão não informado no ClickUp (usada a raça como nome provisório)" },
+  "86ahhfvj1": { "group": "fernando-ana|bruce-vito", "client": "Fernando e Ana", "dogs": [{ "name": "Bruce", "breed": "Pug" }, { "name": "Vito", "breed": "Shih Tzu" }], "etapa": 1 },
+  "86ackfu5c": { "group": "fran|preta-luz", "client": "Fran", "dogs": [{ "name": "Preta", "breed": "SRD", "sex": "Fêmea", "castrated": true, "age": "7 anos" }, { "name": "Luz", "breed": "SRD", "sex": "Fêmea", "castrated": true, "age": "6 anos" }], "etapa": 1 },
+  "86acncb7r": { "group": "gisele|philadelphia", "client": "Gisele", "dogs": [{ "name": "Philadelphia" }], "etapa": 1 },
+  "86agn88n7": { "group": "jessica-erico|amora", "client": "Jessica e Érico", "dogs": [{ "name": "Amora", "breed": "Beagle" }], "etapa": 1 },
+  "wdpu2ya77u": { "group": "juliana|nino", "client": "Juliana", "dogs": [{ "name": "Nino", "breed": "Pinscher" }], "etapa": 1 },
+  "wdpu2y9ynv": { "group": "julio|kodan", "client": "Julio", "dogs": [{ "name": "Kodan", "breed": "Pitbull" }], "etapa": 1 },
+  "86ah9gau2": { "group": "kaka|beats", "client": "Kaká Franck", "dogs": [{ "name": "Beats" }], "etapa": 1 },
+  "86ag7ykdc": { "group": "laise|fendi-tomy", "client": "Laise", "dogs": [{ "name": "Fendi" }, { "name": "Tomy" }], "etapa": 1 },
+  "86aguh3me": { "group": "larissa|bleer-nix", "client": "Larissa", "dogs": [{ "name": "Bleer" }, { "name": "Nix" }], "etapa": 1 },
+  "wdpu2ya7ap": { "group": "leila|darsh", "client": "Leila", "dogs": [{ "name": "Darsh" }], "etapa": 1 },
+  "86agn88rq": { "group": "leticia|olivia-alice", "client": "Leticia Lêka", "dogs": [{ "name": "Olivia" }, { "name": "Alice" }], "etapa": 1 },
+  "wdpu2y9z7q": { "group": "lindacir-julia|tuco", "client": "Lindacir e Julia", "dogs": [{ "name": "Tuco", "breed": "Yorkshire" }], "etapa": 1 },
+
+  "86aet1cdq": { "group": "luisa-hugo|pina-ponta", "client": "Luisa e Hugo", "dogs": [{ "name": "Pina", "breed": "Buldogue Francês", "sex": "Fêmea", "castrated": true, "age": "11 anos" }, { "name": "Ponta", "breed": "SRD (traços de pastor)", "sex": "Macho", "castrated": true, "age": "2 anos" }], "etapa": 1 },
+  "86aet1ugp": { "group": "luisa-hugo|pina-ponta", "client": "Luisa e Hugo", "dogs": [{ "name": "Ponta", "breed": "SRD (traços de pastor)", "sex": "Macho", "castrated": true, "age": "2 anos" }], "etapa": 2 },
+
+  "wdpu2y98j1": { "group": "luiz|aurora", "client": "Luiz", "dogs": [{ "name": "Aurora", "breed": "Golden Retriever" }], "etapa": 1 },
+
+  "86acp0g5w": { "group": "mauricio-maira|max", "client": "Maurício e Maíra", "dogs": [{ "name": "Max", "breed": "Boiadeiro de Berna" }], "etapa": 1 },
+  "86agp8ud6": { "group": "mauricio-maira|max", "client": "Maurício e Maíra", "dogs": [{ "name": "Max", "breed": "Boiadeiro de Berna" }], "etapa": 2 },
+
+  "86addtzff": { "group": "marcelo-osvaldo|loba", "client": "Marcelo e Osvaldo", "dogs": [{ "name": "Loba" }], "etapa": 1 },
+  "86ag7xm6m": { "group": "marcelo-osvaldo|loba", "client": "Marcelo e Osvaldo", "dogs": [{ "name": "Loba" }], "etapa": 2 },
+  "wdpu2y98k6": { "group": "marcelo-osvaldo|loba", "client": "Marcelo e Osvaldo", "dogs": [{ "name": "Loba" }], "etapa": 3 },
+
+  "86ad6yea0": { "group": "mariana|valentina", "client": "Mariana (MAGA)", "dogs": [{ "name": "Valentina", "breed": "Pit Monster" }], "etapa": 1 },
+  "86ahg47qr": { "group": "mariana|valentina", "client": "Mariana (MAGA)", "dogs": [{ "name": "Valentina", "breed": "Pit Monster" }], "etapa": 2 },
+  "86af4rw5p": { "group": "mariana|valentina", "client": "Mariana (MAGA)", "dogs": [{ "name": "Valentina", "breed": "Pit Monster" }], "etapa": 3 },
+
+  "86ackgpzp": { "group": "marisa|thor-tobias", "client": "Marisa", "dogs": [{ "name": "Thor", "breed": "Spitz alemão", "sex": "Macho", "castrated": false, "age": "2 anos" }, { "name": "Tobias", "sex": "Macho", "castrated": false, "age": "7 anos" }], "etapa": 1 },
+
+  "86adpbv40": { "group": "miryan|sky", "client": "Miryan", "dogs": [{ "name": "Sky" }], "etapa": 1 },
+  "86ag5cyqh": { "group": "mylla|luna", "client": "Mylla", "dogs": [{ "name": "Luna", "breed": "Yakutian Laika" }], "etapa": 1, "note": "internato" },
+  "86agp8n2b": { "group": "renata|gigio-zefa", "client": "Renata", "dogs": [{ "name": "Gigio" }, { "name": "Zefa" }], "etapa": 1 },
+  "86aga1cpn": { "group": "sara|shakira", "client": "Sara", "dogs": [{ "name": "Shakira" }], "etapa": 1 },
+  "86ah49a5z": { "group": "savo|logan", "client": "Savo", "dogs": [{ "name": "Logan", "breed": "Cane Corso" }], "etapa": 1 },
+  "86afkjcnj": { "group": "shaia|spock", "client": "Shaia", "dogs": [{ "name": "Spock" }], "etapa": 1 },
+
+  "86afcrtdh": { "group": "sidneia|estrela", "client": "Sidneia", "dogs": [{ "name": "Estrela" }], "etapa": 1 },
+  "86ag7xe7v": { "group": "sidneia|estrela", "client": "Sidneia", "dogs": [{ "name": "Estrela" }], "etapa": 2 },
+  "86ahg47hb": { "group": "sidneia|estrela", "client": "Sidneia", "dogs": [{ "name": "Estrela" }], "etapa": 3 },
+
+  "wdpu2y9yj4": { "group": "vinicius|luna", "client": "Vinícius", "dogs": [{ "name": "Luna", "breed": "SRD (pastora)" }], "etapa": 1 },
+  "wdpu2y9ync": { "group": "vitoria|bitelo", "client": "Vitoria", "dogs": [{ "name": "Bitelo", "breed": "SRD" }], "etapa": 1 }
+}
