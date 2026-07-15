@@ -149,7 +149,7 @@ export default function DogProfilePage() {
                       </p>
                       <p className="mt-1 text-[12.5px] text-[var(--muted)]">
                         Cliente:{" "}
-                        <Link href="/clientes" className="font-medium text-[var(--foreground)] hover:underline">
+                        <Link href={`/clientes/${found.client.id}`} className="font-medium text-[var(--foreground)] hover:underline">
                           {found.client.name}
                         </Link>
                         {found.client.phone ? ` · ${found.client.phone}` : ""}
