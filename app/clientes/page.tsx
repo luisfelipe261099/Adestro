@@ -1304,7 +1304,13 @@ export default function ClientsPage() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-[var(--foreground)]">{dog.name}</p>
-                      <p className="text-xs text-[var(--muted)]">Cliente: {client.name} • {dog.breed || "Raça não informada"}</p>
+                      <p className="text-xs text-[var(--muted)]">
+                        Cliente:{" "}
+                        <Link href={`/clientes/${client.id}`} className="font-medium text-[var(--foreground)] hover:underline">
+                          {client.name}
+                        </Link>{" "}
+                        • {dog.breed || "Raça não informada"}
+                      </p>
                     </div>
                   </div>
                   <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${statusStyle(status)}`}>
@@ -1370,7 +1376,7 @@ export default function ClientsPage() {
               return (
                 <article key={item.client.id} className="rounded-md border border-[var(--border)] bg-white p-3 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
+                    <Link href={`/clientes/${item.client.id}`} className="group flex items-start gap-3">
                       <div className="relative h-11 w-11 overflow-hidden rounded-full bg-sky-100">
                         <Image
                           src={firstDog?.photoUrl || "/images/dog-default-bolt.svg"}
@@ -1385,12 +1391,12 @@ export default function ClientsPage() {
                         />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[var(--foreground)]">{item.client.name}</p>
+                        <p className="text-sm font-semibold text-[var(--foreground)] group-hover:underline">{item.client.name}</p>
                         <p className="text-xs text-[var(--muted)]">
                           {firstDog ? `${firstDog.name} • ${firstDog.breed}` : "Sem cão cadastrado"}
                         </p>
                       </div>
-                    </div>
+                    </Link>
                     <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${statusStyle(item.status)}`}>
                       {statusLabel(item.status)}
                     </span>
@@ -1428,10 +1434,16 @@ export default function ClientsPage() {
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         <Link
-                          href={firstDogId ? `/treinos?clientId=${item.client.id}&dogId=${firstDogId}` : "/treinos"}
+                          href={`/clientes/${item.client.id}`}
                           className="rounded-full border border-[var(--border)] bg-[var(--accent)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white whitespace-nowrap"
                         >
-                          Ver histórico
+                          Ver cliente
+                        </Link>
+                        <Link
+                          href={firstDogId ? `/treinos?clientId=${item.client.id}&dogId=${firstDogId}` : "/treinos"}
+                          className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
+                        >
+                          Histórico
                         </Link>
                         <button
                           type="button"

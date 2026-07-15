@@ -72,6 +72,7 @@ const trainerFlow: FlowStep[] = [
     title: "5) Acompanhar a evolução de cada cão",
     why: "Feed de treinos, quadro de fases e análise comportamental mostram onde cada cão está no processo.",
     how: [
+      "Clique no nome do cliente em /clientes pra abrir a página completa dele: cães, próximas aulas, treinos, financeiro e portal num lugar só.",
       "Em /treinos veja a linha do tempo dos treinos com fotos, notas e filtros (hoje, semana, pendentes).",
       "Em /clientes, aba 'Quadro', arraste cada cão entre as fases do adestramento (kanban). No celular, use o seletor no card.",
       "Em /evolucao acompanhe as notas comportamentais por categoria de cada cão ao longo do tempo.",
@@ -116,7 +117,7 @@ const trainerFlow: FlowStep[] = [
 const screenMap = [
   { href: "/dashboard", label: "Hoje (Dashboard)", text: "Card 'Próxima ação' pra começar, resumo do dia, lembretes prontos pra WhatsApp e pendências." },
   { href: "/agenda", label: "Agenda", text: "Dia/Semana/Mês, recorrência, confirmação de presença e exportação de calendário." },
-  { href: "/clientes", label: "Clientes", text: "Fichas de clientes e cães, tags, onboarding e quadro kanban de fases." },
+  { href: "/clientes", label: "Clientes", text: "Fichas de clientes e cães, tags, onboarding e quadro kanban. Clique no cliente pra abrir a página completa dele." },
   { href: "/treinos", label: "Treinos", text: "Feed dos treinos realizados com fotos, notas e filtros." },
   { href: "/treinos/registro", label: "Registrar treino", text: "Formulário completo da sessão (A-I) com voz e IA." },
   { href: "/financeiro", label: "Financeiro", text: "Pacotes, contratos, cobranças, recibos com Pix Copia e Cola." },
