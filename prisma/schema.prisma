@@ -287,6 +287,8 @@ model Dog {
   // Novos campos estruturados
   sex                    String?       // Macho / Fêmea
   castrated              Boolean       @default(false)
+  // Fase do cão no funil de trabalho do adestrador (quadro kanban)
+  trainingStatus         String        @default("Ativo") // Ficha / Ativo / Completo / Pausado / Cancelado
   microchip              String?
   color                  String?
   photos                 String?       @db.Text // JSON list de URLs de fotos
