@@ -215,6 +215,48 @@ export default function RegistroTreinoClientPage() {
     [selectedClient, selectedDogId]
   );
 
+  // Pré-treino: plano combinado na ÚLTIMA sessão deste cão (foco, comandos e
+  // tarefas da Seção "Planejamento da próxima"). Vira sugestão de 1 clique.
+  // Derivação simples — o React Compiler memoiza sozinho.
+  const lastPlan = (() => {
+    if (!selectedDogId) return null;
+    const toTime = (date: string) => {
+      const [d, m, y] = (date ?? "").split("/").map(Number);
+      return d && m && y ? new Date(y, m - 1, d).getTime() : 0;
+    };
+    const past = trainingSessions
+      .filter((s) => s.dogId === selectedDogId || (s.dogSessions ?? []).some((ds) => ds.dogId === selectedDogId))
+      .sort((a, b) => toTime(b.date) - toTime(a.date));
+    for (const s of past) {
+      const ds = (s.dogSessions ?? []).find((item) => item.dogId === selectedDogId);
+      if (!ds) continue;
+      const focus = ds.nextFocus?.trim() ?? "";
+      const cmds = (ds.nextCommands ?? []).filter(Boolean);
+      const tasks = (ds.nextTasks ?? []).filter(Boolean);
+      if (focus || cmds.length || tasks.length) return { date: s.date, focus, commands: cmds, tasks };
+    }
+    return null;
+  })();
+
+  // Importa o plano da última aula: foco vira atividade, comandos entram na lista.
+  function importLastPlan() {
+    if (!lastPlan) return;
+    if (lastPlan.focus) {
+      setActivities((current) =>
+        current.some((a) => a.name === lastPlan.focus)
+          ? current
+          : [...current, { id: `act-plan-${Date.now()}`, name: lastPlan.focus, completed: false, notes: "" }],
+      );
+    }
+    setCommands((current) => {
+      const existing = new Set(current.map((c) => c.command));
+      const added = lastPlan.commands
+        .filter((cmd) => !existing.has(cmd))
+        .map((cmd, i) => ({ id: `cmd-plan-${i}-${Date.now()}`, command: cmd, rating: 3, notes: "" }));
+      return [...current, ...added];
+    });
+  }
+
   // Carrega os modelos salvos (atividades/comandos/tarefas) do adestrador.
   useEffect(() => {
     let cancelled = false;
@@ -812,8 +854,30 @@ export default function RegistroTreinoClientPage() {
               {expandedSection === "1" && (
                 <div className="p-4 space-y-3">
                   <p className="text-[11px] text-[var(--muted)]">
-                    Tudo o que foi trabalhado nesta sessão, em duas partes: <b>atividades praticadas</b> (exercícios, com observações) e, mais abaixo, <b>comandos de obediência</b> (avaliados por estrelas). A seleção fica salva para reutilizar.
+                    O pré-treino da sessão: selecione <b>o que será trabalhado hoje</b> (atividades, com observações) e, mais abaixo, os <b>comandos de obediência</b> (avaliados por estrelas ao longo da aula). A seleção fica salva para reutilizar.
                   </p>
+
+                  {/* Pré-treino: plano combinado na última aula deste cão */}
+                  {lastPlan ? (
+                    <div className="rounded-md border border-[var(--card-purple-border)] bg-[var(--card-purple-bg)] p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--card-purple)]">
+                        📋 Pré-treino — plano combinado na última aula ({lastPlan.date})
+                      </p>
+                      <ul className="mt-1.5 space-y-0.5 text-[11.5px] leading-5 text-[var(--foreground)]">
+                        {lastPlan.focus ? <li>• Foco: {lastPlan.focus}</li> : null}
+                        {lastPlan.commands.length ? <li>• Comandos: {lastPlan.commands.join(", ")}</li> : null}
+                        {lastPlan.tasks.length ? <li>• Tarefas que o tutor praticou em casa: {lastPlan.tasks.join(", ")}</li> : null}
+                      </ul>
+                      <button
+                        type="button"
+                        onClick={importLastPlan}
+                        className="mt-2 rounded-full bg-[var(--card-purple)] px-3 py-1 text-[11px] font-bold text-white hover:opacity-90"
+                      >
+                        Usar este plano nesta sessão →
+                      </button>
+                    </div>
+                  ) : null}
+
                   <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--accent-text)]">Atividades a serem trabalhadas</p>
 
                   {activitySuggestions.length > 0 && (

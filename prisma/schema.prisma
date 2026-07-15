@@ -283,6 +283,8 @@ model Dog {
   name          String
   breed         String?
   age           String?
+  // Data de nascimento (ISO YYYY-MM-DD) — fonte da idade; `age` é derivada
+  birthDate     String?
   weight        String?
   photoUrl      String?
   trainingTypes String        @db.Text // JSON serializado

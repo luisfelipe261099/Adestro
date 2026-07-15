@@ -239,7 +239,7 @@ export function PortalPublicClient({ token }: { token: string }) {
         setPinRequired(false);
         setData(payload);
       } catch {
-        setError("Este link nao esta disponivel. Peca um novo link ao seu adestrador.");
+        setError("Este link não está disponível. Peça um novo link ao seu adestrador.");
       } finally {
         setLoading(false);
       }
@@ -334,7 +334,7 @@ export function PortalPublicClient({ token }: { token: string }) {
       if (!response.ok) throw new Error("Falha ao atualizar tarefa");
 
       const result = (await response.json()) as { ok?: boolean };
-      if (!result.ok) throw new Error("Tarefa nao encontrada");
+      if (!result.ok) throw new Error("Tarefa não encontrada");
 
       gam.award(
         nextCompleted ? "task_completed" : "task_uncompleted",
@@ -387,7 +387,7 @@ export function PortalPublicClient({ token }: { token: string }) {
       if (!response.ok) throw new Error("Falha ao enviar evidência");
 
       const result = (await response.json()) as { ok?: boolean };
-      if (!result.ok) throw new Error("Tarefa nao encontrada");
+      if (!result.ok) throw new Error("Tarefa não encontrada");
 
       if (!wasCompleted) {
         gam.award("task_completed", undefined, taskId);
@@ -458,7 +458,7 @@ export function PortalPublicClient({ token }: { token: string }) {
       setFeedbackMessage("");
       gam.award("feedback_sent", "Comentário enviado");
     } catch {
-      setError("Nao foi possivel enviar o comentario agora.");
+      setError("Não foi possível enviar o comentário agora.");
     } finally {
       setSendingFeedback(false);
     }
@@ -522,7 +522,7 @@ export function PortalPublicClient({ token }: { token: string }) {
     return (
       <PageShell
         kicker="Portal"
-        title="Link indisponivel"
+        title="Link indisponível"
         description="Este acesso pode ter expirado, sido revogado ou digitado de forma incorreta."
       >
         <p className="text-sm text-[var(--muted)]">{error || "Solicite um novo link ao adestrador."}</p>

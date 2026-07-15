@@ -117,7 +117,7 @@ export function PwaInstallBanner() {
     mode === "install"
       ? "Quer abrir igual aplicativo? Toque em Instalar app."
       : mode === "android"
-        ? "Voce pode colocar o Adestro na tela inicial para abrir como app."
+        ? "Você pode colocar o Adestro na tela inicial para abrir como app."
         : "No iPhone, instale pela opcao Adicionar a Tela de Inicio.";
 
   return (

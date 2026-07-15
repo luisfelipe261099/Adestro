@@ -89,7 +89,7 @@ export default function PlanosPage() {
     <PageShell
       kicker="Admin"
       title="Planos"
-      description="Ajuste o plano de cada conta e acompanhe a distribuicao atual da base."
+      description="Ajuste o plano de cada conta e acompanhe a distribuição atual da base."
       requireAuth="admin"
     >
       <AdminContextNav />

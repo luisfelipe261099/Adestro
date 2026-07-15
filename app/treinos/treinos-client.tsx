@@ -45,7 +45,7 @@ function createDraftTrainingNote(block = "Guia"): DraftTrainingNote {
     id: `note-${Math.random().toString(36).slice(2, 10)}`,
     block,
     score: 7,
-    comment: "Boa evolucao com reforco no timing.",
+    comment: "Boa evolução com reforço no timing.",
   };
 }
 
@@ -171,7 +171,7 @@ async function compressTrainingImage(file: File): Promise<DraftTrainingMedia> {
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas nao disponivel");
+  if (!ctx) throw new Error("Canvas não disponível");
   ctx.drawImage(image, 0, 0, width, height);
 
   function encodeWebpWithTarget(sourceCanvas: HTMLCanvasElement, targetKb: number) {
@@ -209,7 +209,7 @@ async function compressTrainingImage(file: File): Promise<DraftTrainingMedia> {
   thumbCanvas.width = thumbWidth;
   thumbCanvas.height = thumbHeight;
   const thumbCtx = thumbCanvas.getContext("2d");
-  if (!thumbCtx) throw new Error("Canvas de miniatura nao disponivel");
+  if (!thumbCtx) throw new Error("Canvas de miniatura não disponível");
   thumbCtx.drawImage(image, 0, 0, thumbWidth, thumbHeight);
   const thumbEncoded = encodeWebpWithTarget(thumbCanvas, TARGET_THUMB_KB);
 
@@ -434,7 +434,7 @@ export default function TrainingPage() {
 
     if (!title.trim() || !selectedClient || !selectedDog || !validNotes.length) return;
     if (totalMediaKb > MAX_TOTAL_MEDIA_KB) {
-      setSaveError("As imagens da sessao excedem o limite total permitido.");
+      setSaveError("As imagens da sessão excedem o limite total permitido.");
       return;
     }
 
@@ -455,13 +455,13 @@ export default function TrainingPage() {
       });
 
       if (ok) {
-        setTitle("Sessao pratica");
+        setTitle("Sessão prática");
         resetDraftNotes();
         setDraftMedia([]);
         setMediaError("");
         setShowForm(false);
       } else {
-        setSaveError("Erro ao salvar sessao. Verifique sua conexao e tente novamente.");
+        setSaveError("Erro ao salvar sessão. Verifique sua conexão e tente novamente.");
         window.setTimeout(() => setSaveError(""), 4000);
       }
     } finally {
@@ -912,7 +912,7 @@ export default function TrainingPage() {
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
                     className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                    placeholder="Titulo da sessao"
+                    placeholder="Título da sessão"
                     required
                   />
 
@@ -1017,7 +1017,7 @@ export default function TrainingPage() {
                   </div>
 
                   <button type="submit" disabled={isSaving} className="rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
-                    {isSaving ? "Salvando..." : "Salvar sessao"}
+                    {isSaving ? "Salvando..." : "Salvar sessão"}
                   </button>
 
                   {saveError ? <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{saveError}</p> : null}
