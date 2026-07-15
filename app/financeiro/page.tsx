@@ -99,18 +99,6 @@ export default function FinanceiroPage() {
   const [cardFeeFor, setCardFeeFor] = useState<string | null>(null);
   const [cardFeePct, setCardFeePct] = useState("");
 
-  // ?vender=true (vindo da página do cliente) abre a venda direto.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("vender") !== "true") return;
-    const id = window.setTimeout(() => {
-      setActiveTab("dashboard");
-      setShowContractForm(true);
-    }, 0);
-    return () => window.clearTimeout(id);
-  }, []);
-
   // Ao abrir a venda, rola até o formulário — sem isso ele abria fora da tela.
   useEffect(() => {
     if (!showContractForm) return;
@@ -122,6 +110,21 @@ export default function FinanceiroPage() {
   const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedDogId, setSelectedDogId] = useState("");
   const [selectedPackageId, setSelectedPackageId] = useState("");
+
+  // ?vender=true (vindo da página do cliente ou do pós-cadastro) abre a venda
+  // direto; ?clienteId=... já deixa o cliente selecionado no formulário.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("vender") !== "true") return;
+    const preselectClientId = params.get("clienteId") ?? "";
+    const id = window.setTimeout(() => {
+      setActiveTab("dashboard");
+      setShowContractForm(true);
+      if (preselectClientId) setSelectedClientId(preselectClientId);
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
   const [contractStartDate, setContractStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [contractNotes, setContractNotes] = useState("");
   // Ajustes na venda — pré-preenchidos pelo pacote, mas editáveis por venda.
