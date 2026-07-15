@@ -33,12 +33,29 @@ export async function GET() {
   const trainer = await ensureTrainer(session.user.id);
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
-  const events = await prisma.calendarEvent.findMany({
-    where:   { trainerId: trainer.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const [events, clients] = await Promise.all([
+    prisma.calendarEvent.findMany({
+      where:   { trainerId: trainer.id },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.clientProfile.findMany({
+      where:  { trainerId: trainer.id },
+      select: { name: true },
+    }),
+  ]);
 
-  return NextResponse.json(events);
+  // Esconde agendamentos órfãos: o cliente foi excluído (a relação usa
+  // onDelete:SetNull → clientId vira nulo), mas o evento sobrevive com o nome
+  // gravado e continuaria aparecendo na agenda/dashboard. Turmas/coletivos têm
+  // `client` vazio e eventos ligados a um cliente atual (clientId preenchido) não
+  // são afetados. Rede de segurança para órfãos criados antes do fix do DELETE
+  // /api/clients — o registro fica no banco, mas some das telas.
+  const currentNames = new Set(clients.map((c) => c.name));
+  const visible = events.filter(
+    (ev) => !(ev.clientId === null && !!ev.client && !currentNames.has(ev.client)),
+  );
+
+  return NextResponse.json(visible);
 }
 
 function addWeeksToDate(dateStr: string, weeks: number): string {
