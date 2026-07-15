@@ -235,6 +235,9 @@ export default function ClientProfilePage() {
                   <Link href="/financeiro?vender=true" className="btn-secondary text-[12px]">
                     💰 Vender pacote
                   </Link>
+                  <Link href={`/clientes/${client.id}/editar`} className="btn-secondary text-[12px]">
+                    ✏️ Editar cadastro
+                  </Link>
                 </div>
               </div>
 

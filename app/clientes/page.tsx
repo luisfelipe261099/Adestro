@@ -154,17 +154,6 @@ export default function ClientsPage() {
     return () => window.clearTimeout(id);
   }, []);
 
-  // Edição de cliente/cão: corrige cadastro errado e adiciona 2º cão ao mesmo dono.
-  const [editDraft, setEditDraft] = useState<{
-    clientId: string;
-    name: string;
-    phone: string;
-    propertyType: string;
-    dogs: Array<{ id?: string; name: string; breed: string; age: string }>;
-  } | null>(null);
-  const [editSaving, setEditSaving] = useState(false);
-  const [editError, setEditError] = useState("");
-
   // Exclusão de cliente (destrutiva): pede confirmação com aviso do que cascata.
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; dogsCount: number } | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -183,50 +172,6 @@ export default function ClientsPage() {
     setSaveMessage(`Cliente "${deleteTarget.name}" excluído.`);
     window.setTimeout(() => setSaveMessage(""), 4000);
     setDeleteTarget(null);
-  }
-
-  async function handleSaveEdit() {
-    if (!editDraft) return;
-    if (!editDraft.name.trim()) {
-      setEditError("O nome do cliente é obrigatório.");
-      return;
-    }
-    setEditSaving(true);
-    setEditError("");
-    const base = editDraft;
-
-    // 1) Dados do cliente.
-    const r1 = await updateClient({
-      clientId: base.clientId,
-      name: base.name.trim(),
-      phone: base.phone.trim(),
-      propertyType: base.propertyType.trim(),
-    });
-    if (!r1.ok) {
-      setEditError(r1.error);
-      setEditSaving(false);
-      return;
-    }
-
-    // 2) Cada cão: com id = edita; sem id = adiciona (a API aceita um por chamada).
-    for (const dog of base.dogs) {
-      if (!dog.name.trim()) continue;
-      const r = await updateClient(
-        dog.id
-          ? { clientId: base.clientId, dog: { id: dog.id, name: dog.name.trim(), breed: dog.breed.trim(), age: dog.age.trim() } }
-          : { clientId: base.clientId, addDog: { name: dog.name.trim(), breed: dog.breed.trim(), age: dog.age.trim() } },
-      );
-      if (!r.ok) {
-        setEditError(r.error);
-        setEditSaving(false);
-        return;
-      }
-    }
-
-    setEditSaving(false);
-    setEditDraft(null);
-    setSaveMessage("Cadastro atualizado com sucesso.");
-    window.setTimeout(() => setSaveMessage(""), 4000);
   }
 
   // ─── ESTADO DE GERENCIAMENTO DE TAREFAS (PORTAL) ──────────────────────
@@ -576,6 +521,7 @@ export default function ClientsPage() {
       dogName: dogName.trim(),
       breed: breed.trim() || "SRD",
       age: age.trim() || "Não informado",
+      dogBirthDate: dogBirthDate || "",
       weight: weight.trim() || "Não informado",
       photoUrl: dogPhotoPreview || dogPhotoUrl.trim() || undefined,
       trainingTypes: trainingTypes.length ? trainingTypes : ["Obediência básica"],
@@ -1508,27 +1454,12 @@ export default function ClientsPage() {
                         >
                           Tarefas
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditError("");
-                            setEditDraft({
-                              clientId: item.client.id,
-                              name: item.client.name,
-                              phone: item.client.phone ?? "",
-                              propertyType: item.client.propertyType ?? "",
-                              dogs: item.client.dogs.map((d) => ({
-                                id: d.id,
-                                name: d.name,
-                                breed: d.breed ?? "",
-                                age: d.age ?? "",
-                              })),
-                            });
-                          }}
+                        <Link
+                          href={`/clientes/${item.client.id}/editar`}
                           className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
                         >
                           Editar
-                        </button>
+                        </Link>
                         <button
                           type="button"
                           onClick={() => {
@@ -1595,144 +1526,6 @@ export default function ClientsPage() {
         </div>
       )}
 
-      {/* Modal de Edição de Cliente / Cão */}
-      {editDraft && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" role="dialog" aria-modal="true">
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default"
-            onClick={() => setEditDraft(null)}
-            aria-label="Fechar"
-          />
-          <div className="relative flex max-h-[88vh] w-full max-w-lg flex-col rounded-lg border border-[var(--border)] bg-white p-5 shadow-2xl">
-            <header className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-semibold text-[var(--foreground)]">Editar cadastro</h3>
-              <button
-                type="button"
-                onClick={() => setEditDraft(null)}
-                className="rounded-md border border-[var(--border)] bg-white px-3 py-1 text-xs font-medium text-[var(--muted)] hover:bg-slate-50"
-              >
-                Fechar
-              </button>
-            </header>
-
-            <div className="flex-1 space-y-4 overflow-y-auto py-4">
-              {/* Dados do cliente */}
-              <div className="space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">Cliente</p>
-                <div>
-                  <label className="text-[12px] font-medium text-[var(--foreground)]">Nome</label>
-                  <input
-                    value={editDraft.name}
-                    onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
-                    className="input-field mt-1"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[12px] font-medium text-[var(--foreground)]">Telefone</label>
-                    <input
-                      value={editDraft.phone}
-                      onChange={(e) => setEditDraft({ ...editDraft, phone: maskPhone(e.target.value) })}
-                      className="input-field mt-1"
-                      inputMode="tel"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[12px] font-medium text-[var(--foreground)]">Tipo de imóvel</label>
-                    <input
-                      value={editDraft.propertyType}
-                      onChange={(e) => setEditDraft({ ...editDraft, propertyType: e.target.value })}
-                      className="input-field mt-1"
-                      placeholder="Casa, Apartamento…"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Cães */}
-              <div className="space-y-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">Cães</p>
-                {editDraft.dogs.map((dog, i) => (
-                  <div key={dog.id ?? `novo-${i}`} className="space-y-2 rounded-md border border-[var(--border)] bg-slate-50/60 p-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-medium text-[var(--muted-strong)]">
-                        {dog.id ? `Cão ${i + 1}` : "Novo cão"}
-                      </span>
-                      {!dog.id && (
-                        <button
-                          type="button"
-                          onClick={() => setEditDraft({ ...editDraft, dogs: editDraft.dogs.filter((_, idx) => idx !== i) })}
-                          className="text-[11px] text-[var(--danger)] hover:underline"
-                        >
-                          Remover
-                        </button>
-                      )}
-                    </div>
-                    <input
-                      value={dog.name}
-                      onChange={(e) =>
-                        setEditDraft({ ...editDraft, dogs: editDraft.dogs.map((d, idx) => (idx === i ? { ...d, name: e.target.value } : d)) })
-                      }
-                      className="input-field"
-                      placeholder="Nome do cão"
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        value={dog.breed}
-                        onChange={(e) =>
-                          setEditDraft({ ...editDraft, dogs: editDraft.dogs.map((d, idx) => (idx === i ? { ...d, breed: e.target.value } : d)) })
-                        }
-                        className="input-field"
-                        placeholder="Raça"
-                      />
-                      <input
-                        value={dog.age}
-                        onChange={(e) =>
-                          setEditDraft({ ...editDraft, dogs: editDraft.dogs.map((d, idx) => (idx === i ? { ...d, age: e.target.value } : d)) })
-                        }
-                        className="input-field"
-                        placeholder="Idade"
-                      />
-                    </div>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setEditDraft({ ...editDraft, dogs: [...editDraft.dogs, { name: "", breed: "", age: "" }] })}
-                  className="w-full rounded-md border border-dashed border-[var(--border)] py-2 text-[12px] font-medium text-[var(--muted-strong)] hover:bg-slate-50"
-                >
-                  + Adicionar cão
-                </button>
-              </div>
-
-              {editError && (
-                <p className="rounded-md border border-[var(--danger)]/30 bg-[var(--danger-bg)] px-3 py-2 text-[12px] text-[var(--danger)]">
-                  {editError}
-                </p>
-              )}
-            </div>
-
-            <footer className="flex items-center justify-end gap-2 border-t border-[var(--border)] pt-3">
-              <button
-                type="button"
-                onClick={() => setEditDraft(null)}
-                className="rounded-md border border-[var(--border)] bg-white px-4 py-2 text-[13px] font-medium text-[var(--muted)] hover:bg-slate-50"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveEdit}
-                disabled={editSaving}
-                className="btn-primary h-10 px-5 text-[13px] disabled:opacity-60"
-              >
-                {editSaving ? "Salvando…" : "Salvar alterações"}
-              </button>
-            </footer>
-          </div>
-        </div>
-      )}
 
       {/* Modal de Gerenciamento de Tarefas */}
       {activeTaskIdForManagement && (
