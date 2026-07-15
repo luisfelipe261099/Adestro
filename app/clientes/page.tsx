@@ -259,6 +259,8 @@ export default function ClientsPage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  // Pós-cadastro: oferta de venda do pacote na sequência (continuidade natural).
+  const [postSaveClient, setPostSaveClient] = useState<{ name: string; phone: string } | null>(null);
   const [saveError, setSaveError] = useState("");
 
   // Busca Automática de CEP — sempre dá feedback (sucesso, CEP inexistente ou
@@ -580,8 +582,9 @@ export default function ClientsPage() {
       setVeterinarian("");
       setShowForm(false);
       setFormStep(1);
-      setSaveMessage("Cliente e cão cadastrados com sucesso.");
-      window.setTimeout(() => setSaveMessage(""), 3000);
+      // Continuidade do cadastro: não existe cão sem pacote vendido — oferece
+      // a venda na sequência (o store já recarregou com o cliente novo).
+      setPostSaveClient({ name: payload.clientName, phone: payload.phone });
     } finally {
       setIsSaving(false);
     }
@@ -1680,6 +1683,42 @@ export default function ClientsPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={crmEvidenceLightbox.src} alt={crmEvidenceLightbox.title} className="max-h-full max-w-full object-contain" />
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pós-cadastro: continuidade natural — vender o pacote de aulas */}
+      {postSaveClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-md rounded-lg border border-[var(--border)] bg-white p-5 shadow-2xl">
+            <p className="text-3xl" aria-hidden>🎉</p>
+            <h3 className="mt-1 text-base font-bold text-slate-900">
+              {postSaveClient.name.split(" ")[0]} cadastrado(a) com sucesso!
+            </h3>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Próximo passo natural: <b>vender o pacote de aulas</b> — o contrato e as cobranças
+              (com lembrete de WhatsApp) são gerados automaticamente.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={(() => {
+                  const created = clients.find(
+                    (c) => c.name === postSaveClient.name && (!postSaveClient.phone || c.phone === postSaveClient.phone),
+                  );
+                  return `/financeiro?vender=true${created ? `&clienteId=${created.id}` : ""}`;
+                })()}
+                className="btn-primary text-[13px]"
+              >
+                💰 Vender pacote agora
+              </Link>
+              <button
+                type="button"
+                onClick={() => setPostSaveClient(null)}
+                className="btn-secondary text-[13px]"
+              >
+                Deixar para depois
+              </button>
             </div>
           </div>
         </div>
