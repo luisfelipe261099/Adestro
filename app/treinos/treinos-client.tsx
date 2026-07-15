@@ -534,7 +534,7 @@ export default function TrainingPage() {
             </Link>
           </section>
         ) : (
-          <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
+          <section data-tour="treinos-feed" className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
             <header className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Link href="/dashboard" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--foreground)]">

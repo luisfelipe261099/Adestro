@@ -102,8 +102,8 @@ const clientFaq = [
     a: "Sem problema: toque de novo para desmarcar, ou avise o adestrador pelo chat.",
   },
   {
-    q: "Tem modo escuro?",
-    a: "Sim. Toque no ícone de lua/sol no topo da página para alternar entre claro e escuro — a escolha fica salva no seu aparelho.",
+    q: "Tem modo claro?",
+    a: "O portal já abre no modo escuro. Se preferir claro, toque no ícone ☀️ no topo da página — a escolha fica salva no seu aparelho.",
   },
 ];
 
