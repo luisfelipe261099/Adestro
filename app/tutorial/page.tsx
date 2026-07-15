@@ -199,8 +199,8 @@ const featureHighlights = [
   },
   {
     icon: "🌙",
-    title: "Tema claro/escuro",
-    text: "Botão ☀️/🌙 no topo de qualquer tela (e em /configuracoes). A escolha fica salva e vale pra todos os perfis — sem flicker no carregamento.",
+    title: "Tema escuro por padrão",
+    text: "O sistema abre no escuro. Prefere claro? Botão ☀️ no topo de qualquer tela — a escolha fica salva e vale pra todos os perfis.",
   },
   {
     icon: "📜",
@@ -453,8 +453,9 @@ function TrainerTutorial() {
               Quer um tour de 2 minutos pelo sistema?
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-700">
-              Em {TRAINER_STEPS.length} passos eu te mostro o sininho, o resumo do dia, a agenda, os treinos, o
-              registro com IA, o portal do cliente e o financeiro. O app navega sozinho — você só clica em Próximo.
+              Em {TRAINER_STEPS.length} passos eu te mostro o sistema inteiro: a jornada guiada, agenda,
+              clientes, treinos com IA, portal, chat, evolução, financeiro e relatórios. O app navega
+              sozinho — você só clica em Próximo (ou usa as setas do teclado).
             </p>
           </div>
           <button

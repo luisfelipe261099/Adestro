@@ -362,6 +362,7 @@ export default function FinanceiroPage() {
             {/* Vender é a ação nº 1 do financeiro — sempre visível no topo */}
             <button
               type="button"
+              data-tour="finance-sell"
               onClick={() => {
                 setActiveTab("dashboard");
                 setShowContractForm(true);

@@ -72,7 +72,7 @@ export function NextActionCard() {
   const step = JOURNEY[currentIndex];
 
   return (
-    <section className="mt-6 rounded-lg border border-[var(--border-strong)] bg-[var(--panel)] p-5 shadow-sm">
+    <section data-tour="next-action" className="mt-6 rounded-lg border border-[var(--border-strong)] bg-[var(--panel)] p-5 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
