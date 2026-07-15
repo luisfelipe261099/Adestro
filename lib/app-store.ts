@@ -11,6 +11,10 @@ export type TrainerPaymentMethod = "Pix" | "Cartao" | "Boleto";
 export type TrainerLessonPackage = "4 aulas" | "8 aulas" | "12 aulas";
 export type TrainerCardBrand = "Visa" | "Mastercard" | "Elo";
 
+// Fase do cão no funil de trabalho (quadro kanban) — espelha Dog.trainingStatus no banco.
+export type DogTrainingStatus = "Ficha" | "Ativo" | "Completo" | "Pausado" | "Cancelado";
+export const DOG_TRAINING_STATUSES: DogTrainingStatus[] = ["Ficha", "Ativo", "Completo", "Pausado", "Cancelado"];
+
 export type DogProfile = {
   id: string;
   name: string;
@@ -20,6 +24,7 @@ export type DogProfile = {
   photoUrl?: string;
   trainingTypes: string[];
   sessionsTotal?: number; // total de sessões do(s) contrato(s) ativo(s) — p/ progresso
+  trainingStatus?: DogTrainingStatus; // fase no quadro (padrão "Ativo")
 };
 
 export type ClientProfile = {
@@ -196,9 +201,10 @@ type AppState = {
     email?: string;
     propertyType?: string;
     environment?: string;
-    dog?: { id: string; name?: string; breed?: string; age?: string };
+    dog?: { id: string; name?: string; breed?: string; age?: string; trainingStatus?: string };
     addDog?: { name: string; breed?: string; age?: string };
   }) => Promise<{ ok: true } | { ok: false; error: string }>;
+  setDogTrainingStatus: (clientId: string, dogId: string, status: DogTrainingStatus) => Promise<boolean>;
   addTrainingSession: (payload: {
     number?: number;
     title: string;
@@ -981,6 +987,35 @@ export const useAppStore = create<AppState>()(
           };
         }
       },
+      // Atualização otimista: o card muda de coluna na hora e reverte se o PATCH falhar
+      // (sem loadFromDB completo, para o arrastar do quadro não "piscar").
+      setDogTrainingStatus: async (clientId, dogId, status) => {
+        const previous = get().clients;
+        set({
+          clients: previous.map((client) =>
+            client.id !== clientId
+              ? client
+              : {
+                  ...client,
+                  dogs: client.dogs.map((dog) =>
+                    dog.id === dogId ? { ...dog, trainingStatus: status } : dog,
+                  ),
+                },
+          ),
+        });
+        try {
+          const response = await fetchWithRetry("/api/clients", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ clientId, dog: { id: dogId, trainingStatus: status } }),
+          });
+          if (!response.ok) throw new Error("PATCH falhou");
+          return true;
+        } catch {
+          set({ clients: previous });
+          return false;
+        }
+      },
       clearAppData: () =>
         set({
           clients: [],
@@ -1065,6 +1100,9 @@ export const useAppStore = create<AppState>()(
                 catch { return []; }
               })(),
               sessionsTotal: Number(d.sessionsTotal) || 0,
+              trainingStatus: (DOG_TRAINING_STATUSES as string[]).includes(String(d.trainingStatus))
+                ? (String(d.trainingStatus) as DogTrainingStatus)
+                : "Ativo",
             })),
           }));
 
