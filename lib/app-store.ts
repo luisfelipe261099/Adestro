@@ -256,7 +256,9 @@ type AppState = {
     sessionNumber?: number;
     status?: SessionStatus;
     recurrence?: string;
-  }) => Promise<boolean>;
+    // Sucesso não-recorrente devolve o ID do evento criado (truthy) — permite
+    // encadear ações (ex.: adicionar participantes da turma). Recorrente: true.
+  }) => Promise<string | boolean>;
   approveClient: (clientId: string) => Promise<boolean>;
   clearAppData: () => void;
   loadFromDB: () => Promise<void>;
@@ -940,7 +942,7 @@ export const useAppStore = create<AppState>()(
                 : event,
             ),
           }));
-          return true;
+          return created.id;
         } catch {
           if (!isRecurring) {
             set((state) => ({
