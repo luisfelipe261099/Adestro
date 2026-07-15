@@ -195,7 +195,8 @@ export default function SchedulePage() {
   const addCalendarEvent = useAppStore((state) => state.addCalendarEvent);
 
   // States
-  const [viewMode, setViewMode] = useState<ViewMode>("dia");
+  // Semana como visão inicial: dá contexto imediato mesmo em dia sem aulas.
+  const [viewMode, setViewMode] = useState<ViewMode>("semana");
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedClientId, setSelectedClientId] = useState(clients[0]?.id ?? "");
   const [selectedDogId, setSelectedDogId] = useState(clients[0]?.dogs[0]?.id ?? "");
@@ -219,6 +220,8 @@ export default function SchedulePage() {
 
   // Collective & Recurrence
   const [isCollective, setIsCollective] = useState(false);
+  // Cães selecionados JÁ NA CRIAÇÃO da turma (viram participantes do evento).
+  const [collectiveDogIds, setCollectiveDogIds] = useState<string[]>([]);
   const [collectiveDogName, setCollectiveDogName] = useState("");
   const [collectiveClientName, setCollectiveClientName] = useState("");
   const [collectivePlanName, setCollectivePlanName] = useState("Aula Coletiva");
@@ -486,12 +489,29 @@ export default function SchedulePage() {
       });
 
       if (ok) {
+        // Turma: grava os cães selecionados como participantes do evento criado.
+        if (isCollective && typeof ok === "string" && collectiveDogIds.length > 0) {
+          await Promise.all(
+            collectiveDogIds.map((dogId) =>
+              fetch("/api/events/participants", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ eventId: ok, dogId }),
+              }).catch(() => undefined),
+            ),
+          );
+        }
         setStatus("Pendente");
         setRecurrence("none");
         setCollectiveDogName("");
         setCollectiveClientName("");
+        setCollectiveDogIds([]);
         setShowForm(false);
-        setAgendaMessage("Agendamento cadastrado com sucesso!");
+        setAgendaMessage(
+          isCollective && collectiveDogIds.length > 0
+            ? `Turma criada com ${collectiveDogIds.length} participante(s)!`
+            : "Agendamento cadastrado com sucesso!",
+        );
         window.setTimeout(() => setAgendaMessage(""), 3000);
       } else {
         setAgendaMessage("Não foi possível criar o agendamento.");
@@ -666,10 +686,45 @@ export default function SchedulePage() {
                         className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
                       />
                     </label>
-                    <p className="sm:col-span-2 rounded-md border border-sky-200 bg-sky-100/60 px-3 py-2 text-[11px] leading-relaxed text-sky-900">
-                      👥 Depois de criar a turma, selecione os cães participantes direto no card da aula
-                      (seção “Participantes”) — cada cliente recebe a própria confirmação de presença.
-                    </p>
+                    {/* Seletor de participantes já na criação da turma */}
+                    <div className="sm:col-span-2">
+                      <p className="text-[11px] font-medium text-[var(--muted)]">
+                        👥 Cães participantes ({collectiveDogIds.length} selecionado{collectiveDogIds.length === 1 ? "" : "s"})
+                      </p>
+                      <div className="mt-1.5 grid max-h-44 gap-1 overflow-y-auto rounded-md border border-[var(--border)] bg-[var(--surface)] p-2 sm:grid-cols-2">
+                        {clients.flatMap((client) =>
+                          client.dogs.map((dog) => {
+                            const checked = collectiveDogIds.includes(dog.id);
+                            return (
+                              <label
+                                key={dog.id}
+                                className={`flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs transition ${
+                                  checked ? "bg-[var(--card-blue-bg)] font-semibold text-[var(--card-blue)]" : "text-[var(--foreground)] hover:bg-[var(--surface-2)]"
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={(e) =>
+                                    setCollectiveDogIds((current) =>
+                                      e.target.checked ? [...current, dog.id] : current.filter((id) => id !== dog.id),
+                                    )
+                                  }
+                                  className="h-3.5 w-3.5"
+                                />
+                                <span className="truncate">{dog.name} <span className="opacity-70">({client.name})</span></span>
+                              </label>
+                            );
+                          }),
+                        )}
+                        {clients.every((c) => c.dogs.length === 0) ? (
+                          <p className="text-[11px] text-[var(--muted)]">Nenhum cão cadastrado ainda.</p>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-[10px] text-[var(--muted)]">
+                        Cada cliente selecionado recebe a própria confirmação de presença. Dá pra ajustar depois no card da aula.
+                      </p>
+                    </div>
                   </div>
                 )}
 
