@@ -10,6 +10,16 @@ const clientSteps = [
       "Abra o link enviado pelo adestrador no WhatsApp, e-mail ou mensagem.",
       "Se aparecer um campo de PIN, digite o código informado pelo adestrador.",
       "Confira se o nome do cão e do cliente estão corretos antes de continuar.",
+      "Perdeu o link? Peça um novo ao adestrador — ele gera outro em segundos.",
+    ],
+  },
+  {
+    title: "Confirmar presença na próxima aula",
+    goal: "Avisar o adestrador se o cão vai comparecer.",
+    details: [
+      "Quando houver aula marcada, um aviso azul de 'Confirmar presença' aparece no topo do portal.",
+      "Toque em confirmar (ou avise que não poderá ir, informando o motivo se quiser).",
+      "A confirmação chega na hora para o adestrador e evita aulas perdidas.",
     ],
   },
   {
@@ -26,25 +36,36 @@ const clientSteps = [
     goal: "Mostrar ao adestrador que a prática foi feita.",
     details: [
       "Depois de realizar o exercício, marque a tarefa como concluída.",
+      "Se quiser, envie uma foto do treino junto — o adestrador adora ver.",
       "Se não conseguiu fazer, deixe para concluir apenas quando realmente praticar.",
       "Esse registro ajuda o adestrador a decidir o próximo passo da aula.",
     ],
   },
   {
-    title: "Acompanhar evolução",
+    title: "Acompanhar evolução e conquistas",
     goal: "Ver o progresso do cão entre uma aula e outra.",
     details: [
       "Confira anotações, fotos e histórico das sessões registradas.",
+      "O cão sobe de nível conforme pratica, e a sequência diária 🔥 mostra a constância da rotina.",
+      "Complete tarefas para ganhar medalhas (badges) — é um jeito divertido de manter a família engajada.",
       "Veja quais comportamentos melhoraram e quais ainda precisam de atenção.",
-      "Use essas informações para manter a família alinhada no mesmo método.",
+    ],
+  },
+  {
+    title: "Falar com o adestrador",
+    goal: "Tirar dúvidas sem esperar a próxima aula.",
+    details: [
+      "Use o chat no fim da página do portal para mandar dúvidas e recados.",
+      "As respostas do adestrador aparecem ali mesmo, em tempo real.",
+      "Conte situações do dia a dia (visitas, passeios, latidos) — isso ajuda a ajustar o treino.",
     ],
   },
   {
     title: "Enviar avaliação da aula",
     goal: "Dar retorno para melhorar o acompanhamento.",
     details: [
+      "Depois de cada aula, avalie o treino com estrelas quando o portal pedir.",
       "Conte como o cão se comportou após a aula.",
-      "Informe dúvidas, dificuldades ou situações que aconteceram em casa.",
       "Esse feedback ajuda o adestrador a ajustar o treino para a rotina real.",
     ],
   },
@@ -55,6 +76,31 @@ const goodPractices = [
   "Use recompensas que o cão valorize, como petisco, brinquedo ou carinho.",
   "Pratique poucos minutos por vez; repetição curta costuma funcionar melhor.",
   "Não force o cão quando ele estiver cansado, assustado ou muito agitado.",
+  "Mantenha a família toda no mesmo método — comandos diferentes confundem o cão.",
+  "Abra o portal todo dia: a sequência diária 🔥 ajuda a criar o hábito.",
+];
+
+const clientFaq = [
+  {
+    q: "Preciso criar conta ou senha?",
+    a: "Não. O acesso é pelo link único que o adestrador envia. Se ele configurou um PIN, basta digitá-lo ao abrir.",
+  },
+  {
+    q: "O link parou de funcionar",
+    a: "O link pode ter expirado ou sido renovado. Peça um novo ao adestrador pelo WhatsApp.",
+  },
+  {
+    q: "Funciona no celular?",
+    a: "Sim, o portal foi feito para o celular. Você pode salvar o link nos favoritos ou usar 'Adicionar à tela inicial' para abrir como aplicativo.",
+  },
+  {
+    q: "Quem vê o que eu escrevo no chat?",
+    a: "Somente o seu adestrador. As anotações técnicas confidenciais dele também não aparecem para você — cada um vê o que precisa.",
+  },
+  {
+    q: "Marquei uma tarefa sem querer",
+    a: "Sem problema: toque de novo para desmarcar, ou avise o adestrador pelo chat.",
+  },
 ];
 
 export default function ClientTutorialPage() {
@@ -73,29 +119,35 @@ export default function ClientTutorialPage() {
           </p>
 
           <div className="mt-5 grid gap-3">
-            <div className="rounded-md border border-[var(--border)] bg-white p-4">
+            <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
               <p className="text-sm font-semibold text-[var(--foreground)]">Antes de começar</p>
               <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
                 Tenha o link do portal, o PIN caso exista e escolha um momento tranquilo para praticar com o cão.
               </p>
             </div>
-            <div className="rounded-md border border-[var(--border)] bg-white p-4">
+            <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
               <p className="text-sm font-semibold text-[var(--foreground)]">Depois da prática</p>
               <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
                 Marque a tarefa feita e envie observações para o adestrador acompanhar o resultado fora da aula.
               </p>
             </div>
+            <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
+              <p className="text-sm font-semibold text-[var(--foreground)]">Dentro do portal</p>
+              <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                O botão ✨ “Como usar”, no topo do portal, mostra um tour rápido apontando cada área na própria tela.
+              </p>
+            </div>
           </div>
         </aside>
 
-        <section className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+        <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Passo a passo</p>
               <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">Como usar no dia a dia</h2>
             </div>
             <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--foreground)]">
-              5 etapas
+              {clientSteps.length} etapas
             </span>
           </div>
 
@@ -125,14 +177,27 @@ export default function ClientTutorialPage() {
         </section>
       </div>
 
-      <section className="mt-4 rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Boas práticas</p>
         <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">Como o cliente ajuda o cão a evoluir</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {goodPractices.map((practice) => (
-            <div key={practice} className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-4 text-sm leading-6 text-[var(--muted)]">
+            <div key={practice} className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm leading-6 text-[var(--muted)]">
               {practice}
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Dúvidas frequentes</p>
+        <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">Perguntas comuns</h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {clientFaq.map((item) => (
+            <article key={item.q} className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
+              <p className="text-sm font-semibold text-[var(--foreground)]">{item.q}</p>
+              <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{item.a}</p>
+            </article>
           ))}
         </div>
       </section>
