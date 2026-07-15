@@ -11,6 +11,7 @@ import { TagsEditor } from "@/components/tags-editor";
 import { useAppStore } from "@/lib/app-store";
 import { googleMapsLink } from "@/lib/calendar-ics";
 import { maskCEP, maskCPF, maskDate, maskPhone } from "@/lib/masks";
+import DOG_BREEDS from "@/lib/dog-breeds.json";
 
 type ClientStatus = "ativos" | "inativos" | "rascunho";
 type SortMode = "recentes" | "nome";
@@ -249,10 +250,14 @@ export default function ClientsPage() {
   const [birthDate, setBirthDate] = useState("");
   const [cpf, setCpf] = useState("");
   const [privateNotes, setPrivateNotes] = useState("");
+  // 2º contato da residência (quem também acompanha o treino)
+  const [secondContactName, setSecondContactName] = useState("");
+  const [secondContactPhone, setSecondContactPhone] = useState("");
 
   // Etapa 2: Endereço do Cliente
   const [addrNickname, setAddrNickname] = useState("Casa");
   const [addrZipCode, setAddrZipCode] = useState("");
+  const [cepMessage, setCepMessage] = useState("");
   const [addrStreet, setAddrStreet] = useState("");
   const [addrNumber, setAddrNumber] = useState("");
   const [addrComplement, setAddrComplement] = useState("");
@@ -311,11 +316,17 @@ export default function ClientsPage() {
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
 
-  // Busca Automática de CEP
+  // Busca Automática de CEP — sempre dá feedback (sucesso, CEP inexistente ou
+  // falha de rede); busca silenciosa parecia "botão que não funciona".
   const handleLookupCEP = async (cepValue?: string) => {
     const cleanCEP = (cepValue ?? addrZipCode).replace(/\D/g, "");
-    if (cleanCEP.length !== 8) return;
+    if (cleanCEP.length !== 8) {
+      setCepMessage("Digite os 8 números do CEP.");
+      window.setTimeout(() => setCepMessage(""), 4000);
+      return;
+    }
     setIsCEPLoading(true);
+    setCepMessage("");
     try {
       const res = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
       const data = await res.json();
@@ -324,11 +335,15 @@ export default function ClientsPage() {
         setAddrNeighborhood(data.bairro || "");
         setAddrCity(data.localidade || "");
         setAddrState(data.uf || "");
+        setCepMessage("✓ Endereço preenchido pelo CEP.");
+      } else {
+        setCepMessage("CEP não encontrado — confira os números ou preencha manualmente.");
       }
     } catch {
-      // ignore
+      setCepMessage("Não foi possível consultar o CEP agora — preencha manualmente.");
     } finally {
       setIsCEPLoading(false);
+      window.setTimeout(() => setCepMessage(""), 6000);
     }
   };
 
@@ -539,6 +554,8 @@ export default function ClientsPage() {
       birthDate,
       cpf: cpf.trim(),
       privateNotes,
+      secondContactName: secondContactName.trim(),
+      secondContactPhone: secondContactPhone.trim(),
       status: "Ativo",
       propertyType,
       environment: envConvive,
@@ -592,6 +609,8 @@ export default function ClientsPage() {
       setBirthDate("");
       setCpf("");
       setPrivateNotes("");
+      setSecondContactName("");
+      setSecondContactPhone("");
       setAddrNickname("Casa");
       setAddrZipCode("");
       setAddrStreet("");
@@ -808,6 +827,20 @@ export default function ClientsPage() {
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <input
+                        value={secondContactName}
+                        onChange={(e) => setSecondContactName(e.target.value)}
+                        placeholder="2º contato — nome (opcional)"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                      <input
+                        value={secondContactPhone}
+                        onChange={(e) => setSecondContactPhone(maskPhone(e.target.value))}
+                        placeholder="2º contato — WhatsApp"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
                         value={birthDate}
                         onChange={(e) => setBirthDate(maskDate(e.target.value))}
                         placeholder="Nascimento (DD/MM/AAAA)"
@@ -854,6 +887,11 @@ export default function ClientsPage() {
                         {isCEPLoading ? "Buscando..." : "Buscar CEP"}
                       </button>
                     </div>
+                    {cepMessage ? (
+                      <p className={`text-[11px] font-medium ${cepMessage.startsWith("✓") ? "text-emerald-700" : "text-amber-700"}`}>
+                        {cepMessage}
+                      </p>
+                    ) : null}
 
                     <div className="grid grid-cols-[1.5fr_1fr] gap-2">
                       <input
@@ -950,9 +988,15 @@ export default function ClientsPage() {
                     <input
                       value={breed}
                       onChange={(e) => setBreed(e.target.value)}
-                      placeholder="Raça (opcional)"
+                      placeholder="Raça — digite para ver sugestões"
+                      list="dog-breeds-list"
                       className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
+                    <datalist id="dog-breeds-list">
+                      {DOG_BREEDS.map((b) => (
+                        <option key={b} value={b} />
+                      ))}
+                    </datalist>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="grid gap-1">
                         <label className="text-[10px] font-medium text-[var(--muted)]">Nascimento (calcula idade)</label>
@@ -969,12 +1013,21 @@ export default function ClientsPage() {
                       </div>
                       <div className="grid gap-1">
                         <label className="text-[10px] font-medium text-[var(--muted)]">Peso</label>
-                        <input
-                          value={weight}
-                          onChange={(e) => setWeight(e.target.value)}
-                          placeholder="Ex: 20kg"
-                          className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
-                        />
+                        <div className="relative">
+                          <input
+                            value={weight.replace(/\s*kg\s*$/i, "")}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^\d.,]/g, "");
+                              setWeight(raw ? `${raw}kg` : "");
+                            }}
+                            inputMode="decimal"
+                            placeholder="Ex: 20"
+                            className="w-full min-w-0 rounded-md border border-[var(--border)] px-3 py-2 pr-9 text-xs outline-none focus:border-sky-400"
+                          />
+                          <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] font-semibold text-[var(--muted)]">
+                            kg
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <input

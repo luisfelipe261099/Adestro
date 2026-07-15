@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AuthGuard } from "@/components/auth-guard";
 import { TagsEditor } from "@/components/tags-editor";
 import { type DogTrainingStatus, useAppStore } from "@/lib/app-store";
-import { buildWaUrl } from "@/lib/whatsapp";
+import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
 
 // Cor da etiqueta de fase, alinhada às colunas do quadro kanban.
 const PHASE_BADGE: Record<DogTrainingStatus, string> = {
@@ -232,6 +232,9 @@ export default function ClientProfilePage() {
                   <Link href="/portal" className="btn-secondary text-[12px]">
                     🔗 Portal
                   </Link>
+                  <Link href="/financeiro?vender=true" className="btn-secondary text-[12px]">
+                    💰 Vender pacote
+                  </Link>
                 </div>
               </div>
 
@@ -240,6 +243,14 @@ export default function ClientProfilePage() {
                   <dt className="font-semibold uppercase tracking-wide text-[10px] text-[var(--muted)]">Telefone</dt>
                   <dd className="mt-0.5 text-[var(--foreground)]">{client.phone || "Não informado"}</dd>
                 </div>
+                {client.secondContactName || client.secondContactPhone ? (
+                  <div>
+                    <dt className="font-semibold uppercase tracking-wide text-[10px] text-[var(--muted)]">2º contato</dt>
+                    <dd className="mt-0.5 text-[var(--foreground)]">
+                      {[client.secondContactName, client.secondContactPhone].filter(Boolean).join(" · ")}
+                    </dd>
+                  </div>
+                ) : null}
                 <div>
                   <dt className="font-semibold uppercase tracking-wide text-[10px] text-[var(--muted)]">Imóvel</dt>
                   <dd className="mt-0.5 text-[var(--foreground)]">{client.propertyType || "Não informado"}</dd>
@@ -407,6 +418,27 @@ export default function ClientProfilePage() {
                               ))}
                             </div>
                           ) : null}
+                          {(() => {
+                            const open =
+                              contract.invoices.find((i) => i.status === "Atrasado") ??
+                              contract.invoices.find((i) => i.status === "Pendente");
+                            if (!open || !client.phone) return null;
+                            const message = waTemplates.cobrancaPendente({
+                              tutor: client.name,
+                              valor: open.amount.toFixed(2),
+                              data: open.dueDate,
+                            });
+                            return (
+                              <a
+                                href={buildWaUrl(client.phone, message)}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10.5px] font-bold text-emerald-800 hover:bg-emerald-100"
+                              >
+                                💬 Cobrar pelo WhatsApp
+                              </a>
+                            );
+                          })()}
                         </li>
                       ))}
                     </ul>

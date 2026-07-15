@@ -37,6 +37,9 @@ export type ClientProfile = {
   status: string;
   dogs: DogProfile[];
   tags?: string[];
+  // 2º contato da residência (quem também acompanha o treino)
+  secondContactName?: string;
+  secondContactPhone?: string;
 };
 
 export type TrainingNote = {
@@ -1110,6 +1113,8 @@ export const useAppStore = create<AppState>()(
             environment:    String(c.environment ?? ""),
             plan:           String(c.plan ?? ""),
             status:         String(c.status ?? "Ativo"),
+            secondContactName:  String(c.secondContactName ?? ""),
+            secondContactPhone: String(c.secondContactPhone ?? ""),
             tags: (() => {
               try {
                 const parsed = JSON.parse(String(c.tags ?? "[]"));
