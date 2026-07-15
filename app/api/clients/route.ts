@@ -395,3 +395,47 @@ export async function PATCH(request: Request) {
   }
 }
 
+// DELETE /api/clients?clientId=... — exclui o cliente e, por cascade, seus cães,
+// contratos, tarefas e gamificação. As sessões de treino ficam com dogId nulo
+// (histórico preservado na conta do adestrador). Ação destrutiva: a confirmação
+// é responsabilidade da UI.
+export async function DELETE(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  const role = ((session.user as { role?: string }).role ?? "").toLowerCase();
+  if (role !== "trainer") return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+
+  const trainer = await ensureTrainer(session.user.id);
+  if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
+
+  const clientId = new URL(request.url).searchParams.get("clientId");
+  if (!clientId) {
+    return NextResponse.json({ error: "clientId é obrigatório" }, { status: 400 });
+  }
+
+  // Só permite excluir cliente do próprio adestrador (segurança).
+  const owned = await prisma.clientProfile.findFirst({
+    where: { id: clientId, trainerId: trainer.id },
+    select: { id: true, name: true },
+  });
+  if (!owned) {
+    return NextResponse.json({ error: "Cliente não encontrado" }, { status: 404 });
+  }
+
+  try {
+    await prisma.clientProfile.delete({ where: { id: clientId } });
+    await audit({
+      trainerId: trainer.id,
+      action: "client.deleted",
+      detail: { clientId, name: owned.name },
+      actorEmail: session.user.email ?? null,
+      request,
+    });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[clients.DELETE] erro ao excluir:", err);
+    const detail = err instanceof Error ? err.message : "erro desconhecido";
+    return NextResponse.json({ error: `Não foi possível excluir. ${detail}` }, { status: 500 });
+  }
+}
+
