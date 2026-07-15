@@ -7,7 +7,7 @@ export default function AdestradoresPage() {
     <PageShell
       kicker="Admin"
       title="Adestradores"
-      description="Cadastre novos adestradores e ajuste plano e status das contas de forma rapida."
+      description="Cadastre novos adestradores e ajuste plano e status das contas de forma rápida."
       requireAuth="admin"
     >
       <AdminContextNav />
