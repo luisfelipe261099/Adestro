@@ -58,9 +58,13 @@ const ADMIN_NAV: NavItem[] = [
   { href: "/admin/relatorios", label: "Relatórios", icon: IconReport, description: "Uso e desempenho" },
   { href: "/admin/templates", label: "Templates", icon: IconChat, description: "Atividades, comandos, tarefas" },
   { href: "/admin/audit", label: "Auditoria", icon: IconReport, description: "Histórico de atividade" },
+  { href: "/tutorial", label: "Tutorial", icon: IconChat, description: "Guia do painel administrativo" },
 ];
 
-const CLIENT_NAV: NavItem[] = [{ href: "/portal/cliente", label: "Meu portal" }];
+const CLIENT_NAV: NavItem[] = [
+  { href: "/portal/cliente", label: "Meu portal" },
+  { href: "/tutorial/cliente", label: "Como usar" },
+];
 
 // Re-export iconlink local
 function IconLink({ className }: { className?: string }) {

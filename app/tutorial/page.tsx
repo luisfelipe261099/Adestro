@@ -1,9 +1,19 @@
 "use client";
 
+import { useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { PageShell } from "@/components/page-shell";
-import { useTour } from "@/components/product-tour";
+import {
+  ADMIN_STEPS,
+  ADMIN_TOUR_DONE_KEY,
+  TRAINER_STEPS,
+  TRAINER_TOUR_DONE_KEY,
+  useTour,
+} from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
 
 type FlowStep = {
@@ -22,6 +32,7 @@ const trainerFlow: FlowStep[] = [
       "Vacinas têm alerta de vencimento automático. Temperamento, rotinas e objetivos viram contexto pra IA.",
       "Use o link de onboarding pro próprio cliente preencher os dados antes da 1ª aula (modo rascunho até você aprovar).",
       "Tags (VIP, Inadimplente, Filhote, Sênior, etc) ajudam a filtrar — pode editar inline no card.",
+      "Precisa remover alguém? O card do cliente tem opção de excluir com confirmação — agendamentos e registros órfãos somem junto.",
     ],
     shortcut: "Atalho: Ctrl+K → 'Novo cliente'",
   },
@@ -58,28 +69,39 @@ const trainerFlow: FlowStep[] = [
     ],
   },
   {
-    title: "5) Compartilhar o portal do cliente",
+    title: "5) Acompanhar a evolução de cada cão",
+    why: "Feed de treinos, quadro de fases e análise comportamental mostram onde cada cão está no processo.",
+    how: [
+      "Em /treinos veja a linha do tempo dos treinos com fotos, notas e filtros (hoje, semana, pendentes).",
+      "Em /clientes, aba 'Quadro', arraste cada cão entre as fases do adestramento (kanban). No celular, use o seletor no card.",
+      "Em /evolucao acompanhe as notas comportamentais por categoria de cada cão ao longo do tempo.",
+      "A ficha do cão (/caes/[id]) reúne tudo: vacinas, histórico de sessões, comandos e evolução.",
+    ],
+  },
+  {
+    title: "6) Compartilhar o portal + falar com o cliente",
     why: "O cliente acompanha tarefas, evolução e gamificação por um link único — sem login, com PIN opcional.",
     how: [
       "Em /portal gere/copie o link único do cliente e envie pelo WhatsApp (template já pronto).",
       "O cliente vê: nível do cão, streak diário 🔥, tarefas de hoje (com upload de foto), histórico, badges.",
+      "Em /chat você conversa em tempo real com os tutores — as mensagens novas aparecem no sininho.",
       "Quando o cliente responde NPS após cada aula, você recebe a média no comparativo mensal.",
       "Banner azul de 'Confirmar presença' aparece no portal quando há evento pendente.",
     ],
   },
   {
-    title: "6) Operar financeiro + emitir recibo",
+    title: "7) Operar financeiro + emitir recibo",
     why: "Pacote → contrato → cobranças automáticas → recibo com Pix Copia e Cola embutido.",
     how: [
       "Em /financeiro cadastre pacotes (sessões, valor, fracionamento, validade).",
-      "Vender pacote gera contrato e cobranças automaticamente.",
+      "Vender pacote gera contrato e cobranças automaticamente — os contratos ativos ficam listados em /planos-treino.",
       "No recibo, se sua chave Pix estiver configurada, gera o BR Code Copia e Cola — o cliente cola no banco e pronto.",
       "Botão 💬 Lembrar em cada cobrança abre WhatsApp com texto pronto (cobrança pendente ou em atraso).",
       "Cron diário às 07h gera os lembretes do dia automaticamente.",
     ],
   },
   {
-    title: "7) Aprovar e enviar relatório mensal",
+    title: "8) Aprovar e enviar relatório mensal",
     why: "Cliente percebe valor quando vê o progresso documentado mês a mês.",
     how: [
       "Em /relatorios o rascunho aparece automaticamente no início do mês.",
@@ -88,6 +110,24 @@ const trainerFlow: FlowStep[] = [
       "Use 'Comparativo mês vs mês' pra mostrar evolução em sessões, comandos médios, % atividades e NPS.",
     ],
   },
+];
+
+// Mapa de todas as telas do adestrador — referência rápida.
+const screenMap = [
+  { href: "/dashboard", label: "Hoje (Dashboard)", text: "Resumo do dia, lembretes prontos pra WhatsApp e pendências." },
+  { href: "/agenda", label: "Agenda", text: "Dia/Semana/Mês, recorrência, confirmação de presença e exportação de calendário." },
+  { href: "/clientes", label: "Clientes", text: "Fichas de clientes e cães, tags, onboarding e quadro kanban de fases." },
+  { href: "/treinos", label: "Treinos", text: "Feed dos treinos realizados com fotos, notas e filtros." },
+  { href: "/treinos/registro", label: "Registrar treino", text: "Formulário completo da sessão (A-I) com voz e IA." },
+  { href: "/financeiro", label: "Financeiro", text: "Pacotes, contratos, cobranças, recibos com Pix Copia e Cola." },
+  { href: "/relatorios", label: "Relatórios", text: "Relatório mensal com análise IA, fotos e comparativo mês a mês." },
+  { href: "/portal", label: "Portal do cliente", text: "Links únicos de acesso do tutor, tarefas e gamificação." },
+  { href: "/chat", label: "Chat", text: "Conversa em tempo real com os tutores." },
+  { href: "/ia", label: "Assistente IA", text: "Conversas com a IA para casos complexos, fora do contexto de uma sessão." },
+  { href: "/evolucao", label: "Evolução", text: "Notas comportamentais por categoria de cada cão ao longo do tempo." },
+  { href: "/planos-treino", label: "Planos de treino", text: "Pacotes e contratos de sessões ativos por cliente." },
+  { href: "/planos", label: "Meu plano", text: "Sua assinatura do Adestro: plano, pagamento e limites." },
+  { href: "/configuracoes", label: "Configurações", text: "Alertas, notificações push, tema escuro, importação CSV e export LGPD." },
 ];
 
 const featureHighlights = [
@@ -102,6 +142,11 @@ const featureHighlights = [
     text: "Cron prepara lembretes wa.me prontos pra disparar. Você abre o app de manhã e dispara em 3-4 toques.",
   },
   {
+    icon: "🗂️",
+    title: "Quadro kanban de fases",
+    text: "Em /clientes → aba Quadro: arraste cada cão entre as fases do adestramento. No celular, use o seletor do card.",
+  },
+  {
     icon: "✨",
     title: "Assistente IA contextual",
     text: "Chat dentro da página de sessão. Sabe o cão, raça, comandos e descrição. Atalhos: planejamento, ansiedade, recall, latido, socialização, análise.",
@@ -110,6 +155,11 @@ const featureHighlights = [
     icon: "🎙️",
     title: "Transcrição por voz nativa",
     text: "Web Speech API. Aperta, fala, para. Texto aparece em tempo real. Áudio nunca sai do device.",
+  },
+  {
+    icon: "💬",
+    title: "Chat em tempo real",
+    text: "Em /chat você conversa com os tutores. As mensagens do cliente chegam pelo portal e aparecem no sininho.",
   },
   {
     icon: "📋",
@@ -128,8 +178,8 @@ const featureHighlights = [
   },
   {
     icon: "📥",
-    title: "Importar clientes via CSV",
-    text: "Em /configuracoes envie o arquivo com cabeçalho name,phone,email,dogName,dogBreed,notes.",
+    title: "Importar clientes (CSV e ClickUp)",
+    text: "Em /configuracoes envie CSV com cabeçalho name,phone,email,dogName,dogBreed,notes — ou importe direto sua base do ClickUp.",
   },
   {
     icon: "📤",
@@ -153,6 +203,34 @@ const featureHighlights = [
   },
 ];
 
+// Screenshots reais do app (mobile) — ilustram as telas principais.
+const screenshots = [
+  {
+    src: "/images/tutorial/dashboard.jpeg",
+    alt: "Tela Hoje (Dashboard) do Adestro com resumo da operação, clientes ativos e próximos atendimentos",
+    label: "Hoje (Dashboard)",
+    caption: "Resumo da operação assim que você abre o app.",
+  },
+  {
+    src: "/images/tutorial/agenda.jpeg",
+    alt: "Tela de Agenda do Adestro com visão por dia, semana e mês e criação de agendamento",
+    label: "Agenda",
+    caption: "Dia, semana ou mês — e novo agendamento em 1 toque.",
+  },
+  {
+    src: "/images/tutorial/financeiro.jpeg",
+    alt: "Painel Financeiro do Adestro com recebido, a receber, em atraso e contratos ativos",
+    label: "Financeiro",
+    caption: "Recebido, a receber, atrasos e contratos num painel só.",
+  },
+  {
+    src: "/images/tutorial/assistente-ia.jpeg",
+    alt: "Assistente IA do Adestro com atalhos de plano de aula, ansiedade, recall e latido",
+    label: "Assistente IA",
+    caption: "Sugestões técnicas com atalhos pros casos mais comuns.",
+  },
+];
+
 const assistantExamples = [
   {
     case: "Pastor Alemão puxando na guia",
@@ -165,6 +243,29 @@ const assistantExamples = [
   {
     case: "Cão ansioso ao ficar sozinho",
     suggestion: "Passos curtos de dessensibilização, enriquecimento ambiental e registro de evolução sem forçar tempo excessivo.",
+  },
+];
+
+const trainerFaq = [
+  {
+    q: "A transcrição por voz não funciona",
+    a: "A Web Speech API funciona no Chrome, Edge e Safari (iOS). No Firefox e em webviews ela não está disponível — digite a nota ou troque de navegador. Verifique também a permissão de microfone do site.",
+  },
+  {
+    q: "O cliente perdeu o link do portal",
+    a: "Em /portal gere um novo link (o antigo pode ser revogado) e reenvie pelo WhatsApp com o template pronto. Se usar PIN, informe o código por outro canal.",
+  },
+  {
+    q: "Como ativar notificações no celular",
+    a: "Instale o app pela opção 'Adicionar à tela inicial' (PWA) e em /configuracoes toque 'Ativar agora' em notificações push.",
+  },
+  {
+    q: "O resumo IA saiu errado — o cliente vai ver?",
+    a: "Não. Nada gerado pela IA chega ao cliente sem sua aprovação explícita na Seção F. Edite o texto antes de aprovar.",
+  },
+  {
+    q: "Excluí um cliente sem querer",
+    a: "A exclusão pede confirmação e remove também agendamentos e registros ligados. Não há lixeira — em caso de dúvida, prefira desativar tags/contratos a excluir.",
   },
 ];
 
@@ -187,7 +288,141 @@ const statusLabels = [
   },
 ];
 
-export default function TutorialPage() {
+// ── Guia do ADMIN ────────────────────────────────────────────────────────────
+
+const adminAreas = [
+  {
+    href: "/admin",
+    title: "Visão geral",
+    text: "Métricas da operação: adestradores ativos, sessões registradas, receita e pendências. É a home do seu perfil.",
+  },
+  {
+    href: "/admin/adestradores",
+    title: "Adestradores",
+    text: "Crie contas, redefina senhas, ative/desative acesso. Cada adestrador só enxerga os próprios clientes e dados.",
+  },
+  {
+    href: "/admin/planos",
+    title: "Planos",
+    text: "Defina o plano de cada conta (limites e valores). A mudança vale na hora — o adestrador vê em /planos.",
+  },
+  {
+    href: "/admin/faturamento",
+    title: "Faturamento",
+    text: "Pagamentos consolidados: pagos, pendentes e histórico por adestrador.",
+  },
+  {
+    href: "/admin/relatorios",
+    title: "Relatórios",
+    text: "Uso e desempenho por conta: sessões, clientes ativos, engajamento do portal.",
+  },
+  {
+    href: "/admin/templates",
+    title: "Templates",
+    text: "Padrões usados por todos os adestradores: atividades, comandos, tarefas do cliente e textos das mensagens de WhatsApp. Edite com cuidado — afeta todo mundo.",
+  },
+  {
+    href: "/admin/audit",
+    title: "Auditoria",
+    text: "Registro de quem fez o quê e quando. Use para investigar alterações e acompanhar a operação multi-adestrador.",
+  },
+];
+
+const adminTips = [
+  "Novo adestrador na equipe? Crie a conta em Adestradores, defina o plano em Planos e envie a senha inicial — ele redefine no primeiro login.",
+  "Antes de editar Templates, avise a equipe: os textos valem para todos os adestradores imediatamente.",
+  "Acompanhe Faturamento semanalmente — cobranças pendentes antigas costumam indicar cliente que precisa de contato.",
+  "A Auditoria é sua amiga: qualquer alteração suspeita (exclusão, mudança de plano) fica registrada com autor e data.",
+];
+
+function AdminTutorial() {
+  const startAdminTour = useTour((s) => s.start);
+
+  return (
+    <PageShell
+      kicker="Tutorial do administrador"
+      title="Como operar o painel administrativo"
+      description="Guia das áreas do admin: contas, planos, faturamento, relatórios, templates e auditoria."
+      requireAuth="admin"
+    >
+      <section className="rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-5 shadow-sm">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-purple-700">✨ Tour guiado</p>
+            <h2 className="mt-1 text-xl font-semibold text-slate-900">
+              Quer um tour de 2 minutos pelo painel?
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-slate-700">
+              Em {ADMIN_STEPS.length} passos eu te mostro a visão geral, adestradores, planos, faturamento,
+              relatórios, templates e auditoria. O painel navega sozinho — você só clica em Próximo.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => startAdminTour(ADMIN_STEPS, ADMIN_TOUR_DONE_KEY)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-purple-600 px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-purple-700"
+          >
+            ▶ Iniciar tour guiado
+          </button>
+        </div>
+      </section>
+
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Áreas do painel</p>
+        <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
+          7 áreas, cada uma com um papel claro
+        </h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {adminAreas.map((area) => (
+            <Link
+              key={area.href}
+              href={area.href}
+              className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 transition hover:border-[var(--border-strong)] hover:shadow-sm"
+            >
+              <p className="text-sm font-semibold text-[var(--foreground)]">
+                {area.title}
+                <span className="ml-2 text-[11px] font-normal text-[var(--muted)]">{area.href}</span>
+              </p>
+              <p className="mt-1 text-[13px] leading-6 text-[var(--muted)]">{area.text}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Boas práticas</p>
+        <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">Rotina recomendada do admin</h2>
+        <ul className="mt-3 grid gap-2">
+          {adminTips.map((tip) => (
+            <li key={tip} className="flex gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] p-3 text-sm leading-6 text-[var(--muted)]">
+              <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#1f8e80]" />
+              <span>{tip}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Outros perfis</p>
+        <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">Guias dos outros acessos</h2>
+        <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+          O adestrador tem um guia completo do fluxo de atendimento nesta mesma página (visível quando ele faz
+          login), e o cliente tem um guia simples do portal:
+        </p>
+        <Link
+          href="/tutorial/cliente"
+          className="mt-3 inline-block text-sm font-semibold text-[var(--foreground)] hover:underline"
+        >
+          Ver guia do cliente (portal) →
+        </Link>
+      </section>
+    </PageShell>
+  );
+}
+
+// ── Guia do ADESTRADOR ───────────────────────────────────────────────────────
+
+function TrainerTutorial() {
   const clients = useAppStore((state) => state.clients);
   const sessions = useAppStore((state) => state.trainingSessions);
   const events = useAppStore((state) => state.calendarEvents);
@@ -212,13 +447,13 @@ export default function TutorialPage() {
               Quer um tour de 2 minutos pelo sistema?
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-700">
-              Em 10 passos eu te mostro o sininho, o resumo do dia, a agenda, o registro de treino com IA, o
-              financeiro e o admin. O app navega sozinho — você só clica em Próximo.
+              Em {TRAINER_STEPS.length} passos eu te mostro o sininho, o resumo do dia, a agenda, os treinos, o
+              registro com IA, o portal do cliente e o financeiro. O app navega sozinho — você só clica em Próximo.
             </p>
           </div>
           <button
             type="button"
-            onClick={() => startTour()}
+            onClick={() => startTour(TRAINER_STEPS, TRAINER_TOUR_DONE_KEY)}
             className="inline-flex items-center gap-1.5 rounded-full bg-purple-600 px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-purple-700"
           >
             ▶ Iniciar tour guiado
@@ -242,7 +477,7 @@ export default function TutorialPage() {
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
             {statusLabels.map((item) => (
-              <div key={item.label} className="rounded-md border border-[var(--border)] bg-white p-3">
+              <div key={item.label} className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">{item.label}</p>
                 <p className="mt-1 text-sm font-semibold text-[var(--foreground)]">
                   {item.getValue(clients.length, totalDogs, sessions.length, events.length, portalTasks.length)}
@@ -254,10 +489,10 @@ export default function TutorialPage() {
       </section>
 
       {/* Fluxo de atendimento detalhado */}
-      <section className="mt-4 rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Fluxo de atendimento</p>
         <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
-          7 passos do cadastro ao relatório mensal
+          8 passos do cadastro ao relatório mensal
         </h2>
 
         <ol className="mt-5 grid gap-3">
@@ -274,7 +509,7 @@ export default function TutorialPage() {
                 ))}
               </ul>
               {step.shortcut ? (
-                <p className="mt-3 inline-block rounded-full bg-slate-900/5 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+                <p className="mt-3 inline-block rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[11px] font-semibold text-[var(--muted)]">
                   {step.shortcut}
                 </p>
               ) : null}
@@ -283,16 +518,66 @@ export default function TutorialPage() {
         </ol>
       </section>
 
+      {/* Screenshots das telas principais */}
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">O sistema em telas</p>
+        <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
+          Como o app aparece no celular
+        </h2>
+        <div className="mt-4 grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {screenshots.map((shot) => (
+            <figure key={shot.src} className="min-w-0">
+              <div className="overflow-hidden rounded-lg border border-[var(--border)] shadow-sm">
+                <Image
+                  src={shot.src}
+                  alt={shot.alt}
+                  width={440}
+                  height={800}
+                  className="h-auto w-full"
+                />
+              </div>
+              <figcaption className="mt-2">
+                <p className="text-sm font-semibold text-[var(--foreground)]">{shot.label}</p>
+                <p className="text-[12px] leading-5 text-[var(--muted)]">{shot.caption}</p>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      {/* Mapa de telas */}
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Mapa de telas</p>
+        <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
+          Onde fica cada coisa
+        </h2>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          {screenMap.map((screen) => (
+            <Link
+              key={screen.href}
+              href={screen.href}
+              className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3 transition hover:shadow-sm"
+            >
+              <p className="text-sm font-semibold text-[var(--foreground)]">
+                {screen.label}
+                <span className="ml-2 text-[11px] font-normal text-[var(--muted)]">{screen.href}</span>
+              </p>
+              <p className="mt-0.5 text-[12px] leading-5 text-[var(--muted)]">{screen.text}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* Galeria de features */}
-      <section className="mt-4 rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Funcionalidades em destaque</p>
         <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
           Recursos que reduzem cliques no dia a dia
         </h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {featureHighlights.map((feature) => (
-            <article key={feature.title} className="rounded-md border border-slate-100 bg-slate-50/40 p-3">
-              <p className="text-sm font-bold text-slate-900">
+            <article key={feature.title} className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
+              <p className="text-sm font-bold text-[var(--foreground)]">
                 <span aria-hidden className="mr-1.5">{feature.icon}</span>
                 {feature.title}
               </p>
@@ -309,13 +594,13 @@ export default function TutorialPage() {
             A IA sugere abordagem técnica — você decide
           </h2>
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-            O motor atual é determinístico (sem custo de API). Cobre os 6 tópicos mais frequentes do cotidiano:
-            planejamento, ansiedade, recall, latido, socialização e análise da sessão. Você pode plugar IA real
-            (Claude, Gemini, OpenAI) sem refatoração quando quiser.
+            O assistente cobre os 6 tópicos mais frequentes do cotidiano: planejamento, ansiedade, recall, latido,
+            socialização e análise da sessão. Dentro do registro de treino ele já conhece o cão, a raça e os
+            comandos trabalhados; para casos fora de sessão, use a tela /ia.
           </p>
           <div className="mt-4 grid gap-3">
             {assistantExamples.map((example) => (
-              <article key={example.case} className="rounded-md border border-[var(--border)] bg-white p-4">
+              <article key={example.case} className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
                 <p className="text-sm font-semibold text-[var(--foreground)]">{example.case}</p>
                 <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{example.suggestion}</p>
               </article>
@@ -324,7 +609,7 @@ export default function TutorialPage() {
         </section>
 
         <div className="grid gap-4">
-          <section className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+          <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Portal do cliente</p>
             <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">
               Como orientar o cliente
@@ -351,28 +636,76 @@ export default function TutorialPage() {
             </Link>
           </section>
 
-          <section className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
+          <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Atalhos úteis</p>
             <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">
               Comandos de teclado
             </h2>
-            <div className="mt-3 grid gap-2 text-sm">
+            <div className="mt-3 grid gap-2 text-sm text-[var(--muted)]">
               <p>
-                <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-xs">Ctrl</kbd>
+                <kbd className="rounded border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 text-xs text-[var(--foreground)]">Ctrl</kbd>
                 {" + "}
-                <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-xs">K</kbd>
+                <kbd className="rounded border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 text-xs text-[var(--foreground)]">K</kbd>
                 {" — abre a busca global (cliente, cão, sessão, tela)"}
               </p>
               <p>
-                <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-xs">Esc</kbd>
-                {" — fecha modais e overlays"}
+                <kbd className="rounded border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 text-xs text-[var(--foreground)]">Esc</kbd>
+                {" — fecha modais, overlays e o tour guiado"}
               </p>
               <p>Long-press no ícone do PWA: atalhos rápidos (nova sessão, agenda, novo cliente, financeiro)</p>
-              <p>Notificações push: ative em /configuracoes → toque "Ativar agora"</p>
+              <p>Notificações push: ative em /configuracoes → toque “Ativar agora”</p>
             </div>
           </section>
         </div>
       </div>
+
+      {/* FAQ */}
+      <section className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Dúvidas frequentes</p>
+        <h2 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">Problemas comuns e como resolver</h2>
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          {trainerFaq.map((item) => (
+            <article key={item.q} className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
+              <p className="text-sm font-semibold text-[var(--foreground)]">{item.q}</p>
+              <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{item.a}</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </PageShell>
   );
+}
+
+// ── Página: decide o guia pelo perfil logado ─────────────────────────────────
+
+export default function TutorialPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const role = ((session?.user as { role?: string } | undefined)?.role ?? "").toLowerCase();
+
+  // Cliente logado não tem painel interno — o guia dele é o do portal.
+  useEffect(() => {
+    if (status === "authenticated" && role === "client") {
+      router.replace("/tutorial/cliente");
+    }
+  }, [status, role, router]);
+
+  if (role === "admin") {
+    return <AdminTutorial />;
+  }
+
+  if (role === "client") {
+    return (
+      <PageShell kicker="Tutorial" title="Redirecionando..." description="Abrindo o guia do portal do cliente.">
+        <p className="text-sm text-[var(--muted)]">
+          <Link href="/tutorial/cliente" className="font-semibold hover:underline">
+            Ir para o guia do cliente →
+          </Link>
+        </p>
+      </PageShell>
+    );
+  }
+
+  // trainer (e sessão ainda carregando — o AuthGuard interno cuida do resto)
+  return <TrainerTutorial />;
 }

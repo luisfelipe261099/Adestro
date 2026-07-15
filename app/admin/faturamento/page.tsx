@@ -54,7 +54,7 @@ export default function FaturamentoPage() {
     >
       <AdminContextNav />
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="grid gap-4 md:grid-cols-4">
+        <div data-tour="admin-faturamento" className="grid gap-4 md:grid-cols-4">
           {[
             { icon: "💰", label: "Receita MRR", value: (metrics?.mrr ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) },
             { icon: "✅", label: "Pagamentos Confirmados", value: (metrics?.totalPaid ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) },

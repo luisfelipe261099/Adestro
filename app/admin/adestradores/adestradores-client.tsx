@@ -178,7 +178,7 @@ export function AdestradoresClient() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <section className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
+      <section data-tour="admin-adestradores" className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Fluxo simples</p>
         <p className="mt-1 text-sm text-[var(--muted)]">
           1) Filtre por status, 2) abra Novo adestrador ou Editar, 3) salve. Cada conta nova recebe uma
