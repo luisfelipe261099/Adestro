@@ -8,6 +8,7 @@ import { signOut, useSession } from "next-auth/react";
 import { homeRouteForRole } from "@/lib/routes";
 import { BrandMark } from "@/components/brand-mark";
 import { NotificationsBell } from "@/components/notifications-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   IconCalendar,
   IconChat,
@@ -209,6 +210,8 @@ export function SiteHeader() {
 
           {/* Right side actions */}
           <div className="flex items-center gap-1.5">
+            {/* Escolha claro/escuro — visível para todos os perfis, em toda tela */}
+            <ThemeToggle variant="icon" />
             {isAuthenticated && userRole === "trainer" ? (
               <>
                 <NotificationsBell />
