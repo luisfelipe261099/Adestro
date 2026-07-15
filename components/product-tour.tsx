@@ -49,8 +49,35 @@ export const TRAINER_STEPS: TourStep[] = [
     route: "/dashboard",
     title: "Bem-vindo ao Adestro! 🐾",
     description:
-      "Vou te guiar pelas principais telas do sistema. O app navega sozinho — você só clica em Próximo. Pode pausar ou pular a qualquer momento.",
+      "Vou te mostrar o sistema inteiro seguindo a sua rotina real: do primeiro cadastro até o relatório mensal. O app navega sozinho — você só clica em Próximo (ou usa as setas do teclado). Esc encerra quando quiser.",
     fullScreen: true,
+  },
+  {
+    id: "next-action",
+    route: "/dashboard",
+    selector: '[data-tour="next-action"]',
+    title: "Próxima ação — seu guia automático",
+    description:
+      "Enquanto a conta é nova, este card mostra UMA ação por vez: cadastrar tutor → agendar aula → registrar treino → enviar portal. Complete a jornada e ele some sozinho.",
+    placement: "bottom",
+  },
+  {
+    id: "next-session",
+    route: "/dashboard",
+    selector: '[data-tour="next-session"]',
+    title: "Próxima sessão",
+    description:
+      "O destaque azul responde 'o que faço agora?': próxima aula, cão, foco combinado e botões de registrar, WhatsApp e remarcar.",
+    placement: "bottom",
+  },
+  {
+    id: "stat-cards",
+    route: "/dashboard",
+    selector: '[data-tour="stat-cards"]',
+    title: "Leitura por cores",
+    description:
+      "Cada cor é um assunto: azul = agenda, verde = financeiro, laranja = pendências (fica em alerta quando há algo esperando você), violeta = checklist. Valor zerado fica apagado — só o que importa chama atenção.",
+    placement: "top",
   },
   {
     id: "bell",
@@ -58,7 +85,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="bell"]',
     title: "Sininho de notificações",
     description:
-      "Aqui aparecem pendências em tempo real: presenças aguardando confirmação, treinos sem registro, cobranças vencendo. O badge laranja mostra a contagem.",
+      "Pendências em tempo real: presenças aguardando confirmação, treinos sem registro, mensagens novas do portal, cobranças vencendo. O badge mostra a contagem.",
     placement: "bottom",
   },
   {
@@ -67,16 +94,16 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="brief"]',
     title: "Resumo do Dia (automático)",
     description:
-      "É o resumo automático do seu dia: lembretes de WhatsApp para os clientes que têm aula amanhã e treinos que faltam registrar. Cada item já abre o WhatsApp com a mensagem pronta — você só revisa e envia.",
+      "Todo dia às 07h o sistema prepara os lembretes de WhatsApp (aula de amanhã, treino sem registro). Cada item abre o WhatsApp com a mensagem pronta — você só revisa e envia.",
     placement: "top",
   },
   {
     id: "agenda",
     route: "/agenda",
     selector: '[data-tour="agenda-tabs"]',
-    title: "Agenda do dia/semana/mês",
+    title: "Agenda — semana, dia e mês",
     description:
-      "Visualize agendamentos em 3 formatos. Cada card tem botões pra WhatsApp, confirmação, mapa e exportação pro Google Calendar.",
+      "Abre na semana com o HOJE destacado em azul. Cada aula tem WhatsApp, confirmação de presença, mapa e exportação pro Google/Apple Calendar. Turmas coletivas escolhem os cães participantes já na criação.",
     placement: "bottom",
   },
   {
@@ -85,16 +112,17 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="clients-list"]',
     title: "Clientes e cães",
     description:
-      "Ficha completa: dados do cliente, endereços (com link pro Google Maps), cão (vacinas, temperamento, rotinas, objetivos) e tags pra organizar.",
+      "Clique no cliente pra abrir a página completa dele (dados, cães, aulas, financeiro e portal num lugar só). A aba 'Quadro' vira um kanban: arraste cada cão entre as fases do adestramento.",
     placement: "top",
   },
   {
     id: "treinos",
     route: "/treinos",
-    title: "Feed de treinos",
+    selector: '[data-tour="treinos-feed"]',
+    title: "Histórico de treinos",
     description:
-      "Linha do tempo dos treinos realizados, com fotos, notas e filtros (hoje, semana, pendentes). Na aba 'Quadro' em Clientes você também arrasta cada cão entre as fases do adestramento.",
-    fullScreen: true,
+      "Linha do tempo de tudo que foi feito, com fotos, notas e filtros (hoje, semana, pendentes). Daqui você abre o registro guiado de qualquer aula.",
+    placement: "bottom",
   },
   {
     id: "registro",
@@ -102,16 +130,42 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="ia-chat"]',
     title: "Registro de treino + IA",
     description:
-      "Grave notas por voz (transcrição automática), avalie comandos com estrelas e use o assistente IA ✨ no canto pra sugestões técnicas.",
+      "O coração do sistema: o pré-treino puxa o plano combinado na última aula, você grava notas por voz, avalia comandos com estrelas e dá as notas comportamentais em 2 blocos. O ✨ chama o assistente IA.",
     placement: "left",
   },
   {
     id: "portal",
     route: "/portal",
+    selector: '[data-tour="portal-links"]',
     title: "Portal do cliente",
     description:
-      "Gere o link único de cada cliente e envie pelo WhatsApp. Lá o tutor vê tarefas de casa, evolução, gamificação e confirma presença — sem precisar de login.",
+      "Gere o link único de cada cliente e envie pelo WhatsApp. O tutor vê tarefas de casa, evolução, gamificação e confirma presença — sem precisar de login.",
+    placement: "bottom",
+  },
+  {
+    id: "chat",
+    route: "/chat",
+    title: "Chat com os tutores",
+    description:
+      "Conversa em tempo real com cada cliente. As mensagens que o tutor manda pelo portal chegam aqui — e aparecem no sininho.",
     fullScreen: true,
+  },
+  {
+    id: "evolucao",
+    route: "/evolucao",
+    title: "Evolução comportamental",
+    description:
+      "As notas que você dá no registro viram gráficos por categoria: estabilidade emocional, foco, obediência, recall… É o argumento visual pro tutor renovar o pacote.",
+    fullScreen: true,
+  },
+  {
+    id: "finance-sell",
+    route: "/financeiro",
+    selector: '[data-tour="finance-sell"]',
+    title: "Vender pacote",
+    description:
+      "A ação nº 1 do financeiro fica sempre à mão: vender um pacote gera contrato e cobranças automáticas (com lembrete de WhatsApp). O sistema também oferece a venda logo após cadastrar um cliente.",
+    placement: "bottom",
   },
   {
     id: "financeiro",
@@ -119,7 +173,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="finance-tabs"]',
     title: "Financeiro completo",
     description:
-      "Pacotes, contratos, cobranças e recibos com Pix Copia e Cola embutido. Envie cobrança via WhatsApp com 1 clique.",
+      "Pacotes, cobranças, extrato e recibos com Pix Copia e Cola. Receba por Pix, dinheiro ou cartão (com taxa da maquininha e valor líquido calculado).",
     placement: "bottom",
   },
   {
@@ -127,24 +181,24 @@ export const TRAINER_STEPS: TourStep[] = [
     route: "/relatorios",
     title: "Relatórios mensais",
     description:
-      "Geração automática no início do mês. Você revisa, edita análise, seleciona fotos e aprova. Compare evolução mês vs mês.",
+      "O rascunho aparece sozinho no início do mês. Você revisa a análise da IA, escolhe as fotos, aprova e envia em PDF. Tem comparativo mês vs mês pra mostrar a evolução.",
     fullScreen: true,
   },
   {
     id: "configuracoes",
     route: "/configuracoes",
     selector: '[data-tour="settings-alerts"]',
-    title: "Personalizar alertas",
+    title: "Do seu jeito",
     description:
-      "Configure quando os lembretes saem, horário do resumo matinal, % mínimo do streak. Tudo se adapta ao seu fluxo.",
+      "Horários dos lembretes, notificações push no celular, importação de clientes (CSV/ClickUp) e tema claro/escuro (botão ☀️/🌙 no topo de qualquer tela).",
     placement: "top",
   },
   {
     id: "done",
     route: "/dashboard",
-    title: "Pronto! Você já sabe o essencial 🎉",
+    title: "Pronto! Você conhece o sistema 🎉",
     description:
-      "Atalhos úteis: Ctrl+K abre a busca global · ícone ✨ na sessão chama a IA · clique no sininho pra ver pendências. O guia completo fica em Mais → Tutorial. Bom adestramento!",
+      "Atalhos: Ctrl+K busca qualquer coisa · ✨ chama a IA na sessão · sininho mostra pendências. O guia completo com FAQ fica em Mais → Tutorial. Bom adestramento!",
     fullScreen: true,
   },
 ];
@@ -556,29 +610,29 @@ export function ProductTour() {
             <h3 className="mt-2 text-base font-bold text-slate-900">{step.title}</h3>
             <p className="mt-1 text-xs leading-relaxed text-slate-700">{step.description}</p>
 
+            {/* Barra de progresso (18 passos não cabem em pontinhos) */}
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full bg-purple-600 transition-all duration-300"
+                style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
+              />
+            </div>
+
             <div className="mt-3 flex items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={prev}
                 disabled={stepIndex === 0}
-                className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-[var(--muted)] disabled:opacity-30"
+                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--muted)] disabled:opacity-30"
               >
                 ← Anterior
               </button>
-              <div className="flex gap-1">
-                {steps.map((_, idx) => (
-                  <span
-                    key={idx}
-                    className={`h-1.5 w-1.5 rounded-full ${idx === stepIndex ? "bg-purple-600" : "bg-slate-200"}`}
-                  />
-                ))}
-              </div>
               <button
                 type="button"
                 onClick={next}
-                className="rounded-full bg-purple-600 px-3 py-1 text-[11px] font-bold text-white shadow-sm hover:bg-purple-700"
+                className="rounded-full bg-purple-600 px-4 py-1.5 text-[11.5px] font-bold text-white shadow-sm hover:bg-purple-700"
               >
-                {stepIndex === steps.length - 1 ? "Finalizar" : "Próximo →"}
+                {stepIndex === steps.length - 1 ? "Finalizar 🎉" : "Próximo →"}
               </button>
             </div>
           </>

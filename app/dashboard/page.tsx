@@ -54,18 +54,20 @@ export default function DashboardPage() {
 
   // Tour automático na 1ª entrada: só para conta nova (0-1 clientes), depois do
   // wizard de boas-vindas, uma única vez. Usuário estabelecido nunca é interrompido.
+  // A flag de onboarding é checada DENTRO do timer: ela é gravada por um fetch
+  // assíncrono e ainda não existe no primeiro render.
   const clients = useAppStore((state) => state.clients);
   useEffect(() => {
     if (typeof window === "undefined") return;
     const storage = window.localStorage;
     if (storage.getItem(TRAINER_TOUR_DONE_KEY) === "1") return;
     if (storage.getItem("adestro-tour-autostarted") === "1") return;
-    if (!storage.getItem("adestro-onboarding-done")) return;
     if (clients.length > 1) return;
     const timer = window.setTimeout(() => {
+      if (!storage.getItem("adestro-onboarding-done")) return; // ainda no boas-vindas
       storage.setItem("adestro-tour-autostarted", "1");
       startTour();
-    }, 1200);
+    }, 2000);
     return () => window.clearTimeout(timer);
   }, [clients.length, startTour]);
 
@@ -248,7 +250,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 5 cards do documento — cor = foco (TDAH-friendly) */}
-        <section className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+        <section data-tour="stat-cards" className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
           {statCards.map((card) => (
             <Link key={card.key} href={card.href} className={`stat-card group ${card.tone}`}>
               <div className="flex items-center justify-between">
