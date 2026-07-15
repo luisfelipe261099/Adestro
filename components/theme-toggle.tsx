@@ -6,11 +6,12 @@ import { IconMoon, IconSun } from "@/components/icons";
 
 type Theme = "light" | "dark";
 
+// Padrão do sistema = ESCURO; o usuário troca pro claro se quiser (fica salvo).
 function readStoredTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   const stored = window.localStorage.getItem("adestro-theme");
   if (stored === "dark" || stored === "light") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "dark";
 }
 
 export function ThemeToggle({

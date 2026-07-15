@@ -290,7 +290,7 @@ export default function PortalPage() {
             </article>
           </div>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <div data-tour="portal-links" className="mt-4 grid gap-2 sm:grid-cols-2">
           <label className="grid gap-1 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
             1. Escolha o cliente
             <select
