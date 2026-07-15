@@ -172,6 +172,9 @@ model ClientProfile {
   cpf            String?
   photoUrl       String?
   privateNotes   String?  @db.Text
+  // 2º contato da residência (quem também acompanha o treino)
+  secondContactName  String?
+  secondContactPhone String?
   status         String   @default("Ativo") // Ativo / Inativo
   propertyType   String?
   environment    String?  @db.Text
