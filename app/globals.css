@@ -47,13 +47,19 @@
 	--info-bg: #eff6ff;
 
 	/* paleta dos cards do dashboard (TDAH-friendly: cor = foco)
-	   cores VÍVIDAS e distintas — Azul / Azul claro / Verde / Laranja / Roxo —
-	   conforme a tabela do documento ("cor primordial para atenção em cada ponto"). */
-	--card-blue: #18181b;        --card-blue-bg: #fafafa;      --card-blue-border: #e4e4e7;
-	--card-sky: #3f3f46;         --card-sky-bg: #fafafa;       --card-sky-border: #e4e4e7;
-	--card-green: #16a34a;       --card-green-bg: #f6fef9;     --card-green-border: #dcecdf;
-	--card-orange: #b45309;      --card-orange-bg: #fdfbf5;    --card-orange-border: #ece2d0;
-	--card-purple: #3f3f46;      --card-purple-bg: #fafafa;    --card-purple-border: #e4e4e7;
+	   cores VÍVIDAS e distintas — Azul / Azul claro / Verde / Laranja / Roxo.
+	   Fundos tintados de verdade + texto escuro de alto contraste: o cérebro
+	   categoriza o tipo de informação pela cor antes de ler. */
+	--card-blue: #1d4ed8;        --card-blue-bg: #eff6ff;      --card-blue-border: #bfdbfe;
+	--card-sky: #0369a1;         --card-sky-bg: #f0f9ff;       --card-sky-border: #bae6fd;
+	--card-green: #15803d;       --card-green-bg: #ecfdf5;     --card-green-border: #a7f3d0;
+	--card-orange: #c2410c;      --card-orange-bg: #fff7ed;    --card-orange-border: #fdba74;
+	--card-purple: #6d28d9;      --card-purple-bg: #f5f3ff;    --card-purple-border: #ddd6fe;
+
+	/* ação global (ex.: "+ Novo agendamento") — cor única no sistema, não se
+	   repete em nenhum outro botão, para o olho achar a ação principal na hora */
+	--action: #6d28d9;
+	--action-strong: #5b21b6;
 
 	/* sombras — quase invisíveis, separação por borda */
 	--shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
@@ -88,11 +94,14 @@ html[data-theme="dark"] {
 	--accent-soft: #27272a;
 	--accent-text: #e4e4e7;
 
-	--card-blue: #d4d4d8;        --card-blue-bg: #18181b;      --card-blue-border: #27272a;
-	--card-sky: #a1a1aa;         --card-sky-bg: #18181b;       --card-sky-border: #27272a;
+	--card-blue: #93c5fd;        --card-blue-bg: #16233f;      --card-blue-border: #1e3a8a;
+	--card-sky: #7dd3fc;         --card-sky-bg: #0b2735;      --card-sky-border: #075985;
 	--card-green: #4ade80;       --card-green-bg: #0c1f14;     --card-green-border: #14532d;
 	--card-orange: #fb923c;      --card-orange-bg: #271603;    --card-orange-border: #7c2d12;
-	--card-purple: #a1a1aa;      --card-purple-bg: #18181b;    --card-purple-border: #27272a;
+	--card-purple: #c4b5fd;      --card-purple-bg: #221a41;    --card-purple-border: #4c1d95;
+
+	--action: #8b5cf6;
+	--action-strong: #7c3aed;
 
 	--success: #7ba383;
 	--success-bg: #1e2a20;
@@ -358,7 +367,7 @@ body {
 	content: "";
 	position: absolute;
 	left: 0; top: 0; bottom: 0;
-	width: 4px;
+	width: 6px;
 	background: var(--c, var(--accent));
 }
 .stat-card-blue   { --c: var(--card-blue);   --c-bg: var(--card-blue-bg);   --c-border: var(--card-blue-border); }
@@ -366,6 +375,43 @@ body {
 .stat-card-green  { --c: var(--card-green);  --c-bg: var(--card-green-bg);  --c-border: var(--card-green-border); }
 .stat-card-orange { --c: var(--card-orange); --c-bg: var(--card-orange-bg); --c-border: var(--card-orange-border); }
 .stat-card-purple { --c: var(--card-purple); --c-bg: var(--card-purple-bg); --c-border: var(--card-purple-border); }
+
+/* Estado ALERTA: pendência > 0 tem que gritar — borda grossa + fundo amarelado. */
+.stat-card-alert {
+	border: 2px solid var(--card-orange);
+	--c-bg: var(--warning-bg);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--card-orange) 18%, transparent);
+}
+/* Estado APAGADO: valor 0 = baixo esforço visual, não compete por atenção. */
+.stat-card-dim {
+	--c: var(--muted);
+	--c-bg: var(--surface);
+	--c-border: var(--border);
+}
+
+/* Botão de AÇÃO GLOBAL — violeta exclusivo, nenhum outro botão usa esta cor. */
+.btn-action {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	height: 2.75rem;
+	padding: 0 1.25rem;
+	border-radius: 0.5rem;
+	background: var(--action);
+	color: #ffffff;
+	font-size: 14px;
+	font-weight: 700;
+	box-shadow: var(--shadow-sm);
+	transition: background 120ms ease, transform 120ms ease;
+}
+.btn-action:hover { background: var(--action-strong); transform: translateY(-1px); }
+
+/* Hero "Próxima sessão" — contêiner mental isolado do fundo da página. */
+.next-session-hero {
+	background: var(--info-bg) !important;
+	border: 1px solid color-mix(in srgb, var(--info) 35%, var(--border)) !important;
+	box-shadow: var(--shadow-md) !important;
+}
 
 .card {
 	background: var(--surface);
@@ -588,10 +634,13 @@ textarea.input-field { min-height: 5rem; resize: vertical; }
 	transition: all 120ms ease;
 }
 .tab-trigger:hover { color: var(--foreground); }
+/* Aba ativa em cor SÓLIDA + texto branco: responde "onde estou?" num relance
+   (contraste alto p/ acessibilidade cognitiva — TDAH). */
 .tab-trigger[data-active="true"] {
-	background: var(--surface);
-	color: var(--foreground);
-	box-shadow: var(--shadow-xs);
+	background: var(--accent);
+	color: #ffffff;
+	font-weight: 700;
+	box-shadow: var(--shadow-sm);
 }
 
 /* ─── Focus rings consistentes ────────────────────────────────────────────── */

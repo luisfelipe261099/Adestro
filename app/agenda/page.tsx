@@ -520,7 +520,7 @@ export default function SchedulePage() {
             <button
               type="button"
               onClick={() => setShowForm((value) => !value)}
-              className="btn-primary text-[12.5px]"
+              className="btn-action text-[13px]"
             >
               <TinyIcon name="plus" />
               Novo agendamento
@@ -571,6 +571,180 @@ export default function SchedulePage() {
           </div>
         </div>
 
+          {showForm && (
+            <section ref={formRef} className="mt-3 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm animate-in slide-in-from-top-4 duration-200">
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--foreground)] border-b border-slate-100 pb-2">Agendar Aula</p>
+              
+              <form onSubmit={onSubmit} className="mt-3.5 space-y-3.5">
+                
+                {/* Individual vs Collective Toggle */}
+                <div className="grid grid-cols-2 gap-2 rounded-md bg-slate-100 p-1 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setIsCollective(false)}
+                    className={`rounded-lg py-1.5 transition ${!isCollective ? "bg-white text-[var(--foreground)] shadow-sm" : "text-[var(--muted)]"}`}
+                  >
+                    Individual
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCollective(true)}
+                    className={`rounded-lg py-1.5 transition ${isCollective ? "bg-white text-[var(--foreground)] shadow-sm" : "text-[var(--muted)]"}`}
+                  >
+                    Coletiva (Turma)
+                  </button>
+                </div>
+
+                {!isCollective ? (
+                  <div className="grid gap-3.5 sm:grid-cols-2">
+                    <label className="grid gap-1">
+                      <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
+                        Cliente
+                        <Link href="/clientes" className="text-[9px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Cliente</Link>
+                      </span>
+                      <select
+                        value={selectedClientId ?? ""}
+                        onChange={(event) => {
+                          const nextClient = clients.find((item) => item.id === event.target.value);
+                          setSelectedClientId(event.target.value);
+                          setSelectedDogId(nextClient?.dogs[0]?.id ?? "");
+                        }}
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      >
+                        {clients.length === 0 && <option value="">Sem clientes cadastrados</option>}
+                        {clients.map((client) => (
+                          <option key={client.id} value={client.id}>{client.name}</option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="grid gap-1">
+                      <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
+                        Cão
+                        <Link href="/clientes" className="text-[9px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Cão</Link>
+                      </span>
+                      <select
+                        value={selectedDogId ?? ""}
+                        onChange={(event) => setSelectedDogId(event.target.value)}
+                        disabled={!selectedClient?.dogs.length}
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none disabled:opacity-60 focus:border-sky-400"
+                      >
+                        {!selectedClient?.dogs.length && <option value="">Sem cães</option>}
+                        {(selectedClient?.dogs ?? []).map((dog) => (
+                          <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                ) : (
+                  <div className="grid gap-3.5 sm:grid-cols-2 animate-in fade-in duration-200">
+                    <label className="grid gap-1">
+                      <span className="text-[11px] font-medium text-[var(--muted)]">Nome da Turma / Evento *</span>
+                      <input
+                        value={collectiveDogName}
+                        onChange={(e) => setCollectiveDogName(e.target.value)}
+                        placeholder="Ex: Turma do Parque, Socialização"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                        required
+                      />
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="text-[11px] font-medium text-[var(--muted)]">Identificador do Grupo / Local</span>
+                      <input
+                        value={collectiveClientName}
+                        onChange={(e) => setCollectiveClientName(e.target.value)}
+                        placeholder="Ex: Sítio Cão Feliz, Praça central"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      />
+                    </label>
+                    <label className="grid gap-1 sm:col-span-2">
+                      <span className="text-[11px] font-medium text-[var(--muted)]">Foco / Atividades Coletivas</span>
+                      <input
+                        value={collectivePlanName}
+                        onChange={(e) => setCollectivePlanName(e.target.value)}
+                        placeholder="Ex: Treino de foco, reatividade com outros cães"
+                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      />
+                    </label>
+                    <p className="sm:col-span-2 rounded-md border border-sky-200 bg-sky-100/60 px-3 py-2 text-[11px] leading-relaxed text-sky-900">
+                      👥 Depois de criar a turma, selecione os cães participantes direto no card da aula
+                      (seção “Participantes”) — cada cliente recebe a própria confirmação de presença.
+                    </p>
+                  </div>
+                )}
+
+                <div className="grid gap-3.5 sm:grid-cols-2">
+                  <label className="grid gap-1">
+                    <span className="text-[11px] font-medium text-[var(--muted)]">Dia do Agendamento</span>
+                    <input
+                      type="date"
+                      value={formDateISO}
+                      onChange={(event) => setFormDateISO(event.target.value)}
+                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
+                      required
+                    />
+                  </label>
+
+                  <label className="grid gap-1">
+                    <span className="text-[11px] font-medium text-[var(--muted)]">Horário</span>
+                    <input
+                      type="time"
+                      value={time}
+                      onChange={(event) => setTime(event.target.value)}
+                      className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
+                      required
+                    />
+                  </label>
+                </div>
+
+                <div className="grid gap-3.5 sm:grid-cols-2">
+                  <label className="grid gap-1">
+                    <span className="text-[11px] font-medium text-[var(--muted)]">Status Inicial</span>
+                    <select
+                      value={status}
+                      onChange={(event) => setStatus(event.target.value as EventStatus)}
+                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                    >
+                      <option value="Pendente">Agendada</option>
+                      <option value="Confirmado">Concluída</option>
+                      <option value="Cancelado">Cancelado</option>
+                      <option value="Aguardando">Aguardando confirmação</option>
+                    </select>
+                  </label>
+
+                  <label className="grid gap-1">
+                    <span className="text-[11px] font-medium text-[var(--muted)]">Repetição (Recorrência)</span>
+                    <select
+                      value={recurrence}
+                      onChange={(event) => setRecurrence(event.target.value)}
+                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+                    >
+                      <option value="none">Não repete</option>
+                      <option value="4weeks">Semanal (4 semanas)</option>
+                      <option value="8weeks">Semanal (8 semanas)</option>
+                      <option value="12weeks">Semanal (12 semanas)</option>
+                    </select>
+                  </label>
+                </div>
+
+                {timeConflicts.length > 0 && (
+                  <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900">
+                    <span className="font-semibold">Atenção:</span>{" "}
+                    já existe {timeConflicts.length === 1 ? "uma aula marcada" : `${timeConflicts.length} aulas marcadas`} neste dia e horário ({timeConflicts.map((e) => e.dog).join(", ")}). Confira se não há choque antes de confirmar.
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isCreating || (!isCollective && clients.length === 0)}
+                  className="w-full rounded-full bg-[var(--accent)] py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-60 transition"
+                >
+                  {isCreating ? "Criando..." : "Criar Agendamento"}
+                </button>
+              </form>
+            </section>
+          )}
+
           {/* DATE HEADER CONTEXT */}
           <header className="mt-3 flex items-center justify-between text-xs font-bold text-slate-700 bg-white/70 border border-slate-100 rounded-md p-3">
             <span className="flex items-center gap-1">
@@ -615,19 +789,43 @@ export default function SchedulePage() {
           {viewMode === "dia" && (
             <section className="mt-3 space-y-2">
               
-              {/* Daily Statistics */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <article className="rounded-md border border-[var(--border)] bg-white p-2.5 text-center">
-                  <p className="text-xl font-bold text-[var(--foreground)]">{eventsForSelectedDay.length}</p>
-                  <p className="text-[10px] text-[var(--muted)]">Aulas no dia</p>
+              {/* Daily Statistics — ícone + cor por tipo; valor 0 fica "apagado" */}
+              <div className="grid grid-cols-3 gap-2">
+                <article
+                  className={`rounded-md border p-2.5 text-center ${
+                    eventsForSelectedDay.length > 0
+                      ? "border-[var(--card-blue-border)] bg-[var(--card-blue-bg)]"
+                      : "border-[var(--border)] bg-[var(--surface)] opacity-70"
+                  }`}
+                >
+                  <p className={`text-2xl font-extrabold ${eventsForSelectedDay.length > 0 ? "text-[var(--card-blue)]" : "text-[var(--muted)]"}`}>
+                    {eventsForSelectedDay.length}
+                  </p>
+                  <p className="text-[10px] font-semibold text-[var(--muted)]">📅 Aulas no dia</p>
                 </article>
-                <article className="rounded-md border border-[var(--border)] bg-white p-2.5 text-center">
-                  <p className="text-xl font-bold text-amber-600">{totalInProgress}</p>
-                  <p className="text-[10px] text-[var(--muted)]">Agendadas</p>
+                <article
+                  className={`rounded-md border p-2.5 text-center ${
+                    totalInProgress > 0
+                      ? "border-[var(--card-orange-border)] bg-[var(--card-orange-bg)]"
+                      : "border-[var(--border)] bg-[var(--surface)] opacity-70"
+                  }`}
+                >
+                  <p className={`text-2xl font-extrabold ${totalInProgress > 0 ? "text-[var(--card-orange)]" : "text-[var(--muted)]"}`}>
+                    {totalInProgress}
+                  </p>
+                  <p className="text-[10px] font-semibold text-[var(--muted)]">⏰ Agendadas</p>
                 </article>
-                <article className="rounded-md border border-[var(--border)] bg-white p-2.5 text-center">
-                  <p className="text-xl font-bold text-sky-600">{totalConfirmed}</p>
-                  <p className="text-[10px] text-[var(--muted)]">Concluídas</p>
+                <article
+                  className={`rounded-md border p-2.5 text-center ${
+                    totalConfirmed > 0
+                      ? "border-[var(--card-green-border)] bg-[var(--card-green-bg)]"
+                      : "border-[var(--border)] bg-[var(--surface)] opacity-70"
+                  }`}
+                >
+                  <p className={`text-2xl font-extrabold ${totalConfirmed > 0 ? "text-[var(--card-green)]" : "text-[var(--muted)]"}`}>
+                    {totalConfirmed}
+                  </p>
+                  <p className="text-[10px] font-semibold text-[var(--muted)]">✅ Concluídas</p>
                 </article>
               </div>
 
@@ -767,7 +965,8 @@ export default function SchedulePage() {
 
                 {eventsForSelectedDay.length === 0 ? (
                   <article className="rounded-md border border-dashed border-[var(--border)] bg-white p-6 text-center">
-                    <p className="text-xs text-[var(--muted)]">Nenhuma aula agendada para este dia.</p>
+                    <p className="text-2xl" aria-hidden>🐕</p>
+                    <p className="mt-1 text-xs text-[var(--muted)]">Nenhuma aula agendada para este dia.</p>
                     <button
                       type="button"
                       onClick={() => setShowForm(true)}
@@ -775,6 +974,28 @@ export default function SchedulePage() {
                     >
                       + Agendar aula neste dia
                     </button>
+                    {/* Mostra a próxima aula futura para o dia vazio não ser um beco */}
+                    {(() => {
+                      for (let i = 1; i <= 60; i++) {
+                        const d = new Date(currentDate);
+                        d.setDate(currentDate.getDate() + i);
+                        const next = getEventsForGridDate(d)
+                          .filter((e) => e.status !== "Cancelado")
+                          .sort((a, b) => a.time.localeCompare(b.time))[0];
+                        if (next) {
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => setCurrentDate(d)}
+                              className="mx-auto mt-3 block rounded-md border border-[var(--card-blue-border)] bg-[var(--card-blue-bg)] px-3 py-2 text-[11.5px] font-semibold text-[var(--card-blue)] hover:shadow-sm"
+                            >
+                              Próxima aula: {weekDays[d.getDay()]?.full} {d.getDate()}/{d.getMonth() + 1} às {next.time} — {next.dog} →
+                            </button>
+                          );
+                        }
+                      }
+                      return null;
+                    })()}
                   </article>
                 ) : null}
               </div>
@@ -785,41 +1006,49 @@ export default function SchedulePage() {
           {/* VIEW: WEEKLY GRID LIST */}
           {/* ======================================= */}
           {viewMode === "semana" && (
-            <section className="mt-3 space-y-2.5">
+            /* Celular: lista vertical (como antes). Desktop: 7 colunas lado a lado. */
+            <section className="mt-3 grid grid-cols-1 gap-2.5 lg:grid-cols-7">
               {weekDates.map((dayDate) => {
                 const dayEvents = getEventsForGridDate(dayDate)
                   .filter(e => statusFilter === "Todos" || e.status === statusFilter)
                   .sort((a,b) => a.time.localeCompare(b.time));
                 const isSelected = currentDate.getDate() === dayDate.getDate() && currentDate.getMonth() === dayDate.getMonth();
                 const isToday = new Date().toDateString() === dayDate.toDateString();
+                const startOfToday = new Date();
+                startOfToday.setHours(0, 0, 0, 0);
+                const isPast = dayDate < startOfToday && !isToday;
 
                 return (
                   <div
                     key={dayDate.toDateString()}
                     onClick={() => setCurrentDate(dayDate)}
-                    className={`rounded-md border p-3 cursor-pointer transition-all bg-white ${
-                      isSelected ? "border-[#145a82] ring-1 ring-[#145a82]" : "border-[var(--border)]"
-                    }`}
+                    className={`min-w-0 rounded-md border p-3 cursor-pointer transition-all ${
+                      isToday
+                        ? "border-2 border-[var(--card-blue)] bg-[var(--card-blue-bg)] shadow-sm"
+                        : isPast
+                          ? "border-[var(--border)] bg-[var(--surface)] opacity-60"
+                          : "border-[var(--border)] bg-white"
+                    } ${isSelected && !isToday ? "ring-2 ring-[var(--card-blue)]" : ""}`}
                   >
-                    <header className="flex justify-between items-center pb-2 border-b border-slate-50">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-bold uppercase ${isSelected ? "text-[var(--foreground)]" : "text-slate-500"}`}>
+                    <header className="flex flex-wrap justify-between items-center gap-1 pb-2 border-b border-slate-50">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`truncate text-xs font-bold uppercase ${isToday ? "text-[var(--card-blue)]" : isSelected ? "text-[var(--foreground)]" : "text-slate-500"}`}>
                           {weekDays[dayDate.getDay()]?.full}
                         </span>
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                          isToday ? "bg-amber-100 text-amber-900 font-bold" : "bg-slate-100 text-slate-700"
+                        <span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${
+                          isToday ? "bg-[var(--card-blue)] font-extrabold text-white" : "bg-slate-100 font-semibold text-slate-700"
                         }`}>
-                          Dia {dayDate.getDate()}
+                          {isToday ? `HOJE · ${dayDate.getDate()}` : `Dia ${dayDate.getDate()}`}
                         </span>
                       </div>
-                      <span className="text-[10px] font-bold text-slate-400">
+                      <span className={`text-[10px] font-bold ${dayEvents.length > 0 ? "text-[var(--card-blue)]" : "text-slate-400"}`}>
                         {dayEvents.length} {dayEvents.length === 1 ? "aula" : "aulas"}
                       </span>
                     </header>
 
                     <div className="mt-2 space-y-1.5">
                       {dayEvents.map(e => (
-                        <div key={e.id} className="flex justify-between items-center text-xs p-1.5 bg-slate-50 rounded-md">
+                        <div key={e.id} className="flex flex-wrap justify-between items-center gap-1 text-xs p-1.5 bg-slate-50 rounded-md">
                           <div className="flex items-center gap-2 truncate">
                             <span className="font-bold text-[var(--foreground)]">{e.time}</span>
                             <span className="truncate text-slate-800 font-medium">{e.dog} ({e.client})</span>
@@ -857,21 +1086,28 @@ export default function SchedulePage() {
                   const isCurrentMonth = dayDate.getMonth() === currentDate.getMonth();
                   const isToday = new Date().toDateString() === dayDate.toDateString();
                   const isSelected = currentDate.getDate() === dayDate.getDate() && currentDate.getMonth() === dayDate.getMonth();
+                  const startOfToday = new Date();
+                  startOfToday.setHours(0, 0, 0, 0);
+                  const isPast = dayDate < startOfToday && !isToday;
 
                   return (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setCurrentDate(dayDate)}
-                      className={`relative flex flex-col items-center justify-between h-10 py-1.5 rounded-md border text-center transition-all ${
-                        !isCurrentMonth ? "bg-slate-50/40 text-slate-300 border-transparent" : "bg-white text-slate-800 border-slate-100"
+                      className={`relative flex flex-col items-center justify-between h-12 py-1.5 rounded-md border text-center transition-all ${
+                        !isCurrentMonth
+                          ? "bg-slate-50/40 text-slate-300 border-transparent"
+                          : isPast
+                            ? "bg-[var(--surface)] text-slate-400 border-[var(--border)]"
+                            : "bg-white text-slate-800 border-[var(--border)]"
                       } ${
-                        isSelected ? "border-[#145a82] ring-1 ring-[#145a82] bg-[var(--surface-2)]/30" : ""
+                        isSelected && !isToday ? "ring-2 ring-[var(--card-blue)]" : ""
                       } ${
-                        isToday ? "font-extrabold ring-1 ring-amber-400" : ""
+                        isToday ? "border-2 border-[var(--card-blue)] bg-[var(--card-blue-bg)] font-extrabold shadow-sm" : ""
                       }`}
                     >
-                      <span className={`text-[11px] leading-none ${isToday ? "text-amber-700" : ""}`}>{dayDate.getDate()}</span>
+                      <span className={`leading-none ${isToday ? "text-[13px] font-extrabold text-[var(--card-blue)]" : "text-[11px]"}`}>{dayDate.getDate()}</span>
                       
                       {/* Event dots indicator */}
                       <div className="flex gap-0.5 justify-center mt-1">
@@ -927,180 +1163,11 @@ export default function SchedulePage() {
                 onClick={() => setShowForm((value) => !value)}
                 className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-xs font-semibold text-white shadow-sm"
               >
-                {showForm ? "Fechar" : "Nova aula"}
+                {showForm ? "Fechar" : "Novo agendamento"}
               </button>
             </div>
           </section>
 
-          {showForm && (
-            <section ref={formRef} className="mt-3 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm animate-in slide-in-from-top-4 duration-200">
-              <p className="text-xs font-bold uppercase tracking-wide text-[var(--foreground)] border-b border-slate-100 pb-2">Agendar Aula</p>
-              
-              <form onSubmit={onSubmit} className="mt-3.5 space-y-3.5">
-                
-                {/* Individual vs Collective Toggle */}
-                <div className="grid grid-cols-2 gap-2 rounded-md bg-slate-100 p-1 text-xs font-semibold">
-                  <button
-                    type="button"
-                    onClick={() => setIsCollective(false)}
-                    className={`rounded-lg py-1.5 transition ${!isCollective ? "bg-white text-[var(--foreground)] shadow-sm" : "text-[var(--muted)]"}`}
-                  >
-                    Individual
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsCollective(true)}
-                    className={`rounded-lg py-1.5 transition ${isCollective ? "bg-white text-[var(--foreground)] shadow-sm" : "text-[var(--muted)]"}`}
-                  >
-                    Coletiva (Turma)
-                  </button>
-                </div>
-
-                {!isCollective ? (
-                  <div className="grid gap-3.5 sm:grid-cols-2">
-                    <label className="grid gap-1">
-                      <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
-                        Cliente
-                        <Link href="/clientes" className="text-[9px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Cliente</Link>
-                      </span>
-                      <select
-                        value={selectedClientId ?? ""}
-                        onChange={(event) => {
-                          const nextClient = clients.find((item) => item.id === event.target.value);
-                          setSelectedClientId(event.target.value);
-                          setSelectedDogId(nextClient?.dogs[0]?.id ?? "");
-                        }}
-                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                      >
-                        {clients.length === 0 && <option value="">Sem clientes cadastrados</option>}
-                        {clients.map((client) => (
-                          <option key={client.id} value={client.id}>{client.name}</option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label className="grid gap-1">
-                      <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
-                        Cão
-                        <Link href="/clientes" className="text-[9px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Cão</Link>
-                      </span>
-                      <select
-                        value={selectedDogId ?? ""}
-                        onChange={(event) => setSelectedDogId(event.target.value)}
-                        disabled={!selectedClient?.dogs.length}
-                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none disabled:opacity-60 focus:border-sky-400"
-                      >
-                        {!selectedClient?.dogs.length && <option value="">Sem cães</option>}
-                        {(selectedClient?.dogs ?? []).map((dog) => (
-                          <option key={dog.id} value={dog.id}>{dog.name} • {dog.breed}</option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-                ) : (
-                  <div className="grid gap-3.5 sm:grid-cols-2 animate-in fade-in duration-200">
-                    <label className="grid gap-1">
-                      <span className="text-[11px] font-medium text-[var(--muted)]">Nome da Turma / Evento *</span>
-                      <input
-                        value={collectiveDogName}
-                        onChange={(e) => setCollectiveDogName(e.target.value)}
-                        placeholder="Ex: Turma do Parque, Socialização"
-                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                        required
-                      />
-                    </label>
-                    <label className="grid gap-1">
-                      <span className="text-[11px] font-medium text-[var(--muted)]">Identificador do Grupo / Local</span>
-                      <input
-                        value={collectiveClientName}
-                        onChange={(e) => setCollectiveClientName(e.target.value)}
-                        placeholder="Ex: Sítio Cão Feliz, Praça central"
-                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                      />
-                    </label>
-                    <label className="grid gap-1 sm:col-span-2">
-                      <span className="text-[11px] font-medium text-[var(--muted)]">Foco / Atividades Coletivas</span>
-                      <input
-                        value={collectivePlanName}
-                        onChange={(e) => setCollectivePlanName(e.target.value)}
-                        placeholder="Ex: Treino de foco, reatividade com outros cães"
-                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                      />
-                    </label>
-                  </div>
-                )}
-
-                <div className="grid gap-3.5 sm:grid-cols-2">
-                  <label className="grid gap-1">
-                    <span className="text-[11px] font-medium text-[var(--muted)]">Dia do Agendamento</span>
-                    <input
-                      type="date"
-                      value={formDateISO}
-                      onChange={(event) => setFormDateISO(event.target.value)}
-                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
-                      required
-                    />
-                  </label>
-
-                  <label className="grid gap-1">
-                    <span className="text-[11px] font-medium text-[var(--muted)]">Horário</span>
-                    <input
-                      type="time"
-                      value={time}
-                      onChange={(event) => setTime(event.target.value)}
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                      required
-                    />
-                  </label>
-                </div>
-
-                <div className="grid gap-3.5 sm:grid-cols-2">
-                  <label className="grid gap-1">
-                    <span className="text-[11px] font-medium text-[var(--muted)]">Status Inicial</span>
-                    <select
-                      value={status}
-                      onChange={(event) => setStatus(event.target.value as EventStatus)}
-                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                    >
-                      <option value="Pendente">Agendada</option>
-                      <option value="Confirmado">Concluída</option>
-                      <option value="Cancelado">Cancelado</option>
-                      <option value="Aguardando">Aguardando confirmação</option>
-                    </select>
-                  </label>
-
-                  <label className="grid gap-1">
-                    <span className="text-[11px] font-medium text-[var(--muted)]">Repetição (Recorrência)</span>
-                    <select
-                      value={recurrence}
-                      onChange={(event) => setRecurrence(event.target.value)}
-                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
-                    >
-                      <option value="none">Não repete</option>
-                      <option value="4weeks">Semanal (4 semanas)</option>
-                      <option value="8weeks">Semanal (8 semanas)</option>
-                      <option value="12weeks">Semanal (12 semanas)</option>
-                    </select>
-                  </label>
-                </div>
-
-                {timeConflicts.length > 0 && (
-                  <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900">
-                    <span className="font-semibold">Atenção:</span>{" "}
-                    já existe {timeConflicts.length === 1 ? "uma aula marcada" : `${timeConflicts.length} aulas marcadas`} neste dia e horário ({timeConflicts.map((e) => e.dog).join(", ")}). Confira se não há choque antes de confirmar.
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isCreating || (!isCollective && clients.length === 0)}
-                  className="w-full rounded-full bg-[var(--accent)] py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-60 transition"
-                >
-                  {isCreating ? "Criando..." : "Criar Agendamento"}
-                </button>
-              </form>
-            </section>
-          )}
 
         {reschedId && (
           <div
