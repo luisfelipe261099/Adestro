@@ -6,7 +6,20 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
-import { useAppStore } from "@/lib/app-store";
+import {
+  DOG_TRAINING_STATUSES,
+  type DogTrainingStatus,
+  useAppStore,
+} from "@/lib/app-store";
+
+// Cor da etiqueta de fase, alinhada às colunas do quadro kanban.
+const STATUS_BADGE: Record<DogTrainingStatus, string> = {
+  Ficha: "bg-slate-100 text-slate-700",
+  Ativo: "bg-sky-100 text-sky-800",
+  Completo: "bg-emerald-100 text-emerald-800",
+  Pausado: "bg-amber-100 text-amber-800",
+  Cancelado: "bg-rose-100 text-rose-800",
+};
 
 // Data dos treinos vem no formato "DD/MM/YYYY" — converte para ordenar.
 function parseBrazilianDate(date: string): number {
@@ -34,6 +47,8 @@ export default function DogProfilePage() {
   const clients = useAppStore((s) => s.clients);
   const trainingSessions = useAppStore((s) => s.trainingSessions);
   const updateClient = useAppStore((s) => s.updateClient);
+  const setDogTrainingStatus = useAppStore((s) => s.setDogTrainingStatus);
+  const [statusError, setStatusError] = useState("");
 
   // Acha o cão (e o cliente dono) na carteira.
   const found = useMemo(() => {
@@ -139,6 +154,40 @@ export default function DogProfilePage() {
                         </Link>
                         {found.client.phone ? ` · ${found.client.phone}` : ""}
                       </p>
+
+                      {/* Fase no quadro (mesmo campo do kanban) */}
+                      <div className="mt-2 flex items-center gap-2">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] ${
+                            STATUS_BADGE[found.dog.trainingStatus ?? "Ativo"]
+                          }`}
+                        >
+                          {found.dog.trainingStatus ?? "Ativo"}
+                        </span>
+                        <select
+                          value={found.dog.trainingStatus ?? "Ativo"}
+                          onChange={async (event) => {
+                            setStatusError("");
+                            const ok = await setDogTrainingStatus(
+                              found.client.id,
+                              found.dog.id,
+                              event.target.value as DogTrainingStatus,
+                            );
+                            if (!ok) setStatusError("Não foi possível mudar a fase. Tente de novo.");
+                          }}
+                          aria-label="Fase do cão"
+                          className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[11.5px] text-[var(--muted)]"
+                        >
+                          {DOG_TRAINING_STATUSES.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {statusError && (
+                        <p className="mt-1 text-[11px] text-[var(--danger)]">{statusError}</p>
+                      )}
                     </>
                   ) : (
                     <div className="space-y-2">

@@ -319,7 +319,7 @@ export async function PATCH(request: Request) {
     propertyType?: string;
     environment?: string;
     // Edição de UM cão existente:
-    dog?: { id: string; name?: string; breed?: string; age?: string };
+    dog?: { id: string; name?: string; breed?: string; age?: string; trainingStatus?: string };
     // Adicionar um cão novo a este cliente:
     addDog?: { name: string; breed?: string; age?: string };
   };
@@ -354,10 +354,17 @@ export async function PATCH(request: Request) {
 
     // Editar um cão existente (garante que é deste cliente).
     if (body.dog?.id) {
-      const dogData: { name?: string; breed?: string; age?: string } = {};
+      const dogData: { name?: string; breed?: string; age?: string; trainingStatus?: string } = {};
       if (body.dog.name !== undefined) dogData.name = body.dog.name;
       if (body.dog.breed !== undefined) dogData.breed = body.dog.breed;
       if (body.dog.age !== undefined) dogData.age = body.dog.age;
+      if (body.dog.trainingStatus !== undefined) {
+        const allowed = ["Ficha", "Ativo", "Completo", "Pausado", "Cancelado"];
+        if (!allowed.includes(body.dog.trainingStatus)) {
+          return NextResponse.json({ error: "trainingStatus inválido" }, { status: 400 });
+        }
+        dogData.trainingStatus = body.dog.trainingStatus;
+      }
       if (Object.keys(dogData).length > 0) {
         await prisma.dog.updateMany({ where: { id: body.dog.id, clientId: body.clientId }, data: dogData });
       }

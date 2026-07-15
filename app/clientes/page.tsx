@@ -6,6 +6,7 @@ import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DateField } from "@/components/date-field";
+import { DogKanban } from "@/components/dog-kanban";
 import { TagsEditor } from "@/components/tags-editor";
 import { useAppStore } from "@/lib/app-store";
 import { googleMapsLink } from "@/lib/calendar-ics";
@@ -13,7 +14,7 @@ import { maskCEP, maskCPF, maskDate, maskPhone } from "@/lib/masks";
 
 type ClientStatus = "ativos" | "inativos" | "rascunho";
 type SortMode = "recentes" | "nome";
-type EntityKind = "humanos" | "caes";
+type EntityKind = "humanos" | "caes" | "quadro";
 
 function parseBrazilianDate(date: string): number {
   const [day, month, year] = date.split("/").map(Number);
@@ -651,6 +652,17 @@ export default function ClientsPage() {
             >
               Cães
             </button>
+            <button
+              type="button"
+              onClick={() => setEntityKind("quadro")}
+              className={`rounded-md px-5 py-2 text-[13px] font-semibold transition ${
+                entityKind === "quadro"
+                  ? "bg-[var(--accent)] text-white shadow-sm"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              Quadro
+            </button>
           </div>
 
           {/* Busca (larga) + filtros de status (sem destaque, ao lado) */}
@@ -660,29 +672,36 @@ export default function ClientsPage() {
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder={entityKind === "humanos" ? "Buscar cliente pelo nome" : "Buscar cão pelo nome ou raça"}
+                placeholder={
+                  entityKind === "humanos"
+                    ? "Buscar cliente pelo nome"
+                    : "Buscar cão pelo nome ou raça"
+                }
                 className="w-full border-none bg-transparent text-[13px] text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
               />
             </label>
 
-            <div className="tabs">
-              {[
-                { value: "todos", label: "Todos" },
-                { value: "ativos", label: "Ativos" },
-                { value: "rascunho", label: "Rascunhos" },
-                { value: "inativos", label: "Inativos" },
-              ].map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  data-active={statusFilter === item.value}
-                  onClick={() => setStatusFilter(item.value as "todos" | ClientStatus)}
-                  className="tab-trigger"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
+            {/* Filtros de status não se aplicam ao Quadro (as colunas já são as fases). */}
+            {entityKind !== "quadro" && (
+              <div className="tabs">
+                {[
+                  { value: "todos", label: "Todos" },
+                  { value: "ativos", label: "Ativos" },
+                  { value: "rascunho", label: "Rascunhos" },
+                  { value: "inativos", label: "Inativos" },
+                ].map((item) => (
+                  <button
+                    key={item.value}
+                    type="button"
+                    data-active={statusFilter === item.value}
+                    onClick={() => setStatusFilter(item.value as "todos" | ClientStatus)}
+                    className="tab-trigger"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1192,7 +1211,18 @@ export default function ClientsPage() {
             </section>
           )}
 
+          {/* Quadro kanban dos cães (arrastar entre fases) */}
+          {entityKind === "quadro" && (
+            <section className="mt-3">
+              <p className="mb-2 text-[12px] text-[var(--muted)]">
+                Arraste um cão entre as colunas para mudar a fase. No celular, use o seletor no card.
+              </p>
+              <DogKanban searchTerm={searchTerm} />
+            </section>
+          )}
+
           {/* Listagem de Clientes */}
+          {entityKind !== "quadro" && (
           <section data-tour="clients-list" className="mt-3 space-y-2">
             {filteredClients.length === 0 ? (
               <article className="rounded-md border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
@@ -1387,6 +1417,7 @@ export default function ClientsPage() {
               );
             })}
           </section>
+          )}
       </main>
 
       {/* Modal de Edição de Cliente / Cão */}
