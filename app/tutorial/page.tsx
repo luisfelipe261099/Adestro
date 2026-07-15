@@ -114,7 +114,7 @@ const trainerFlow: FlowStep[] = [
 
 // Mapa de todas as telas do adestrador — referência rápida.
 const screenMap = [
-  { href: "/dashboard", label: "Hoje (Dashboard)", text: "Resumo do dia, lembretes prontos pra WhatsApp e pendências." },
+  { href: "/dashboard", label: "Hoje (Dashboard)", text: "Card 'Próxima ação' pra começar, resumo do dia, lembretes prontos pra WhatsApp e pendências." },
   { href: "/agenda", label: "Agenda", text: "Dia/Semana/Mês, recorrência, confirmação de presença e exportação de calendário." },
   { href: "/clientes", label: "Clientes", text: "Fichas de clientes e cães, tags, onboarding e quadro kanban de fases." },
   { href: "/treinos", label: "Treinos", text: "Feed dos treinos realizados com fotos, notas e filtros." },
@@ -131,6 +131,11 @@ const screenMap = [
 ];
 
 const featureHighlights = [
+  {
+    icon: "🧭",
+    title: "Próxima ação no Dashboard",
+    text: "Conta nova é conduzida passo a passo: tutor → aula → treino → portal. Uma ação por vez; o card some quando a jornada completa.",
+  },
   {
     icon: "🔔",
     title: "Sininho com badge dinâmico",
