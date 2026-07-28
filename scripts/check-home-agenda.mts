@@ -180,4 +180,20 @@ t("card leva ao perfil do cão", () => {
   assert.equal(result[0].href, "/caes/d1");
 });
 
+// ── Rótulos das telas de Clientes ───────────────────────────────────────────
+const labels = await import("../lib/labels.ts");
+
+console.log("\n— queixas da página Clientes —");
+t("plural: 1 cão (não 'cão(ões)')", () => assert.equal(labels.dogCountLabel(1), "1 cão"));
+t("plural: 3 cães", () => assert.equal(labels.dogCountLabel(3), "3 cães"));
+t("plural: nenhum cão", () => assert.equal(labels.dogCountLabel(0), "Nenhum cão"));
+t("plano não vira 'Plano Plano Pro'", () =>
+  assert.equal(labels.planLabel("Plano Pro - 8 aulas"), "Plano Pro - 8 aulas"));
+t("plano sem prefixo ganha 'Plano'", () => assert.equal(labels.planLabel("Pro"), "Plano Pro"));
+t("sem plano cai no padrão", () => assert.equal(labels.planLabel(""), "Plano personalizado"));
+t("pacote: 4/8 aulas", () => assert.equal(labels.packageProgressLabel(4, 8), "4/8 aulas"));
+t("sem pacote não inventa denominador", () => assert.equal(labels.packageProgressLabel(4, 0), null));
+t("passou do pacote é sinalizado", () => assert.equal(labels.isOverPackage(14, 8), true));
+t("dentro do pacote não alarma", () => assert.equal(labels.isOverPackage(8, 8), false));
+
 console.log(`\n${pass} verificações passaram.\n`);

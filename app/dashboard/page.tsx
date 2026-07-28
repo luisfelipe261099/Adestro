@@ -66,7 +66,7 @@ export default function DashboardPage() {
   // wizard de boas-vindas, uma única vez. Usuário estabelecido nunca é interrompido.
   // A flag de onboarding é checada DENTRO do timer: ela é gravada por um fetch
   // assíncrono e ainda não existe no primeiro render.
-  const clients = useAppStore((state) => state.clients);
+  // (`clients` já vem do seletor declarado no topo do componente.)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const storage = window.localStorage;

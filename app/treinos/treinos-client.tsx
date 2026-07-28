@@ -238,7 +238,12 @@ export default function TrainingPage() {
   const [selectedClientId, setSelectedClientId] = useState(initialClientId);
   const [selectedDogId, setSelectedDogId] = useState(initialDogId);
   const [searchTerm, setSearchTerm] = useState("");
-  const [feedFilter, setFeedFilter] = useState<FeedFilter>("today");
+  // Quem chega por "Histórico" de um cão específico quer o histórico DELE,
+  // inteiro — não o feed do dia de todos os cães. Sem isso o botão parecia
+  // levar a uma lista aleatória.
+  const focusDogId = searchParams.get("dogId") ?? "";
+  const [feedFilter, setFeedFilter] = useState<FeedFilter>(focusDogId ? "all" : "today");
+  const [feedDogId, setFeedDogId] = useState(focusDogId);
   const [showQuickFilters, setShowQuickFilters] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -327,6 +332,16 @@ export default function TrainingPage() {
 
     let nextSessions = feedSessions;
 
+    // Recorte por cão, quando a navegação pediu um cão específico.
+    if (feedDogId) {
+      const focusName = dogDirectory.get(feedDogId)?.name;
+      nextSessions = nextSessions.filter((session) => {
+        if (session.dogId) return session.dogId === feedDogId;
+        if ((session.dogSessions ?? []).some((ds) => ds.dogId === feedDogId)) return true;
+        return !!focusName && session.dogName === focusName;
+      });
+    }
+
     if (feedFilter !== "all") {
       const now = new Date();
       const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -356,7 +371,7 @@ export default function TrainingPage() {
 
       return haystack.includes(normalizedSearch);
     });
-  }, [feedFilter, feedSessions, searchTerm]);
+  }, [feedFilter, feedSessions, searchTerm, feedDogId, dogDirectory]);
 
   function handleOpenWhatsApp(phone?: string, dogName?: string) {
     const normalizedPhone = (phone ?? "").replace(/\D/g, "");
@@ -574,6 +589,24 @@ export default function TrainingPage() {
                 <TinyIcon name="filter" />
               </button>
             </section>
+
+            {/* Recorte por cão visível e removível — filtro escondido engana tanto
+                quanto lista sem filtro nenhum. */}
+            {feedDogId ? (
+              <div className="mt-3 flex items-center gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--accent)] bg-[var(--accent-soft)] px-3 py-1.5 text-[12px] font-semibold text-[var(--accent-text)]">
+                  Mostrando só: {dogDirectory.get(feedDogId)?.name ?? "este cão"}
+                  <button
+                    type="button"
+                    onClick={() => setFeedDogId("")}
+                    aria-label="Mostrar treinos de todos os cães"
+                    className="text-[14px] leading-none"
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
+            ) : null}
 
             <section className={`mt-3 flex gap-2 overflow-x-auto pb-1 ${showQuickFilters ? "" : "hidden"}`}>
               {[
