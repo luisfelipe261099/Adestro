@@ -16,8 +16,9 @@ type PaletteItem = {
 };
 
 const ROUTE_ITEMS: PaletteItem[] = [
-  { id: "route-dashboard", kind: "route", label: "Início", href: "/dashboard" },
+  { id: "route-dashboard", kind: "route", label: "Dashboard", href: "/dashboard" },
   { id: "route-agenda", kind: "route", label: "Agenda", href: "/agenda" },
+  { id: "route-pendencias", kind: "route", label: "Pendências", href: "/pendencias" },
   { id: "route-clientes", kind: "route", label: "Clientes", href: "/clientes" },
   { id: "route-treinos", kind: "route", label: "Treinos", href: "/treinos" },
   { id: "route-registro", kind: "route", label: "Registrar treino", href: "/treinos/registro" },
