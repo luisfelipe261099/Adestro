@@ -42,7 +42,12 @@ export default function PortalPage() {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskRecurrence, setTaskRecurrence] = useState<"once" | "daily" | "weekly">("daily");
   const [taskWeekdays, setTaskWeekdays] = useState<number[]>([]);
-  const [selectedClientId, setSelectedClientId] = useState("");
+  // ?clientId= (vindo da ficha ou da lista de clientes) já abre no cliente
+  // certo — antes o botão "Portal" caía sempre no primeiro da lista.
+  const [selectedClientId, setSelectedClientId] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).get("clientId") ?? "";
+  });
   const [selectedDogId, setSelectedDogId] = useState("");
   const [copyStatus, setCopyStatus] = useState<"idle" | "ok" | "ok-renewed" | "error">("idle");
   const [isAddingTask, setIsAddingTask] = useState(false);

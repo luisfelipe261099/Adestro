@@ -251,7 +251,7 @@ export default function ClientProfilePage() {
                   <Link href={`/portal?clientId=${client.id}`} className="btn-secondary text-[12px]">
                     🔗 Portal
                   </Link>
-                  <Link href={`/financeiro?vender=true&clientId=${client.id}`} className="btn-secondary text-[12px]">
+                  <Link href={`/financeiro?vender=true&clienteId=${client.id}`} className="btn-secondary text-[12px]">
                     💰 Vender pacote
                   </Link>
                   <Link href={`/clientes/${client.id}/editar`} className="btn-secondary text-[12px]">
