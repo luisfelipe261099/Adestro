@@ -1479,20 +1479,41 @@ export default function ClientsPage() {
               return (
                 <article key={item.client.id} className="rounded-md border border-[var(--border)] bg-white p-3 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
-                    <Link href={`/clientes/${item.client.id}`} className="group flex items-start gap-3">
-                      {/* Avatar humano — este card é do TUTOR. */}
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--muted-strong)] ring-1 ring-[var(--border)]">
+                    {/* O link do cliente e os links dos cães são irmãos, nunca
+                        aninhados: <a> dentro de <a> é HTML inválido e o clique
+                        no nome do cão acabaria abrindo a ficha do tutor. */}
+                    <div className="flex items-start gap-3">
+                      <Link
+                        href={`/clientes/${item.client.id}`}
+                        aria-label={`Abrir ficha de ${item.client.name}`}
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--muted-strong)] ring-1 ring-[var(--border)]"
+                      >
                         <IconUser className="h-6 w-6" />
-                      </div>
+                      </Link>
                       <div>
-                        <p className="text-sm font-semibold text-[var(--foreground)] group-hover:underline">{item.client.name}</p>
+                        <Link
+                          href={`/clientes/${item.client.id}`}
+                          className="text-sm font-semibold text-[var(--foreground)] hover:underline"
+                        >
+                          {item.client.name}
+                        </Link>
                         <p className="text-xs text-[var(--muted)]">
                           {item.client.dogs.length > 0
-                            ? item.client.dogs.map((d) => d.name).join(" · ")
+                            ? item.client.dogs.map((dog, index) => (
+                                <span key={dog.id}>
+                                  {index > 0 ? " · " : ""}
+                                  <Link
+                                    href={`/caes/${dog.id}`}
+                                    className="font-medium text-[var(--foreground)] hover:underline"
+                                  >
+                                    {dog.name}
+                                  </Link>
+                                </span>
+                              ))
                             : "Sem cão cadastrado"}
                         </p>
                       </div>
-                    </Link>
+                    </div>
                     <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${statusStyle(item.status)}`}>
                       {statusLabel(item.status)}
                     </span>
