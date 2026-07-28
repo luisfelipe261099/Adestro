@@ -91,7 +91,7 @@ export default function AuditPage() {
           <AdminContextNav />
         </div>
         <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-          <header className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <header data-tour="admin-audit" className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Auditoria</p>
               <h1 className="text-2xl font-semibold text-[var(--foreground)]">Histórico de atividade</h1>

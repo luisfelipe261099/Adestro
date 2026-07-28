@@ -37,6 +37,9 @@ export type ClientProfile = {
   status: string;
   dogs: DogProfile[];
   tags?: string[];
+  // 2º contato da residência (quem também acompanha o treino)
+  secondContactName?: string;
+  secondContactPhone?: string;
 };
 
 export type TrainingNote = {
@@ -178,7 +181,13 @@ export type EventConflict = { day: string; time: string; dog: string; client: st
  * poder oferecer "agendar mesmo assim".
  */
 export type AddEventResult =
-  | { ok: true }
+  /**
+   * `eventId` só vem no caminho não-recorrente, que é o único em que a tela
+   * precisa encadear ação sobre o evento recém-criado (gravar os participantes
+   * de uma turma). No caminho recorrente o store recarrega tudo do banco e não
+   * há um único id para devolver.
+   */
+  | { ok: true; eventId?: string }
   | { ok: false; reason: "conflict"; conflicts: EventConflict[] }
   | { ok: false; reason: "error"; message: string };
 
@@ -976,7 +985,7 @@ export const useAppStore = create<AppState>()(
                 : event,
             ),
           }));
-          return { ok: true as const };
+          return { ok: true as const, eventId: created.id };
         } catch {
           if (!isRecurring) {
             set((state) => ({
@@ -1153,6 +1162,8 @@ export const useAppStore = create<AppState>()(
             environment:    String(c.environment ?? ""),
             plan:           String(c.plan ?? ""),
             status:         String(c.status ?? "Ativo"),
+            secondContactName:  String(c.secondContactName ?? ""),
+            secondContactPhone: String(c.secondContactPhone ?? ""),
             tags: (() => {
               try {
                 const parsed = JSON.parse(String(c.tags ?? "[]"));

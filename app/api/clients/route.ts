@@ -173,6 +173,8 @@ export async function POST(request: Request) {
     cpf?: string;
     clientPhotoUrl?: string;
     privateNotes?: string;
+    secondContactName?: string;
+    secondContactPhone?: string;
     status?: string;
     propertyType?: string;
     environment?: string;
@@ -193,6 +195,7 @@ export async function POST(request: Request) {
     dogName: string;
     breed?: string;
     age?: string;
+    dogBirthDate?: string;
     weight?: string;
     photoUrl?: string;
     trainingTypes?: string[];
@@ -225,6 +228,8 @@ export async function POST(request: Request) {
       cpf:            body.cpf            ?? "",
       photoUrl:       sanitizePhotoUrl(body.clientPhotoUrl) ?? "",
       privateNotes:   body.privateNotes   ?? "",
+      secondContactName:  body.secondContactName  ?? "",
+      secondContactPhone: body.secondContactPhone ?? "",
       status:         body.status         ?? "Ativo",
       propertyType:   body.propertyType   ?? "",
       environment:    body.environment    ?? "",
@@ -249,6 +254,7 @@ export async function POST(request: Request) {
           name:                  body.dogName,
           breed:                 body.breed                 ?? "",
           age:                   body.age                   ?? "",
+          birthDate:             body.dogBirthDate          ?? "",
           weight:                body.weight                ?? "",
           photoUrl:              resolvedDogPhotoUrl,
           trainingTypes:         JSON.stringify(body.trainingTypes ?? []),
@@ -316,10 +322,31 @@ export async function PATCH(request: Request) {
     name?: string;
     phone?: string;
     email?: string;
+    birthDate?: string;
+    cpf?: string;
+    privateNotes?: string;
+    secondContactName?: string;
+    secondContactPhone?: string;
+    plan?: string;
     propertyType?: string;
     environment?: string;
     // Edição de UM cão existente:
-    dog?: { id: string; name?: string; breed?: string; age?: string; trainingStatus?: string };
+    dog?: {
+      id: string;
+      name?: string;
+      breed?: string;
+      age?: string;
+      birthDate?: string;
+      weight?: string;
+      sex?: string;
+      castrated?: boolean;
+      microchip?: string;
+      color?: string;
+      dietRestrictions?: string;
+      healthConditions?: string;
+      veterinarian?: string;
+      trainingStatus?: string;
+    };
     // Adicionar um cão novo a este cliente:
     addDog?: { name: string; breed?: string; age?: string };
   };
@@ -340,12 +367,20 @@ export async function PATCH(request: Request) {
     // Campos do cliente (só os que vieram).
     const clientData: {
       status?: string; name?: string; phone?: string; email?: string;
+      birthDate?: string; cpf?: string; privateNotes?: string;
+      secondContactName?: string; secondContactPhone?: string; plan?: string;
       propertyType?: string; environment?: string;
     } = {};
     if (body.status !== undefined) clientData.status = body.status;
     if (body.name !== undefined) clientData.name = body.name;
     if (body.phone !== undefined) clientData.phone = body.phone;
     if (body.email !== undefined) clientData.email = body.email;
+    if (body.birthDate !== undefined) clientData.birthDate = body.birthDate;
+    if (body.cpf !== undefined) clientData.cpf = body.cpf;
+    if (body.privateNotes !== undefined) clientData.privateNotes = body.privateNotes;
+    if (body.secondContactName !== undefined) clientData.secondContactName = body.secondContactName;
+    if (body.secondContactPhone !== undefined) clientData.secondContactPhone = body.secondContactPhone;
+    if (body.plan !== undefined) clientData.plan = body.plan;
     if (body.propertyType !== undefined) clientData.propertyType = body.propertyType;
     if (body.environment !== undefined) clientData.environment = body.environment;
     if (Object.keys(clientData).length > 0) {
@@ -354,10 +389,24 @@ export async function PATCH(request: Request) {
 
     // Editar um cão existente (garante que é deste cliente).
     if (body.dog?.id) {
-      const dogData: { name?: string; breed?: string; age?: string; trainingStatus?: string } = {};
+      const dogData: {
+        name?: string; breed?: string; age?: string; birthDate?: string;
+        weight?: string; sex?: string; castrated?: boolean; microchip?: string;
+        color?: string; dietRestrictions?: string; healthConditions?: string;
+        veterinarian?: string; trainingStatus?: string;
+      } = {};
       if (body.dog.name !== undefined) dogData.name = body.dog.name;
       if (body.dog.breed !== undefined) dogData.breed = body.dog.breed;
       if (body.dog.age !== undefined) dogData.age = body.dog.age;
+      if (body.dog.birthDate !== undefined) dogData.birthDate = body.dog.birthDate;
+      if (body.dog.weight !== undefined) dogData.weight = body.dog.weight;
+      if (body.dog.sex !== undefined) dogData.sex = body.dog.sex;
+      if (body.dog.castrated !== undefined) dogData.castrated = body.dog.castrated;
+      if (body.dog.microchip !== undefined) dogData.microchip = body.dog.microchip;
+      if (body.dog.color !== undefined) dogData.color = body.dog.color;
+      if (body.dog.dietRestrictions !== undefined) dogData.dietRestrictions = body.dog.dietRestrictions;
+      if (body.dog.healthConditions !== undefined) dogData.healthConditions = body.dog.healthConditions;
+      if (body.dog.veterinarian !== undefined) dogData.veterinarian = body.dog.veterinarian;
       if (body.dog.trainingStatus !== undefined) {
         const allowed = ["Ficha", "Ativo", "Completo", "Pausado", "Cancelado"];
         if (!allowed.includes(body.dog.trainingStatus)) {

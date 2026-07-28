@@ -51,7 +51,7 @@ const plans = [
     detail: "Referência: equipe ou franquia",
     lessonInfo: "Pacotes maiores, equipe e relatórios por carteira",
     badge: null,
-    features: ["Multi-adestrador", "Relatorios analiticos", "White label do portal", "Gerente de conta"],
+    features: ["Multi-adestrador", "Relatórios analíticos", "White label do portal", "Gerente de conta"],
     highlight: false,
     cta: "Escolher Business",
   },
@@ -87,7 +87,7 @@ export function CadastroClient() {
     setError("");
 
     if (password !== confirm) {
-      setError("As senhas nao coincidem.");
+      setError("As senhas não coincidem.");
       return;
     }
 

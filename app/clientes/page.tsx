@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DateField } from "@/components/date-field";
@@ -11,6 +11,7 @@ import { TagsEditor } from "@/components/tags-editor";
 import { useAppStore } from "@/lib/app-store";
 import { googleMapsLink } from "@/lib/calendar-ics";
 import { maskCEP, maskCPF, maskDate, maskPhone } from "@/lib/masks";
+import DOG_BREEDS from "@/lib/dog-breeds.json";
 
 type ClientStatus = "ativos" | "inativos" | "rascunho";
 type SortMode = "recentes" | "nome";
@@ -140,16 +141,18 @@ export default function ClientsPage() {
   const [showQuickFilters, setShowQuickFilters] = useState(true);
   const [sortMode, setSortMode] = useState<SortMode>("recentes");
   const [showForm, setShowForm] = useState(false);
-  // Edição de cliente/cão: corrige cadastro errado e adiciona 2º cão ao mesmo dono.
-  const [editDraft, setEditDraft] = useState<{
-    clientId: string;
-    name: string;
-    phone: string;
-    propertyType: string;
-    dogs: Array<{ id?: string; name: string; breed: string; age: string }>;
-  } | null>(null);
-  const [editSaving, setEditSaving] = useState(false);
-  const [editError, setEditError] = useState("");
+
+  // ?new=true (vindo do dashboard/card Próxima ação) abre o cadastro direto.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("new") !== "true") return;
+    const id = window.setTimeout(() => {
+      setShowForm(true);
+      setEntityKind("humanos");
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
 
   // Exclusão de cliente (destrutiva): pede confirmação com aviso do que cascata.
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; dogsCount: number } | null>(null);
@@ -169,50 +172,6 @@ export default function ClientsPage() {
     setSaveMessage(`Cliente "${deleteTarget.name}" excluído.`);
     window.setTimeout(() => setSaveMessage(""), 4000);
     setDeleteTarget(null);
-  }
-
-  async function handleSaveEdit() {
-    if (!editDraft) return;
-    if (!editDraft.name.trim()) {
-      setEditError("O nome do cliente é obrigatório.");
-      return;
-    }
-    setEditSaving(true);
-    setEditError("");
-    const base = editDraft;
-
-    // 1) Dados do cliente.
-    const r1 = await updateClient({
-      clientId: base.clientId,
-      name: base.name.trim(),
-      phone: base.phone.trim(),
-      propertyType: base.propertyType.trim(),
-    });
-    if (!r1.ok) {
-      setEditError(r1.error);
-      setEditSaving(false);
-      return;
-    }
-
-    // 2) Cada cão: com id = edita; sem id = adiciona (a API aceita um por chamada).
-    for (const dog of base.dogs) {
-      if (!dog.name.trim()) continue;
-      const r = await updateClient(
-        dog.id
-          ? { clientId: base.clientId, dog: { id: dog.id, name: dog.name.trim(), breed: dog.breed.trim(), age: dog.age.trim() } }
-          : { clientId: base.clientId, addDog: { name: dog.name.trim(), breed: dog.breed.trim(), age: dog.age.trim() } },
-      );
-      if (!r.ok) {
-        setEditError(r.error);
-        setEditSaving(false);
-        return;
-      }
-    }
-
-    setEditSaving(false);
-    setEditDraft(null);
-    setSaveMessage("Cadastro atualizado com sucesso.");
-    window.setTimeout(() => setSaveMessage(""), 4000);
   }
 
   // ─── ESTADO DE GERENCIAMENTO DE TAREFAS (PORTAL) ──────────────────────
@@ -236,10 +195,14 @@ export default function ClientsPage() {
   const [birthDate, setBirthDate] = useState("");
   const [cpf, setCpf] = useState("");
   const [privateNotes, setPrivateNotes] = useState("");
+  // 2º contato da residência (quem também acompanha o treino)
+  const [secondContactName, setSecondContactName] = useState("");
+  const [secondContactPhone, setSecondContactPhone] = useState("");
 
   // Etapa 2: Endereço do Cliente
   const [addrNickname, setAddrNickname] = useState("Casa");
   const [addrZipCode, setAddrZipCode] = useState("");
+  const [cepMessage, setCepMessage] = useState("");
   const [addrStreet, setAddrStreet] = useState("");
   const [addrNumber, setAddrNumber] = useState("");
   const [addrComplement, setAddrComplement] = useState("");
@@ -296,13 +259,21 @@ export default function ClientsPage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  // Pós-cadastro: oferta de venda do pacote na sequência (continuidade natural).
+  const [postSaveClient, setPostSaveClient] = useState<{ name: string; phone: string } | null>(null);
   const [saveError, setSaveError] = useState("");
 
-  // Busca Automática de CEP
+  // Busca Automática de CEP — sempre dá feedback (sucesso, CEP inexistente ou
+  // falha de rede); busca silenciosa parecia "botão que não funciona".
   const handleLookupCEP = async (cepValue?: string) => {
     const cleanCEP = (cepValue ?? addrZipCode).replace(/\D/g, "");
-    if (cleanCEP.length !== 8) return;
+    if (cleanCEP.length !== 8) {
+      setCepMessage("Digite os 8 números do CEP.");
+      window.setTimeout(() => setCepMessage(""), 4000);
+      return;
+    }
     setIsCEPLoading(true);
+    setCepMessage("");
     try {
       const res = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
       const data = await res.json();
@@ -311,11 +282,15 @@ export default function ClientsPage() {
         setAddrNeighborhood(data.bairro || "");
         setAddrCity(data.localidade || "");
         setAddrState(data.uf || "");
+        setCepMessage("✓ Endereço preenchido pelo CEP.");
+      } else {
+        setCepMessage("CEP não encontrado — confira os números ou preencha manualmente.");
       }
     } catch {
-      // ignore
+      setCepMessage("Não foi possível consultar o CEP agora — preencha manualmente.");
     } finally {
       setIsCEPLoading(false);
+      window.setTimeout(() => setCepMessage(""), 6000);
     }
   };
 
@@ -526,6 +501,8 @@ export default function ClientsPage() {
       birthDate,
       cpf: cpf.trim(),
       privateNotes,
+      secondContactName: secondContactName.trim(),
+      secondContactPhone: secondContactPhone.trim(),
       status: "Ativo",
       propertyType,
       environment: envConvive,
@@ -546,6 +523,7 @@ export default function ClientsPage() {
       dogName: dogName.trim(),
       breed: breed.trim() || "SRD",
       age: age.trim() || "Não informado",
+      dogBirthDate: dogBirthDate || "",
       weight: weight.trim() || "Não informado",
       photoUrl: dogPhotoPreview || dogPhotoUrl.trim() || undefined,
       trainingTypes: trainingTypes.length ? trainingTypes : ["Obediência básica"],
@@ -579,6 +557,8 @@ export default function ClientsPage() {
       setBirthDate("");
       setCpf("");
       setPrivateNotes("");
+      setSecondContactName("");
+      setSecondContactPhone("");
       setAddrNickname("Casa");
       setAddrZipCode("");
       setAddrStreet("");
@@ -602,8 +582,9 @@ export default function ClientsPage() {
       setVeterinarian("");
       setShowForm(false);
       setFormStep(1);
-      setSaveMessage("Cliente e cão cadastrados com sucesso.");
-      window.setTimeout(() => setSaveMessage(""), 3000);
+      // Continuidade do cadastro: não existe cão sem pacote vendido — oferece
+      // a venda na sequência (o store já recarregou com o cliente novo).
+      setPostSaveClient({ name: payload.clientName, phone: payload.phone });
     } finally {
       setIsSaving(false);
     }
@@ -795,6 +776,20 @@ export default function ClientsPage() {
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <input
+                        value={secondContactName}
+                        onChange={(e) => setSecondContactName(e.target.value)}
+                        placeholder="2º contato — nome (opcional)"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                      <input
+                        value={secondContactPhone}
+                        onChange={(e) => setSecondContactPhone(maskPhone(e.target.value))}
+                        placeholder="2º contato — WhatsApp"
+                        className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
                         value={birthDate}
                         onChange={(e) => setBirthDate(maskDate(e.target.value))}
                         placeholder="Nascimento (DD/MM/AAAA)"
@@ -841,6 +836,11 @@ export default function ClientsPage() {
                         {isCEPLoading ? "Buscando..." : "Buscar CEP"}
                       </button>
                     </div>
+                    {cepMessage ? (
+                      <p className={`text-[11px] font-medium ${cepMessage.startsWith("✓") ? "text-emerald-700" : "text-amber-700"}`}>
+                        {cepMessage}
+                      </p>
+                    ) : null}
 
                     <div className="grid grid-cols-[1.5fr_1fr] gap-2">
                       <input
@@ -937,9 +937,15 @@ export default function ClientsPage() {
                     <input
                       value={breed}
                       onChange={(e) => setBreed(e.target.value)}
-                      placeholder="Raça (opcional)"
+                      placeholder="Raça — digite para ver sugestões"
+                      list="dog-breeds-list"
                       className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
+                    <datalist id="dog-breeds-list">
+                      {DOG_BREEDS.map((b) => (
+                        <option key={b} value={b} />
+                      ))}
+                    </datalist>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="grid gap-1">
                         <label className="text-[10px] font-medium text-[var(--muted)]">Nascimento (calcula idade)</label>
@@ -956,12 +962,21 @@ export default function ClientsPage() {
                       </div>
                       <div className="grid gap-1">
                         <label className="text-[10px] font-medium text-[var(--muted)]">Peso</label>
-                        <input
-                          value={weight}
-                          onChange={(e) => setWeight(e.target.value)}
-                          placeholder="Ex: 20kg"
-                          className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
-                        />
+                        <div className="relative">
+                          <input
+                            value={weight.replace(/\s*kg\s*$/i, "")}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^\d.,]/g, "");
+                              setWeight(raw ? `${raw}kg` : "");
+                            }}
+                            inputMode="decimal"
+                            placeholder="Ex: 20"
+                            className="w-full min-w-0 rounded-md border border-[var(--border)] px-3 py-2 pr-9 text-xs outline-none focus:border-sky-400"
+                          />
+                          <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] font-semibold text-[var(--muted)]">
+                            kg
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <input
@@ -1246,9 +1261,30 @@ export default function ClientsPage() {
           {entityKind !== "quadro" && (
           <section data-tour="clients-list" className="mt-3 space-y-2">
             {filteredClients.length === 0 ? (
-              <article className="rounded-md border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
-                Nenhum {entityKind === "humanos" ? "cliente" : "cão"} encontrado com os filtros atuais.
-              </article>
+              clients.length === 0 ? (
+                <article className="rounded-lg border border-dashed border-[var(--border-strong)] bg-white p-8 text-center">
+                  <p className="text-3xl" aria-hidden>🐾</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">Comece cadastrando seu primeiro tutor</p>
+                  <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-[var(--muted)]">
+                    A ficha do tutor e do cão é a base de tudo: agenda, registro de treino, portal e financeiro
+                    ligam nela. Leva menos de 2 minutos.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(true);
+                      setFormStep(1);
+                    }}
+                    className="btn-primary mt-4 text-[13px]"
+                  >
+                    + Cadastrar primeiro tutor
+                  </button>
+                </article>
+              ) : (
+                <article className="rounded-md border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
+                  Nenhum {entityKind === "humanos" ? "cliente" : "cão"} encontrado com os filtros atuais.
+                </article>
+              )
             ) : null}
 
             {entityKind === "caes" ? filteredDogs.map(({ client, dog, status }) => (
@@ -1270,7 +1306,13 @@ export default function ClientsPage() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-[var(--foreground)]">{dog.name}</p>
-                      <p className="text-xs text-[var(--muted)]">Cliente: {client.name} • {dog.breed || "Raça não informada"}</p>
+                      <p className="text-xs text-[var(--muted)]">
+                        Cliente:{" "}
+                        <Link href={`/clientes/${client.id}`} className="font-medium text-[var(--foreground)] hover:underline">
+                          {client.name}
+                        </Link>{" "}
+                        • {dog.breed || "Raça não informada"}
+                      </p>
                     </div>
                   </div>
                   <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${statusStyle(status)}`}>
@@ -1336,7 +1378,7 @@ export default function ClientsPage() {
               return (
                 <article key={item.client.id} className="rounded-md border border-[var(--border)] bg-white p-3 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
+                    <Link href={`/clientes/${item.client.id}`} className="group flex items-start gap-3">
                       <div className="relative h-11 w-11 overflow-hidden rounded-full bg-sky-100">
                         <Image
                           src={firstDog?.photoUrl || "/images/dog-default-bolt.svg"}
@@ -1351,12 +1393,12 @@ export default function ClientsPage() {
                         />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[var(--foreground)]">{item.client.name}</p>
+                        <p className="text-sm font-semibold text-[var(--foreground)] group-hover:underline">{item.client.name}</p>
                         <p className="text-xs text-[var(--muted)]">
                           {firstDog ? `${firstDog.name} • ${firstDog.breed}` : "Sem cão cadastrado"}
                         </p>
                       </div>
-                    </div>
+                    </Link>
                     <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${statusStyle(item.status)}`}>
                       {statusLabel(item.status)}
                     </span>
@@ -1394,10 +1436,16 @@ export default function ClientsPage() {
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         <Link
-                          href={firstDogId ? `/treinos?clientId=${item.client.id}&dogId=${firstDogId}` : "/treinos"}
+                          href={`/clientes/${item.client.id}`}
                           className="rounded-full border border-[var(--border)] bg-[var(--accent)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white whitespace-nowrap"
                         >
-                          Ver histórico
+                          Ver cliente
+                        </Link>
+                        <Link
+                          href={firstDogId ? `/treinos?clientId=${item.client.id}&dogId=${firstDogId}` : "/treinos"}
+                          className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
+                        >
+                          Histórico
                         </Link>
                         <button
                           type="button"
@@ -1409,27 +1457,12 @@ export default function ClientsPage() {
                         >
                           Tarefas
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditError("");
-                            setEditDraft({
-                              clientId: item.client.id,
-                              name: item.client.name,
-                              phone: item.client.phone ?? "",
-                              propertyType: item.client.propertyType ?? "",
-                              dogs: item.client.dogs.map((d) => ({
-                                id: d.id,
-                                name: d.name,
-                                breed: d.breed ?? "",
-                                age: d.age ?? "",
-                              })),
-                            });
-                          }}
+                        <Link
+                          href={`/clientes/${item.client.id}/editar`}
                           className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
                         >
                           Editar
-                        </button>
+                        </Link>
                         <button
                           type="button"
                           onClick={() => {
@@ -1496,144 +1529,6 @@ export default function ClientsPage() {
         </div>
       )}
 
-      {/* Modal de Edição de Cliente / Cão */}
-      {editDraft && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" role="dialog" aria-modal="true">
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default"
-            onClick={() => setEditDraft(null)}
-            aria-label="Fechar"
-          />
-          <div className="relative flex max-h-[88vh] w-full max-w-lg flex-col rounded-lg border border-[var(--border)] bg-white p-5 shadow-2xl">
-            <header className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-semibold text-[var(--foreground)]">Editar cadastro</h3>
-              <button
-                type="button"
-                onClick={() => setEditDraft(null)}
-                className="rounded-md border border-[var(--border)] bg-white px-3 py-1 text-xs font-medium text-[var(--muted)] hover:bg-slate-50"
-              >
-                Fechar
-              </button>
-            </header>
-
-            <div className="flex-1 space-y-4 overflow-y-auto py-4">
-              {/* Dados do cliente */}
-              <div className="space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">Cliente</p>
-                <div>
-                  <label className="text-[12px] font-medium text-[var(--foreground)]">Nome</label>
-                  <input
-                    value={editDraft.name}
-                    onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
-                    className="input-field mt-1"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[12px] font-medium text-[var(--foreground)]">Telefone</label>
-                    <input
-                      value={editDraft.phone}
-                      onChange={(e) => setEditDraft({ ...editDraft, phone: maskPhone(e.target.value) })}
-                      className="input-field mt-1"
-                      inputMode="tel"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[12px] font-medium text-[var(--foreground)]">Tipo de imóvel</label>
-                    <input
-                      value={editDraft.propertyType}
-                      onChange={(e) => setEditDraft({ ...editDraft, propertyType: e.target.value })}
-                      className="input-field mt-1"
-                      placeholder="Casa, Apartamento…"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Cães */}
-              <div className="space-y-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">Cães</p>
-                {editDraft.dogs.map((dog, i) => (
-                  <div key={dog.id ?? `novo-${i}`} className="space-y-2 rounded-md border border-[var(--border)] bg-slate-50/60 p-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-medium text-[var(--muted-strong)]">
-                        {dog.id ? `Cão ${i + 1}` : "Novo cão"}
-                      </span>
-                      {!dog.id && (
-                        <button
-                          type="button"
-                          onClick={() => setEditDraft({ ...editDraft, dogs: editDraft.dogs.filter((_, idx) => idx !== i) })}
-                          className="text-[11px] text-[var(--danger)] hover:underline"
-                        >
-                          Remover
-                        </button>
-                      )}
-                    </div>
-                    <input
-                      value={dog.name}
-                      onChange={(e) =>
-                        setEditDraft({ ...editDraft, dogs: editDraft.dogs.map((d, idx) => (idx === i ? { ...d, name: e.target.value } : d)) })
-                      }
-                      className="input-field"
-                      placeholder="Nome do cão"
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        value={dog.breed}
-                        onChange={(e) =>
-                          setEditDraft({ ...editDraft, dogs: editDraft.dogs.map((d, idx) => (idx === i ? { ...d, breed: e.target.value } : d)) })
-                        }
-                        className="input-field"
-                        placeholder="Raça"
-                      />
-                      <input
-                        value={dog.age}
-                        onChange={(e) =>
-                          setEditDraft({ ...editDraft, dogs: editDraft.dogs.map((d, idx) => (idx === i ? { ...d, age: e.target.value } : d)) })
-                        }
-                        className="input-field"
-                        placeholder="Idade"
-                      />
-                    </div>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setEditDraft({ ...editDraft, dogs: [...editDraft.dogs, { name: "", breed: "", age: "" }] })}
-                  className="w-full rounded-md border border-dashed border-[var(--border)] py-2 text-[12px] font-medium text-[var(--muted-strong)] hover:bg-slate-50"
-                >
-                  + Adicionar cão
-                </button>
-              </div>
-
-              {editError && (
-                <p className="rounded-md border border-[var(--danger)]/30 bg-[var(--danger-bg)] px-3 py-2 text-[12px] text-[var(--danger)]">
-                  {editError}
-                </p>
-              )}
-            </div>
-
-            <footer className="flex items-center justify-end gap-2 border-t border-[var(--border)] pt-3">
-              <button
-                type="button"
-                onClick={() => setEditDraft(null)}
-                className="rounded-md border border-[var(--border)] bg-white px-4 py-2 text-[13px] font-medium text-[var(--muted)] hover:bg-slate-50"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveEdit}
-                disabled={editSaving}
-                className="btn-primary h-10 px-5 text-[13px] disabled:opacity-60"
-              >
-                {editSaving ? "Salvando…" : "Salvar alterações"}
-              </button>
-            </footer>
-          </div>
-        </div>
-      )}
 
       {/* Modal de Gerenciamento de Tarefas */}
       {activeTaskIdForManagement && (
@@ -1788,6 +1683,42 @@ export default function ClientsPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={crmEvidenceLightbox.src} alt={crmEvidenceLightbox.title} className="max-h-full max-w-full object-contain" />
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pós-cadastro: continuidade natural — vender o pacote de aulas */}
+      {postSaveClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-md rounded-lg border border-[var(--border)] bg-white p-5 shadow-2xl">
+            <p className="text-3xl" aria-hidden>🎉</p>
+            <h3 className="mt-1 text-base font-bold text-slate-900">
+              {postSaveClient.name.split(" ")[0]} cadastrado(a) com sucesso!
+            </h3>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Próximo passo natural: <b>vender o pacote de aulas</b> — o contrato e as cobranças
+              (com lembrete de WhatsApp) são gerados automaticamente.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={(() => {
+                  const created = clients.find(
+                    (c) => c.name === postSaveClient.name && (!postSaveClient.phone || c.phone === postSaveClient.phone),
+                  );
+                  return `/financeiro?vender=true${created ? `&clienteId=${created.id}` : ""}`;
+                })()}
+                className="btn-primary text-[13px]"
+              >
+                💰 Vender pacote agora
+              </Link>
+              <button
+                type="button"
+                onClick={() => setPostSaveClient(null)}
+                className="btn-secondary text-[13px]"
+              >
+                Deixar para depois
+              </button>
             </div>
           </div>
         </div>
