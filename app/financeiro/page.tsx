@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
 import { DateField } from "@/components/date-field";
@@ -94,9 +94,37 @@ export default function FinanceiroPage() {
 
   // Formulário: Vender Pacote (Novo Contrato)
   const [showContractForm, setShowContractForm] = useState(false);
+  const contractFormRef = useRef<HTMLFormElement | null>(null);
+  // Recebimento por cartão: fatura com painel de taxa aberto + taxa digitada
+  const [cardFeeFor, setCardFeeFor] = useState<string | null>(null);
+  const [cardFeePct, setCardFeePct] = useState("");
+
+  // Ao abrir a venda, rola até o formulário — sem isso ele abria fora da tela.
+  useEffect(() => {
+    if (!showContractForm) return;
+    const id = requestAnimationFrame(() =>
+      contractFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+    return () => cancelAnimationFrame(id);
+  }, [showContractForm]);
   const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedDogId, setSelectedDogId] = useState("");
   const [selectedPackageId, setSelectedPackageId] = useState("");
+
+  // ?vender=true (vindo da página do cliente ou do pós-cadastro) abre a venda
+  // direto; ?clienteId=... já deixa o cliente selecionado no formulário.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("vender") !== "true") return;
+    const preselectClientId = params.get("clienteId") ?? "";
+    const id = window.setTimeout(() => {
+      setActiveTab("dashboard");
+      setShowContractForm(true);
+      if (preselectClientId) setSelectedClientId(preselectClientId);
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
   const [contractStartDate, setContractStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [contractNotes, setContractNotes] = useState("");
   // Ajustes na venda — pré-preenchidos pelo pacote, mas editáveis por venda.
@@ -331,6 +359,18 @@ export default function FinanceiroPage() {
               <h1 className="text-display">Painel Financeiro</h1>
               <p className="mt-1 text-subtitle">Controle de faturamento, pacotes, cobranças e recibos.</p>
             </div>
+            {/* Vender é a ação nº 1 do financeiro — sempre visível no topo */}
+            <button
+              type="button"
+              data-tour="finance-sell"
+              onClick={() => {
+                setActiveTab("dashboard");
+                setShowContractForm(true);
+              }}
+              className="btn-primary text-[13px]"
+            >
+              💰 Vender Pacote
+            </button>
           </div>
         </header>
 
@@ -426,8 +466,22 @@ export default function FinanceiroPage() {
                   </div>
 
                   {showContractForm && (
-                    <form onSubmit={handleCreateContract} className="grid gap-3 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-4 animate-in slide-in-from-top-4 duration-200">
+                    <form ref={contractFormRef} onSubmit={handleCreateContract} className="grid gap-3 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-4 animate-in slide-in-from-top-4 duration-200">
                       <h4 className="text-xs font-bold text-[var(--foreground)]">Nova Venda de Pacote</h4>
+                      {packages.length === 0 ? (
+                        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900">
+                          Você ainda não criou nenhum pacote de aulas. Primeiro cadastre o pacote (nome,
+                          nº de sessões, valor e parcelamento) na aba <b>Pacotes</b> — depois é só vender
+                          aqui que contrato e cobranças saem automáticos.{" "}
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab("pacotes")}
+                            className="font-bold underline"
+                          >
+                            Criar pacote agora →
+                          </button>
+                        </div>
+                      ) : null}
                       
                       <div className="grid gap-2 sm:grid-cols-2">
                         <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
@@ -559,7 +613,19 @@ export default function FinanceiroPage() {
                   <section className="space-y-2">
                     <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Cobranças Recentes</h3>
                     {invoices.length === 0 ? (
-                      <p className="text-xs text-[var(--muted)] py-4">Nenhuma cobrança registrada.</p>
+                      <div className="rounded-md border border-dashed border-[var(--border)] bg-white p-5 text-center">
+                        <p className="text-xs text-[var(--muted)]">
+                          Nenhuma cobrança ainda. Cadastre um pacote e venda para um tutor — as cobranças
+                          (com parcelas e lembretes de WhatsApp) são geradas automaticamente.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("pacotes")}
+                          className="btn-primary mt-3 text-[12.5px]"
+                        >
+                          Criar primeiro pacote
+                        </button>
+                      </div>
                     ) : (
                       invoices.slice(0, 5).map((inv) => (
                         <div key={inv.id} className="flex justify-between items-center rounded-md border border-slate-100 bg-white p-3 text-xs">
@@ -718,14 +784,24 @@ export default function FinanceiroPage() {
                                 onClick={() => handleUpdateInvoiceStatus(inv.id, "Pago", "PIX")}
                                 className="flex-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 py-1 font-bold text-center"
                               >
-                                Pagar via PIX
+                                Receber por Pix
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleUpdateInvoiceStatus(inv.id, "Pago", "Dinheiro")}
                                 className="flex-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 py-1 font-bold text-center"
                               >
-                                Pago (Dinheiro)
+                                Receber em dinheiro
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCardFeeFor(cardFeeFor === inv.id ? null : inv.id);
+                                  setCardFeePct("");
+                                }}
+                                className="flex-1 rounded-lg bg-sky-50 border border-sky-300 text-sky-800 py-1 font-bold text-center"
+                              >
+                                Receber por cartão
                               </button>
                               <button
                                 type="button"
@@ -764,6 +840,44 @@ export default function FinanceiroPage() {
                             </>
                           )}
                         </div>
+
+                        {/* Recebimento por cartão: taxa da maquininha + valor líquido real */}
+                        {cardFeeFor === inv.id && inv.status !== "Pago" ? (
+                          <div className="mt-2 grid gap-2 rounded-md border border-sky-200 bg-sky-50/70 p-2.5 sm:grid-cols-[1fr_1fr_auto]">
+                            <label className="grid gap-1 text-[10px] font-bold uppercase text-sky-900">
+                              Taxa da maquininha (%)
+                              <input
+                                value={cardFeePct}
+                                onChange={(e) => setCardFeePct(e.target.value.replace(/[^\d.,]/g, ""))}
+                                inputMode="decimal"
+                                placeholder="Ex: 4,99"
+                                className="rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 outline-none"
+                              />
+                            </label>
+                            <div className="grid gap-1 text-[10px] font-bold uppercase text-sky-900">
+                              Valor líquido recebido
+                              <p className="rounded-md border border-sky-200 bg-white px-2.5 py-1.5 text-xs font-bold text-emerald-700">
+                                R$ {(inv.amount * (1 - (parseFloat(cardFeePct.replace(",", ".")) || 0) / 100)).toFixed(2)}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const pct = parseFloat(cardFeePct.replace(",", ".")) || 0;
+                                const net = (inv.amount * (1 - pct / 100)).toFixed(2);
+                                handleUpdateInvoiceStatus(
+                                  inv.id,
+                                  "Pago",
+                                  pct > 0 ? `Cartão (taxa ${pct}% · líquido R$ ${net})` : "Cartão",
+                                );
+                                setCardFeeFor(null);
+                              }}
+                              className="self-end rounded-lg bg-emerald-600 px-3 py-1.5 text-[11px] font-bold text-white"
+                            >
+                              Confirmar
+                            </button>
+                          </div>
+                        ) : null}
                       </div>
                     ))}
                   </div>

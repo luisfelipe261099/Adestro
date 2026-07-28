@@ -2,8 +2,8 @@ import { Suspense } from "react";
 
 import AgendaClientPage from "./agenda-client";
 
-// A agenda lê `?view=` e `?new=true` via useSearchParams, que exige uma
-// fronteira de Suspense: sem ela o build de produção falha com
+// A agenda lê `?view=`, `?new=true` e `?clientId/?dogId` via useSearchParams,
+// que exige uma fronteira de Suspense: sem ela o build de produção falha com
 // "Missing Suspense boundary with useSearchParams".
 export default function SchedulePage() {
   return (

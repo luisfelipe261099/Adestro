@@ -19,8 +19,9 @@ import {
   IconReport,
   IconSparkle,
 } from "@/components/icons";
+import { NextActionCard } from "@/components/next-action-card";
 import { NextSessionCard } from "@/components/next-session-card";
-import { useTour } from "@/components/product-tour";
+import { TRAINER_TOUR_DONE_KEY, useTour } from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
 import {
   computeDogAttention,
@@ -57,9 +58,28 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setTourDone(window.localStorage.getItem("adestro-tour-done") === "1");
+      setTourDone(window.localStorage.getItem(TRAINER_TOUR_DONE_KEY) === "1");
     }
   }, []);
+
+  // Tour automático na 1ª entrada: só para conta nova (0-1 clientes), depois do
+  // wizard de boas-vindas, uma única vez. Usuário estabelecido nunca é interrompido.
+  // A flag de onboarding é checada DENTRO do timer: ela é gravada por um fetch
+  // assíncrono e ainda não existe no primeiro render.
+  const clients = useAppStore((state) => state.clients);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storage = window.localStorage;
+    if (storage.getItem(TRAINER_TOUR_DONE_KEY) === "1") return;
+    if (storage.getItem("adestro-tour-autostarted") === "1") return;
+    if (clients.length > 1) return;
+    const timer = window.setTimeout(() => {
+      if (!storage.getItem("adestro-onboarding-done")) return; // ainda no boas-vindas
+      storage.setItem("adestro-tour-autostarted", "1");
+      startTour();
+    }, 2000);
+    return () => window.clearTimeout(timer);
+  }, [clients.length, startTour]);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,7 +156,8 @@ export default function DashboardPage() {
     () => [
       {
         key: "agenda-dia",
-        tone: "stat-card-blue",
+        // valor 0 = card apagado (não compete por atenção); >0 = cor plena
+        tone: todayEvents.length === 0 ? "stat-card-dim" : "stat-card-blue",
         label: "Agenda do dia",
         value: todayEvents.length,
         hint: "aulas hoje",
@@ -149,7 +170,7 @@ export default function DashboardPage() {
       },
       {
         key: "agenda-semana",
-        tone: "stat-card-sky",
+        tone: weekEvents.length === 0 ? "stat-card-dim" : "stat-card-sky",
         label: "Agenda da semana",
         value: weekEvents.length,
         hint: "aulas agendadas",
@@ -171,7 +192,8 @@ export default function DashboardPage() {
       },
       {
         key: "pendencias",
-        tone: "stat-card-orange",
+        // pendência > 0 muda o ESTADO do card: borda grossa + fundo alerta
+        tone: pendenciasTotal > 0 ? "stat-card-orange stat-card-alert" : "stat-card-dim",
         label: "Pendências",
         value: pendenciasTotal,
         hint: "itens travados",
@@ -181,7 +203,7 @@ export default function DashboardPage() {
       },
       {
         key: "checklist",
-        tone: "stat-card-purple",
+        tone: checklistTotal === 0 ? "stat-card-dim" : "stat-card-purple",
         label: "Checklist do dia",
         value: checklistTotal,
         hint: "tarefas de hoje",
@@ -230,15 +252,15 @@ export default function DashboardPage() {
               <IconDog className="h-4 w-4" />
               Registrar treino
             </Link>
-            <Link
-              href="/agenda?new=true"
-              className="inline-flex h-11 items-center gap-2 rounded-md bg-[var(--accent)] px-5 text-[14px] font-semibold text-white shadow-sm transition-colors hover:bg-[var(--accent-strong)]"
-            >
+            <Link href="/agenda?new=true" className="btn-action">
               <IconPlus className="h-4 w-4" />
               Novo agendamento
             </Link>
           </div>
         </header>
+
+        {/* Jornada inicial — 1 ação por vez até a conta engrenar (some quando completa) */}
+        <NextActionCard />
 
         {/* Hero — próxima sessão (elemento dominante: "o que faço agora?") */}
         <div className="mt-6">
@@ -246,16 +268,16 @@ export default function DashboardPage() {
         </div>
 
         {/* 5 cards do documento — cor = foco (TDAH-friendly) */}
-        <section className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+        <section data-tour="stat-cards" className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
           {statCards.map((card) => (
             <Link key={card.key} href={card.href} className={`stat-card group ${card.tone}`}>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-[13px] font-semibold" style={{ color: "var(--c)" }}>
+                <span className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide" style={{ color: "var(--c)" }}>
                   {card.label}
                 </span>
                 <card.Icon className="h-4 w-4" style={{ color: "var(--c)" }} />
               </div>
-              <p className="mt-2.5 text-[24px] font-bold leading-none tracking-tight text-[var(--foreground)]">
+              <p className="mt-2.5 text-[26px] font-extrabold leading-none tracking-tight text-[var(--foreground)]">
                 {card.value}
               </p>
               <p className="mt-1 text-[12px] font-medium text-[var(--muted-strong)]">{card.hint}</p>

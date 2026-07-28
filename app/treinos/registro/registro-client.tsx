@@ -7,7 +7,7 @@ import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DateField } from "@/components/date-field";
-import { BEHAVIOR_CATEGORIES } from "@/lib/behavior";
+import { BEHAVIOR_BLOCKS } from "@/lib/behavior";
 import { AudioTranscriber } from "@/components/audio-transcriber";
 import { SessionAiChat } from "@/components/session-ai-chat";
 import { type TrainingMediaItem, useAppStore } from "@/lib/app-store";
@@ -214,6 +214,48 @@ export default function RegistroTreinoClientPage() {
     () => selectedClient?.dogs.find((dog) => dog.id === selectedDogId) ?? selectedClient?.dogs[0],
     [selectedClient, selectedDogId]
   );
+
+  // Pré-treino: plano combinado na ÚLTIMA sessão deste cão (foco, comandos e
+  // tarefas da Seção "Planejamento da próxima"). Vira sugestão de 1 clique.
+  // Derivação simples — o React Compiler memoiza sozinho.
+  const lastPlan = (() => {
+    if (!selectedDogId) return null;
+    const toTime = (date: string) => {
+      const [d, m, y] = (date ?? "").split("/").map(Number);
+      return d && m && y ? new Date(y, m - 1, d).getTime() : 0;
+    };
+    const past = trainingSessions
+      .filter((s) => s.dogId === selectedDogId || (s.dogSessions ?? []).some((ds) => ds.dogId === selectedDogId))
+      .sort((a, b) => toTime(b.date) - toTime(a.date));
+    for (const s of past) {
+      const ds = (s.dogSessions ?? []).find((item) => item.dogId === selectedDogId);
+      if (!ds) continue;
+      const focus = ds.nextFocus?.trim() ?? "";
+      const cmds = (ds.nextCommands ?? []).filter(Boolean);
+      const tasks = (ds.nextTasks ?? []).filter(Boolean);
+      if (focus || cmds.length || tasks.length) return { date: s.date, focus, commands: cmds, tasks };
+    }
+    return null;
+  })();
+
+  // Importa o plano da última aula: foco vira atividade, comandos entram na lista.
+  function importLastPlan() {
+    if (!lastPlan) return;
+    if (lastPlan.focus) {
+      setActivities((current) =>
+        current.some((a) => a.name === lastPlan.focus)
+          ? current
+          : [...current, { id: `act-plan-${Date.now()}`, name: lastPlan.focus, completed: false, notes: "" }],
+      );
+    }
+    setCommands((current) => {
+      const existing = new Set(current.map((c) => c.command));
+      const added = lastPlan.commands
+        .filter((cmd) => !existing.has(cmd))
+        .map((cmd, i) => ({ id: `cmd-plan-${i}-${Date.now()}`, command: cmd, rating: 3, notes: "" }));
+      return [...current, ...added];
+    });
+  }
 
   // Carrega os modelos salvos (atividades/comandos/tarefas) do adestrador.
   useEffect(() => {
@@ -601,11 +643,20 @@ export default function RegistroTreinoClientPage() {
       <button
         type="button"
         onClick={() => setExpandedSection(isExpanded ? "1" : num)}
-        className={`flex w-full items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3 text-left transition-colors hover:bg-[var(--surface-2)] ${
-          isExpanded ? "bg-[var(--surface-2)]" : "bg-[var(--surface)]"
+        className={`flex w-full items-center justify-between gap-3 border-b px-4 py-3 text-left transition-colors ${
+          isExpanded
+            ? "border-[var(--accent)] border-l-4 bg-[var(--accent)] text-white"
+            : "border-[var(--border)] bg-[var(--surface-2)] hover:bg-[var(--surface-3)]"
         }`}
       >
-        <span className="flex items-center gap-2 text-sm font-semibold text-[var(--foreground)]">
+        <span className={`flex items-center gap-2 text-sm font-bold ${isExpanded ? "text-white" : "text-[var(--foreground)]"}`}>
+          <span
+            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold ${
+              isExpanded ? "bg-white/20 text-white" : "bg-[var(--accent)] text-white"
+            }`}
+          >
+            {num}
+          </span>
           {name}
           {optional ? (
             <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
@@ -620,7 +671,7 @@ export default function RegistroTreinoClientPage() {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`h-4 w-4 shrink-0 text-[var(--muted)] transition-transform ${isExpanded ? "rotate-180" : ""}`}
+          className={`h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180 text-white" : "text-[var(--muted)]"}`}
         >
           <path d="m6 9 6 6 6-6" />
         </svg>
@@ -799,13 +850,35 @@ export default function RegistroTreinoClientPage() {
             <div className="mt-2 overflow-hidden rounded-md border border-[var(--border)] bg-white">
 
               {/* SEÇÃO 1: Atividades e Comandos Trabalhados (Atividades + Comandos unificados na mesma seção) */}
-              {renderSectionHeader("1", "Atividades e Comandos Trabalhados")}
+              {renderSectionHeader("1", "Atividades a serem trabalhadas + Comandos")}
               {expandedSection === "1" && (
                 <div className="p-4 space-y-3">
                   <p className="text-[11px] text-[var(--muted)]">
-                    Tudo o que foi trabalhado nesta sessão, em duas partes: <b>atividades praticadas</b> (exercícios, com observações) e, mais abaixo, <b>comandos de obediência</b> (avaliados por estrelas). A seleção fica salva para reutilizar.
+                    O pré-treino da sessão: selecione <b>o que será trabalhado hoje</b> (atividades, com observações) e, mais abaixo, os <b>comandos de obediência</b> (avaliados por estrelas ao longo da aula). A seleção fica salva para reutilizar.
                   </p>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--accent-text)]">Atividades praticadas</p>
+
+                  {/* Pré-treino: plano combinado na última aula deste cão */}
+                  {lastPlan ? (
+                    <div className="rounded-md border border-[var(--card-purple-border)] bg-[var(--card-purple-bg)] p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--card-purple)]">
+                        📋 Pré-treino — plano combinado na última aula ({lastPlan.date})
+                      </p>
+                      <ul className="mt-1.5 space-y-0.5 text-[11.5px] leading-5 text-[var(--foreground)]">
+                        {lastPlan.focus ? <li>• Foco: {lastPlan.focus}</li> : null}
+                        {lastPlan.commands.length ? <li>• Comandos: {lastPlan.commands.join(", ")}</li> : null}
+                        {lastPlan.tasks.length ? <li>• Tarefas que o tutor praticou em casa: {lastPlan.tasks.join(", ")}</li> : null}
+                      </ul>
+                      <button
+                        type="button"
+                        onClick={importLastPlan}
+                        className="mt-2 rounded-full bg-[var(--card-purple)] px-3 py-1 text-[11px] font-bold text-white hover:opacity-90"
+                      >
+                        Usar este plano nesta sessão →
+                      </button>
+                    </div>
+                  ) : null}
+
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--accent-text)]">Atividades a serem trabalhadas</p>
 
                   {activitySuggestions.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
@@ -1254,29 +1327,45 @@ export default function RegistroTreinoClientPage() {
               {/* SEÇÃO 8: Evolução Comportamental (nota 0-5 por categoria) */}
               {renderSectionHeader("8", "Evolução Comportamental", true)}
               {expandedSection === "8" && (
-                <div className="p-4 space-y-3">
+                <div className="p-4 space-y-4">
                   <p className="text-[11px] text-[var(--muted)]">
-                    Dê uma nota (0–5) para cada área. Isso alimenta a evolução do cão ao longo das sessões.
+                    Dê uma nota (0–5) para cada área. Em TODAS as escalas, mais estrelas = melhor —
+                    inclusive nas emocionais (5/5 em Estabilidade = cão calmo e equilibrado).
                   </p>
-                  <div className="space-y-2">
-                    {BEHAVIOR_CATEGORIES.map((cat) => (
-                      <div
-                        key={cat.key}
-                        className="flex items-center justify-between gap-2 rounded-md bg-[var(--surface-2)]/40 p-2.5"
-                      >
-                        <span className="text-xs font-medium text-[var(--foreground)]">{cat.label}</span>
-                        <div className="flex items-center gap-2">
-                          <StarRating
-                            value={behaviorScores[cat.key] ?? 0}
-                            onChange={(rating) => setBehaviorScores((prev) => ({ ...prev, [cat.key]: rating }))}
-                          />
-                          <span className="w-7 text-right text-xs font-bold text-[var(--foreground)]">
-                            {behaviorScores[cat.key] ?? 0}/5
-                          </span>
-                        </div>
+                  {BEHAVIOR_BLOCKS.map((block) => (
+                    <div key={block.key} className="rounded-md border border-[var(--border)] overflow-hidden">
+                      <div className={`px-3 py-2 ${block.key === "emocional" ? "bg-[var(--card-purple-bg)]" : "bg-[var(--card-blue-bg)]"}`}>
+                        <p className={`text-[11px] font-bold uppercase tracking-wide ${block.key === "emocional" ? "text-[var(--card-purple)]" : "text-[var(--card-blue)]"}`}>
+                          {block.title}
+                        </p>
+                        <p className="text-[10px] text-[var(--muted)]">{block.subtitle}</p>
                       </div>
-                    ))}
-                  </div>
+                      <div className="divide-y divide-[var(--border)]">
+                        {block.categories.map((cat) => (
+                          <div
+                            key={cat.key}
+                            className="flex items-center justify-between gap-2 bg-[var(--surface)] p-2.5"
+                          >
+                            <div className="min-w-0">
+                              <span className="text-xs font-medium text-[var(--foreground)]">{cat.label}</span>
+                              {cat.hint ? (
+                                <p className="text-[10px] leading-4 text-[var(--muted)]">{cat.hint}</p>
+                              ) : null}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <StarRating
+                                value={behaviorScores[cat.key] ?? 0}
+                                onChange={(rating) => setBehaviorScores((prev) => ({ ...prev, [cat.key]: rating }))}
+                              />
+                              <span className="w-7 text-right text-xs font-bold text-[var(--foreground)]">
+                                {behaviorScores[cat.key] ?? 0}/5
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
 

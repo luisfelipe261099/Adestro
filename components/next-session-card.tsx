@@ -90,7 +90,7 @@ export function NextSessionCard() {
   const registroHref = `/treinos/registro?clientId=${next.clientId ?? ""}&dogId=${next.dogId ?? ""}&eventId=${next.id ?? ""}`;
 
   return (
-    <section className="card relative overflow-hidden p-5 sm:p-6" data-tour="next-session">
+    <section className="card next-session-hero relative overflow-hidden p-5 sm:p-6" data-tour="next-session">
       <span aria-hidden className="absolute inset-y-0 left-0 w-1.5 bg-[var(--accent)]" />
 
       <div className="flex items-center justify-between">
