@@ -42,14 +42,17 @@ export default function PortalPage() {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskRecurrence, setTaskRecurrence] = useState<"once" | "daily" | "weekly">("daily");
   const [taskWeekdays, setTaskWeekdays] = useState<number[]>([]);
-  // ?clientId= (vindo da ficha ou da lista de clientes) já abre no cliente
-  // certo — antes o botão "Portal" caía sempre no primeiro da lista.
-  const [selectedClientId, setSelectedClientId] = useState(() => {
-    if (typeof window === "undefined") return "";
-    return new URLSearchParams(window.location.search).get("clientId") ?? "";
-  });
+  const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedDogId, setSelectedDogId] = useState("");
   const [copyStatus, setCopyStatus] = useState<"idle" | "ok" | "ok-renewed" | "error">("idle");
+
+  // ?clientId= (vindo da ficha ou da lista de clientes) já abre no cliente
+  // certo — antes o botão "Portal" caía sempre no primeiro da lista.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const preselect = new URLSearchParams(window.location.search).get("clientId");
+    if (preselect) setSelectedClientId(preselect);
+  }, []);
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [portalLink, setPortalLink] = useState<PortalLinkInfo | null>(null);
   const [lastGeneratedUrl, setLastGeneratedUrl] = useState("");
