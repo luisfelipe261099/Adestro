@@ -175,6 +175,13 @@ t("cão Completo sai do radar da home (includeInactive: false)", () =>
   assert.equal(computeDogAttention([completedDog], [], [], nowMs, { includeInactive: false }).length, 0));
 t("cão Completo CONTINUA no kanban de clientes (padrão)", () =>
   assert.equal(computeDogAttention([completedDog], [], [], nowMs).length, 1));
+const pausedDog = client({
+  dogs: [{ id: "d1", name: "Bolt", breed: "", age: "", weight: "", trainingTypes: [], trainingStatus: "Pausado" }],
+});
+t("cão Pausado não vira alerta na home (pausar É a decisão de não agendar)", () =>
+  assert.equal(computeDogAttention([pausedDog], [], [], nowMs, { includeInactive: false }).length, 0));
+t("cão Pausado CONTINUA no kanban (tem coluna própria)", () =>
+  assert.equal(computeDogAttention([pausedDog], [], [], nowMs).length, 1));
 t("card leva ao perfil do cão", () => {
   const result = computeDogAttention([client()], [], [], nowMs);
   assert.equal(result[0].href, "/caes/d1");
