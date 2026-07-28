@@ -107,6 +107,12 @@ export type CalendarEvent = {
   plan: string;
   sessionNumber: number;
   status: SessionStatus;
+  /**
+   * Cães inscritos quando a aula é coletiva. Uma turma nasce sem `dogId`
+   * (o vínculo fica em EventParticipant), então sem esta lista os cães de
+   * turma pareciam nunca ter aula marcada nos painéis da home.
+   */
+  participantDogIds?: string[];
 };
 
 export type PortalTask = {
@@ -162,6 +168,19 @@ export type TrainerRenewalRecord = {
   amount: number;
   status: "Gerada" | "Pago";
 };
+
+/** Aula que já ocupa o horário pedido — devolvida pelo servidor num 409. */
+export type EventConflict = { day: string; time: string; dog: string; client: string };
+
+/**
+ * Resultado de criar um agendamento. Não basta `boolean`: quando o servidor
+ * recusa por choque de horário, a tela precisa saber COM QUEM é o choque para
+ * poder oferecer "agendar mesmo assim".
+ */
+export type AddEventResult =
+  | { ok: true }
+  | { ok: false; reason: "conflict"; conflicts: EventConflict[] }
+  | { ok: false; reason: "error"; message: string };
 
 type AppState = {
   hydrated: boolean;
@@ -253,7 +272,8 @@ type AppState = {
     sessionNumber?: number;
     status?: SessionStatus;
     recurrence?: string;
-  }) => Promise<boolean>;
+    allowOverlap?: boolean;
+  }) => Promise<AddEventResult>;
   approveClient: (clientId: string) => Promise<boolean>;
   clearAppData: () => void;
   loadFromDB: () => Promise<void>;
@@ -896,13 +916,32 @@ export const useAppStore = create<AppState>()(
                 calendarEvents: state.calendarEvents.filter((e) => e.id !== tempId),
               }));
             }
-            return false;
+
+            // 409 = choque de horário. Devolve os eventos conflitantes para a
+            // tela poder perguntar se é para agendar mesmo assim.
+            if (response.status === 409) {
+              try {
+                const data = (await response.json()) as { conflicts?: EventConflict[] };
+                return { ok: false as const, reason: "conflict" as const, conflicts: data.conflicts ?? [] };
+              } catch {
+                return { ok: false as const, reason: "conflict" as const, conflicts: [] };
+              }
+            }
+
+            let message = "Não foi possível criar o agendamento. Tente novamente.";
+            try {
+              const data = (await response.json()) as { error?: string };
+              if (data?.error) message = data.error;
+            } catch {
+              // resposta sem corpo JSON
+            }
+            return { ok: false as const, reason: "error" as const, message };
           }
 
           // Se for recorrente, recarrega tudo do banco
           if (isRecurring) {
             await get().loadFromDB();
-            return true;
+            return { ok: true as const };
           }
 
           const created = await response.json() as {
@@ -937,14 +976,18 @@ export const useAppStore = create<AppState>()(
                 : event,
             ),
           }));
-          return true;
+          return { ok: true as const };
         } catch {
           if (!isRecurring) {
             set((state) => ({
               calendarEvents: state.calendarEvents.filter((e) => e.id !== tempId),
             }));
           }
-          return false;
+          return {
+            ok: false as const,
+            reason: "error" as const,
+            message: "Falha de conexão com o servidor. Verifique sua internet e tente de novo.",
+          };
         }
       },
       approveClient: async (clientId) => {
@@ -1159,6 +1202,9 @@ export const useAppStore = create<AppState>()(
             plan:          String(e.plan ?? ""),
             sessionNumber: Number(e.sessionNumber ?? 1),
             status:        (e.status ?? "Confirmado") as "Confirmado" | "Pendente" | "Aguardando" | "Recorrente" | "Cancelado",
+            participantDogIds: Array.isArray(e.participantDogIds)
+              ? (e.participantDogIds as unknown[]).map(String)
+              : undefined,
           }));
 
           const payments: PaymentItem[] = (rawPayments as Array<Record<string, unknown>>).map((p) => ({

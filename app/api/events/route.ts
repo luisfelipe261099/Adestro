@@ -37,6 +37,10 @@ export async function GET() {
     prisma.calendarEvent.findMany({
       where:   { trainerId: trainer.id },
       orderBy: { createdAt: "desc" },
+      // Participantes acompanham o evento: numa aula coletiva o vínculo com o
+      // cão mora aqui, não em `dogId`. Sem isso os painéis da home tratavam
+      // todo cão de turma como "sem próxima aula".
+      include: { participants: { select: { dogId: true } } },
     }),
     prisma.clientProfile.findMany({
       where:  { trainerId: trainer.id },
@@ -55,7 +59,12 @@ export async function GET() {
     (ev) => !(ev.clientId === null && !!ev.client && !currentNames.has(ev.client)),
   );
 
-  return NextResponse.json(visible);
+  return NextResponse.json(
+    visible.map(({ participants, ...event }) => ({
+      ...event,
+      participantDogIds: participants.map((p) => p.dogId).filter(Boolean),
+    })),
+  );
 }
 
 function addWeeksToDate(dateStr: string, weeks: number): string {
@@ -107,6 +116,8 @@ export async function POST(request: Request) {
     sessionNumber?: number;
     status?: "Confirmado" | "Pendente" | "Aguardando" | "Recorrente" | "Cancelado";
     recurrence?: "none" | "4weeks" | "8weeks" | "12weeks";
+    /** Criar mesmo havendo choque de horário (turma coletiva, encaixe combinado). */
+    allowOverlap?: boolean;
   };
 
   const clientId = body.clientId ? String(body.clientId).trim() : null;
@@ -172,6 +183,32 @@ export async function POST(request: Request) {
       sessionNumber: (body.sessionNumber ?? 1) + i,
       status:        body.status        ?? "Pendente",
     });
+  }
+
+  // Choque de horário: a validação tem de estar aqui, no servidor. Antes existia
+  // apenas um banner de aviso na tela, que não impedia nada — dava para criar
+  // três aulas no mesmo horário. Toda data gerada pela recorrência é conferida.
+  if (!body.allowOverlap) {
+    const conflicts = await prisma.calendarEvent.findMany({
+      where: {
+        trainerId: trainer.id,
+        day:       { in: eventsData.map((data) => data.day) },
+        time:      body.time,
+        NOT:       { status: "Cancelado" },
+      },
+      select: { day: true, time: true, dog: true, client: true },
+    });
+
+    if (conflicts.length > 0) {
+      return NextResponse.json(
+        {
+          error: "Já existe aula marcada neste horário.",
+          code: "TIME_CONFLICT",
+          conflicts,
+        },
+        { status: 409 },
+      );
+    }
   }
 
   const createdEvents = await Promise.all(
