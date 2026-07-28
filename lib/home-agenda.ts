@@ -243,8 +243,15 @@ export type DogAttention = {
 
 const ATTENTION_ORDER: Record<AttentionLevel, number> = { red: 0, amber: 1, green: 2 };
 
-/** Fases em que o cão já saiu do fluxo de trabalho corrente. */
-const INACTIVE_DOG_STATUSES = new Set(["Completo", "Cancelado"]);
+/**
+ * Fases em que o cão já saiu do fluxo de trabalho corrente.
+ *
+ * "Pausado" entra aqui porque pausar É a decisão de não agendar — cobrar o
+ * adestrador por isso vira ruído. Sem essa exclusão, uma carteira real com 22
+ * cães pausados mostrava 46 de 50 cães em alerta, e um painel que acende para
+ * quase todo mundo não sinaliza nada.
+ */
+const INACTIVE_DOG_STATUSES = new Set(["Completo", "Cancelado", "Pausado"]);
 
 export type DogAttentionOptions = {
   /**
