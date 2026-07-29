@@ -75,7 +75,7 @@ export function NextActionCard() {
     <section data-tour="next-action" className="mt-6 rounded-lg border border-[var(--border-strong)] bg-[var(--panel)] p-5 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
+          <p className="text-[12px] font-bold uppercase tracking-wider text-[var(--muted)]">
             Próxima ação · passo {currentIndex + 1} de {JOURNEY.length}
           </p>
           <h2 className="mt-1 text-lg font-semibold text-[var(--foreground)]">{step.title}</h2>
@@ -86,7 +86,7 @@ export function NextActionCard() {
             {JOURNEY.map((item, index) => (
               <li key={item.id} className="flex items-center gap-1.5">
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-semibold ${
                     done[index]
                       ? "bg-emerald-100 text-emerald-800"
                       : index === currentIndex
@@ -97,7 +97,7 @@ export function NextActionCard() {
                   {done[index] ? "✓" : index + 1} {item.label}
                 </span>
                 {index < JOURNEY.length - 1 ? (
-                  <span aria-hidden className="text-[10px] text-[var(--muted)]">→</span>
+                  <span aria-hidden className="text-[12px] text-[var(--muted)]">→</span>
                 ) : null}
               </li>
             ))}

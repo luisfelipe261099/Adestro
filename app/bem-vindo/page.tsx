@@ -81,7 +81,7 @@ export default function WelcomePage() {
           {[1, 2, 3, 4].map((s) => (
             <div key={s} className="flex flex-1 items-center gap-2">
               <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-medium ${
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-[12px] font-medium ${
                   s === step
                     ? "bg-[var(--accent)] text-white"
                     : s < step

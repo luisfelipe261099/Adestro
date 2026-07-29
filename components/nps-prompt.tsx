@@ -53,14 +53,14 @@ export function NpsPrompt({ sessionId, sessionTitle, token, pinQuery, onSent }: 
       <p className="text-sm font-semibold text-amber-950">
         Como foi a aula <span className="italic">{sessionTitle}</span>?
       </p>
-      <p className="text-[10px] text-amber-800">De 0 a 10, quão satisfeito você ficou?</p>
+      <p className="text-[12px] text-amber-800">De 0 a 10, quão satisfeito você ficou?</p>
       <div className="mt-2 flex flex-wrap gap-1">
         {Array.from({ length: 11 }, (_, n) => (
           <button
             key={n}
             type="button"
             onClick={() => setScore(n)}
-            className={`h-7 w-7 rounded-full text-[11px] font-bold transition ${
+            className={`h-7 w-7 rounded-full text-[12px] font-bold transition ${
               score === n
                 ? "bg-amber-600 text-white"
                 : "border border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
@@ -80,12 +80,12 @@ export function NpsPrompt({ sessionId, sessionTitle, token, pinQuery, onSent }: 
             maxLength={500}
             className="mt-2 w-full rounded-md border border-amber-200 bg-white px-2 py-1.5 text-xs outline-none"
           />
-          {error ? <p className="mt-1 text-[10px] text-rose-700">{error}</p> : null}
+          {error ? <p className="mt-1 text-[12px] text-rose-700">{error}</p> : null}
           <button
             type="button"
             onClick={submit}
             disabled={sending}
-            className="mt-2 rounded-full bg-amber-600 px-3 py-1 text-[11px] font-bold text-white disabled:opacity-60"
+            className="mt-2 rounded-full bg-amber-600 px-3 py-1 text-[12px] font-bold text-white disabled:opacity-60"
           >
             {sending ? "Enviando…" : "Enviar avaliação"}
           </button>

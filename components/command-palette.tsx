@@ -188,10 +188,10 @@ export function CommandPalette() {
                   <div className="min-w-0">
                     <span className="block text-[13px] font-medium text-[var(--foreground)]">{item.label}</span>
                     {item.detail ? (
-                      <span className="block text-[11px] text-[var(--muted)]">{item.detail}</span>
+                      <span className="block text-[12px] text-[var(--muted)]">{item.detail}</span>
                     ) : null}
                   </div>
-                  <span className="rounded-md bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--muted)]">
+                  <span className="rounded-md bg-[var(--surface-2)] px-1.5 py-0.5 text-[12px] font-medium uppercase tracking-wider text-[var(--muted)]">
                     {KIND_LABEL[item.kind]}
                   </span>
                 </button>
@@ -199,7 +199,7 @@ export function CommandPalette() {
             ))
           )}
         </ul>
-        <footer className="flex items-center justify-between border-t border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-1.5 text-[11px] text-[var(--muted)]">
+        <footer className="flex items-center justify-between border-t border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-1.5 text-[12px] text-[var(--muted)]">
           <span><kbd className="kbd">↑↓</kbd> navegar · <kbd className="kbd">↵</kbd> abrir</span>
           <span><kbd className="kbd">⌘K</kbd> alternar</span>
         </footer>

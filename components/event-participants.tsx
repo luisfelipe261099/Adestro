@@ -109,33 +109,33 @@ export function EventParticipants({ eventId, clients }: { eventId: string; clien
   return (
     <div className="mt-2 rounded-md border border-dashed border-[var(--border)] bg-white/70 p-2.5">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">Participantes da turma</p>
+        <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">Participantes da turma</p>
         {!loading && participants.length > 0 ? (
-          <span className="text-[10px] text-[var(--muted)]">{confirmed}/{participants.length} confirmados</span>
+          <span className="text-[12px] text-[var(--muted)]">{confirmed}/{participants.length} confirmados</span>
         ) : null}
       </div>
 
       {loading ? (
-        <p className="mt-2 text-[11px] text-[var(--muted)]">Carregando...</p>
+        <p className="mt-2 text-[12px] text-[var(--muted)]">Carregando...</p>
       ) : (
         <>
           {participants.length === 0 ? (
-            <p className="mt-2 text-[11px] text-[var(--muted)]">Nenhum cão adicionado ainda.</p>
+            <p className="mt-2 text-[12px] text-[var(--muted)]">Nenhum cão adicionado ainda.</p>
           ) : (
             <ul className="mt-2 space-y-1.5">
               {participants.map((p) => (
                 <li key={p.id} className="flex items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-white px-2 py-1.5">
                   <div className="min-w-0">
                     <p className="truncate text-xs font-semibold text-slate-900">{p.dogName}</p>
-                    <p className="truncate text-[10px] text-[var(--muted)]">{p.clientName}</p>
+                    <p className="truncate text-[12px] text-[var(--muted)]">{p.clientName}</p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${STATUS_STYLE[p.status]}`}>
+                    <span className={`rounded-full px-1.5 py-0.5 text-[12px] font-semibold ${STATUS_STYLE[p.status]}`}>
                       {STATUS_ICON[p.status]} {p.status}
                     </span>
-                    <button type="button" onClick={() => setStatus(p.id, "Confirmado")} disabled={busy} className="rounded border border-emerald-300 px-1 text-[10px] text-emerald-700 disabled:opacity-50" title="Confirmar">Sim</button>
-                    <button type="button" onClick={() => setStatus(p.id, "Recusado")} disabled={busy} className="rounded border border-rose-300 px-1 text-[10px] text-rose-700 disabled:opacity-50" title="Recusar">Não</button>
-                    <button type="button" onClick={() => removeDog(p.id)} disabled={busy} className="rounded border border-slate-300 px-1 text-[10px] text-slate-500 disabled:opacity-50" title="Remover">Excluir</button>
+                    <button type="button" onClick={() => setStatus(p.id, "Confirmado")} disabled={busy} className="rounded border border-emerald-300 px-1 text-[12px] text-emerald-700 disabled:opacity-50" title="Confirmar">Sim</button>
+                    <button type="button" onClick={() => setStatus(p.id, "Recusado")} disabled={busy} className="rounded border border-rose-300 px-1 text-[12px] text-rose-700 disabled:opacity-50" title="Recusar">Não</button>
+                    <button type="button" onClick={() => removeDog(p.id)} disabled={busy} className="rounded border border-slate-300 px-1 text-[12px] text-slate-500 disabled:opacity-50" title="Remover">Excluir</button>
                   </div>
                 </li>
               ))}
@@ -146,7 +146,7 @@ export function EventParticipants({ eventId, clients }: { eventId: string; clien
             <select
               value={addDogId}
               onChange={(e) => setAddDogId(e.target.value)}
-              className="min-w-0 flex-1 rounded-md border border-[var(--border)] bg-white px-2 py-1 text-[11px] outline-none"
+              className="min-w-0 flex-1 rounded-md border border-[var(--border)] bg-white px-2 py-1 text-[12px] outline-none"
             >
               <option value="">Adicionar cão à turma...</option>
               {clients.flatMap((c) =>
@@ -163,7 +163,7 @@ export function EventParticipants({ eventId, clients }: { eventId: string; clien
               type="button"
               onClick={addDog}
               disabled={!addDogId || busy}
-              className="rounded-full bg-sky-600 px-3 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
+              className="rounded-full bg-sky-600 px-3 py-1 text-[12px] font-semibold text-white disabled:opacity-50"
             >
               Adicionar
             </button>

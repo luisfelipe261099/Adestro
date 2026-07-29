@@ -595,7 +595,7 @@ export function ProductTour() {
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-800">
+              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[12px] font-bold uppercase tracking-wider text-purple-800">
                 {stepIndex + 1} / {steps.length}
               </span>
               <button
@@ -623,14 +623,14 @@ export function ProductTour() {
                 type="button"
                 onClick={prev}
                 disabled={stepIndex === 0}
-                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--muted)] disabled:opacity-30"
+                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-[var(--muted)] disabled:opacity-30"
               >
                 ← Anterior
               </button>
               <button
                 type="button"
                 onClick={next}
-                className="rounded-full bg-purple-600 px-4 py-1.5 text-[11.5px] font-bold text-white shadow-sm hover:bg-purple-700"
+                className="rounded-full bg-purple-600 px-4 py-1.5 text-[12.5px] font-bold text-white shadow-sm hover:bg-purple-700"
               >
                 {stepIndex === steps.length - 1 ? "Finalizar 🎉" : "Próximo →"}
               </button>

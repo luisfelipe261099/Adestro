@@ -67,7 +67,7 @@ function dogAgeFromBirthDate(iso: string): string {
 
 const inputCls =
   "min-w-0 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs text-[var(--foreground)] outline-none focus:border-sky-400";
-const labelCls = "grid gap-1 text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]";
+const labelCls = "grid gap-1 text-[12px] font-bold uppercase tracking-wide text-[var(--muted)]";
 
 const PHASES = ["Ficha", "Ativo", "Completo", "Pausado", "Cancelado"];
 
@@ -366,7 +366,7 @@ export default function EditClientPage() {
                   <h2 className="text-sm font-bold text-[var(--foreground)]">
                     🐕 {dog.name || `Cão ${index + 1}`}
                     {!dog.id ? (
-                      <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                      <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[12px] font-bold text-emerald-800">
                         novo
                       </span>
                     ) : null}
@@ -377,7 +377,7 @@ export default function EditClientPage() {
                       onClick={() =>
                         setDraft({ ...draft, dogs: draft.dogs.filter((_, i) => i !== index) })
                       }
-                      className="text-[11px] font-semibold text-rose-600 hover:underline"
+                      className="text-[12px] font-semibold text-rose-600 hover:underline"
                     >
                       Remover
                     </button>
@@ -437,7 +437,7 @@ export default function EditClientPage() {
                         placeholder="Ex: 20"
                         className={`${inputCls} pr-9`}
                       />
-                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] font-semibold text-[var(--muted)]">
+                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[12px] font-semibold text-[var(--muted)]">
                         kg
                       </span>
                     </div>

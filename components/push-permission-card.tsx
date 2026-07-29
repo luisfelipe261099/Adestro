@@ -94,23 +94,23 @@ export function PushPermissionCard() {
   return (
     <div className="rounded-md border border-[var(--border-strong)] bg-[var(--surface-2)] p-3 text-xs text-sky-900">
       <p className="font-semibold">🔔 Ativar notificações push</p>
-      <p className="mt-0.5 text-[11px] text-sky-800">
+      <p className="mt-0.5 text-[12px] text-sky-800">
         Receba alertas no celular quando clientes confirmarem presença, pagamentos chegarem e cobranças vencerem.
       </p>
       <button
         type="button"
         onClick={subscribe}
         disabled={state === "saving" || !vapidKey}
-        className="mt-2 rounded-full bg-sky-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm hover:bg-sky-700 disabled:opacity-60"
+        className="mt-2 rounded-full bg-sky-600 px-3 py-1.5 text-[12px] font-bold text-white shadow-sm hover:bg-sky-700 disabled:opacity-60"
       >
         {state === "saving" ? "Configurando…" : "Ativar agora"}
       </button>
       {!vapidKey ? (
-        <p className="mt-2 text-[10px] text-sky-700">
+        <p className="mt-2 text-[12px] text-sky-700">
           (Servidor ainda sem VAPID_PUBLIC_KEY — configure no .env / Vercel para liberar)
         </p>
       ) : null}
-      {error ? <p className="mt-2 text-[11px] text-rose-700">{error}</p> : null}
+      {error ? <p className="mt-2 text-[12px] text-rose-700">{error}</p> : null}
     </div>
   );
 }

@@ -87,10 +87,10 @@ export function MonthlyComparison({ dogId, dogName }: { dogId: string; dogName: 
     <article className="rounded-md border border-emerald-100 bg-emerald-50/40 p-4">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Comparativo</p>
+          <p className="text-[12px] font-bold uppercase tracking-wider text-emerald-700">Comparativo</p>
           <h3 className="text-base font-semibold text-emerald-950">Evolução mês vs mês • {dogName}</h3>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-[10px]">
+        <div className="flex flex-wrap items-center gap-2 text-[12px]">
           <select
             value={monthA}
             onChange={(event) => setMonthA(event.target.value)}
@@ -123,46 +123,46 @@ export function MonthlyComparison({ dogId, dogName }: { dogId: string; dogName: 
         <div className="mt-3 grid gap-2 text-xs">
           <div className="grid grid-cols-3 gap-2 rounded-md bg-white p-3 text-center">
             <div>
-              <p className="text-[10px] font-bold uppercase text-emerald-700">{data.monthA.label}</p>
+              <p className="text-[12px] font-bold uppercase text-emerald-700">{data.monthA.label}</p>
               <p className="mt-1 text-2xl font-bold text-emerald-950">{data.monthA.sessions}</p>
-              <p className="text-[10px] text-[var(--muted)]">Sessões</p>
+              <p className="text-[12px] text-[var(--muted)]">Sessões</p>
             </div>
             <div className="flex flex-col items-center justify-center">
               <span aria-hidden className="text-emerald-700">→</span>
-              <span className={`text-[11px] font-bold ${deltaColor(data.delta.sessions)}`}>{delta(data.delta.sessions)}</span>
+              <span className={`text-[12px] font-bold ${deltaColor(data.delta.sessions)}`}>{delta(data.delta.sessions)}</span>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase text-emerald-700">{data.monthB.label}</p>
+              <p className="text-[12px] font-bold uppercase text-emerald-700">{data.monthB.label}</p>
               <p className="mt-1 text-2xl font-bold text-emerald-950">{data.monthB.sessions}</p>
-              <p className="text-[10px] text-[var(--muted)]">Sessões</p>
+              <p className="text-[12px] text-[var(--muted)]">Sessões</p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 rounded-md bg-white p-3 text-center">
             <div>
               <p className="text-2xl font-bold text-emerald-950">{data.monthA.averageCommandRating.toFixed(1)}<span className="text-sm text-emerald-600">/5</span></p>
-              <p className="text-[10px] text-[var(--muted)]">Comando médio</p>
+              <p className="text-[12px] text-[var(--muted)]">Comando médio</p>
             </div>
             <div className="flex flex-col items-center justify-center">
-              <span className={`text-[11px] font-bold ${deltaColor(data.delta.averageCommandRating)}`}>{delta(data.delta.averageCommandRating)}</span>
+              <span className={`text-[12px] font-bold ${deltaColor(data.delta.averageCommandRating)}`}>{delta(data.delta.averageCommandRating)}</span>
             </div>
             <div>
               <p className="text-2xl font-bold text-emerald-950">{data.monthB.averageCommandRating.toFixed(1)}<span className="text-sm text-emerald-600">/5</span></p>
-              <p className="text-[10px] text-[var(--muted)]">Comando médio</p>
+              <p className="text-[12px] text-[var(--muted)]">Comando médio</p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 rounded-md bg-white p-3 text-center">
             <div>
               <p className="text-2xl font-bold text-emerald-950">{data.monthA.activitiesCompletionRate.toFixed(0)}<span className="text-sm text-emerald-600">%</span></p>
-              <p className="text-[10px] text-[var(--muted)]">Atividades feitas</p>
+              <p className="text-[12px] text-[var(--muted)]">Atividades feitas</p>
             </div>
             <div className="flex flex-col items-center justify-center">
-              <span className={`text-[11px] font-bold ${deltaColor(data.delta.activitiesCompletionRate)}`}>{delta(data.delta.activitiesCompletionRate)}pp</span>
+              <span className={`text-[12px] font-bold ${deltaColor(data.delta.activitiesCompletionRate)}`}>{delta(data.delta.activitiesCompletionRate)}pp</span>
             </div>
             <div>
               <p className="text-2xl font-bold text-emerald-950">{data.monthB.activitiesCompletionRate.toFixed(0)}<span className="text-sm text-emerald-600">%</span></p>
-              <p className="text-[10px] text-[var(--muted)]">Atividades feitas</p>
+              <p className="text-[12px] text-[var(--muted)]">Atividades feitas</p>
             </div>
           </div>
 
@@ -172,10 +172,10 @@ export function MonthlyComparison({ dogId, dogName }: { dogId: string; dogName: 
                 <p className="text-2xl font-bold text-emerald-950">
                   {data.monthA.npsAverage === null ? "—" : data.monthA.npsAverage.toFixed(1)}
                 </p>
-                <p className="text-[10px] text-[var(--muted)]">NPS médio</p>
+                <p className="text-[12px] text-[var(--muted)]">NPS médio</p>
               </div>
               <div className="flex flex-col items-center justify-center">
-                <span className={`text-[11px] font-bold ${data.delta.npsAverage === null ? "text-slate-400" : deltaColor(data.delta.npsAverage)}`}>
+                <span className={`text-[12px] font-bold ${data.delta.npsAverage === null ? "text-slate-400" : deltaColor(data.delta.npsAverage)}`}>
                   {data.delta.npsAverage === null ? "—" : delta(data.delta.npsAverage)}
                 </span>
               </div>
@@ -183,7 +183,7 @@ export function MonthlyComparison({ dogId, dogName }: { dogId: string; dogName: 
                 <p className="text-2xl font-bold text-emerald-950">
                   {data.monthB.npsAverage === null ? "—" : data.monthB.npsAverage.toFixed(1)}
                 </p>
-                <p className="text-[10px] text-[var(--muted)]">NPS médio</p>
+                <p className="text-[12px] text-[var(--muted)]">NPS médio</p>
               </div>
             </div>
           ) : null}

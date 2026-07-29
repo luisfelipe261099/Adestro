@@ -451,7 +451,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
       <section className="mx-auto max-w-md rounded-lg border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-sm sm:max-w-xl">
         <header className="flex items-center justify-between border-b border-slate-100 pb-3">
           <span className="text-xs font-bold text-[var(--foreground)]">Ficha do Cliente & Cão (Etapa {formStep}/5)</span>
-          <span className="text-[10px] font-semibold text-[var(--muted)]">
+          <span className="text-[12px] font-semibold text-[var(--muted)]">
             {formStep === 1 ? "Dados do Cliente" :
              formStep === 2 ? "Endereço" :
              formStep === 3 ? "Identificação do Cão" :
@@ -730,7 +730,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   type="file"
                   accept="image/*"
                   onChange={handleDogPhotoFileChange}
-                  className="mt-1 block w-full text-[10px] file:mr-2 file:rounded-lg file:border file:bg-white file:px-2 file:py-1 file:font-semibold"
+                  className="mt-1 block w-full text-[12px] file:mr-2 file:rounded-lg file:border file:bg-white file:px-2 file:py-1 file:font-semibold"
                 />
               </label>
             </div>
@@ -740,7 +740,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
           {formStep === 4 && (
             <div className="grid gap-3 animate-in fade-in duration-200">
               <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Histórico de Vacinas</span>
+                <span className="text-[12px] font-bold uppercase tracking-wider text-[var(--muted)]">Histórico de Vacinas</span>
                 {vaccines.length === 0 ? (
                   <p className="mt-1 text-xs text-[var(--muted)]">Nenhuma vacina cadastrada ainda.</p>
                 ) : (
@@ -749,7 +749,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                       <div key={i} className="flex items-center justify-between rounded-lg bg-white p-2 text-xs">
                         <div>
                           <p className="font-semibold text-slate-900">{v.name}</p>
-                          <p className="text-[10px] text-[var(--muted)]">Aplicada em: {v.date} {v.validity && `• Validade: ${v.validity}`}</p>
+                          <p className="text-[12px] text-[var(--muted)]">Aplicada em: {v.date} {v.validity && `• Validade: ${v.validity}`}</p>
                         </div>
                         <button
                           type="button"
@@ -774,7 +774,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   className="rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs outline-none focus:border-sky-400"
                 />
                 <div className="grid grid-cols-2 gap-2">
-                  <label className="grid gap-1 text-[9px] font-bold text-slate-500 uppercase">
+                  <label className="grid gap-1 text-[12px] font-bold text-slate-500 uppercase">
                     Aplicação
                     <input
                       placeholder="DD/MM/AAAA"
@@ -783,7 +783,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                       className="rounded-md border border-[var(--border)] bg-white px-2 py-1.5 text-xs outline-none"
                     />
                   </label>
-                  <label className="grid gap-1 text-[9px] font-bold text-slate-500 uppercase">
+                  <label className="grid gap-1 text-[12px] font-bold text-slate-500 uppercase">
                     Validade
                     <input
                       placeholder="DD/MM/AAAA"
@@ -839,7 +839,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
             <div className="grid gap-3 animate-in fade-in duration-200">
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <label className="grid gap-1 text-[10px] font-semibold text-slate-500 uppercase">
+                <label className="grid gap-1 text-[12px] font-semibold text-slate-500 uppercase">
                   Nível de Energia
                   <select
                     value={tempEnergy}
@@ -853,7 +853,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   </select>
                 </label>
 
-                <label className="grid gap-1 text-[10px] font-semibold text-slate-500 uppercase">
+                <label className="grid gap-1 text-[12px] font-semibold text-slate-500 uppercase">
                   Com Pessoas
                   <select
                     value={tempSocial}
@@ -867,7 +867,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
                   </select>
                 </label>
 
-                <label className="grid gap-1 text-[10px] font-semibold text-slate-500 uppercase">
+                <label className="grid gap-1 text-[12px] font-semibold text-slate-500 uppercase">
                   Com Cães
                   <select
                     value={tempDogs}
@@ -932,7 +932,7 @@ export function PortalOnboardingClient({ token }: { token: string }) {
               </label>
 
               <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Objetivos do Adestramento</span>
+                <span className="text-[12px] font-bold uppercase tracking-wider text-[var(--muted)]">Objetivos do Adestramento</span>
                 <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <input type="checkbox" checked={goalsObediencia} onChange={(e) => setGoalsObediencia(e.target.checked)} />

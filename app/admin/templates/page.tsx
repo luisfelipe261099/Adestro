@@ -206,7 +206,7 @@ export default function AdminTemplatesPage() {
         <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <header data-tour="admin-templates" className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Operacional</p>
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">Operacional</p>
               <h1 className="text-2xl font-semibold text-[var(--foreground)]">Templates do sistema</h1>
               <p className="mt-1 text-xs text-[var(--muted)]">Edite as listas que alimentam sessões e tarefas do cliente.</p>
             </div>
@@ -233,14 +233,14 @@ export default function AdminTemplatesPage() {
               <article className="rounded-md border border-emerald-200 bg-emerald-50/40 p-4">
                 <header>
                   <h2 className="text-sm font-bold text-slate-900">💬 Templates de mensagem WhatsApp</h2>
-                  <p className="text-[11px] text-slate-700">
+                  <p className="text-[12px] text-slate-700">
                     Personalize o tom das mensagens enviadas via wa.me. Deixe em branco para usar o padrão do sistema.
-                    Variáveis disponíveis: <code className="rounded bg-white px-1 text-[10px]">{"{cliente} {cao} {data} {hora} {link} {valor} {mes}"}</code>
+                    Variáveis disponíveis: <code className="rounded bg-white px-1 text-[12px]">{"{cliente} {cao} {data} {hora} {link} {valor} {mes}"}</code>
                   </p>
                 </header>
                 <div className="mt-3 grid gap-3">
                   {WA_TEMPLATE_FIELDS.map((field) => (
-                    <label key={field.key} className="grid gap-1 text-[10px] font-bold uppercase text-emerald-900">
+                    <label key={field.key} className="grid gap-1 text-[12px] font-bold uppercase text-emerald-900">
                       {field.label}
                       <textarea
                         value={waTemplates[field.key]}
@@ -259,7 +259,7 @@ export default function AdminTemplatesPage() {
                   type="button"
                   onClick={saveWaTemplates}
                   disabled={waSaving}
-                  className="mt-3 rounded-full bg-emerald-600 px-4 py-1.5 text-[11px] font-bold text-white disabled:opacity-50"
+                  className="mt-3 rounded-full bg-emerald-600 px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-50"
                 >
                   {waSaving ? "Salvando…" : "Salvar templates de WhatsApp"}
                 </button>
@@ -276,23 +276,23 @@ export default function AdminTemplatesPage() {
                         <span aria-hidden className="mr-1.5">{panel.emoji}</span>
                         {panel.title}
                       </h2>
-                      <p className="text-[11px] text-slate-700">{panel.description}</p>
+                      <p className="text-[12px] text-slate-700">{panel.description}</p>
                     </div>
-                    <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-700 border border-slate-200">
+                    <span className="rounded-full bg-white px-2 py-0.5 text-[12px] font-bold text-slate-700 border border-slate-200">
                       {state[panel.key].length} itens
                     </span>
                   </div>
 
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {state[panel.key].length === 0 ? (
-                      <p className="text-[11px] italic text-slate-500">
+                      <p className="text-[12px] italic text-slate-500">
                         Nenhum item personalizado — o sistema usa os padrões internos.
                       </p>
                     ) : (
                       state[panel.key].map((item) => (
                         <span
                           key={item}
-                          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${accentChip(panel.accent)}`}
+                          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] font-semibold ${accentChip(panel.accent)}`}
                         >
                           {item}
                           <button

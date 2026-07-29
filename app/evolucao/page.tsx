@@ -62,7 +62,7 @@ export default function EvolucaoPage() {
             {dogs.map((dog) => (
               <section key={dog.id} className="card p-4">
                 <h2 className="text-sm font-semibold text-[var(--foreground)]">{dog.name}</h2>
-                <p className="text-[11.5px] text-[var(--muted)]">
+                <p className="text-[12.5px] text-[var(--muted)]">
                   {dog.clientName}
                   {dog.breed ? ` · ${dog.breed}` : ""}
                 </p>
@@ -72,7 +72,7 @@ export default function EvolucaoPage() {
                       const v = dog.scores?.[cat.key] ?? 0;
                       return (
                         <div key={cat.key}>
-                          <div className="flex items-center justify-between text-[11px]">
+                          <div className="flex items-center justify-between text-[12px]">
                             <span className="text-[var(--muted-strong)]">{cat.label}</span>
                             <span className="font-semibold text-[var(--foreground)]">{v}/5</span>
                           </div>

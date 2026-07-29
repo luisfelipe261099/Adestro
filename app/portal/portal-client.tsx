@@ -270,15 +270,15 @@ export default function PortalClientPage() {
         <div className="rounded-lg border border-[var(--border)] bg-gradient-to-b from-[#f8fcff] to-[#f2f9ff] p-4 shadow-sm">
           <header className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Portal do cliente</p>
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">Portal do cliente</p>
               <h1 className="text-2xl font-semibold text-[var(--foreground)]">Compartilhar acompanhamento</h1>
               <p className="mt-1 text-xs text-[var(--muted)]">Adestrador: {trainerName || "Sem nome"}</p>
             </div>
             <div className="flex items-center gap-2">
-              <Link href="/agenda" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--foreground)]">
+              <Link href="/agenda" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[12px] font-semibold text-[var(--foreground)]">
                 Agenda
               </Link>
-              <Link href="/treinos" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--foreground)]">
+              <Link href="/treinos" className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[12px] font-semibold text-[var(--foreground)]">
                 Treinos
               </Link>
             </div>
@@ -286,12 +286,12 @@ export default function PortalClientPage() {
 
           <div className="mt-4 grid grid-cols-2 gap-2">
             <article className="rounded-md border border-[var(--border)] bg-white p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">Tarefas</p>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">Tarefas</p>
               <p className="text-2xl font-semibold text-[var(--foreground)]">{selectedTasks.length}</p>
               <p className="text-xs text-[var(--muted)]">Itens no portal</p>
             </article>
             <article className="rounded-md border border-[var(--border)] bg-white p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">Feedbacks</p>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">Feedbacks</p>
               <p className="text-2xl font-semibold text-[var(--foreground)]">{selectedFeedbacks.length}</p>
               <p className="text-xs text-[var(--muted)]">Mensagens recentes</p>
             </article>
@@ -528,7 +528,7 @@ export default function PortalClientPage() {
 
               {/* Frequência da tarefa — evita que o cliente marque só uma vez */}
               <div className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/40 p-2.5">
-                <p className="text-[11px] font-semibold text-[var(--foreground)]">Com que frequência o cliente deve fazer?</p>
+                <p className="text-[12px] font-semibold text-[var(--foreground)]">Com que frequência o cliente deve fazer?</p>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {([
                     { key: "daily", label: "Todos os dias" },
@@ -539,7 +539,7 @@ export default function PortalClientPage() {
                       key={opt.key}
                       type="button"
                       onClick={() => setTaskRecurrence(opt.key)}
-                      className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
+                      className={`rounded-full px-3 py-1 text-[12px] font-semibold ${
                         taskRecurrence === opt.key
                           ? "bg-[var(--accent)] text-white"
                           : "border border-[var(--border)] bg-white text-[var(--muted)]"
@@ -560,7 +560,7 @@ export default function PortalClientPage() {
                           onClick={() =>
                             setTaskWeekdays((prev) => (on ? prev.filter((x) => x !== i) : [...prev, i]))
                           }
-                          className={`h-7 w-9 rounded-md text-[11px] font-semibold ${
+                          className={`h-7 w-9 rounded-md text-[12px] font-semibold ${
                             on ? "bg-[var(--accent)] text-white" : "border border-[var(--border)] bg-white text-[var(--muted)]"
                           }`}
                         >
