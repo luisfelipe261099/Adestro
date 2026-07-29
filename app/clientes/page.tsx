@@ -10,7 +10,7 @@ import { DateField } from "@/components/date-field";
 import { DogKanban } from "@/components/dog-kanban";
 import { TagsEditor } from "@/components/tags-editor";
 import { IconUser } from "@/components/icons";
-import { dogCountLabel, planLabel as formatPlan } from "@/lib/labels";
+import { dogCountLabel, planLabel as formatPlan, plural } from "@/lib/labels";
 import { DOG_TRAINING_STATUSES, type DogTrainingStatus, useAppStore } from "@/lib/app-store";
 import { googleMapsLink } from "@/lib/calendar-ics";
 import { maskCEP, maskCPF, maskDate, maskPhone } from "@/lib/masks";
@@ -618,7 +618,7 @@ export default function ClientsPage() {
               <p className="text-eyebrow mb-1.5">Carteira</p>
               <h1 className="text-display">Clientes e cães</h1>
               <p className="mt-1 text-subtitle">
-                {clients.length} cliente{clients.length === 1 ? "" : "es"} · {totalDogs} cão{totalDogs === 1 ? "" : "es"} cadastrado{totalDogs === 1 ? "" : "s"}
+                {plural(clients.length, "cliente", "clientes")} · {dogCountLabel(totalDogs)} cadastrado{totalDogs === 1 ? "" : "s"}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">

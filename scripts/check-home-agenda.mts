@@ -203,4 +203,14 @@ t("sem pacote não inventa denominador", () => assert.equal(labels.packageProgre
 t("passou do pacote é sinalizado", () => assert.equal(labels.isOverPackage(14, 8), true));
 t("dentro do pacote não alarma", () => assert.equal(labels.isOverPackage(8, 8), false));
 
+console.log("\n— plurais escritos por extenso (a queixa 'cão(ões)') —");
+t("plural: 1 cliente", () => assert.equal(labels.plural(1, "cliente", "clientes"), "1 cliente"));
+t("plural: 3 clientes (não 'clientees')", () =>
+  assert.equal(labels.plural(3, "cliente", "clientes"), "3 clientes"));
+t("plural: 3 cães (não 'cãoes')", () => assert.equal(labels.dogCountLabel(3), "3 cães"));
+t("plural: 1 aula a confirmar", () =>
+  assert.equal(labels.plural(1, "aula a confirmar", "aulas a confirmar"), "1 aula a confirmar"));
+t("plural: 0 usa a forma plural", () =>
+  assert.equal(labels.plural(0, "treino sem registro", "treinos sem registro"), "0 treinos sem registro"));
+
 console.log(`\n${pass} verificações passaram.\n`);

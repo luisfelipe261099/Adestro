@@ -30,6 +30,7 @@ import {
   isActiveEvent,
   pickNextSession,
 } from "@/lib/home-agenda";
+import { dogCountLabel, plural } from "@/lib/labels";
 import { useNow } from "@/lib/use-now";
 
 function getFirstName(name: string): string {
@@ -186,7 +187,7 @@ export default function DashboardPage() {
         label: "Agenda da semana",
         value: weekEvents.length,
         hint: "aulas agendadas",
-        sub: `${dogsToSchedule} cão(es) a agendar · ${clients.length} cliente(s)`,
+        sub: `${dogCountLabel(dogsToSchedule)} a agendar · ${plural(clients.length, "cliente", "clientes")}`,
         href: "/agenda?view=semana",
         Icon: IconCalendar,
       },
@@ -211,8 +212,8 @@ export default function DashboardPage() {
         hint: "itens travados",
         sub:
           orphanCount > 0
-            ? `${orphanCount} agendamento(s) sem cliente · ${dogsMissingRecord} treino(s) sem registro`
-            : `${dogsMissingRecord} treino(s) sem registro · ${awaitingConfirmation} aula(s) a confirmar`,
+            ? `${plural(orphanCount, "agendamento sem cliente", "agendamentos sem cliente")} · ${plural(dogsMissingRecord, "treino sem registro", "treinos sem registro")}`
+            : `${plural(dogsMissingRecord, "treino sem registro", "treinos sem registro")} · ${plural(awaitingConfirmation, "aula a confirmar", "aulas a confirmar")}`,
         href: "/pendencias",
         Icon: IconAlert,
       },
