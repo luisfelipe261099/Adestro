@@ -557,7 +557,7 @@ export default function TrainingPage() {
                 </Link>
                 <div>
                   <p className="text-base font-semibold text-[var(--foreground)]">Histórico de treinos</p>
-                  <p className="text-[11px] text-[var(--muted)]">Consulte aulas registradas e abra o registro guiado.</p>
+                  <p className="text-[12px] text-[var(--muted)]">Consulte aulas registradas e abra o registro guiado.</p>
                 </div>
               </div>
               <button
@@ -619,7 +619,7 @@ export default function TrainingPage() {
                   key={option.value}
                   type="button"
                   onClick={() => setFeedFilter(option.value as FeedFilter)}
-                  className={`whitespace-nowrap rounded-full px-4 py-1.5 text-[11px] font-semibold ${
+                  className={`whitespace-nowrap rounded-full px-4 py-1.5 text-[12px] font-semibold ${
                     feedFilter === option.value
                       ? "bg-[var(--accent)] text-white"
                       : option.value === "pending"
@@ -635,8 +635,8 @@ export default function TrainingPage() {
             <section className="mt-4 flex items-center justify-between">
               <p className="text-sm font-semibold text-[var(--foreground)]">{feedTitle}</p>
               <div className="flex items-center gap-3">
-                <Link href="/treinos/registro" className="text-[11px] font-semibold text-[var(--foreground)]">Registrar aula</Link>
-                <Link href="/agenda" className="text-[11px] font-semibold text-[var(--foreground)]">Ver agenda</Link>
+                <Link href="/treinos/registro" className="text-[12px] font-semibold text-[var(--foreground)]">Registrar aula</Link>
+                <Link href="/agenda" className="text-[12px] font-semibold text-[var(--foreground)]">Ver agenda</Link>
               </div>
             </section>
 
@@ -680,18 +680,18 @@ export default function TrainingPage() {
                           >
                             {dogName}
                           </Link>
-                          <p className="text-[11px] text-[var(--muted)]">{clientName} • {breed}</p>
+                          <p className="text-[12px] text-[var(--muted)]">{clientName} • {breed}</p>
                           <div className="mt-1 flex items-center gap-1.5">
                             <StarRating score={score} className="text-[13px]" />
-                            <span className="text-[11px] text-[var(--muted)]">{score.toFixed(1)}/10</span>
+                            <span className="text-[12px] text-[var(--muted)]">{score.toFixed(1)}/10</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <span className="rounded-full bg-[var(--surface-2)] px-2 py-1 text-[10px] font-semibold text-[var(--foreground)]">
+                        <span className="rounded-full bg-[var(--surface-2)] px-2 py-1 text-[12px] font-semibold text-[var(--foreground)]">
                           Registrado
                         </span>
-                        <span className="text-[11px] text-[var(--muted)]">{session.date}</span>
+                        <span className="text-[12px] text-[var(--muted)]">{session.date}</span>
                       </div>
                     </div>
 
@@ -706,7 +706,7 @@ export default function TrainingPage() {
                         {topCommands.map((cmd, idx) => (
                           <span
                             key={idx}
-                            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[10px] text-[var(--foreground)]"
+                            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[12px] text-[var(--foreground)]"
                           >
                             {cmd.command}
                             <span className="text-amber-500">{"★".repeat(cmd.rating || 0)}</span>
@@ -724,14 +724,14 @@ export default function TrainingPage() {
                               {/* Seção A: Atividades */}
                               {ds.activities && ds.activities.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">1. Atividades Trabalhadas</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">1. Atividades Trabalhadas</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.activities.map((act: any, idx: number) => (
                                       <li key={idx} className="flex items-start gap-1.5">
                                         <span>{act.completed ? "✓" : "—"}</span>
                                         <div>
                                           <span className="font-semibold text-slate-800">{act.name}</span>
-                                          {act.notes && <p className="text-[10px] text-slate-500 italic mt-0.5">{act.notes}</p>}
+                                          {act.notes && <p className="text-[12px] text-slate-500 italic mt-0.5">{act.notes}</p>}
                                         </div>
                                       </li>
                                     ))}
@@ -742,7 +742,7 @@ export default function TrainingPage() {
                               {/* Seção B: Comandos */}
                               {ds.commands && ds.commands.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">2. Comandos & Evolução</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">2. Comandos & Evolução</p>
                                   <ul className="mt-1 space-y-1.5 pl-1">
                                     {ds.commands.map((cmd: any, idx: number) => (
                                       <li key={idx}>
@@ -750,7 +750,7 @@ export default function TrainingPage() {
                                           <span className="font-semibold text-slate-800">{cmd.command}</span>
                                           <span className="text-amber-500">{"★".repeat(cmd.rating || 0)}</span>
                                         </div>
-                                        {cmd.notes && <p className="text-[10px] text-slate-500 italic mt-0.5">{cmd.notes}</p>}
+                                        {cmd.notes && <p className="text-[12px] text-slate-500 italic mt-0.5">{cmd.notes}</p>}
                                       </li>
                                     ))}
                                   </ul>
@@ -760,7 +760,7 @@ export default function TrainingPage() {
                               {/* Seção C: Resumo Público */}
                               {ds.description && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">3. Resumo do Cliente</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">3. Resumo do Cliente</p>
                                   <p className="mt-1 text-slate-600 bg-slate-50 p-2 rounded-lg leading-relaxed">{ds.description}</p>
                                 </div>
                               )}
@@ -768,7 +768,7 @@ export default function TrainingPage() {
                               {/* Seção D: Notas Privadas */}
                               {ds.privateNotes && (
                                 <div>
-                                  <p className="font-bold text-rose-700 uppercase tracking-[0.08em] text-[10px]">4. Notas Privadas (Confidencial)</p>
+                                  <p className="font-bold text-rose-700 uppercase tracking-[0.08em] text-[12px]">4. Notas Privadas (Confidencial)</p>
                                   <p className="mt-1 text-rose-950 bg-rose-50/50 p-2 rounded-lg leading-relaxed border border-rose-100">{ds.privateNotes}</p>
                                 </div>
                               )}
@@ -777,8 +777,8 @@ export default function TrainingPage() {
                               {ds.aiSummary && (
                                 <div>
                                   <div className="flex items-center justify-between gap-2">
-                                    <p className="font-bold text-purple-800 uppercase tracking-[0.08em] text-[10px]">5. Análise e Resumo da IA</p>
-                                    <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold ${ds.aiApproved ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}>
+                                    <p className="font-bold text-purple-800 uppercase tracking-[0.08em] text-[12px]">5. Análise e Resumo da IA</p>
+                                    <span className={`rounded-full px-2 py-0.5 text-[12px] font-bold ${ds.aiApproved ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}>
                                       {ds.aiApproved ? "Aprovado p/ Portal" : "Não Aprovado"}
                                     </span>
                                   </div>
@@ -789,7 +789,7 @@ export default function TrainingPage() {
                               {/* Seção 7: Plano do Próximo Treino (Foco + comandos unificados) */}
                               {((ds.nextFocus && ds.nextFocus.trim()) || (ds.nextCommands && ds.nextCommands.length > 0)) && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">7. Plano do Próximo Treino</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">7. Plano do Próximo Treino</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.nextFocus && ds.nextFocus.trim() && (
                                       <li className="text-slate-700 font-semibold">{ds.nextFocus}</li>
@@ -804,7 +804,7 @@ export default function TrainingPage() {
                               {/* Seção 8: Dever de Casa */}
                               {ds.nextTasks && ds.nextTasks.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">8. Dever de Casa para o Cliente</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">8. Dever de Casa para o Cliente</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.nextTasks.map((t: string, idx: number) => (
                                       <li key={idx} className="text-slate-700">{t}</li>
@@ -816,7 +816,7 @@ export default function TrainingPage() {
                               {/* Evolução Comportamental (notas 0-5) */}
                               {ds.behaviorScores && Object.keys(ds.behaviorScores).length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[10px]">Evolução Comportamental</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">Evolução Comportamental</p>
                                   <ul className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 pl-1">
                                     {Object.entries(ds.behaviorScores)
                                       .filter(([, v]) => Number(v) > 0)
@@ -834,7 +834,7 @@ export default function TrainingPage() {
                         ) : (
                           // Fallback para treino simples antigo
                           <div className="space-y-2">
-                            <p className="font-bold text-slate-500 uppercase tracking-[0.08em] text-[10px]">Evolução do Treino</p>
+                            <p className="font-bold text-slate-500 uppercase tracking-[0.08em] text-[12px]">Evolução do Treino</p>
                             {session.notes.map((n, idx) => (
                               <div key={idx} className="bg-slate-50 p-2 rounded-lg">
                                 <p className="font-semibold text-slate-800">{n.block} (Nota: {n.score}/10)</p>
@@ -846,7 +846,7 @@ export default function TrainingPage() {
                       </div>
                     )}
 
-                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[12px]">
                       <button
                         type="button"
                         onClick={() => setExpandedSessionId(isExpanded ? null : session.id)}
@@ -903,7 +903,7 @@ export default function TrainingPage() {
                 <form onSubmit={onSubmit} className="mt-3 grid gap-3">
                   <div className="grid gap-2 sm:grid-cols-2">
                     <label className="grid gap-1">
-                      <span className="text-[11px] font-medium text-[var(--muted)]">Cliente</span>
+                      <span className="text-[12px] font-medium text-[var(--muted)]">Cliente</span>
                       <select
                         value={selectedClientValue}
                         onChange={(event) => {
@@ -923,7 +923,7 @@ export default function TrainingPage() {
                     </label>
 
                     <label className="grid gap-1">
-                      <span className="text-[11px] font-medium text-[var(--muted)]">Cão</span>
+                      <span className="text-[12px] font-medium text-[var(--muted)]">Cão</span>
                       <select
                         value={selectedDogValue}
                         onChange={(event) => {
@@ -954,7 +954,7 @@ export default function TrainingPage() {
                     <button
                       type="button"
                       onClick={addDraftNote}
-                      className="rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--foreground)]"
+                      className="rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[12px] font-semibold text-[var(--foreground)]"
                     >
                       Adicionar bloco
                     </button>
@@ -966,7 +966,7 @@ export default function TrainingPage() {
                         <div className="flex items-center justify-between">
                           <p className="text-xs font-semibold text-[var(--foreground)]">Bloco {index + 1}</p>
                           {draftNotes.length > 1 ? (
-                            <button type="button" onClick={() => removeDraftNote(note.id)} className="text-[11px] font-semibold text-amber-800">
+                            <button type="button" onClick={() => removeDraftNote(note.id)} className="text-[12px] font-semibold text-amber-800">
                               Remover
                             </button>
                           ) : null}
@@ -1006,7 +1006,7 @@ export default function TrainingPage() {
                   <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs text-[var(--muted)]">Imagens: {draftMedia.length}/{MAX_MEDIA_ITEMS} • {totalMediaKb}/{MAX_TOTAL_MEDIA_KB}KB</p>
-                      <label className="cursor-pointer rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--foreground)]">
+                      <label className="cursor-pointer rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[12px] font-semibold text-[var(--foreground)]">
                         {isCompressingMedia ? "Comprimindo..." : "Adicionar"}
                         <input
                           type="file"
@@ -1039,7 +1039,7 @@ export default function TrainingPage() {
                             <button
                               type="button"
                               onClick={() => removeDraftMedia(media.id)}
-                              className="w-full border-t border-[var(--border)] px-1 py-1 text-[10px] font-semibold text-amber-800"
+                              className="w-full border-t border-[var(--border)] px-1 py-1 text-[12px] font-semibold text-amber-800"
                             >
                               Remover
                             </button>

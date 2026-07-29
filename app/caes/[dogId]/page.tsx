@@ -158,7 +158,7 @@ export default function DogProfilePage() {
                       {/* Fase no quadro (mesmo campo do kanban) */}
                       <div className="mt-2 flex items-center gap-2">
                         <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] ${
+                          className={`rounded-full px-2 py-0.5 text-[12px] font-semibold uppercase tracking-[0.06em] ${
                             STATUS_BADGE[found.dog.trainingStatus ?? "Ativo"]
                           }`}
                         >
@@ -176,7 +176,7 @@ export default function DogProfilePage() {
                             if (!ok) setStatusError("Não foi possível mudar a fase. Tente de novo.");
                           }}
                           aria-label="Fase do cão"
-                          className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[11.5px] text-[var(--muted)]"
+                          className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[12.5px] text-[var(--muted)]"
                         >
                           {DOG_TRAINING_STATUSES.map((option) => (
                             <option key={option} value={option}>
@@ -186,7 +186,7 @@ export default function DogProfilePage() {
                         </select>
                       </div>
                       {statusError && (
-                        <p className="mt-1 text-[11px] text-[var(--danger)]">{statusError}</p>
+                        <p className="mt-1 text-[12px] text-[var(--danger)]">{statusError}</p>
                       )}
                     </>
                   ) : (
@@ -234,7 +234,7 @@ export default function DogProfilePage() {
               {found.dog.trainingTypes?.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {found.dog.trainingTypes.map((t) => (
-                    <span key={t} className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-[11px] text-[var(--foreground)]">
+                    <span key={t} className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-[12px] text-[var(--foreground)]">
                       {t}
                     </span>
                   ))}
@@ -286,9 +286,9 @@ export default function DogProfilePage() {
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-1.5">
                             <StarRating score={score} />
-                            <span className="text-[11px] text-[var(--muted)]">{score.toFixed(1)}/10</span>
+                            <span className="text-[12px] text-[var(--muted)]">{score.toFixed(1)}/10</span>
                           </div>
-                          <span className="text-[11px] text-[var(--muted)]">{session.date}</span>
+                          <span className="text-[12px] text-[var(--muted)]">{session.date}</span>
                         </div>
                         {summary && <p className="mt-1.5 line-clamp-2 text-[12px] text-[var(--muted-strong)]">{summary}</p>}
                       </Link>

@@ -659,9 +659,9 @@ export default function AgendaClientPage() {
                 {!isCollective ? (
                   <div className="grid gap-3.5 sm:grid-cols-2">
                     <label className="grid gap-1">
-                      <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
+                      <span className="flex items-center justify-between text-[12px] font-medium text-[var(--muted)]">
                         Cliente
-                        <Link href="/clientes" className="text-[9px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Cliente</Link>
+                        <Link href="/clientes" className="text-[12px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Cliente</Link>
                       </span>
                       <select
                         value={selectedClientId ?? ""}
@@ -680,9 +680,9 @@ export default function AgendaClientPage() {
                     </label>
 
                     <label className="grid gap-1">
-                      <span className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
+                      <span className="flex items-center justify-between text-[12px] font-medium text-[var(--muted)]">
                         Cão
-                        <Link href="/clientes" className="text-[9px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Cão</Link>
+                        <Link href="/clientes" className="text-[12px] font-semibold text-[var(--foreground)] hover:underline">+ Criar Cão</Link>
                       </span>
                       <select
                         value={selectedDogId ?? ""}
@@ -700,7 +700,7 @@ export default function AgendaClientPage() {
                 ) : (
                   <div className="grid gap-3.5 sm:grid-cols-2 animate-in fade-in duration-200">
                     <label className="grid gap-1">
-                      <span className="text-[11px] font-medium text-[var(--muted)]">Nome da Turma / Evento *</span>
+                      <span className="text-[12px] font-medium text-[var(--muted)]">Nome da Turma / Evento *</span>
                       <input
                         value={collectiveDogName}
                         onChange={(e) => setCollectiveDogName(e.target.value)}
@@ -710,7 +710,7 @@ export default function AgendaClientPage() {
                       />
                     </label>
                     <label className="grid gap-1">
-                      <span className="text-[11px] font-medium text-[var(--muted)]">Identificador do Grupo / Local</span>
+                      <span className="text-[12px] font-medium text-[var(--muted)]">Identificador do Grupo / Local</span>
                       <input
                         value={collectiveClientName}
                         onChange={(e) => setCollectiveClientName(e.target.value)}
@@ -719,7 +719,7 @@ export default function AgendaClientPage() {
                       />
                     </label>
                     <label className="grid gap-1 sm:col-span-2">
-                      <span className="text-[11px] font-medium text-[var(--muted)]">Foco / Atividades Coletivas</span>
+                      <span className="text-[12px] font-medium text-[var(--muted)]">Foco / Atividades Coletivas</span>
                       <input
                         value={collectivePlanName}
                         onChange={(e) => setCollectivePlanName(e.target.value)}
@@ -729,7 +729,7 @@ export default function AgendaClientPage() {
                     </label>
                     {/* Seletor de participantes já na criação da turma */}
                     <div className="sm:col-span-2">
-                      <p className="text-[11px] font-medium text-[var(--muted)]">
+                      <p className="text-[12px] font-medium text-[var(--muted)]">
                         👥 Cães participantes ({collectiveDogIds.length} selecionado{collectiveDogIds.length === 1 ? "" : "s"})
                       </p>
                       <div className="mt-1.5 grid max-h-44 gap-1 overflow-y-auto rounded-md border border-[var(--border)] bg-[var(--surface)] p-2 sm:grid-cols-2">
@@ -759,10 +759,10 @@ export default function AgendaClientPage() {
                           }),
                         )}
                         {clients.every((c) => c.dogs.length === 0) ? (
-                          <p className="text-[11px] text-[var(--muted)]">Nenhum cão cadastrado ainda.</p>
+                          <p className="text-[12px] text-[var(--muted)]">Nenhum cão cadastrado ainda.</p>
                         ) : null}
                       </div>
-                      <p className="mt-1 text-[10px] text-[var(--muted)]">
+                      <p className="mt-1 text-[12px] text-[var(--muted)]">
                         Cada cliente selecionado recebe a própria confirmação de presença. Dá pra ajustar depois no card da aula.
                       </p>
                     </div>
@@ -771,7 +771,7 @@ export default function AgendaClientPage() {
 
                 <div className="grid gap-3.5 sm:grid-cols-2">
                   <label className="grid gap-1">
-                    <span className="text-[11px] font-medium text-[var(--muted)]">Dia do Agendamento</span>
+                    <span className="text-[12px] font-medium text-[var(--muted)]">Dia do Agendamento</span>
                     <input
                       type="date"
                       value={formDateISO}
@@ -782,7 +782,7 @@ export default function AgendaClientPage() {
                   </label>
 
                   <label className="grid gap-1">
-                    <span className="text-[11px] font-medium text-[var(--muted)]">Horário</span>
+                    <span className="text-[12px] font-medium text-[var(--muted)]">Horário</span>
                     <input
                       type="time"
                       value={time}
@@ -795,7 +795,7 @@ export default function AgendaClientPage() {
 
                 <div className="grid gap-3.5 sm:grid-cols-2">
                   <label className="grid gap-1">
-                    <span className="text-[11px] font-medium text-[var(--muted)]">Status Inicial</span>
+                    <span className="text-[12px] font-medium text-[var(--muted)]">Status Inicial</span>
                     <select
                       value={status}
                       onChange={(event) => setStatus(event.target.value as EventStatus)}
@@ -809,7 +809,7 @@ export default function AgendaClientPage() {
                   </label>
 
                   <label className="grid gap-1">
-                    <span className="text-[11px] font-medium text-[var(--muted)]">Repetição (Recorrência)</span>
+                    <span className="text-[12px] font-medium text-[var(--muted)]">Repetição (Recorrência)</span>
                     <select
                       value={recurrence}
                       onChange={(event) => setRecurrence(event.target.value)}
@@ -900,7 +900,7 @@ export default function AgendaClientPage() {
                   key={filterValue}
                   type="button"
                   onClick={() => setStatusFilter(filterValue)}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-semibold ${
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-semibold ${
                     statusFilter === filterValue
                       ? "bg-[var(--accent)] text-white"
                       : "border border-[var(--border)] bg-white text-[var(--muted)]"
@@ -934,7 +934,7 @@ export default function AgendaClientPage() {
                   <p className={`text-2xl font-extrabold ${eventsForSelectedDay.length > 0 ? "text-[var(--card-blue)]" : "text-[var(--muted)]"}`}>
                     {eventsForSelectedDay.length}
                   </p>
-                  <p className="text-[10px] font-semibold text-[var(--muted)]">📅 Aulas no dia</p>
+                  <p className="text-[12px] font-semibold text-[var(--muted)]">📅 Aulas no dia</p>
                 </article>
                 <article
                   className={`rounded-md border p-2.5 text-center ${
@@ -946,7 +946,7 @@ export default function AgendaClientPage() {
                   <p className={`text-2xl font-extrabold ${totalInProgress > 0 ? "text-[var(--card-orange)]" : "text-[var(--muted)]"}`}>
                     {totalInProgress}
                   </p>
-                  <p className="text-[10px] font-semibold text-[var(--muted)]">⏰ Agendadas</p>
+                  <p className="text-[12px] font-semibold text-[var(--muted)]">⏰ Agendadas</p>
                 </article>
                 <article
                   className={`rounded-md border p-2.5 text-center ${
@@ -958,7 +958,7 @@ export default function AgendaClientPage() {
                   <p className={`text-2xl font-extrabold ${totalConfirmed > 0 ? "text-[var(--card-green)]" : "text-[var(--muted)]"}`}>
                     {totalConfirmed}
                   </p>
-                  <p className="text-[10px] font-semibold text-[var(--muted)]">✅ Concluídas</p>
+                  <p className="text-[12px] font-semibold text-[var(--muted)]">✅ Concluídas</p>
                 </article>
               </div>
 
@@ -997,23 +997,23 @@ export default function AgendaClientPage() {
                               </div>
                               <div>
                                 <p className="text-sm font-semibold text-slate-900">{event.dog}</p>
-                                <p className="text-[11px] text-[var(--muted)]">
+                                <p className="text-[12px] text-[var(--muted)]">
                                   {event.client} {event.sessionNumber ? `• Aula ${event.sessionNumber}` : ""}
                                 </p>
                               </div>
                             </div>
-                            <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase ${statusBadge(event.status as EventStatus)}`}>
+                            <span className={`rounded-full px-2 py-0.5 text-[12px] font-semibold uppercase ${statusBadge(event.status as EventStatus)}`}>
                               {statusLabel(event.status as EventStatus)}
                             </span>
                           </div>
 
                           {event.plan && (
-                            <p className="text-[10px] text-slate-500 bg-slate-50 rounded px-2 py-0.5 mt-2 inline-block">
+                            <p className="text-[12px] text-slate-500 bg-slate-50 rounded px-2 py-0.5 mt-2 inline-block">
                               Plan/Foco: {event.plan}
                             </p>
                           )}
 
-                          <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[10px] font-semibold">
+                          <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[12px] font-semibold">
                             <Link href={relatedMeta ? `/treinos/registro?clientId=${relatedMeta.clientId}&dogId=${relatedMeta.dogId}` : "/treinos/registro"} className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] py-1.5 text-[var(--foreground)] hover:bg-[var(--surface-2)]">
                               <TinyIcon name="notes" />
                               Registrar
@@ -1048,7 +1048,7 @@ export default function AgendaClientPage() {
                               type="button"
                               onClick={() => handleSetStatus(event.id, "Confirmado")}
                               disabled={busyEventId === event.id}
-                              className="rounded-full border border-sky-300 bg-[var(--surface-2)] px-2 py-0.5 text-[9px] font-semibold text-sky-800 disabled:opacity-50"
+                              className="rounded-full border border-sky-300 bg-[var(--surface-2)] px-2 py-0.5 text-[12px] font-semibold text-sky-800 disabled:opacity-50"
                             >
                               Concluir
                             </button>
@@ -1056,7 +1056,7 @@ export default function AgendaClientPage() {
                               type="button"
                               onClick={() => handleSetStatus(event.id, "Pendente")}
                               disabled={busyEventId === event.id}
-                              className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[9px] font-semibold text-amber-900 disabled:opacity-50"
+                              className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[12px] font-semibold text-amber-900 disabled:opacity-50"
                             >
                               Agendar
                             </button>
@@ -1064,7 +1064,7 @@ export default function AgendaClientPage() {
                               type="button"
                               onClick={() => handleSetStatus(event.id, "Cancelado")}
                               disabled={busyEventId === event.id}
-                              className="rounded-full border border-rose-300 bg-rose-50 px-2 py-0.5 text-[9px] font-semibold text-rose-800 disabled:opacity-50"
+                              className="rounded-full border border-rose-300 bg-rose-50 px-2 py-0.5 text-[12px] font-semibold text-rose-800 disabled:opacity-50"
                             >
                               Cancelar
                             </button>
@@ -1072,7 +1072,7 @@ export default function AgendaClientPage() {
                               type="button"
                               onClick={() => handleOpenReschedule(event)}
                               disabled={busyEventId === event.id}
-                              className="rounded-full border border-violet-300 bg-violet-50 px-2 py-0.5 text-[9px] font-semibold text-violet-800 disabled:opacity-50"
+                              className="rounded-full border border-violet-300 bg-violet-50 px-2 py-0.5 text-[12px] font-semibold text-violet-800 disabled:opacity-50"
                             >
                               Remarcar
                             </button>
@@ -1080,7 +1080,7 @@ export default function AgendaClientPage() {
                               <button
                                 type="button"
                                 onClick={() => setParticipantsOpenId(participantsOpenId === event.id ? null : event.id)}
-                                className="rounded-full border border-sky-300 bg-sky-50 px-2 py-0.5 text-[9px] font-semibold text-sky-800"
+                                className="rounded-full border border-sky-300 bg-sky-50 px-2 py-0.5 text-[12px] font-semibold text-sky-800"
                               >
                                 {participantsOpenId === event.id ? "Ocultar turma" : "Participantes"}
                               </button>
@@ -1120,7 +1120,7 @@ export default function AgendaClientPage() {
                             <button
                               type="button"
                               onClick={() => setCurrentDate(d)}
-                              className="mx-auto mt-3 block rounded-md border border-[var(--card-blue-border)] bg-[var(--card-blue-bg)] px-3 py-2 text-[11.5px] font-semibold text-[var(--card-blue)] hover:shadow-sm"
+                              className="mx-auto mt-3 block rounded-md border border-[var(--card-blue-border)] bg-[var(--card-blue-bg)] px-3 py-2 text-[12.5px] font-semibold text-[var(--card-blue)] hover:shadow-sm"
                             >
                               Próxima aula: {weekDays[d.getDay()]?.full} {d.getDate()}/{d.getMonth() + 1} às {next.time} — {next.dog} →
                             </button>
@@ -1174,7 +1174,7 @@ export default function AgendaClientPage() {
                           {isToday ? `HOJE · ${dayDate.getDate()}` : `Dia ${dayDate.getDate()}`}
                         </span>
                       </div>
-                      <span className={`text-[10px] font-bold ${dayEvents.length > 0 ? "text-[var(--card-blue)]" : "text-slate-400"}`}>
+                      <span className={`text-[12px] font-bold ${dayEvents.length > 0 ? "text-[var(--card-blue)]" : "text-slate-400"}`}>
                         {dayEvents.length} {dayEvents.length === 1 ? "aula" : "aulas"}
                       </span>
                     </header>
@@ -1186,13 +1186,13 @@ export default function AgendaClientPage() {
                             <span className="font-bold text-[var(--foreground)]">{e.time}</span>
                             <span className="truncate text-slate-800 font-medium">{e.dog} ({e.client})</span>
                           </div>
-                          <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
+                          <span className={`px-1.5 py-0.5 rounded-full text-[12px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
                             {statusLabel(e.status as EventStatus)}
                           </span>
                         </div>
                       ))}
                       {dayEvents.length === 0 && (
-                        <p className="text-[10px] text-slate-400 italic">Sem agendamentos.</p>
+                        <p className="text-[12px] text-slate-400 italic">Sem agendamentos.</p>
                       )}
                     </div>
                   </div>
@@ -1208,7 +1208,7 @@ export default function AgendaClientPage() {
             <section className="mt-3 bg-white border border-[var(--border)] rounded-md p-2 shadow-sm animate-in fade-in duration-200">
               
               {/* Weekday headers */}
-              <div className="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-500 uppercase tracking-wider pb-1">
+              <div className="grid grid-cols-7 gap-1 text-center font-bold text-[12px] text-slate-500 uppercase tracking-wider pb-1">
                 {weekDays.map(d => <span key={d.short}>{d.short}</span>)}
               </div>
 
@@ -1240,7 +1240,7 @@ export default function AgendaClientPage() {
                         isToday ? "border-2 border-[var(--card-blue)] bg-[var(--card-blue-bg)] font-extrabold shadow-sm" : ""
                       }`}
                     >
-                      <span className={`leading-none ${isToday ? "text-[13px] font-extrabold text-[var(--card-blue)]" : "text-[11px]"}`}>{dayDate.getDate()}</span>
+                      <span className={`leading-none ${isToday ? "text-[13px] font-extrabold text-[var(--card-blue)]" : "text-[12px]"}`}>{dayDate.getDate()}</span>
                       
                       {/* Event dots indicator */}
                       <div className="flex gap-0.5 justify-center mt-1">
@@ -1268,7 +1268,7 @@ export default function AgendaClientPage() {
                         <span className="font-bold text-[var(--foreground)]">{e.time}</span>
                         <span className="text-slate-800 font-medium">{e.dog} • {e.client}</span>
                       </div>
-                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
+                      <span className={`px-1.5 py-0.5 rounded-full text-[12px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
                         {statusLabel(e.status as EventStatus)}
                       </span>
                     </div>
@@ -1289,7 +1289,7 @@ export default function AgendaClientPage() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-bold text-slate-800">Novo Agendamento</p>
-                <p className="text-[10px] text-[var(--muted)]">Agende para o dia selecionado ({currentDate.getDate()}/{currentDate.getMonth()+1})</p>
+                <p className="text-[12px] text-[var(--muted)]">Agende para o dia selecionado ({currentDate.getDate()}/{currentDate.getMonth()+1})</p>
               </div>
               <button
                 type="button"
@@ -1317,7 +1317,7 @@ export default function AgendaClientPage() {
               </p>
               <div className="mt-4 grid gap-3">
                 <div className="grid gap-1">
-                  <label className="text-[11px] font-medium text-[var(--muted)]">Nova data</label>
+                  <label className="text-[12px] font-medium text-[var(--muted)]">Nova data</label>
                   <DateField
                     value={reschedDay}
                     onChange={(e) => setReschedDay(e.target.value)}
@@ -1325,7 +1325,7 @@ export default function AgendaClientPage() {
                   />
                 </div>
                 <div className="grid gap-1">
-                  <label className="text-[11px] font-medium text-[var(--muted)]">Novo horário</label>
+                  <label className="text-[12px] font-medium text-[var(--muted)]">Novo horário</label>
                   <input
                     type="time"
                     value={reschedTime}
