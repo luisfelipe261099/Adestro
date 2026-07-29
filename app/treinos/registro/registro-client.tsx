@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { plural } from "@/lib/labels";
 import { DateField } from "@/components/date-field";
 import { BEHAVIOR_BLOCKS } from "@/lib/behavior";
 import { AudioTranscriber } from "@/components/audio-transcriber";
@@ -35,7 +36,7 @@ function StarRating({ value, onChange }: StarRatingProps) {
                 ? "border-amber-300 bg-amber-50 text-amber-500"
                 : "border-[var(--border)] bg-white text-slate-300"
             }`}
-            aria-label={`Definir ${star} estrela(s)`}
+            aria-label={`Definir ${plural(star, "estrela", "estrelas")}`}
           >
             ★
           </button>
