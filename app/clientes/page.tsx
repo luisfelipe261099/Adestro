@@ -714,7 +714,9 @@ export default function ClientsPage() {
                   else router.push(`/clientes/${value}`);
                 }}
                 aria-label={entityKind === "caes" ? "Ir para um cão" : "Ir para um cliente"}
-                className="h-10 min-w-[170px] rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 text-[13px] text-[var(--foreground)]"
+                // No celular ocupa a linha inteira: dividindo espaço com a busca, as duas
+                // ficavam truncadas ("Buscar cliente pe…").
+                className="h-10 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 text-[13px] text-[var(--foreground)] sm:w-auto sm:min-w-[170px]"
               >
                 <option value="">
                   {entityKind === "caes" ? "Ir para um cão…" : "Ir para um cliente…"}
