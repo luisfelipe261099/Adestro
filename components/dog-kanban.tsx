@@ -118,17 +118,17 @@ export function DogKanban({ searchTerm }: { searchTerm: string }) {
             >
               <header className="flex items-center gap-2 px-1.5 py-1">
                 <span className={`h-2 w-2 rounded-full ${style.dot}`} aria-hidden />
-                <h3 className={`text-[11.5px] font-bold uppercase tracking-[0.08em] ${style.header}`}>
+                <h3 className={`text-[12.5px] font-bold uppercase tracking-[0.08em] ${style.header}`}>
                   {status}
                 </h3>
-                <span className="ml-auto text-[11px] font-semibold text-[var(--muted)]">
+                <span className="ml-auto text-[12px] font-semibold text-[var(--muted)]">
                   {column.length}
                 </span>
               </header>
 
               <div className="mt-1 space-y-2">
                 {column.length === 0 ? (
-                  <p className="rounded-md border border-dashed border-[var(--border)] px-2 py-4 text-center text-[11px] text-[var(--muted)]">
+                  <p className="rounded-md border border-dashed border-[var(--border)] px-2 py-4 text-center text-[12px] text-[var(--muted)]">
                     {dragging ? "Solte aqui" : "Nenhum cão"}
                   </p>
                 ) : (
@@ -168,7 +168,7 @@ export function DogKanban({ searchTerm }: { searchTerm: string }) {
                           >
                             {item.dog.name}
                           </Link>
-                          <p className="truncate text-[11px] text-[var(--muted)]">
+                          <p className="truncate text-[12px] text-[var(--muted)]">
                             {item.clientName}
                             {item.dog.breed ? ` · ${item.dog.breed}` : ""}
                           </p>
@@ -177,7 +177,7 @@ export function DogKanban({ searchTerm }: { searchTerm: string }) {
 
                       {item.sessionsTotal > 0 && (
                         <div className="mt-2">
-                          <div className="flex items-center justify-between gap-2 text-[11.5px]">
+                          <div className="flex items-center justify-between gap-2 text-[12.5px]">
                             <span className="font-medium text-[var(--foreground)]">
                               {item.sessionCount}/{item.sessionsTotal} aulas
                             </span>
@@ -213,7 +213,7 @@ export function DogKanban({ searchTerm }: { searchTerm: string }) {
                           )
                         }
                         aria-label={`Fase de ${item.dog.name}`}
-                        className="mt-2 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-1.5 py-1 text-[11px] text-[var(--muted)]"
+                        className="mt-2 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-1.5 py-1 text-[12px] text-[var(--muted)]"
                       >
                         {DOG_TRAINING_STATUSES.map((option) => (
                           <option key={option} value={option}>

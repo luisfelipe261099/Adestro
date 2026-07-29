@@ -652,7 +652,7 @@ export default function RegistroTreinoClientPage() {
       >
         <span className={`flex items-center gap-2 text-sm font-bold ${isExpanded ? "text-white" : "text-[var(--foreground)]"}`}>
           <span
-            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold ${
+            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[12px] font-extrabold ${
               isExpanded ? "bg-white/20 text-white" : "bg-[var(--accent)] text-white"
             }`}
           >
@@ -660,7 +660,7 @@ export default function RegistroTreinoClientPage() {
           </span>
           {name}
           {optional ? (
-            <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
+            <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[12px] font-medium uppercase tracking-wide text-[var(--muted)]">
               opcional
             </span>
           ) : null}
@@ -765,7 +765,7 @@ export default function RegistroTreinoClientPage() {
               </div>
               {sessionType === "Coletivo" && (
                 <div className="rounded-md border border-dashed border-[var(--border)] bg-white/60 p-3">
-                  <p className="text-[11px] text-[var(--muted)]">
+                  <p className="text-[12px] text-[var(--muted)]">
                     Marque os outros cães da turma. O conteúdo abaixo é aplicado a todos, mas cada cão recebe seu próprio registro e dever de casa.
                   </p>
                   <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
@@ -793,7 +793,7 @@ export default function RegistroTreinoClientPage() {
                     )}
                   </div>
                   {collectiveDogIds.length > 0 && (
-                    <p className="mt-2 text-[11px] font-semibold text-[var(--accent-text)]">
+                    <p className="mt-2 text-[12px] font-semibold text-[var(--accent-text)]">
                       Turma: {collectiveDogIds.length + 1} cães (incluindo {selectedDog?.name}).
                     </p>
                   )}
@@ -854,17 +854,17 @@ export default function RegistroTreinoClientPage() {
               {renderSectionHeader("1", "Atividades a serem trabalhadas + Comandos")}
               {expandedSection === "1" && (
                 <div className="p-4 space-y-3">
-                  <p className="text-[11px] text-[var(--muted)]">
+                  <p className="text-[12px] text-[var(--muted)]">
                     O pré-treino da sessão: selecione <b>o que será trabalhado hoje</b> (atividades, com observações) e, mais abaixo, os <b>comandos de obediência</b> (avaliados por estrelas ao longo da aula). A seleção fica salva para reutilizar.
                   </p>
 
                   {/* Pré-treino: plano combinado na última aula deste cão */}
                   {lastPlan ? (
                     <div className="rounded-md border border-[var(--card-purple-border)] bg-[var(--card-purple-bg)] p-3">
-                      <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--card-purple)]">
+                      <p className="text-[12px] font-bold uppercase tracking-wide text-[var(--card-purple)]">
                         📋 Pré-treino — plano combinado na última aula ({lastPlan.date})
                       </p>
-                      <ul className="mt-1.5 space-y-0.5 text-[11.5px] leading-5 text-[var(--foreground)]">
+                      <ul className="mt-1.5 space-y-0.5 text-[12.5px] leading-5 text-[var(--foreground)]">
                         {lastPlan.focus ? <li>• Foco: {lastPlan.focus}</li> : null}
                         {lastPlan.commands.length ? <li>• Comandos: {lastPlan.commands.join(", ")}</li> : null}
                         {lastPlan.tasks.length ? <li>• Tarefas que o tutor praticou em casa: {lastPlan.tasks.join(", ")}</li> : null}
@@ -872,14 +872,14 @@ export default function RegistroTreinoClientPage() {
                       <button
                         type="button"
                         onClick={importLastPlan}
-                        className="mt-2 rounded-full bg-[var(--card-purple)] px-3 py-1 text-[11px] font-bold text-white hover:opacity-90"
+                        className="mt-2 rounded-full bg-[var(--card-purple)] px-3 py-1 text-[12px] font-bold text-white hover:opacity-90"
                       >
                         Usar este plano nesta sessão →
                       </button>
                     </div>
                   ) : null}
 
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--accent-text)]">Atividades a serem trabalhadas</p>
+                  <p className="text-[12px] font-bold uppercase tracking-wide text-[var(--accent-text)]">Atividades a serem trabalhadas</p>
 
                   {activitySuggestions.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
@@ -888,7 +888,7 @@ export default function RegistroTreinoClientPage() {
                           key={s}
                           type="button"
                           onClick={() => addActivity(s)}
-                          className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-2.5 py-1 text-[11px] font-medium text-[var(--accent-text)] hover:bg-[var(--accent)]/10"
+                          className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-2.5 py-1 text-[12px] font-medium text-[var(--accent-text)] hover:bg-[var(--accent)]/10"
                         >
                           + {s}
                         </button>
@@ -912,7 +912,7 @@ export default function RegistroTreinoClientPage() {
                           <button
                             type="button"
                             onClick={() => removeActivity(act.id)}
-                            className="text-[10px] font-bold text-rose-500 hover:underline"
+                            className="text-[12px] font-bold text-rose-500 hover:underline"
                           >
                             Excluir
                           </button>
@@ -940,7 +940,7 @@ export default function RegistroTreinoClientPage() {
                     </button>
                   </div>
                   {activities.length > 0 && (
-                    <button type="button" onClick={() => saveTemplates("activities")} className="text-[11px] font-semibold text-[var(--accent-text)] hover:underline">
+                    <button type="button" onClick={() => saveTemplates("activities")} className="text-[12px] font-semibold text-[var(--accent-text)] hover:underline">
                       Salvar estas nos meus modelos
                     </button>
                   )}
@@ -950,8 +950,8 @@ export default function RegistroTreinoClientPage() {
               {/* Comandos de obediência — 2ª parte da Seção 1 (mesmo acordeão, sem header próprio) */}
               {expandedSection === "1" && (
                 <div className="px-4 pb-4 space-y-3 border-t border-[var(--border)] pt-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--accent-text)]">Comandos de obediência (avalie por estrelas)</p>
-                  <p className="text-[11px] text-[var(--muted)]">
+                  <p className="text-[12px] font-bold uppercase tracking-wide text-[var(--accent-text)]">Comandos de obediência (avalie por estrelas)</p>
+                  <p className="text-[12px] text-[var(--muted)]">
                     Escolha dos seus comandos salvos ou adicione novos e dê estrelas (1-5) ao desempenho.
                   </p>
 
@@ -962,7 +962,7 @@ export default function RegistroTreinoClientPage() {
                           key={s}
                           type="button"
                           onClick={() => addCommand(s)}
-                          className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-2.5 py-1 text-[11px] font-medium text-[var(--accent-text)] hover:bg-[var(--accent)]/10"
+                          className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-2.5 py-1 text-[12px] font-medium text-[var(--accent-text)] hover:bg-[var(--accent)]/10"
                         >
                           + {s}
                         </button>
@@ -978,7 +978,7 @@ export default function RegistroTreinoClientPage() {
                           <button
                             type="button"
                             onClick={() => removeCommand(cmd.id)}
-                            className="text-[10px] font-bold text-rose-500 hover:underline"
+                            className="text-[12px] font-bold text-rose-500 hover:underline"
                           >
                             Excluir
                           </button>
@@ -1010,7 +1010,7 @@ export default function RegistroTreinoClientPage() {
                     </button>
                   </div>
                   {commands.length > 0 && (
-                    <button type="button" onClick={() => saveTemplates("commands")} className="text-[11px] font-semibold text-[var(--accent-text)] hover:underline">
+                    <button type="button" onClick={() => saveTemplates("commands")} className="text-[12px] font-semibold text-[var(--accent-text)] hover:underline">
                       Salvar estes nos meus modelos
                     </button>
                   )}
@@ -1035,7 +1035,7 @@ export default function RegistroTreinoClientPage() {
               {renderSectionHeader("3", "Notas Privadas (Confidencial)", true)}
               {expandedSection === "3" && (
                 <div className="p-4">
-                  <p className="mb-2 text-[10px] text-rose-700">Visível apenas para adestradores. Nunca compartilhado com o cliente.</p>
+                  <p className="mb-2 text-[12px] text-rose-700">Visível apenas para adestradores. Nunca compartilhado com o cliente.</p>
                   <textarea
                     value={privateNotes}
                     onChange={(e) => setPrivateNotes(e.target.value)}
@@ -1052,7 +1052,7 @@ export default function RegistroTreinoClientPage() {
                 <div className="p-4 space-y-3.5">
                   <div>
                     <h4 className="text-xs font-bold text-[var(--foreground)]">Ditado de Notas por Voz</h4>
-                    <p className="text-[10px] text-[var(--muted)]">Use o microfone do dispositivo para transcrever observações. O áudio fica no seu navegador.</p>
+                    <p className="text-[12px] text-[var(--muted)]">Use o microfone do dispositivo para transcrever observações. O áudio fica no seu navegador.</p>
 
                     <AudioTranscriber
                       className="mt-2"
@@ -1076,7 +1076,7 @@ export default function RegistroTreinoClientPage() {
 
                   <div>
                     <h4 className="text-xs font-bold text-[var(--foreground)]">Análise por Inteligência Artificial (Adestro AI)</h4>
-                    <p className="text-[10px] text-[var(--muted)]">Gera automaticamente o resumo para o cliente, plano do próximo treino e checklist de tarefas.</p>
+                    <p className="text-[12px] text-[var(--muted)]">Gera automaticamente o resumo para o cliente, plano do próximo treino e checklist de tarefas.</p>
 
                     <button
                       type="button"
@@ -1113,7 +1113,7 @@ export default function RegistroTreinoClientPage() {
               {renderSectionHeader("5", "Galeria de Mídias do Treino", true)}
               {expandedSection === "5" && (
                 <div className="p-4 space-y-3">
-                  <p className="text-[11px] text-[var(--muted)]">Anexe fotos demonstrativas da aula. O sistema comprime as imagens.</p>
+                  <p className="text-[12px] text-[var(--muted)]">Anexe fotos demonstrativas da aula. O sistema comprime as imagens.</p>
 
                   <input
                     type="file"
@@ -1135,7 +1135,7 @@ export default function RegistroTreinoClientPage() {
                           <button
                             type="button"
                             onClick={() => removeMedia(item.id)}
-                            className="mt-1 w-full rounded bg-rose-50 text-[10px] font-bold text-rose-700 py-0.5 border border-rose-100"
+                            className="mt-1 w-full rounded bg-rose-50 text-[12px] font-bold text-rose-700 py-0.5 border border-rose-100"
                           >
                             Remover
                           </button>
@@ -1150,7 +1150,7 @@ export default function RegistroTreinoClientPage() {
               {renderSectionHeader("6", "Plano do Próximo Treino", true)}
               {expandedSection === "6" && (
                 <div className="p-4 space-y-2">
-                  <p className="text-[11px] text-[var(--muted)]">
+                  <p className="text-[12px] text-[var(--muted)]">
                     Liste o que fazer no próximo encontro (foco + comandos a reforçar). Use <strong>Incluir</strong> para adicionar cada item.
                   </p>
                   <div className="space-y-1.5">
@@ -1160,7 +1160,7 @@ export default function RegistroTreinoClientPage() {
                         <button
                           type="button"
                           onClick={() => setNextPlan(nextPlan.filter((_, idx) => idx !== i))}
-                          className="text-[10px] font-bold text-rose-500 hover:underline"
+                          className="text-[12px] font-bold text-rose-500 hover:underline"
                         >
                           Excluir
                         </button>
@@ -1201,7 +1201,7 @@ export default function RegistroTreinoClientPage() {
               {renderSectionHeader("7", "Dever de Casa — Tarefas do Cliente", true)}
               {expandedSection === "7" && (
                 <div className="p-4 space-y-3">
-                  <p className="text-[11px] text-[var(--muted)]">
+                  <p className="text-[12px] text-[var(--muted)]">
                     Checklist de tarefas de casa para o cliente no portal. Defina a frequência de cada tarefa abaixo — assim o cliente marca todos os dias (ou nos dias certos), não só uma vez.
                   </p>
 
@@ -1216,7 +1216,7 @@ export default function RegistroTreinoClientPage() {
                               prev.some((t) => t.text === s) ? prev : [...prev, { text: s, recurrence: "daily", weekdays: [] }],
                             )
                           }
-                          className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-2.5 py-1 text-[11px] font-medium text-[var(--accent-text)] hover:bg-[var(--accent)]/10"
+                          className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-2.5 py-1 text-[12px] font-medium text-[var(--accent-text)] hover:bg-[var(--accent)]/10"
                         >
                           + {s}
                         </button>
@@ -1232,7 +1232,7 @@ export default function RegistroTreinoClientPage() {
                           <button
                             type="button"
                             onClick={() => setNextTasks(nextTasks.filter((_, idx) => idx !== i))}
-                            className="text-[10px] font-bold text-rose-500 hover:underline"
+                            className="text-[12px] font-bold text-rose-500 hover:underline"
                           >
                             Excluir
                           </button>
@@ -1249,7 +1249,7 @@ export default function RegistroTreinoClientPage() {
                               onClick={() =>
                                 setNextTasks((prev) => prev.map((t, idx) => (idx === i ? { ...t, recurrence: opt.key } : t)))
                               }
-                              className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
+                              className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${
                                 task.recurrence === opt.key
                                   ? "bg-[var(--accent)] text-white"
                                   : "border border-[var(--border)] bg-white text-[var(--muted)]"
@@ -1276,7 +1276,7 @@ export default function RegistroTreinoClientPage() {
                                       ),
                                     )
                                   }
-                                  className={`h-6 w-8 rounded-md text-[10px] font-semibold ${
+                                  className={`h-6 w-8 rounded-md text-[12px] font-semibold ${
                                     on ? "bg-[var(--accent)] text-white" : "border border-[var(--border)] bg-white text-[var(--muted)]"
                                   }`}
                                 >
@@ -1318,7 +1318,7 @@ export default function RegistroTreinoClientPage() {
                     </button>
                   </div>
                   {nextTasks.length > 0 && (
-                    <button type="button" onClick={() => saveTemplates("tasks")} className="text-[11px] font-semibold text-[var(--accent-text)] hover:underline">
+                    <button type="button" onClick={() => saveTemplates("tasks")} className="text-[12px] font-semibold text-[var(--accent-text)] hover:underline">
                       Salvar estas nos meus modelos
                     </button>
                   )}
@@ -1329,17 +1329,17 @@ export default function RegistroTreinoClientPage() {
               {renderSectionHeader("8", "Evolução Comportamental", true)}
               {expandedSection === "8" && (
                 <div className="p-4 space-y-4">
-                  <p className="text-[11px] text-[var(--muted)]">
+                  <p className="text-[12px] text-[var(--muted)]">
                     Dê uma nota (0–5) para cada área. Em TODAS as escalas, mais estrelas = melhor —
                     inclusive nas emocionais (5/5 em Estabilidade = cão calmo e equilibrado).
                   </p>
                   {BEHAVIOR_BLOCKS.map((block) => (
                     <div key={block.key} className="rounded-md border border-[var(--border)] overflow-hidden">
                       <div className={`px-3 py-2 ${block.key === "emocional" ? "bg-[var(--card-purple-bg)]" : "bg-[var(--card-blue-bg)]"}`}>
-                        <p className={`text-[11px] font-bold uppercase tracking-wide ${block.key === "emocional" ? "text-[var(--card-purple)]" : "text-[var(--card-blue)]"}`}>
+                        <p className={`text-[12px] font-bold uppercase tracking-wide ${block.key === "emocional" ? "text-[var(--card-purple)]" : "text-[var(--card-blue)]"}`}>
                           {block.title}
                         </p>
-                        <p className="text-[10px] text-[var(--muted)]">{block.subtitle}</p>
+                        <p className="text-[12px] text-[var(--muted)]">{block.subtitle}</p>
                       </div>
                       <div className="divide-y divide-[var(--border)]">
                         {block.categories.map((cat) => (
@@ -1350,7 +1350,7 @@ export default function RegistroTreinoClientPage() {
                             <div className="min-w-0">
                               <span className="text-xs font-medium text-[var(--foreground)]">{cat.label}</span>
                               {cat.hint ? (
-                                <p className="text-[10px] leading-4 text-[var(--muted)]">{cat.hint}</p>
+                                <p className="text-[12px] leading-4 text-[var(--muted)]">{cat.hint}</p>
                               ) : null}
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
@@ -1372,7 +1372,7 @@ export default function RegistroTreinoClientPage() {
 
             </div>
 
-            {templatesMsg && <p className="text-[11px] font-medium text-[var(--accent-text)]">{templatesMsg}</p>}
+            {templatesMsg && <p className="text-[12px] font-medium text-[var(--accent-text)]">{templatesMsg}</p>}
             {error && <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
             {message && <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</p>}
 

@@ -99,7 +99,7 @@ export function AdminDashboard() {
       <section data-tour="admin-actions" className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Comece por aqui</p>
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-slate-500">Comece por aqui</p>
             <h2 className="mt-1 text-xl font-semibold text-slate-900 sm:text-2xl">O que você quer fazer agora?</h2>
           </div>
           <button
@@ -138,7 +138,7 @@ export function AdminDashboard() {
               <span className="text-xl">{stat.icon}</span>
             </div>
             <p className="mt-1 text-sm font-semibold text-slate-700">{stat.label}</p>
-            <p className="mt-0.5 text-[11px] text-slate-500">{stat.subtext}</p>
+            <p className="mt-0.5 text-[12px] text-slate-500">{stat.subtext}</p>
           </div>
         ))}
       </div>
@@ -214,7 +214,7 @@ export function AdminDashboard() {
         {/* Direita */}
         <div className="space-y-5">
           <section className="rounded-xl border border-slate-700 bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Seu acesso</p>
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-slate-400">Seu acesso</p>
             <h3 className="mt-2 text-xl font-semibold text-white">Administrador</h3>
             <p className="mt-2 text-sm leading-6 text-slate-300">
               Contas, planos, faturamento e desempenho da base em um só lugar.

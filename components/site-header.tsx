@@ -195,7 +195,7 @@ export function SiteHeader() {
                             <div className="min-w-0 flex-1">
                               <div className="font-medium text-[var(--foreground)]">{item.label}</div>
                               {item.description ? (
-                                <div className="text-[11.5px] text-[var(--muted)]">{item.description}</div>
+                                <div className="text-[12.5px] text-[var(--muted)]">{item.description}</div>
                               ) : null}
                             </div>
                           </Link>
@@ -225,14 +225,14 @@ export function SiteHeader() {
                 <div className="relative ml-1 hidden lg:block">
                   <details className="group">
                     <summary className="flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 hover:bg-[var(--surface-2)] marker:hidden">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-[10px] font-semibold text-white">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-[12px] font-semibold text-white">
                         {initial}
                       </span>
                       <span className="max-w-[120px] truncate text-[12.5px] font-medium text-[var(--foreground)]">{displayName}</span>
                       <IconChevronDown className="h-3.5 w-3.5 text-[var(--muted)] group-open:rotate-180 transition-transform" />
                     </summary>
                     <div className="absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-lg">
-                      <div className="border-b border-[var(--border)] px-3 py-2 text-[11px] text-[var(--muted)]">{trainerEmail}</div>
+                      <div className="border-b border-[var(--border)] px-3 py-2 text-[12px] text-[var(--muted)]">{trainerEmail}</div>
                       <button
                         type="button"
                         onClick={handleLogout}
@@ -305,7 +305,7 @@ export function SiteHeader() {
                 </span>
                 <div className="min-w-0">
                   <div className="truncate text-[13px] font-semibold text-[var(--foreground)]">{displayName}</div>
-                  <div className="truncate text-[11px] text-[var(--muted)]">{trainerEmail}</div>
+                  <div className="truncate text-[12px] text-[var(--muted)]">{trainerEmail}</div>
                 </div>
               </div>
               <button
@@ -319,7 +319,7 @@ export function SiteHeader() {
             </header>
 
             <nav className="flex-1 overflow-y-auto p-2">
-              <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">
+              <div className="px-2 py-1.5 text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">
                 {userRole === "admin" ? "Páginas do administrativo" : "Principal"}
               </div>
               {primaryNav.map((item) => {
@@ -341,7 +341,7 @@ export function SiteHeader() {
                     ) : null}
                     <div className="min-w-0">
                       <div className="text-[13px] font-medium text-[var(--foreground)]">{item.label}</div>
-                      {item.description ? <div className="text-[11px] text-[var(--muted)]">{item.description}</div> : null}
+                      {item.description ? <div className="text-[12px] text-[var(--muted)]">{item.description}</div> : null}
                     </div>
                   </Link>
                 );
@@ -349,7 +349,7 @@ export function SiteHeader() {
 
               {secondaryNav.length ? (
                 <>
-                  <div className="mt-3 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">
+                  <div className="mt-3 px-2 py-1.5 text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">
                     Mais
                   </div>
                   {secondaryNav.map((item) => (
@@ -360,7 +360,7 @@ export function SiteHeader() {
 
               {userRole === "trainer" ? (
                 <>
-                  <div className="mt-3 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">
+                  <div className="mt-3 px-2 py-1.5 text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">
                     Conta
                   </div>
                   <NavLink

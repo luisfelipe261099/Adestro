@@ -53,7 +53,7 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
           </p>
         </div>
         <div className="flex h-12 w-12 flex-col items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] text-center">
-          <p className="text-[8.5px] font-semibold uppercase tracking-wide text-[var(--muted)]">Nível</p>
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-[var(--muted)]">Nível</p>
           <p className="text-[17px] font-semibold leading-none text-[var(--foreground)]">{state.level}</p>
         </div>
       </div>
@@ -79,15 +79,15 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <div className="rounded-md border border-[var(--border)] bg-white p-3">
-          <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">Pontos totais</p>
+          <p className="text-[12px] uppercase tracking-wider text-[var(--muted)]">Pontos totais</p>
           <p className="mt-1 text-2xl font-semibold text-[var(--foreground)]">{state.points}</p>
         </div>
         <div className="rounded-md border border-[var(--border)] bg-white p-3">
-          <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">Sequência diária</p>
+          <p className="text-[12px] uppercase tracking-wider text-[var(--muted)]">Sequência diária</p>
           <p className="mt-1 text-2xl font-semibold text-[var(--foreground)]">🔥 {state.streakDays}</p>
         </div>
         <div className="rounded-md border border-[var(--border)] bg-white p-3">
-          <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">Conquistas</p>
+          <p className="text-[12px] uppercase tracking-wider text-[var(--muted)]">Conquistas</p>
           <p className="mt-1 text-2xl font-semibold text-[var(--foreground)]">{earnedBadges.length}/{state.badges.length}</p>
         </div>
       </div>
@@ -113,9 +113,9 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
           <StarPicker value={state.trainerRating} onChange={onRateTrainer} />
         </div>
         {state.trainerRating > 0 ? (
-          <p className="mt-1 text-[11px] text-emerald-700">Obrigado pela avaliação! Ela ajuda a melhorar o serviço.</p>
+          <p className="mt-1 text-[12px] text-emerald-700">Obrigado pela avaliação! Ela ajuda a melhorar o serviço.</p>
         ) : (
-          <p className="mt-1 text-[11px] text-[var(--muted)]">+25 pts ao avaliar pela primeira vez.</p>
+          <p className="mt-1 text-[12px] text-[var(--muted)]">+25 pts ao avaliar pela primeira vez.</p>
         )}
       </div>
 
@@ -129,7 +129,7 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
               title={badge.description}
             >
               <p className="text-2xl">{badge.icon}</p>
-              <p className="mt-1 text-[11px] font-semibold text-amber-900">{badge.label}</p>
+              <p className="mt-1 text-[12px] font-semibold text-amber-900">{badge.label}</p>
             </div>
           ))}
           {lockedBadges.slice(0, 6).map((badge) => (
@@ -139,13 +139,13 @@ export function GamificationPanel({ state, trainerName, onRateTrainer, lastEarne
               title={badge.description}
             >
               <p className="text-2xl grayscale">{badge.icon}</p>
-              <p className="mt-1 text-[11px] font-semibold text-slate-500">{badge.label}</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-500">{badge.label}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="mt-4 rounded-md border border-[var(--border)] bg-white/80 px-3 py-2 text-[11px] text-[#245d84]">
+      <div className="mt-4 rounded-md border border-[var(--border)] bg-white/80 px-3 py-2 text-[12px] text-[#245d84]">
         <strong>Como pontuar:</strong> concluir tarefa (+20) • enviar evidência de tarefa (+15) • assistir vídeo do treino (+15) • avaliar aula (+15) • avaliar adestrador (+25) • enviar comentário (+10) • visita diária (+5).
       </div>
     </article>

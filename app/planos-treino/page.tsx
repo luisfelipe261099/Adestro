@@ -71,7 +71,7 @@ export default function PlanosTreinoPage() {
                     {c.servicePackage?.name || c.name}
                   </h2>
                   <span
-                    className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                    className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[12px] font-semibold ${
                       c.status === "Ativo"
                         ? "bg-emerald-50 text-emerald-700"
                         : "bg-[var(--surface-2)] text-[var(--muted)]"
@@ -89,7 +89,7 @@ export default function PlanosTreinoPage() {
                   <span className="font-bold text-[var(--foreground)]">{brl(c.amount)}</span>
                 </div>
                 {c.startDate ? (
-                  <p className="mt-1 text-[10.5px] text-[var(--muted)]">Início: {c.startDate}</p>
+                  <p className="mt-1 text-[12px] text-[var(--muted)]">Início: {c.startDate}</p>
                 ) : null}
               </section>
             ))}

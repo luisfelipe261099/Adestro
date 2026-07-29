@@ -387,7 +387,7 @@ function AdminTutorial() {
             >
               <p className="text-sm font-semibold text-[var(--foreground)]">
                 {area.title}
-                <span className="ml-2 text-[11px] font-normal text-[var(--muted)]">{area.href}</span>
+                <span className="ml-2 text-[12px] font-normal text-[var(--muted)]">{area.href}</span>
               </p>
               <p className="mt-1 text-[13px] leading-6 text-[var(--muted)]">{area.text}</p>
             </Link>
@@ -516,7 +516,7 @@ function TrainerTutorial() {
                 ))}
               </ul>
               {step.shortcut ? (
-                <p className="mt-3 inline-block rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[11px] font-semibold text-[var(--muted)]">
+                <p className="mt-3 inline-block rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[12px] font-semibold text-[var(--muted)]">
                   {step.shortcut}
                 </p>
               ) : null}
@@ -567,7 +567,7 @@ function TrainerTutorial() {
             >
               <p className="text-sm font-semibold text-[var(--foreground)]">
                 {screen.label}
-                <span className="ml-2 text-[11px] font-normal text-[var(--muted)]">{screen.href}</span>
+                <span className="ml-2 text-[12px] font-normal text-[var(--muted)]">{screen.href}</span>
               </p>
               <p className="mt-0.5 text-[12px] leading-5 text-[var(--muted)]">{screen.text}</p>
             </Link>

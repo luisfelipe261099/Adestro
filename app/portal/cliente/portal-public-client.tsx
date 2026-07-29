@@ -549,14 +549,14 @@ export function PortalPublicClient({ token }: { token: string }) {
         <div className="flex justify-end gap-2">
           <Link
             href="/tutorial/cliente"
-            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--muted)] shadow-sm transition hover:bg-slate-50 hover:text-[var(--foreground)]"
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[12px] font-semibold text-[var(--muted)] shadow-sm transition hover:bg-slate-50 hover:text-[var(--foreground)]"
           >
             📖 Guia completo
           </Link>
           <button
             type="button"
             onClick={() => startTutorTour(TUTOR_STEPS, TUTOR_TOUR_DONE_KEY)}
-            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[11px] font-semibold text-[var(--muted)] shadow-sm transition hover:bg-slate-50 hover:text-[var(--foreground)]"
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-white px-3 py-1 text-[12px] font-semibold text-[var(--muted)] shadow-sm transition hover:bg-slate-50 hover:text-[var(--foreground)]"
           >
             ✨ Como usar
           </button>
@@ -566,7 +566,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           <div className="rounded-md border border-[var(--border-strong)] bg-[var(--surface-2)] p-4 text-sky-900 shadow-sm animate-in fade-in duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Confirmar presença</p>
+                <p className="text-[12px] font-bold uppercase tracking-wider text-sky-700">Confirmar presença</p>
                 <h3 className="mt-0.5 font-semibold text-sm">
                   Próximo treino: {pendingConfirmEvent.day} às {pendingConfirmEvent.time}
                 </h3>
@@ -695,16 +695,16 @@ export function PortalPublicClient({ token }: { token: string }) {
                 {/* Informações de Nível do Cão */}
                 <div className="mt-2.5 space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="rounded bg-sky-500/25 px-1.5 py-0.5 text-[10px] font-semibold text-sky-300 border border-sky-500/35">
+                    <span className="rounded bg-sky-500/25 px-1.5 py-0.5 text-[12px] font-semibold text-sky-300 border border-sky-500/35">
                       Nível {gam.state.level}
                     </span>
-                    <span className="text-[11px] font-medium text-slate-200">
+                    <span className="text-[12px] font-medium text-slate-200">
                       {gam.state.dogRank}
                     </span>
                   </div>
                   {/* Barra de Progresso Canino */}
                   <div className="w-48">
-                    <div className="flex items-center justify-between text-[9px] text-slate-400">
+                    <div className="flex items-center justify-between text-[12px] text-slate-400">
                       <span>{gam.state.xpInLevel} / 100 XP</span>
                     </div>
                     <div className="mt-0.5 h-1.5 w-full rounded-full bg-slate-800">
@@ -763,7 +763,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                           title={`${plural(d.count, "treino", "treinos")}`}
                         />
                       </div>
-                      <span className="text-[11px] font-medium text-[var(--muted)]">{d.label}</span>
+                      <span className="text-[12px] font-medium text-[var(--muted)]">{d.label}</span>
                     </div>
                   );
                 })}
@@ -811,19 +811,19 @@ export function PortalPublicClient({ token }: { token: string }) {
                         const doneCount = days.filter((d) => d.done).length;
                         return (
                           <div className="mt-1.5">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-semibold text-[var(--accent-text)]">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[12px] font-semibold text-[var(--accent-text)]">
                               🔁 {label}
                             </span>
                             <div className="mt-1.5 flex items-center gap-1">
                               {days.map((d, idx) => (
                                 <div key={idx} className="flex flex-col items-center">
-                                  <span className="text-[8px] text-[var(--muted)]">{d.name}</span>
-                                  <span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold ${d.done ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                                  <span className="text-[12px] text-[var(--muted)]">{d.name}</span>
+                                  <span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[12px] font-bold ${d.done ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"}`}>
                                     {d.done ? "✓" : ""}
                                   </span>
                                 </div>
                               ))}
-                              <span className="ml-1 text-[10px] font-semibold text-[var(--muted)]">{doneCount}/7 dias</span>
+                              <span className="ml-1 text-[12px] font-semibold text-[var(--muted)]">{doneCount}/7 dias</span>
                             </div>
                           </div>
                         );
@@ -841,7 +841,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                           className="relative h-12 w-12 overflow-hidden rounded-md border border-slate-200 bg-slate-50 hover:opacity-85 transition flex-shrink-0"
                         >
                           {task.evidenceUrl.startsWith("data:video") ? (
-                            <div className="h-full w-full flex items-center justify-center bg-slate-900 text-white text-[9px] font-bold">
+                            <div className="h-full w-full flex items-center justify-center bg-slate-900 text-white text-[12px] font-bold">
                               🎥 Vídeo
                             </div>
                           ) : (
@@ -857,9 +857,9 @@ export function PortalPublicClient({ token }: { token: string }) {
                         <div>
                           <p className="font-semibold text-emerald-700 flex items-center gap-1">
                             <span>✅ Evidência Enviada</span>
-                            <span className="rounded bg-emerald-100 text-emerald-800 px-1 py-0.2 text-[8px] font-bold">+15 XP</span>
+                            <span className="rounded bg-emerald-100 text-emerald-800 px-1 py-0.2 text-[12px] font-bold">+15 XP</span>
                           </p>
-                          <label className="cursor-pointer text-[var(--foreground)] hover:underline font-semibold mt-0.5 block text-[10px]">
+                          <label className="cursor-pointer text-[var(--foreground)] hover:underline font-semibold mt-0.5 block text-[12px]">
                             Alterar arquivo
                             <input
                               type="file"
@@ -877,13 +877,13 @@ export function PortalPublicClient({ token }: { token: string }) {
                     ) : (
                       <div className="flex items-center justify-between w-full text-slate-500">
                         <span>Nenhuma evidência enviada</span>
-                        <label className="cursor-pointer inline-flex items-center gap-1 rounded-md border border-[#145a82] bg-white px-2.5 py-1.5 font-bold text-[var(--foreground)] hover:bg-slate-50 transition text-[11px]">
+                        <label className="cursor-pointer inline-flex items-center gap-1 rounded-md border border-[#145a82] bg-white px-2.5 py-1.5 font-bold text-[var(--foreground)] hover:bg-slate-50 transition text-[12px]">
                           {uploadingTaskId === task.id ? (
                             <span>Enviando...</span>
                           ) : (
                             <>
                               <span>📸 Prova de Treino</span>
-                              <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded ml-1">+15 pts</span>
+                              <span className="text-[12px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded ml-1">+15 pts</span>
                             </>
                           )}
                           <input
@@ -926,7 +926,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="font-semibold text-slate-900">{session.date} - {session.title}</p>
-                        <p className="text-[10px] text-[var(--muted)]">{hasDetailedSessions ? "Treino Estruturado" : "Treino Simples"}</p>
+                        <p className="text-[12px] text-[var(--muted)]">{hasDetailedSessions ? "Treino Estruturado" : "Treino Simples"}</p>
                       </div>
                       <button
                         type="button"
@@ -945,14 +945,14 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção A: Atividades */}
                               {ds.activities && ds.activities.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">A. Atividades Trabalhadas</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">A. Atividades Trabalhadas</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.activities.map((act: any, idx: number) => (
                                       <li key={idx} className="flex items-start gap-1.5">
                                         <span>{act.completed ? "✅" : "❌"}</span>
                                         <div>
                                           <span className="font-semibold text-slate-800">{act.name}</span>
-                                          {act.notes && <p className="text-[10px] text-slate-500 italic mt-0.5">{act.notes}</p>}
+                                          {act.notes && <p className="text-[12px] text-slate-500 italic mt-0.5">{act.notes}</p>}
                                         </div>
                                       </li>
                                     ))}
@@ -963,7 +963,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção B: Comandos */}
                               {ds.commands && ds.commands.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">B. Comandos de Obediência</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">B. Comandos de Obediência</p>
                                   <ul className="mt-1 space-y-1.5 pl-1">
                                     {ds.commands.map((cmd: any, idx: number) => (
                                       <li key={idx}>
@@ -971,7 +971,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                                           <span className="font-semibold text-slate-800">{cmd.command}</span>
                                           <span className="text-amber-500">{"★".repeat(cmd.rating || 0)}</span>
                                         </div>
-                                        {cmd.notes && <p className="text-[10px] text-slate-500 italic mt-0.5">{cmd.notes}</p>}
+                                        {cmd.notes && <p className="text-[12px] text-slate-500 italic mt-0.5">{cmd.notes}</p>}
                                       </li>
                                     ))}
                                   </ul>
@@ -981,7 +981,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção C: Resumo Público */}
                               {ds.description && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">C. Resumo do Adestrador</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">C. Resumo do Adestrador</p>
                                   <p className="mt-1 text-slate-600 bg-slate-50 p-2.5 rounded-md leading-relaxed">{ds.description}</p>
                                 </div>
                               )}
@@ -989,7 +989,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção E: IA Resumo */}
                               {ds.aiSummary && (
                                 <div className="rounded-md border border-purple-100 bg-purple-50/40 p-3 space-y-1">
-                                  <p className="font-bold text-purple-800 uppercase tracking-[0.08em] text-[9px]">✨ Análise de IA do Treino</p>
+                                  <p className="font-bold text-purple-800 uppercase tracking-[0.08em] text-[12px]">✨ Análise de IA do Treino</p>
                                   <p className="text-purple-950 leading-relaxed italic">"{ds.aiSummary}"</p>
                                 </div>
                               )}
@@ -997,7 +997,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção G: Próximo Foco */}
                               {ds.nextFocus && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">G. Próximo Foco das Aulas</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">G. Próximo Foco das Aulas</p>
                                   <p className="mt-1 text-slate-700 leading-relaxed font-semibold">🎯 {ds.nextFocus}</p>
                                 </div>
                               )}
@@ -1005,10 +1005,10 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção H: Próximos Comandos */}
                               {ds.nextCommands && ds.nextCommands.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">H. Próximos Comandos a Trabalhar</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">H. Próximos Comandos a Trabalhar</p>
                                   <div className="mt-1 flex flex-wrap gap-1">
                                     {ds.nextCommands.map((nc: string, idx: number) => (
-                                      <span key={idx} className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-800 border border-slate-200">{nc}</span>
+                                      <span key={idx} className="rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-slate-800 border border-slate-200">{nc}</span>
                                     ))}
                                   </div>
                                 </div>
@@ -1017,7 +1017,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                               {/* Seção I: Dever de Casa */}
                               {ds.nextTasks && ds.nextTasks.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[9px]">I. Tarefas para Fazer em Casa</p>
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">I. Tarefas para Fazer em Casa</p>
                                   <ul className="mt-1 space-y-1 pl-1">
                                     {ds.nextTasks.map((t: string, idx: number) => (
                                       <li key={idx} className="text-slate-700">🏠 {t}</li>
@@ -1078,12 +1078,12 @@ export function PortalPublicClient({ token }: { token: string }) {
                   <Image src={item.src} alt={`Treino ${item.sessionTitle}`} fill sizes="(min-width: 768px) 8rem, 30vw" unoptimized className="object-cover" />
                   <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-2xl text-white opacity-0 transition group-hover:opacity-100">▶</span>
                   {gam.state.watchedVideos.includes(item.id) ? (
-                    <span className="absolute right-1 top-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white">Visto</span>
+                    <span className="absolute right-1 top-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[12px] font-semibold uppercase text-white">Visto</span>
                   ) : (
-                    <span className="absolute right-1 top-1 rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-amber-900">+15 pts</span>
+                    <span className="absolute right-1 top-1 rounded-full bg-amber-400 px-1.5 py-0.5 text-[12px] font-semibold uppercase text-amber-900">+15 pts</span>
                   )}
                 </div>
-                <p className="truncate px-2 py-1 text-[10px] text-[var(--muted)]">{item.sessionDate}</p>
+                <p className="truncate px-2 py-1 text-[12px] text-[var(--muted)]">{item.sessionDate}</p>
               </button>
             ))}
             {sessionGallery.length === 0 ? <p className="col-span-3 text-sm text-[var(--muted)]">Sem fotos anexadas nas sessões até o momento.</p> : null}
@@ -1098,7 +1098,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                   <div key={session.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-white p-3">
                     <div>
                       <p className="text-sm font-semibold text-[var(--foreground)]">{session.title}</p>
-                      <p className="text-[11px] text-[var(--muted)]">{session.date}</p>
+                      <p className="text-[12px] text-[var(--muted)]">{session.date}</p>
                     </div>
                     <div className="flex items-center gap-1" role="radiogroup" aria-label={`Avaliar ${session.title}`}>
                       {[1, 2, 3, 4, 5].map((star) => (
@@ -1111,7 +1111,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                         >★</button>
                       ))}
                       {current === 0 ? (
-                        <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900">+15 pts</span>
+                        <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[12px] font-semibold text-amber-900">+15 pts</span>
                       ) : null}
                     </div>
                   </div>
@@ -1159,7 +1159,7 @@ export function PortalPublicClient({ token }: { token: string }) {
         <article className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm space-y-4">
           <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Pedagógico</p>
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">Pedagógico</p>
               <h3 className="text-lg font-bold text-slate-900">Relatório de Evolução Mensal</h3>
               <p className="text-xs text-[var(--muted)]">Acompanhe o desempenho do cão e as orientações para casa.</p>
             </div>
@@ -1231,7 +1231,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                     >
                       {feedback.message}
                     </div>
-                    <span className="text-[9px] text-[var(--muted)] mt-1 px-1">
+                    <span className="text-[12px] text-[var(--muted)] mt-1 px-1">
                       {isMe ? "Você" : data.trainer.name} • {formatDateTime(feedback.createdAt)}
                     </span>
                   </div>

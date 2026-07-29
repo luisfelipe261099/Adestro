@@ -129,7 +129,7 @@ export function AudioTranscriber({ value, onAppend, lang = "pt-BR", hint, classN
 
   if (supported === false) {
     return (
-      <p className={`text-[11px] text-[var(--muted)] ${className}`}>
+      <p className={`text-[12px] text-[var(--muted)] ${className}`}>
         Transcrição não disponível neste navegador. Use Chrome/Edge ou Safari iOS.
       </p>
     );
@@ -160,18 +160,18 @@ export function AudioTranscriber({ value, onAppend, lang = "pt-BR", hint, classN
           )}
           {recording ? "Parar e inserir" : "Gravar nota por voz"}
         </button>
-        {hint ? <span className="text-[11px] text-[var(--muted)]">{hint}</span> : null}
+        {hint ? <span className="text-[12px] text-[var(--muted)]">{hint}</span> : null}
       </div>
       {interim ? (
-        <p className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1 text-[11.5px] italic text-[var(--muted-strong)]">
+        <p className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1 text-[12.5px] italic text-[var(--muted-strong)]">
           {interim}…
         </p>
       ) : null}
       {error ? (
-        <p className="rounded-md border border-[var(--danger)]/30 bg-[var(--danger-bg)] px-2 py-1 text-[11px] text-[var(--danger)]">{error}</p>
+        <p className="rounded-md border border-[var(--danger)]/30 bg-[var(--danger-bg)] px-2 py-1 text-[12px] text-[var(--danger)]">{error}</p>
       ) : null}
       {value && !recording ? (
-        <p className="text-[11px] text-[var(--success)]">Transcrição inserida no campo abaixo.</p>
+        <p className="text-[12px] text-[var(--success)]">Transcrição inserida no campo abaixo.</p>
       ) : null}
     </div>
   );

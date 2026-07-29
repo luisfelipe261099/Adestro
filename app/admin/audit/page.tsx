@@ -93,7 +93,7 @@ export default function AuditPage() {
         <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <header data-tour="admin-audit" className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Auditoria</p>
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">Auditoria</p>
               <h1 className="text-2xl font-semibold text-[var(--foreground)]">Histórico de atividade</h1>
               <p className="mt-1 text-xs text-[var(--muted)]">Quem fez o quê e quando — essencial para multi-adestrador.</p>
             </div>
@@ -105,7 +105,7 @@ export default function AuditPage() {
             </Link>
           </header>
 
-          <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 text-[10px] font-bold">
+          <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 text-[12px] font-bold">
             {["", "client", "session", "contract", "invoice", "settings", "template", "portal-link", "csv", "export"].map((scope) => (
               <button
                 key={scope}
@@ -139,7 +139,7 @@ export default function AuditPage() {
             <div className="mt-3 space-y-4">
               {groups.map(([date, items]) => (
                 <section key={date}>
-                  <h2 className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">{date}</h2>
+                  <h2 className="text-[12px] font-bold uppercase tracking-wider text-[var(--muted)]">{date}</h2>
                   <ul className="mt-1 space-y-1">
                     {items.map((log) => {
                       const meta = describe(log.action);
@@ -159,23 +159,23 @@ export default function AuditPage() {
                           <span aria-hidden className="text-base">{meta.icon}</span>
                           <div className="flex-1 min-w-0">
                             <p className="flex items-center gap-2 text-xs">
-                              <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${meta.tone}`}>
+                              <span className={`rounded-full px-2 py-0.5 text-[12px] font-bold ${meta.tone}`}>
                                 {meta.label}
                               </span>
-                              <span className="text-[10px] text-[var(--muted)]">
+                              <span className="text-[12px] text-[var(--muted)]">
                                 {new Date(log.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                               </span>
                             </p>
                             {log.actorEmail ? (
-                              <p className="mt-0.5 text-[10px] text-[var(--muted)]">por {log.actorEmail}</p>
+                              <p className="mt-0.5 text-[12px] text-[var(--muted)]">por {log.actorEmail}</p>
                             ) : null}
                             {detail ? (
-                              <pre className="mt-1 whitespace-pre-wrap break-words rounded-lg bg-slate-50 px-2 py-1 text-[10px] text-slate-700">
+                              <pre className="mt-1 whitespace-pre-wrap break-words rounded-lg bg-slate-50 px-2 py-1 text-[12px] text-slate-700">
                                 {typeof detail === "string" ? detail : JSON.stringify(detail)}
                               </pre>
                             ) : null}
                           </div>
-                          <span className="text-[10px] text-slate-400">{log.ipAddress ?? "—"}</span>
+                          <span className="text-[12px] text-slate-400">{log.ipAddress ?? "—"}</span>
                         </li>
                       );
                     })}
@@ -185,7 +185,7 @@ export default function AuditPage() {
             </div>
           )}
 
-          <footer className="mt-4 text-center text-[10px] text-[var(--muted)]">
+          <footer className="mt-4 text-center text-[12px] text-[var(--muted)]">
             Mostrando até 200 entradas mais recentes.
           </footer>
         </section>

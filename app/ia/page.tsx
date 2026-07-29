@@ -198,10 +198,10 @@ export default function IaPage() {
 
           <div className="mt-4 space-y-3 overflow-y-auto px-3 pb-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Contexto</p>
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">Contexto</p>
               <div className="mt-2 space-y-2">
                 <label className="block">
-                  <span className="text-[11px] text-[var(--muted)]">Cliente</span>
+                  <span className="text-[12px] text-[var(--muted)]">Cliente</span>
                   <select
                     value={selectedClient?.id ?? ""}
                     onChange={(e) => {
@@ -221,7 +221,7 @@ export default function IaPage() {
                 </label>
                 {selectedClient ? (
                   <label className="block">
-                    <span className="text-[11px] text-[var(--muted)]">Cão</span>
+                    <span className="text-[12px] text-[var(--muted)]">Cão</span>
                     <select
                       value={selectedDog?.id ?? ""}
                       onChange={(e) => setSelectedDogId(e.target.value)}
@@ -240,7 +240,7 @@ export default function IaPage() {
 
             {dogTimeline.length > 0 ? (
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">
+                <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">
                   Sessões recentes
                 </p>
                 <ul className="mt-2 space-y-1.5">
@@ -249,8 +249,8 @@ export default function IaPage() {
                       key={session.id}
                       className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5"
                     >
-                      <p className="truncate text-[11.5px] font-medium text-[var(--foreground)]">{session.title}</p>
-                      <p className="text-[10px] text-[var(--muted)]">{session.date}</p>
+                      <p className="truncate text-[12.5px] font-medium text-[var(--foreground)]">{session.title}</p>
+                      <p className="text-[12px] text-[var(--muted)]">{session.date}</p>
                     </li>
                   ))}
                 </ul>
@@ -258,10 +258,10 @@ export default function IaPage() {
             ) : null}
 
             <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
-              <p className="text-[11px] font-medium text-[var(--foreground)]">
+              <p className="text-[12px] font-medium text-[var(--foreground)]">
                 {aiEngine === "gemini" ? "IA Gemini com contexto" : "Assistente contextual"}
               </p>
-              <p className="mt-0.5 text-[10.5px] leading-snug text-[var(--muted)]">
+              <p className="mt-0.5 text-[12px] leading-snug text-[var(--muted)]">
                 Responde com o perfil do cão e a memória da conversa. Com a chave do Gemini
                 configurada, usa IA real; sem ela, cai no motor heurístico como fallback.
               </p>
@@ -289,7 +289,7 @@ export default function IaPage() {
                 <p className="truncate text-[13.5px] font-semibold text-[var(--foreground)]">
                   Assistente Adestro
                 </p>
-                <p className="truncate text-[11px] text-[var(--muted)]">
+                <p className="truncate text-[12px] text-[var(--muted)]">
                   {selectedDog
                     ? `${selectedDog.name} · ${selectedDog.breed || "Sem raça"} · ${selectedClient?.name ?? ""}`
                     : "Pergunte sobre planos, comportamentos e técnicas"}
@@ -299,7 +299,7 @@ export default function IaPage() {
             <div className="flex items-center gap-2">
               {aiEngine ? (
                 <span
-                  className={`hidden items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold sm:inline-flex ${
+                  className={`hidden items-center gap-1.5 rounded-full px-2 py-0.5 text-[12px] font-semibold sm:inline-flex ${
                     aiEngine === "gemini"
                       ? "bg-[var(--success-bg)] text-[var(--success)]"
                       : "bg-[var(--surface-2)] text-[var(--muted)]"
@@ -333,7 +333,7 @@ export default function IaPage() {
             <div className="border-b border-[var(--border)] bg-[var(--surface-2)]/30 px-4 py-3 lg:hidden">
               <div className="grid grid-cols-2 gap-2">
                 <label className="block">
-                  <span className="text-[11px] text-[var(--muted)]">Cliente</span>
+                  <span className="text-[12px] text-[var(--muted)]">Cliente</span>
                   <select
                     value={selectedClient?.id ?? ""}
                     onChange={(e) => {
@@ -351,7 +351,7 @@ export default function IaPage() {
                 </label>
                 {selectedClient ? (
                   <label className="block">
-                    <span className="text-[11px] text-[var(--muted)]">Cão</span>
+                    <span className="text-[12px] text-[var(--muted)]">Cão</span>
                     <select
                       value={selectedDog?.id ?? ""}
                       onChange={(e) => setSelectedDogId(e.target.value)}
@@ -418,7 +418,7 @@ export default function IaPage() {
                         <p className="text-[12.5px] font-semibold text-[var(--foreground)]">
                           {msg.role === "user" ? "Você" : "Assistente"}
                         </p>
-                        <span className="text-[10.5px] text-[var(--muted)]">{formatTime(msg.timestamp)}</span>
+                        <span className="text-[12px] text-[var(--muted)]">{formatTime(msg.timestamp)}</span>
                       </div>
                       <div className="mt-1 whitespace-pre-wrap text-[13.5px] leading-relaxed text-[var(--foreground)]">
                         {msg.content}
@@ -453,7 +453,7 @@ export default function IaPage() {
                       type="button"
                       disabled={busy}
                       onClick={() => send(PROMPT_TEXTS[prompt.id])}
-                      className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[11px] font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--foreground)] disabled:opacity-50"
+                      className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[12px] font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--foreground)] disabled:opacity-50"
                     >
                       {prompt.label}
                     </button>
@@ -493,7 +493,7 @@ export default function IaPage() {
                   <IconArrowRight className="h-4 w-4" />
                 </button>
               </div>
-              <p className="mt-1.5 text-center text-[10.5px] text-[var(--muted)]">
+              <p className="mt-1.5 text-center text-[12px] text-[var(--muted)]">
                 <kbd className="kbd">Enter</kbd> envia · <kbd className="kbd">Shift+Enter</kbd> nova linha
               </p>
             </form>

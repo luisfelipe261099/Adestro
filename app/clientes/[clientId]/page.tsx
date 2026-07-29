@@ -79,7 +79,7 @@ function SectionCard({
       <header className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold text-[var(--foreground)]">{title}</h2>
-          {subtitle ? <p className="mt-0.5 text-[11.5px] text-[var(--muted)]">{subtitle}</p> : null}
+          {subtitle ? <p className="mt-0.5 text-[12.5px] text-[var(--muted)]">{subtitle}</p> : null}
         </div>
         {action}
       </header>
@@ -214,7 +214,7 @@ export default function ClientProfilePage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <h1 className="text-xl font-semibold text-[var(--foreground)]">{client.name}</h1>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                        className={`rounded-full px-2 py-0.5 text-[12px] font-semibold uppercase ${
                           isDraft ? "bg-amber-100 text-amber-800" : "bg-sky-100 text-sky-800"
                         }`}
                       >
@@ -262,27 +262,27 @@ export default function ClientProfilePage() {
 
               <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-[var(--border)] pt-4 text-[12.5px] sm:grid-cols-4">
                 <div>
-                  <dt className="font-semibold uppercase tracking-wide text-[10px] text-[var(--muted)]">Telefone</dt>
+                  <dt className="font-semibold uppercase tracking-wide text-[12px] text-[var(--muted)]">Telefone</dt>
                   <dd className="mt-0.5 text-[var(--foreground)]">{client.phone || "Não informado"}</dd>
                 </div>
                 {client.secondContactName || client.secondContactPhone ? (
                   <div>
-                    <dt className="font-semibold uppercase tracking-wide text-[10px] text-[var(--muted)]">2º contato</dt>
+                    <dt className="font-semibold uppercase tracking-wide text-[12px] text-[var(--muted)]">2º contato</dt>
                     <dd className="mt-0.5 text-[var(--foreground)]">
                       {[client.secondContactName, client.secondContactPhone].filter(Boolean).join(" · ")}
                     </dd>
                   </div>
                 ) : null}
                 <div>
-                  <dt className="font-semibold uppercase tracking-wide text-[10px] text-[var(--muted)]">Imóvel</dt>
+                  <dt className="font-semibold uppercase tracking-wide text-[12px] text-[var(--muted)]">Imóvel</dt>
                   <dd className="mt-0.5 text-[var(--foreground)]">{client.propertyType || "Não informado"}</dd>
                 </div>
                 <div>
-                  <dt className="font-semibold uppercase tracking-wide text-[10px] text-[var(--muted)]">Ambiente</dt>
+                  <dt className="font-semibold uppercase tracking-wide text-[12px] text-[var(--muted)]">Ambiente</dt>
                   <dd className="mt-0.5 text-[var(--foreground)]">{client.environment || "Não informado"}</dd>
                 </div>
                 <div>
-                  <dt className="font-semibold uppercase tracking-wide text-[10px] text-[var(--muted)]">Treinos registrados</dt>
+                  <dt className="font-semibold uppercase tracking-wide text-[12px] text-[var(--muted)]">Treinos registrados</dt>
                   <dd className="mt-0.5 text-[var(--foreground)]">{clientSessions.length}</dd>
                 </div>
               </dl>
@@ -326,11 +326,11 @@ export default function ClientProfilePage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <p className="truncate text-sm font-semibold text-[var(--foreground)]">{dog.name}</p>
-                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${PHASE_BADGE[phase]}`}>
+                            <span className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${PHASE_BADGE[phase]}`}>
                               {phase}
                             </span>
                           </div>
-                          <p className="mt-0.5 truncate text-[11.5px] text-[var(--muted)]">
+                          <p className="mt-0.5 truncate text-[12.5px] text-[var(--muted)]">
                             {dog.breed || "Raça não informada"}
                             {dog.age ? ` · ${dog.age}` : ""}
                             {dog.weight ? ` · ${dog.weight}` : ""}
@@ -339,7 +339,7 @@ export default function ClientProfilePage() {
                           {progress ? (
                             <div className="mt-1">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[11.5px] font-semibold text-[var(--foreground)]">{progress}</span>
+                                <span className="text-[12.5px] font-semibold text-[var(--foreground)]">{progress}</span>
                                 {overPackage ? (
                                   <span className="rounded px-1.5 py-0.5 text-[12px] font-semibold text-[var(--warning)] bg-[var(--warning-bg)]">
                                     passou do pacote
@@ -357,9 +357,9 @@ export default function ClientProfilePage() {
                               </div>
                             </div>
                           ) : (
-                            <p className="mt-0.5 text-[11.5px] text-[var(--muted)]">Sem pacote contratado</p>
+                            <p className="mt-0.5 text-[12.5px] text-[var(--muted)]">Sem pacote contratado</p>
                           )}
-                          <p className="mt-0.5 text-[11px] font-medium text-[var(--muted)]">Ver ficha completa →</p>
+                          <p className="mt-0.5 text-[12px] font-medium text-[var(--muted)]">Ver ficha completa →</p>
                         </div>
                       </Link>
                     );
@@ -374,7 +374,7 @@ export default function ClientProfilePage() {
                 title="Próximas aulas"
                 subtitle="Agendamentos futuros e recorrências deste cliente"
                 action={
-                  <Link href={`/agenda?view=semana`} className="text-[11.5px] font-semibold text-[var(--foreground)] hover:underline">
+                  <Link href={`/agenda?view=semana`} className="text-[12.5px] font-semibold text-[var(--foreground)] hover:underline">
                     Agenda →
                   </Link>
                 }
@@ -397,12 +397,12 @@ export default function ClientProfilePage() {
                           <p className="text-[13px] font-semibold text-[var(--foreground)]">
                             {event.day} às {event.time}
                           </p>
-                          <p className="truncate text-[11.5px] text-[var(--muted)]">
+                          <p className="truncate text-[12.5px] text-[var(--muted)]">
                             {event.dog} · {event.plan} · Sessão {event.sessionNumber}
                           </p>
                         </div>
                         <span
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[12px] font-semibold ${
                             EVENT_STATUS_BADGE[event.status] ?? "bg-slate-100 text-slate-700"
                           }`}
                         >
@@ -419,7 +419,7 @@ export default function ClientProfilePage() {
                 title="Financeiro"
                 subtitle="Contratos e faturas deste cliente"
                 action={
-                  <Link href="/financeiro" className="text-[11.5px] font-semibold text-[var(--foreground)] hover:underline">
+                  <Link href="/financeiro" className="text-[12.5px] font-semibold text-[var(--foreground)] hover:underline">
                     Financeiro →
                   </Link>
                 }
@@ -436,15 +436,15 @@ export default function ClientProfilePage() {
                   <>
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div className="rounded-md bg-emerald-50 p-2">
-                        <p className="text-[10px] font-bold uppercase text-emerald-700">Pago</p>
+                        <p className="text-[12px] font-bold uppercase text-emerald-700">Pago</p>
                         <p className="text-[13px] font-semibold text-emerald-800">{brl(invoiceTotals.paid)}</p>
                       </div>
                       <div className="rounded-md bg-amber-50 p-2">
-                        <p className="text-[10px] font-bold uppercase text-amber-700">Pendente</p>
+                        <p className="text-[12px] font-bold uppercase text-amber-700">Pendente</p>
                         <p className="text-[13px] font-semibold text-amber-800">{brl(invoiceTotals.pending)}</p>
                       </div>
                       <div className="rounded-md bg-rose-50 p-2">
-                        <p className="text-[10px] font-bold uppercase text-rose-700">Em atraso</p>
+                        <p className="text-[12px] font-bold uppercase text-rose-700">Em atraso</p>
                         <p className="text-[13px] font-semibold text-rose-800">{brl(invoiceTotals.overdue)}</p>
                       </div>
                     </div>
@@ -455,7 +455,7 @@ export default function ClientProfilePage() {
                             <p className="text-[13px] font-semibold text-[var(--foreground)]">{contract.name}</p>
                             <p className="text-[12.5px] font-semibold text-[var(--foreground)]">{brl(contract.amount)}</p>
                           </div>
-                          <p className="mt-0.5 text-[11.5px] text-[var(--muted)]">
+                          <p className="mt-0.5 text-[12.5px] text-[var(--muted)]">
                             {contract.sessionsCount} sessões
                             {contract.dog?.name ? ` · ${contract.dog.name}` : ""}
                           </p>
@@ -465,7 +465,7 @@ export default function ClientProfilePage() {
                                 <span
                                   key={invoice.id}
                                   title={`Vence em ${invoice.dueDate}`}
-                                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                                  className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${
                                     INVOICE_STATUS_BADGE[invoice.status] ?? "bg-slate-100 text-slate-700"
                                   }`}
                                 >
@@ -489,7 +489,7 @@ export default function ClientProfilePage() {
                                 href={buildWaUrl(client.phone, message)}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10.5px] font-bold text-emerald-800 hover:bg-emerald-100"
+                                className="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[12px] font-bold text-emerald-800 hover:bg-emerald-100"
                               >
                                 💬 Cobrar pelo WhatsApp
                               </a>
@@ -509,7 +509,7 @@ export default function ClientProfilePage() {
                 action={
                   <Link
                     href={`/treinos?clientId=${client.id}${soleDogParam}`}
-                    className="text-[11.5px] font-semibold text-[var(--foreground)] hover:underline"
+                    className="text-[12.5px] font-semibold text-[var(--foreground)] hover:underline"
                   >
                     Histórico →
                   </Link>
@@ -533,14 +533,14 @@ export default function ClientProfilePage() {
                           <p className="truncate text-[13px] font-semibold text-[var(--foreground)]">
                             {session.title || `Sessão ${session.number}`}
                           </p>
-                          <p className="truncate text-[11.5px] text-[var(--muted)]">
+                          <p className="truncate text-[12.5px] text-[var(--muted)]">
                             {session.date}
                             {session.dogName ? ` · ${session.dogName}` : ""}
                             {session.type ? ` · ${session.type}` : ""}
                           </p>
                         </div>
                         {session.media.length ? (
-                          <span className="shrink-0 text-[11px] text-[var(--muted)]">📷 {session.media.length}</span>
+                          <span className="shrink-0 text-[12px] text-[var(--muted)]">📷 {session.media.length}</span>
                         ) : null}
                       </li>
                     ))}
@@ -553,7 +553,7 @@ export default function ClientProfilePage() {
                 title="Portal do cliente"
                 subtitle={`Tarefas de casa: ${plural(doneTasks, "tarefa concluída", "tarefas concluídas")} de ${clientTasks.length}`}
                 action={
-                  <Link href={`/portal?clientId=${client.id}`} className="text-[11.5px] font-semibold text-[var(--foreground)] hover:underline">
+                  <Link href={`/portal?clientId=${client.id}`} className="text-[12.5px] font-semibold text-[var(--foreground)] hover:underline">
                     Portal →
                   </Link>
                 }
@@ -575,7 +575,7 @@ export default function ClientProfilePage() {
 
                 {clientMessages.length > 0 ? (
                   <div className="mt-3 border-t border-[var(--border)] pt-3">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--muted)]">Mensagens recentes</p>
+                    <p className="text-[12px] font-bold uppercase tracking-wide text-[var(--muted)]">Mensagens recentes</p>
                     <ul className="mt-1.5 space-y-1.5">
                       {clientMessages.map((message) => (
                         <li key={message.id} className="text-[12px] leading-5 text-[var(--muted)]">
@@ -584,7 +584,7 @@ export default function ClientProfilePage() {
                         </li>
                       ))}
                     </ul>
-                    <Link href="/chat" className="mt-2 inline-block text-[11.5px] font-semibold text-[var(--foreground)] hover:underline">
+                    <Link href="/chat" className="mt-2 inline-block text-[12.5px] font-semibold text-[var(--foreground)] hover:underline">
                       Responder no chat →
                     </Link>
                   </div>

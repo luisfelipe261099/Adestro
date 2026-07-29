@@ -159,11 +159,11 @@ export default function ChatClientPage() {
               </Link>
               <div>
                 <h1 className="text-base font-semibold text-[var(--foreground)]">Chat Integrado</h1>
-                <p className="text-[10px] text-[var(--muted)]">Comunicação direta com o Cliente</p>
+                <p className="text-[12px] text-[var(--muted)]">Comunicação direta com o Cliente</p>
               </div>
             </div>
             {selectedContact && (
-              <span className="rounded-full bg-sky-100 text-[var(--foreground)] px-2.5 py-0.5 text-[10px] font-bold">
+              <span className="rounded-full bg-sky-100 text-[var(--foreground)] px-2.5 py-0.5 text-[12px] font-bold">
                 {selectedContact.dogs[0]?.name || "Cão"}
               </span>
             )}
@@ -190,7 +190,7 @@ export default function ChatClientPage() {
                     }`}
                   >
                     <span className="text-xs truncate max-w-[85px]">{c.name.split(" ")[0]}</span>
-                    <span className="text-[9px] font-medium opacity-80">🐶 {c.dogs[0]?.name || "Pet"}</span>
+                    <span className="text-[12px] font-medium opacity-80">🐶 {c.dogs[0]?.name || "Pet"}</span>
                   </button>
                 );
               })
@@ -224,7 +224,7 @@ export default function ChatClientPage() {
                     >
                       {m.message}
                     </div>
-                    <span className="text-[9px] text-[var(--muted)] mt-1.5 px-1">
+                    <span className="text-[12px] text-[var(--muted)] mt-1.5 px-1">
                       {isMe ? "Você" : selectedContact?.name} • {formatTime(m.createdAt)}
                     </span>
                   </div>
@@ -255,7 +255,7 @@ export default function ChatClientPage() {
                 </svg>
               </button>
             </form>
-            {error && <p className="text-[10px] text-rose-600 mt-1.5 px-1">{error}</p>}
+            {error && <p className="text-[12px] text-rose-600 mt-1.5 px-1">{error}</p>}
           </footer>
 
         </section>

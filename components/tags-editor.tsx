@@ -61,7 +61,7 @@ export function TagsEditor({ clientId, initialTags, className = "", onChange }: 
       {tags.map((tag) => (
         <span
           key={tag}
-          className="inline-flex items-center gap-1 rounded-full border border-[var(--border-strong)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] font-bold text-sky-900"
+          className="inline-flex items-center gap-1 rounded-full border border-[var(--border-strong)] bg-[var(--surface-2)] px-2 py-0.5 text-[12px] font-bold text-sky-900"
         >
           🏷️ {tag}
           <button
@@ -77,7 +77,7 @@ export function TagsEditor({ clientId, initialTags, className = "", onChange }: 
       ))}
 
       <details className="inline-block">
-        <summary className="cursor-pointer list-none rounded-full border border-dashed border-slate-300 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-500 hover:border-sky-400 hover:text-sky-700">
+        <summary className="cursor-pointer list-none rounded-full border border-dashed border-slate-300 bg-white px-2 py-0.5 text-[12px] font-semibold text-slate-500 hover:border-sky-400 hover:text-sky-700">
           + tag
         </summary>
         <div className="absolute z-30 mt-1 w-56 rounded-md border border-[var(--border)] bg-white p-2 shadow-lg">
@@ -102,14 +102,14 @@ export function TagsEditor({ clientId, initialTags, className = "", onChange }: 
                   key={suggestion}
                   type="button"
                   onClick={() => addTag(suggestion)}
-                  className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-700 hover:bg-[var(--surface-2)]"
+                  className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[12px] text-slate-700 hover:bg-[var(--surface-2)]"
                 >
                   + {suggestion}
                 </button>
               ))}
             </div>
           ) : null}
-          {error ? <p className="mt-1 text-[10px] text-rose-700">{error}</p> : null}
+          {error ? <p className="mt-1 text-[12px] text-rose-700">{error}</p> : null}
         </div>
       </details>
     </div>

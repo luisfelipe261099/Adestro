@@ -45,7 +45,7 @@ export function NotificationsBell() {
       >
         <IconBell className="h-4 w-4" />
         {total > 0 ? (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--danger)] px-1 text-[9px] font-semibold text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--danger)] px-1 text-[12px] font-semibold text-white">
             {badgeText}
           </span>
         ) : null}
@@ -56,7 +56,7 @@ export function NotificationsBell() {
           <header className="flex items-center justify-between border-b border-[var(--border)] px-3 py-2.5">
             <div>
               <p className="text-[13px] font-semibold text-[var(--foreground)]">Notificações</p>
-              <p className="text-[11px] text-[var(--muted)]">
+              <p className="text-[12px] text-[var(--muted)]">
                 {total === 0 ? "Tudo em dia" : `${total} ${total === 1 ? "item pendente" : "itens pendentes"}`}
               </p>
             </div>
@@ -80,7 +80,7 @@ export function NotificationsBell() {
                     key={opt}
                     type="button"
                     onClick={() => setFilter(opt)}
-                    className={`whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
+                    className={`whitespace-nowrap rounded-md px-2 py-1 text-[12px] font-medium transition-colors ${
                       filter === opt
                         ? "bg-[var(--accent)] text-white"
                         : "text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]"
@@ -107,9 +107,9 @@ export function NotificationsBell() {
                     className="block px-3 py-2.5 transition-colors hover:bg-[var(--surface-2)]"
                   >
                     <p className="truncate text-[13px] font-medium text-[var(--foreground)]">{item.title}</p>
-                    <p className="mt-0.5 text-[11.5px] leading-snug text-[var(--muted)]">{item.detail}</p>
+                    <p className="mt-0.5 text-[12.5px] leading-snug text-[var(--muted)]">{item.detail}</p>
                     {item.when ? (
-                      <p className="mt-0.5 text-[10px] text-[var(--muted)] opacity-70">{item.when}</p>
+                      <p className="mt-0.5 text-[12px] text-[var(--muted)] opacity-70">{item.when}</p>
                     ) : null}
                   </Link>
                 </li>

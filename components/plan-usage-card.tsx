@@ -66,7 +66,7 @@ export function PlanUsageCard() {
     <article className="rounded-md border border-indigo-100 bg-indigo-50/40 p-4 space-y-3">
       <header className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700">Plano atual</p>
+          <p className="text-[12px] font-bold uppercase tracking-wider text-indigo-700">Plano atual</p>
           <h2 className="text-base font-semibold text-indigo-950">
             {data.plan} {data.isTrial && data.daysRemaining !== null ? `• ${plural(data.daysRemaining, "dia", "dias")} restantes` : ""}
           </h2>
@@ -74,12 +74,12 @@ export function PlanUsageCard() {
         {data.plan !== "Business" ? (
           <Link
             href="/planos"
-            className="rounded-full bg-indigo-600 px-3 py-1 text-[10px] font-bold text-white shadow-sm"
+            className="rounded-full bg-indigo-600 px-3 py-1 text-[12px] font-bold text-white shadow-sm"
           >
             Fazer upgrade
           </Link>
         ) : (
-          <span className="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-bold text-emerald-800">
+          <span className="rounded-full bg-emerald-100 px-3 py-1 text-[12px] font-bold text-emerald-800">
             Plano Business ativo
           </span>
         )}
@@ -88,7 +88,7 @@ export function PlanUsageCard() {
       {showLimited ? (
         <div className="grid gap-2">
           <div>
-            <div className="flex items-center justify-between text-[11px] font-semibold text-indigo-900">
+            <div className="flex items-center justify-between text-[12px] font-semibold text-indigo-900">
               <span>Clientes</span>
               <span>{data.usage.clients} / {data.limits.clients}</span>
             </div>
@@ -98,7 +98,7 @@ export function PlanUsageCard() {
           </div>
 
           <div>
-            <div className="flex items-center justify-between text-[11px] font-semibold text-indigo-900">
+            <div className="flex items-center justify-between text-[12px] font-semibold text-indigo-900">
               <span>Sessões este mês</span>
               <span>{data.usage.sessionsThisMonth} / {data.limits.monthlySessions}</span>
             </div>
@@ -107,7 +107,7 @@ export function PlanUsageCard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] text-indigo-900">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[12px] text-indigo-900">
             <div className="rounded-lg bg-white px-2 py-1.5 text-center">
               <span className="block font-bold">{data.limits.trainers}</span>
               <span>{data.limits.trainers === 1 ? "Adestrador" : "Adestradores"}</span>

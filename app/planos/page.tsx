@@ -131,7 +131,7 @@ export default function TrainerPlansPage() {
                   <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{plan.summary}</p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {plan.features.slice(0, 4).map((feature) => (
-                      <span key={feature} className="rounded-full border border-[var(--border)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                      <span key={feature} className="rounded-full border border-[var(--border)] px-3 py-1 text-[12px] font-semibold uppercase tracking-wide text-[var(--muted)]">
                         {feature}
                       </span>
                     ))}

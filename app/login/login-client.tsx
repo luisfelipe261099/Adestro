@@ -96,7 +96,7 @@ export function LoginClient() {
               <label htmlFor="password" className="text-[12.5px] font-medium text-[var(--foreground)]">
                 Senha
               </label>
-              <Link href="#" className="text-[11.5px] text-[var(--muted)] hover:text-[var(--foreground)]">
+              <Link href="#" className="text-[12.5px] text-[var(--muted)] hover:text-[var(--foreground)]">
                 Esqueceu?
               </Link>
             </div>
@@ -134,7 +134,7 @@ export function LoginClient() {
           </Link>
         </p>
 
-        <div className="mt-12 grid gap-2 border-t border-[var(--border)] pt-6 text-[11.5px] text-[var(--muted)]">
+        <div className="mt-12 grid gap-2 border-t border-[var(--border)] pt-6 text-[12.5px] text-[var(--muted)]">
           <p className="font-medium text-[var(--muted-strong)]">Para adestradores profissionais</p>
           <p>CRM completo · agenda mobile-first · cobrança com Pix · portal do cliente incluído</p>
         </div>

@@ -82,7 +82,7 @@ export function CardHeader({
     <div className="card-header">
       <div className="min-w-0">
         <h3 className="text-[13.5px] font-semibold text-[var(--foreground)]">{title}</h3>
-        {description ? <p className="text-[11.5px] text-[var(--muted)]">{description}</p> : null}
+        {description ? <p className="text-[12.5px] text-[var(--muted)]">{description}</p> : null}
       </div>
       {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
     </div>
@@ -149,7 +149,7 @@ export function StatCard({
         {icon ? <span className="text-[var(--muted)] transition-colors group-hover:text-[var(--foreground)]">{icon}</span> : null}
       </div>
       <p className={`mt-2 text-[24px] font-semibold tracking-tight ${toneClass}`}>{value}</p>
-      {delta ? <p className="text-[11.5px] text-[var(--muted)]">{delta}</p> : null}
+      {delta ? <p className="text-[12.5px] text-[var(--muted)]">{delta}</p> : null}
     </Wrapper>
   );
 }
@@ -214,7 +214,7 @@ export function Field({
       </span>
       {children}
       {error ? (
-        <p className="mt-1 text-[11px] text-[var(--danger)]">{error}</p>
+        <p className="mt-1 text-[12px] text-[var(--danger)]">{error}</p>
       ) : hint ? (
         <p className="help-text">{hint}</p>
       ) : null}
