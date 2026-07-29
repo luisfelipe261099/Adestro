@@ -255,7 +255,7 @@ export default function DashboardPage() {
               Você tem {todayEvents.length} {todayEvents.length === 1 ? "aula" : "aulas"} hoje. {contextLine}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {!tourDone ? (
               <button type="button" onClick={() => startTour()} className="btn-secondary">
                 <IconSparkle className="h-3.5 w-3.5" />

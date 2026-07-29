@@ -123,7 +123,7 @@ export function AttentionDogs() {
                                 {packageProgressLabel(item.sessionCount, item.sessionsTotal)}
                               </span>
                               {isOverPackage(item.sessionCount, item.sessionsTotal) ? (
-                                <span className="ml-1.5 rounded bg-[var(--warning-bg)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--warning)]">
+                                <span className="ml-1.5 rounded bg-[var(--warning-bg)] px-1.5 py-0.5 text-[12px] font-semibold text-[var(--warning)]">
                                   passou do pacote
                                 </span>
                               ) : null}
@@ -141,9 +141,9 @@ export function AttentionDogs() {
                           </div>
                         )}
                       </div>
-                      <span className="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap text-[12px] font-medium text-[var(--muted-strong)]">
+                      <span className="flex flex-shrink-0 items-center gap-1.5 text-[12px] font-medium text-[var(--muted-strong)]">
                         <span className={`h-2 w-2 rounded-full ${DOT[item.level]}`} />
-                        {item.label}
+                        <span className="hidden whitespace-nowrap sm:inline">{item.label}</span>
                       </span>
                       <IconChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-[var(--muted)]" />
                     </Link>
@@ -152,7 +152,7 @@ export function AttentionDogs() {
                     <p className="min-w-0 flex-1 truncate text-[12px] text-[var(--muted)]">{item.reason}</p>
                     <Link
                       href={action.href}
-                      className="flex-shrink-0 text-[12.5px] font-medium text-[var(--accent-text)] hover:underline"
+                      className="-my-1.5 flex-shrink-0 py-1.5 text-[12.5px] font-medium text-[var(--accent-text)] hover:underline"
                     >
                       {action.label}
                     </Link>

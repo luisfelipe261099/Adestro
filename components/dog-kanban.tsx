@@ -184,7 +184,7 @@ export function DogKanban({ searchTerm }: { searchTerm: string }) {
                             {/* Aviso quando o aluno já teve mais aulas do que o
                                 pacote contratado — é hora de renovar ou cobrar. */}
                             {isOverPackage(item.sessionCount, item.sessionsTotal) ? (
-                              <span className="rounded bg-[var(--warning-bg)] px-1.5 py-0.5 text-[10.5px] font-semibold text-[var(--warning)]">
+                              <span className="rounded bg-[var(--warning-bg)] px-1.5 py-0.5 text-[12px] font-semibold text-[var(--warning)]">
                                 passou do pacote
                               </span>
                             ) : null}
