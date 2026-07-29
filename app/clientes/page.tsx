@@ -1314,12 +1314,14 @@ export default function ClientsPage() {
             </section>
           )}
 
-          {/* Listagem de Clientes */}
+          {/* Listagem de Clientes — coluna única no celular; a partir de lg vira
+              grade, porque os cards ocupavam a largura toda com o conteúdo
+              preso à esquerda e o resto vazio. */}
           {entityKind !== "quadro" && (
-          <section data-tour="clients-list" className="mt-3 space-y-2">
+          <section data-tour="clients-list" className="mt-3 grid grid-cols-1 items-start gap-3 lg:grid-cols-2">
             {filteredClients.length === 0 ? (
               clients.length === 0 ? (
-                <article className="rounded-lg border border-dashed border-[var(--border-strong)] bg-white p-8 text-center">
+                <article className="rounded-lg border border-dashed border-[var(--border-strong)] bg-white p-8 text-center lg:col-span-2">
                   <p className="text-3xl" aria-hidden>🐾</p>
                   <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">Comece cadastrando seu primeiro tutor</p>
                   <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-[var(--muted)]">
@@ -1338,7 +1340,7 @@ export default function ClientsPage() {
                   </button>
                 </article>
               ) : (
-                <article className="rounded-md border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
+                <article className="rounded-md border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)] lg:col-span-2">
                   Nenhum {entityKind === "humanos" ? "cliente" : "cão"} encontrado com os filtros atuais.
                 </article>
               )

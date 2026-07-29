@@ -10,6 +10,7 @@ import { useMemo } from "react";
 import { IconCalendar, IconChevronRight } from "@/components/icons";
 import { useAppStore } from "@/lib/app-store";
 import { absoluteDayLabel, listUpcomingSessions, relativeDayLabel } from "@/lib/home-agenda";
+import { plural } from "@/lib/labels";
 import { useNow } from "@/lib/use-now";
 
 const MAX_ITEMS = 12;
@@ -73,26 +74,29 @@ export function UpcomingSessions() {
           </Link>
         </div>
       ) : (
-        <div className="mt-3 space-y-3">
+        // No celular, uma lista por dia empilhada. A partir de md cada dia vira
+        // uma coluna — no desktop a lista de coluna única deixava ~800px de
+        // espaço morto à direita de cada linha.
+        <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2 xl:grid-cols-3">
           {groups.map((group) => (
-            <div key={group.label}>
-              <div className="flex items-baseline gap-2">
+            <div key={group.label} className="min-w-0">
+              <div className="flex items-baseline gap-2 border-b border-[var(--border)] pb-1">
                 <span className="text-[12.5px] font-semibold text-[var(--foreground)]">{group.label}</span>
                 {group.date ? (
                   <span className="text-[12px] text-[var(--muted)]">{group.date}</span>
                 ) : null}
-                <span className="text-[12px] text-[var(--muted)]">
-                  · {group.items.length} {group.items.length === 1 ? "aula" : "aulas"}
+                <span className="ml-auto text-[12px] text-[var(--muted)]">
+                  {plural(group.items.length, "aula", "aulas")}
                 </span>
               </div>
-              <ul className="mt-1 divide-y divide-[var(--border)]">
+              <ul className="divide-y divide-[var(--border)]">
                 {group.items.map(({ event }) => (
                   <li key={event.id}>
                     <Link
                       href={event.dogId ? `/caes/${event.dogId}` : "/agenda?view=semana"}
-                      className="-mx-2 flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-[var(--surface-2)]"
+                      className="-mx-2 flex items-center gap-2.5 rounded-md px-2 py-2 transition-colors hover:bg-[var(--surface-2)]"
                     >
-                      <span className="w-12 flex-shrink-0 font-mono text-[13px] font-semibold text-[var(--foreground)]">
+                      <span className="w-11 flex-shrink-0 font-mono text-[13px] font-semibold tabular-nums text-[var(--foreground)]">
                         {event.time}
                       </span>
                       <div className="min-w-0 flex-1">
