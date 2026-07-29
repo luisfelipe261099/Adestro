@@ -411,24 +411,24 @@ export default function FinanceiroPage() {
                   {/* Grid de faturamento */}
                   <div className="grid grid-cols-2 gap-3">
                     <article className="rounded-md border border-emerald-100 bg-emerald-50/50 p-3.5">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-emerald-800">Recebido</span>
+                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-emerald-800">Recebido</span>
                       <p className="mt-1 text-xl font-bold text-emerald-950">R$ {stats.metrics.received.toFixed(2)}</p>
-                      <span className="text-[9px] text-emerald-700">Parcelas quitadas</span>
+                      <span className="text-[12px] text-emerald-700">Parcelas quitadas</span>
                     </article>
                     <article className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-3.5">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-sky-800">A Receber</span>
+                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-sky-800">A Receber</span>
                       <p className="mt-1 text-xl font-bold text-sky-950">R$ {stats.metrics.pending.toFixed(2)}</p>
-                      <span className="text-[9px] text-sky-700">Faturas em aberto</span>
+                      <span className="text-[12px] text-sky-700">Faturas em aberto</span>
                     </article>
                     <article className="rounded-md border border-rose-100 bg-rose-50/50 p-3.5">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-rose-800">Em Atraso</span>
+                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-rose-800">Em Atraso</span>
                       <p className="mt-1 text-xl font-bold text-rose-950">R$ {stats.metrics.overdue.toFixed(2)}</p>
-                      <span className="text-[9px] text-rose-700">Faturas vencidas</span>
+                      <span className="text-[12px] text-rose-700">Faturas vencidas</span>
                     </article>
                     <article className="rounded-md border border-purple-100 bg-purple-50/50 p-3.5">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.19em] text-purple-800">Contratos</span>
+                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-purple-800">Contratos</span>
                       <p className="mt-1 text-xl font-bold text-purple-950">{stats.metrics.activeContracts} Ativos</p>
-                      <span className="text-[9px] text-purple-700">Pacotes ativos vendidos</span>
+                      <span className="text-[12px] text-purple-700">Pacotes ativos vendidos</span>
                     </article>
                   </div>
 
@@ -469,7 +469,7 @@ export default function FinanceiroPage() {
                     <form ref={contractFormRef} onSubmit={handleCreateContract} className="grid gap-3 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-4 animate-in slide-in-from-top-4 duration-200">
                       <h4 className="text-xs font-bold text-[var(--foreground)]">Nova Venda de Pacote</h4>
                       {packages.length === 0 ? (
-                        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900">
+                        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] leading-relaxed text-amber-900">
                           Você ainda não criou nenhum pacote de aulas. Primeiro cadastre o pacote (nome,
                           nº de sessões, valor e parcelamento) na aba <b>Pacotes</b> — depois é só vender
                           aqui que contrato e cobranças saem automáticos.{" "}
@@ -484,7 +484,7 @@ export default function FinanceiroPage() {
                       ) : null}
                       
                       <div className="grid gap-2 sm:grid-cols-2">
-                        <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                        <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                           Cliente
                           <select
                             value={selectedClientId}
@@ -499,7 +499,7 @@ export default function FinanceiroPage() {
                           </select>
                         </label>
 
-                        <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                        <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                           Cão
                           <select
                             value={selectedDogId}
@@ -516,7 +516,7 @@ export default function FinanceiroPage() {
                       </div>
 
                       <div className="grid gap-2 sm:grid-cols-2">
-                        <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                        <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                           Pacote de Serviço
                           <select
                             value={selectedPackageId}
@@ -531,7 +531,7 @@ export default function FinanceiroPage() {
                           </select>
                         </label>
 
-                        <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                        <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                           Data de Início
                           <DateField
                             value={contractStartDate}
@@ -544,9 +544,9 @@ export default function FinanceiroPage() {
 
                       {selectedPackageId && (
                         <div className="grid gap-2 rounded-md border border-dashed border-[var(--border)] bg-white/60 p-2.5">
-                          <p className="text-[10px] font-bold uppercase text-[var(--muted)]">Ajustes desta venda</p>
+                          <p className="text-[12px] font-bold uppercase text-[var(--muted)]">Ajustes desta venda</p>
                           <div className="grid gap-2 sm:grid-cols-2">
-                            <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                            <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                               Nº de Sessões
                               <input
                                 type="number"
@@ -556,7 +556,7 @@ export default function FinanceiroPage() {
                                 className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
                               />
                             </label>
-                            <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                            <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                               Valor Total (R$)
                               <input
                                 type="number"
@@ -568,7 +568,7 @@ export default function FinanceiroPage() {
                               />
                             </label>
                           </div>
-                          <label className="flex items-center gap-2 text-[11px] text-[var(--muted)]">
+                          <label className="flex items-center gap-2 text-[12px] text-[var(--muted)]">
                             <input
                               type="checkbox"
                               checked={saleFractioned}
@@ -578,7 +578,7 @@ export default function FinanceiroPage() {
                             Cobrança fracionada
                           </label>
                           {saleFractioned && (
-                            <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                            <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                               Cobrar a cada X sessões
                               <input
                                 type="number"
@@ -592,7 +592,7 @@ export default function FinanceiroPage() {
                         </div>
                       )}
 
-                      <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                      <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                         Observações da Venda
                         <input
                           type="text"
@@ -631,11 +631,11 @@ export default function FinanceiroPage() {
                         <div key={inv.id} className="flex justify-between items-center rounded-md border border-slate-100 bg-white p-3 text-xs">
                           <div>
                             <p className="font-semibold text-slate-900">{inv.clientName} ({inv.dogName})</p>
-                            <p className="text-[10px] text-[var(--muted)]">{inv.packageName} • Vence em {inv.dueDate}</p>
+                            <p className="text-[12px] text-[var(--muted)]">{inv.packageName} • Vence em {inv.dueDate}</p>
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-slate-900">R$ {inv.amount.toFixed(2)}</p>
-                            <span className={`inline-block rounded px-1.5 py-0.5 text-[8.5px] font-bold ${
+                            <span className={`inline-block rounded px-1.5 py-0.5 text-[12px] font-bold ${
                               inv.status === "Pago" ? "bg-emerald-100 text-emerald-800" :
                               inv.status === "Atrasado" ? "bg-rose-100 text-rose-800" :
                               "bg-amber-100 text-amber-900"
@@ -676,7 +676,7 @@ export default function FinanceiroPage() {
                       />
 
                       <div className="grid grid-cols-2 gap-3">
-                        <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                        <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                           Sessões
                           <input
                             type="number"
@@ -688,7 +688,7 @@ export default function FinanceiroPage() {
                           />
                         </label>
 
-                        <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                        <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                           Valor Cobrado (R$)
                           <input
                             type="number"
@@ -713,7 +713,7 @@ export default function FinanceiroPage() {
                         </label>
 
                         {newPkgFractioned && (
-                          <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)] mt-2">
+                          <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)] mt-2">
                             Cobrar a cada X sessões
                             <input
                               type="number"
@@ -737,13 +737,13 @@ export default function FinanceiroPage() {
                       <article key={pkg.id} className="rounded-md border border-slate-100 bg-white p-3.5 flex items-center justify-between text-xs shadow-xs">
                         <div>
                           <h4 className="font-bold text-slate-900">{pkg.name}</h4>
-                          <p className="mt-1 text-[10px] text-[var(--muted)]">
+                          <p className="mt-1 text-[12px] text-[var(--muted)]">
                             {pkg.sessionsCount} sessões • Cobrança parcelada: {pkg.isFractioned ? `A cada ${pkg.fractionSessions} aulas` : "Não"}
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-bold text-[var(--foreground)]">R$ {pkg.amount.toFixed(2)}</p>
-                          <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[8.5px] font-bold text-sky-800">{pkg.status}</span>
+                          <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[12px] font-bold text-sky-800">{pkg.status}</span>
                         </div>
                       </article>
                     ))}
@@ -762,12 +762,12 @@ export default function FinanceiroPage() {
                         <div className="flex justify-between items-start text-xs">
                           <div>
                             <p className="font-bold text-slate-900">{inv.clientName} ({inv.dogName})</p>
-                            <p className="text-[10px] text-[var(--muted)] mt-0.5">{inv.packageName}</p>
-                            <p className="text-[9px] text-[var(--muted)]">Vencimento: {inv.dueDate} {inv.method && `• Pago via ${inv.method}`}</p>
+                            <p className="text-[12px] text-[var(--muted)] mt-0.5">{inv.packageName}</p>
+                            <p className="text-[12px] text-[var(--muted)]">Vencimento: {inv.dueDate} {inv.method && `• Pago via ${inv.method}`}</p>
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-bold text-slate-950">R$ {inv.amount.toFixed(2)}</p>
-                            <span className={`inline-block rounded px-1.5 py-0.5 text-[9px] font-bold mt-1 ${
+                            <span className={`inline-block rounded px-1.5 py-0.5 text-[12px] font-bold mt-1 ${
                               inv.status === "Pago" ? "bg-emerald-100 text-emerald-800" :
                               inv.status === "Atrasado" ? "bg-rose-100 text-rose-800" :
                               "bg-amber-100 text-amber-900"
@@ -776,7 +776,7 @@ export default function FinanceiroPage() {
                         </div>
 
                         {/* Ações de cobrança */}
-                        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-2 text-[10px]">
+                        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-2 text-[12px]">
                           {inv.status !== "Pago" ? (
                             <>
                               <button
@@ -844,7 +844,7 @@ export default function FinanceiroPage() {
                         {/* Recebimento por cartão: taxa da maquininha + valor líquido real */}
                         {cardFeeFor === inv.id && inv.status !== "Pago" ? (
                           <div className="mt-2 grid gap-2 rounded-md border border-sky-200 bg-sky-50/70 p-2.5 sm:grid-cols-[1fr_1fr_auto]">
-                            <label className="grid gap-1 text-[10px] font-bold uppercase text-sky-900">
+                            <label className="grid gap-1 text-[12px] font-bold uppercase text-sky-900">
                               Taxa da maquininha (%)
                               <input
                                 value={cardFeePct}
@@ -854,7 +854,7 @@ export default function FinanceiroPage() {
                                 className="rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 outline-none"
                               />
                             </label>
-                            <div className="grid gap-1 text-[10px] font-bold uppercase text-sky-900">
+                            <div className="grid gap-1 text-[12px] font-bold uppercase text-sky-900">
                               Valor líquido recebido
                               <p className="rounded-md border border-sky-200 bg-white px-2.5 py-1.5 text-xs font-bold text-emerald-700">
                                 R$ {(inv.amount * (1 - (parseFloat(cardFeePct.replace(",", ".")) || 0) / 100)).toFixed(2)}
@@ -872,7 +872,7 @@ export default function FinanceiroPage() {
                                 );
                                 setCardFeeFor(null);
                               }}
-                              className="self-end rounded-lg bg-emerald-600 px-3 py-1.5 text-[11px] font-bold text-white"
+                              className="self-end rounded-lg bg-emerald-600 px-3 py-1.5 text-[12px] font-bold text-white"
                             >
                               Confirmar
                             </button>
@@ -941,15 +941,15 @@ export default function FinanceiroPage() {
 
                     <div className="grid gap-2 sm:grid-cols-3">
                       <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3">
-                        <p className="text-[10px] font-bold uppercase text-emerald-700">Recebido</p>
+                        <p className="text-[12px] font-bold uppercase text-emerald-700">Recebido</p>
                         <p className="mt-1 text-lg font-bold text-emerald-800">R$ {totalRecebido.toFixed(2)}</p>
                       </div>
                       <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
-                        <p className="text-[10px] font-bold uppercase text-amber-700">Pendente</p>
+                        <p className="text-[12px] font-bold uppercase text-amber-700">Pendente</p>
                         <p className="mt-1 text-lg font-bold text-amber-800">R$ {totalPendente.toFixed(2)}</p>
                       </div>
                       <div className="rounded-md border border-rose-200 bg-rose-50 p-3">
-                        <p className="text-[10px] font-bold uppercase text-rose-700">Em atraso</p>
+                        <p className="text-[12px] font-bold uppercase text-rose-700">Em atraso</p>
                         <p className="mt-1 text-lg font-bold text-rose-800">R$ {totalAtraso.toFixed(2)}</p>
                       </div>
                     </div>
@@ -963,11 +963,11 @@ export default function FinanceiroPage() {
                             <li key={inv.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
                               <div className="min-w-0">
                                 <p className="truncate text-xs font-semibold text-slate-900">{inv.clientName} · {inv.dogName}</p>
-                                <p className="truncate text-[11px] text-[var(--muted)]">{inv.packageName} · {ref?.toLocaleDateString("pt-BR")}{inv.method ? ` · ${inv.method}` : ""}</p>
+                                <p className="truncate text-[12px] text-[var(--muted)]">{inv.packageName} · {ref?.toLocaleDateString("pt-BR")}{inv.method ? ` · ${inv.method}` : ""}</p>
                               </div>
                               <div className="text-right">
                                 <p className="text-xs font-bold text-slate-900">R$ {inv.amount.toFixed(2)}</p>
-                                <span className={`text-[10px] font-semibold ${inv.status === "Pago" ? "text-emerald-700" : inv.status === "Atrasado" ? "text-rose-700" : "text-amber-700"}`}>{inv.status}</span>
+                                <span className={`text-[12px] font-semibold ${inv.status === "Pago" ? "text-emerald-700" : inv.status === "Atrasado" ? "text-rose-700" : "text-amber-700"}`}>{inv.status}</span>
                               </div>
                             </li>
                           ))}
@@ -986,7 +986,7 @@ export default function FinanceiroPage() {
                     <form onSubmit={handleGenerateReceiptManual} className="grid gap-3 rounded-md border border-slate-100 bg-white p-4 shadow-xs">
                       <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Emitir Recibo Manual</h3>
                       
-                      <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                      <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                         Cliente
                         <input
                           type="text"
@@ -998,7 +998,7 @@ export default function FinanceiroPage() {
                         />
                       </label>
 
-                      <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                      <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                         Cão (Animal)
                         <input
                           type="text"
@@ -1011,7 +1011,7 @@ export default function FinanceiroPage() {
                       </label>
 
                       <div className="grid grid-cols-2 gap-3">
-                        <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                        <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                           Serviço Prestado
                           <input
                             type="text"
@@ -1023,7 +1023,7 @@ export default function FinanceiroPage() {
                           />
                         </label>
 
-                        <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                        <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                           Valor Cobrado (R$)
                           <input
                             type="number"
@@ -1036,7 +1036,7 @@ export default function FinanceiroPage() {
                         </label>
                       </div>
 
-                      <label className="grid gap-1 text-[10px] font-bold uppercase text-[var(--muted)]">
+                      <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                         Forma de Pagamento
                         <select
                           value={receiptMethod}
@@ -1061,7 +1061,7 @@ export default function FinanceiroPage() {
                       <div id="printable-receipt" className="border-2 border-dashed border-[#145a82]/40 bg-white p-6 rounded-md">
                         <div className="border-b border-slate-100 pb-3.5 text-center">
                           <h3 className="text-lg font-bold text-[var(--foreground)]">RECIBO DE PAGAMENTO</h3>
-                          <p className="text-[9px] font-semibold text-[var(--muted)] uppercase tracking-wider">Recibo Nº {receiptNumber}</p>
+                          <p className="text-[12px] font-semibold text-[var(--muted)] uppercase tracking-wider">Recibo Nº {receiptNumber}</p>
                         </div>
 
                         <div className="space-y-3.5 text-xs text-slate-800 mt-4 leading-relaxed">
@@ -1073,10 +1073,10 @@ export default function FinanceiroPage() {
                         {receiptMethod === "Pix" && pixKey && isPixKey(pixKey) ? (
                           <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-xs">
                             <p className="font-bold text-emerald-900">Pix Copia e Cola</p>
-                            <p className="mt-0.5 text-[10px] text-emerald-700">
+                            <p className="mt-0.5 text-[12px] text-emerald-700">
                               O cliente cola no banco e o pagamento já vem preenchido — sem gateway pago.
                             </p>
-                            <code className="mt-2 block break-all rounded-lg bg-white px-2 py-1.5 text-[10px] text-emerald-950">
+                            <code className="mt-2 block break-all rounded-lg bg-white px-2 py-1.5 text-[12px] text-emerald-950">
                               {buildPixPayload({
                                 pixKey,
                                 merchantName: trainerName || "Adestrador",
@@ -1101,14 +1101,14 @@ export default function FinanceiroPage() {
                                 setPixCopied(ok);
                                 window.setTimeout(() => setPixCopied(false), 2500);
                               }}
-                              className="mt-2 rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-bold text-white"
+                              className="mt-2 rounded-full bg-emerald-600 px-3 py-1 text-[12px] font-bold text-white"
                             >
                               {pixCopied ? "✓ Copiado!" : "Copiar Pix"}
                             </button>
                           </div>
                         ) : null}
 
-                        <div className="mt-8 border-t border-slate-100 pt-5 flex flex-col items-center justify-center text-[10px] text-[var(--muted)]">
+                        <div className="mt-8 border-t border-slate-100 pt-5 flex flex-col items-center justify-center text-[12px] text-[var(--muted)]">
                           <div className="h-0.5 w-36 bg-slate-200 mb-1" />
                           <p>Assinatura do Adestrador Canino</p>
                           <p className="mt-0.5 font-bold text-slate-900">Adestro CRM</p>
