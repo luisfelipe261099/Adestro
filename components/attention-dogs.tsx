@@ -133,7 +133,7 @@ export function AttentionDogs() {
                           )}
                         </p>
                         {item.sessionsTotal > 0 && (
-                          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-2)]">
+                          <div className="mt-1 h-1.5 w-full max-w-[220px] overflow-hidden rounded-full bg-[var(--surface-2)]">
                             <div
                               className="h-full rounded-full bg-[var(--accent)]"
                               style={{ width: `${item.progressPct}%` }}
