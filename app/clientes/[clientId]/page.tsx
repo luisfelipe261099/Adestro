@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { IconUser } from "@/components/icons";
-import { dogCountLabel, isOverPackage, packageProgressLabel, planLabel } from "@/lib/labels";
+import { dogCountLabel, isOverPackage, packageProgressLabel, planLabel, plural } from "@/lib/labels";
 import { TagsEditor } from "@/components/tags-editor";
 import { type DogTrainingStatus, useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
@@ -499,7 +499,7 @@ export default function ClientProfilePage() {
               {/* Últimos treinos */}
               <SectionCard
                 title="Últimos treinos"
-                subtitle={`${clientSessions.length} registro(s) no total`}
+                subtitle={`${plural(clientSessions.length, "registro", "registros")} no total`}
                 action={
                   <Link
                     href={`/treinos?clientId=${client.id}${soleDogParam}`}

@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { plural } from "@/lib/labels";
 
 type Contract = {
   id: string;
@@ -52,7 +53,7 @@ export default function PlanosTreinoPage() {
             <h1 className="text-xl font-semibold text-[var(--foreground)]">Planos de treino</h1>
             <p className="mt-1 text-sm text-[var(--muted)]">Pacotes e contratos de sessões dos clientes.</p>
           </div>
-          <span className="text-xs font-medium text-[var(--muted)]">{activeCount} ativo(s)</span>
+          <span className="text-xs font-medium text-[var(--muted)]">{plural(activeCount, "ativo", "ativos")}</span>
         </header>
 
         {loading ? (

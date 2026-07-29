@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+import { plural } from "@/lib/labels";
+
 type PlanStatus = {
   plan: "Trial" | "Starter" | "Pro" | "Business";
   trialEndsAt: string | null;
@@ -66,7 +68,7 @@ export function PlanUsageCard() {
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700">Plano atual</p>
           <h2 className="text-base font-semibold text-indigo-950">
-            {data.plan} {data.isTrial && data.daysRemaining !== null ? `• ${data.daysRemaining} dia(s) restantes` : ""}
+            {data.plan} {data.isTrial && data.daysRemaining !== null ? `• ${plural(data.daysRemaining, "dia", "dias")} restantes` : ""}
           </h2>
         </div>
         {data.plan !== "Business" ? (

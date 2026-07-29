@@ -7,6 +7,7 @@ import Link from "next/link";
 
 
 import { PageShell } from "@/components/page-shell";
+import { plural } from "@/lib/labels";
 import { TUTOR_STEPS, TUTOR_TOUR_DONE_KEY, useTour } from "@/components/product-tour";
 import { GamificationPanel } from "@/components/gamification-panel";
 import { MonthlyReport } from "@/components/monthly-report";
@@ -759,7 +760,7 @@ export function PortalPublicClient({ token }: { token: string }) {
                         <div
                           className={`w-full max-w-[26px] rounded-t-md transition-all ${d.count > 0 ? "bg-sky-500" : "bg-slate-200"}`}
                           style={{ height: `${heightPct}%` }}
-                          title={`${d.count} treino(s)`}
+                          title={`${plural(d.count, "treino", "treinos")}`}
                         />
                       </div>
                       <span className="text-[11px] font-medium text-[var(--muted)]">{d.label}</span>
