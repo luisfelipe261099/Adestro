@@ -55,6 +55,10 @@ export default function DashboardPage() {
 
   const [tourDone, setTourDone] = useState(false);
   const [finance, setFinance] = useState<{ received: number; pending: number; overdue: number; activeContracts: number } | null>(null);
+  // Agendamentos de cliente excluído: não estão no store (a API os separa), mas
+  // contam como pendência. Sem isso o card mostraria um número e a tela de
+  // Pendências outro — a mesma divergência que o cliente reclamou.
+  const [orphanCount, setOrphanCount] = useState(0);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -83,6 +87,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     let cancelled = false;
+    fetch("/api/events?orphans=only", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (cancelled || !Array.isArray(data)) return;
+        setOrphanCount(data.length);
+      })
+      .catch(() => undefined);
+
     fetch("/api/finance/overview", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -142,7 +154,7 @@ export default function DashboardPage() {
   const dogsToSchedule = attention.filter((item) => item.level === "amber").length;
   const dogsMissingRecord = attention.filter((item) => item.level === "red").length;
 
-  const pendenciasTotal = dogsMissingRecord + awaitingConfirmation;
+  const pendenciasTotal = dogsMissingRecord + awaitingConfirmation + orphanCount;
   const checklistTotal = todayEvents.length + dogsMissingRecord;
 
   const nextEvent = useMemo(() => pickNextSession(events, now), [events, now]);
@@ -197,7 +209,10 @@ export default function DashboardPage() {
         label: "Pendências",
         value: pendenciasTotal,
         hint: "itens travados",
-        sub: `${dogsMissingRecord} treino(s) sem registro · ${awaitingConfirmation} aula(s) a confirmar`,
+        sub:
+          orphanCount > 0
+            ? `${orphanCount} agendamento(s) sem cliente · ${dogsMissingRecord} treino(s) sem registro`
+            : `${dogsMissingRecord} treino(s) sem registro · ${awaitingConfirmation} aula(s) a confirmar`,
         href: "/pendencias",
         Icon: IconAlert,
       },
@@ -218,6 +233,7 @@ export default function DashboardPage() {
       dogsToSchedule,
       dogsMissingRecord,
       awaitingConfirmation,
+      orphanCount,
       clients.length,
       finance,
       pendenciasTotal,

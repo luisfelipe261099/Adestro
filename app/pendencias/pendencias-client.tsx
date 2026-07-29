@@ -30,6 +30,9 @@ type InvoiceRow = {
 
 type ReportRow = { id: string; month?: string; status?: string };
 
+/** Agendamento cujo cliente foi excluído — sobrou no banco, sumiu das telas. */
+type OrphanRow = { id: string; day: string; time: string; dog: string; client: string };
+
 type PendingItem = {
   key: string;
   title: string;
@@ -63,6 +66,8 @@ export default function PendenciasClientPage() {
 
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [reports, setReports] = useState<ReportRow[]>([]);
+  const [orphans, setOrphans] = useState<OrphanRow[]>([]);
+  const [removing, setRemoving] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,10 +86,27 @@ export default function PendenciasClientPage() {
       })
       .catch(() => undefined);
 
+    fetch("/api/events?orphans=only", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (!cancelled && Array.isArray(data)) setOrphans(data as OrphanRow[]);
+      })
+      .catch(() => undefined);
+
     return () => {
       cancelled = true;
     };
   }, []);
+
+  async function removeOrphan(id: string) {
+    setRemoving(id);
+    try {
+      const res = await fetch(`/api/events?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (res.ok) setOrphans((list) => list.filter((o) => o.id !== id));
+    } finally {
+      setRemoving(null);
+    }
+  }
 
   const groups: PendingGroup[] = useMemo(() => {
     const todayStr = ymd(new Date(now));
@@ -181,7 +203,7 @@ export default function PendenciasClientPage() {
     ];
   }, [clients, events, sessions, invoices, reports, now]);
 
-  const total = groups.reduce((sum, group) => sum + group.items.length, 0);
+  const total = groups.reduce((sum, group) => sum + group.items.length, 0) + orphans.length;
 
   return (
     <AuthGuard role="trainer">
@@ -196,6 +218,59 @@ export default function PendenciasClientPage() {
               : `${total} ${total === 1 ? "item precisa" : "itens precisam"} da sua ação. Cada bloco explica o que é e como resolver.`}
           </p>
         </header>
+
+        {/* Agendamentos órfãos primeiro: enquanto existirem, a agenda parece
+            vazia e nenhuma outra correção fica visível para o adestrador. */}
+        {orphans.length > 0 ? (
+          <section className="mt-6 rounded-lg border border-[var(--danger)] bg-[var(--danger-bg)] p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 items-start gap-2.5">
+                <IconAlert className="mt-0.5 h-5 w-5 flex-shrink-0 text-[var(--danger)]" />
+                <div className="min-w-0">
+                  <h2 className="text-[15px] font-semibold text-[var(--foreground)]">
+                    Agendamentos sem cliente
+                  </h2>
+                  <p className="mt-0.5 text-[13px] leading-snug text-[var(--muted-strong)]">
+                    Estas aulas foram marcadas para um cliente que depois foi excluído do sistema.
+                    Elas continuam gravadas, mas <strong>não aparecem na agenda</strong> — é por isso
+                    que a agenda pode parecer mais vazia do que você esperava.
+                  </p>
+                  <p className="mt-1 text-[13px] leading-snug text-[var(--muted-strong)]">
+                    <strong className="font-semibold">Como resolver:</strong> remova as que não fazem
+                    mais sentido. Se a aula ainda vai acontecer, cadastre o cliente de novo e agende
+                    outra vez.
+                  </p>
+                </div>
+              </div>
+              <span className="flex-shrink-0 rounded-md border border-[var(--danger)] bg-[var(--surface)] px-2 py-0.5 text-[13px] font-semibold text-[var(--danger)]">
+                {orphans.length}
+              </span>
+            </div>
+
+            <ul className="mt-3 divide-y divide-[var(--border)] rounded-md bg-[var(--surface)]">
+              {orphans.map((o) => (
+                <li key={o.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
+                  <div className="min-w-0">
+                    <p className="truncate text-[14px] font-medium text-[var(--foreground)]">
+                      {o.dog || "Cão"} — {o.client || "Cliente removido"}
+                    </p>
+                    <p className="truncate text-[13px] text-[var(--muted)]">
+                      {o.day} às {o.time}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={removing === o.id}
+                    onClick={() => removeOrphan(o.id)}
+                    className="flex-shrink-0 rounded-md border border-[var(--danger)] bg-[var(--surface)] px-3 py-1.5 text-[13px] font-semibold text-[var(--danger)] disabled:opacity-60"
+                  >
+                    {removing === o.id ? "Removendo…" : "Remover"}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <div className="mt-6 space-y-4">
           {groups.map((group) => (

@@ -23,8 +23,9 @@ async function ensureTrainer(userId: string) {
   });
 }
 
-// GET /api/events
-export async function GET() {
+// GET /api/events            → agendamentos válidos (órfãos escondidos)
+// GET /api/events?orphans=only → SÓ os órfãos, para a tela de Pendências
+export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   const role = ((session.user as { role?: string }).role ?? "").toLowerCase();
@@ -48,23 +49,53 @@ export async function GET() {
     }),
   ]);
 
-  // Esconde agendamentos órfãos: o cliente foi excluído (a relação usa
-  // onDelete:SetNull → clientId vira nulo), mas o evento sobrevive com o nome
-  // gravado e continuaria aparecendo na agenda/dashboard. Turmas/coletivos têm
-  // `client` vazio e eventos ligados a um cliente atual (clientId preenchido) não
-  // são afetados. Rede de segurança para órfãos criados antes do fix do DELETE
-  // /api/clients — o registro fica no banco, mas some das telas.
+  // Agendamento órfão: o cliente foi excluído (a relação usa onDelete:SetNull →
+  // clientId vira nulo), mas o evento sobreviveu com o nome gravado. Ele não é
+  // uma aula válida, então continua fora da agenda e dos painéis.
+  //
+  // Só esconder, porém, não basta: um adestrador cuja carteira inteira virou
+  // órfã vê a agenda vazia sem nenhuma explicação, e conclui que o sistema
+  // perdeu os agendamentos dele. Por isso `?orphans=only` devolve exatamente
+  // esses registros, para a tela de Pendências mostrá-los e oferecer a limpeza.
   const currentNames = new Set(clients.map((c) => c.name));
-  const visible = events.filter(
-    (ev) => !(ev.clientId === null && !!ev.client && !currentNames.has(ev.client)),
-  );
+  const isOrphan = (ev: { clientId: string | null; client: string }) =>
+    ev.clientId === null && !!ev.client && !currentNames.has(ev.client);
+
+  const onlyOrphans = new URL(request.url).searchParams.get("orphans") === "only";
+  const selected = events.filter((ev) => (onlyOrphans ? isOrphan(ev) : !isOrphan(ev)));
 
   return NextResponse.json(
-    visible.map(({ participants, ...event }) => ({
+    selected.map(({ participants, ...event }) => ({
       ...event,
       participantDogIds: participants.map((p) => p.dogId).filter(Boolean),
     })),
   );
+}
+
+// DELETE /api/events?id=...  – remove um agendamento do próprio adestrador.
+// Existe para que a limpeza dos órfãos seja feita na tela, e não por script.
+export async function DELETE(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  const role = ((session.user as { role?: string }).role ?? "").toLowerCase();
+  if (role !== "trainer") return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+
+  const trainer = await prisma.trainer.findUnique({ where: { userId: session.user.id } });
+  if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
+
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "id é obrigatório" }, { status: 400 });
+
+  // O `where` inclui o trainerId: ninguém apaga agendamento de outro adestrador.
+  const removed = await prisma.calendarEvent.deleteMany({
+    where: { id, trainerId: trainer.id },
+  });
+
+  if (removed.count === 0) {
+    return NextResponse.json({ error: "Agendamento não encontrado" }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true });
 }
 
 function addWeeksToDate(dateStr: string, weeks: number): string {
