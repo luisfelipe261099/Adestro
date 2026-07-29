@@ -314,6 +314,12 @@ export default function ClientProfilePage() {
                             fill
                             sizes="48px"
                             unoptimized
+                            // A foto pode ser uma URL externa que saiu do ar —
+                            // sem isto o card mostra imagem quebrada. As demais
+                            // telas já caíam no silhueta padrão.
+                            onError={(event) => {
+                              event.currentTarget.src = "/images/dog-default-bolt.svg";
+                            }}
                             className="object-cover"
                           />
                         </div>
@@ -545,7 +551,7 @@ export default function ClientProfilePage() {
               {/* Portal: tarefas + mensagens */}
               <SectionCard
                 title="Portal do cliente"
-                subtitle={`Tarefas de casa: ${doneTasks}/${clientTasks.length} concluída(s)`}
+                subtitle={`Tarefas de casa: ${plural(doneTasks, "tarefa concluída", "tarefas concluídas")} de ${clientTasks.length}`}
                 action={
                   <Link href={`/portal?clientId=${client.id}`} className="text-[11.5px] font-semibold text-[var(--foreground)] hover:underline">
                     Portal →

@@ -110,7 +110,7 @@ export function PlanUsageCard() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] text-indigo-900">
             <div className="rounded-lg bg-white px-2 py-1.5 text-center">
               <span className="block font-bold">{data.limits.trainers}</span>
-              <span>Adestrador(es)</span>
+              <span>{data.limits.trainers === 1 ? "Adestrador" : "Adestradores"}</span>
             </div>
             <div className="rounded-lg bg-white px-2 py-1.5 text-center">
               <span className="block font-bold">{data.limits.dogsPerClient}</span>
