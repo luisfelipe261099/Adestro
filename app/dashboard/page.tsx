@@ -315,10 +315,13 @@ export default function DashboardPage() {
 
         {/* Foco nos cães + Prioridades da semana */}
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          {/* min-w-0: item de grid tem min-width:auto por padrão e se recusa a
+              encolher abaixo do próprio conteúdo. Sem isso a trilha inflava
+              para 495px numa viewport de 390 e o conteúdo era cortado. */}
+          <div className="min-w-0 lg:col-span-2">
             <AttentionDogs />
           </div>
-          <div data-tour="brief">
+          <div className="min-w-0" data-tour="brief">
             <DailyBriefCard />
           </div>
         </div>
