@@ -341,7 +341,7 @@ export default function ClientProfilePage() {
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[11.5px] font-semibold text-[var(--foreground)]">{progress}</span>
                                 {overPackage ? (
-                                  <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-[var(--warning)] bg-[var(--warning-bg)]">
+                                  <span className="rounded px-1.5 py-0.5 text-[12px] font-semibold text-[var(--warning)] bg-[var(--warning-bg)]">
                                     passou do pacote
                                   </span>
                                 ) : null}
