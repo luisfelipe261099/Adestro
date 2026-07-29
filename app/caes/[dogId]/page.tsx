@@ -241,11 +241,18 @@ export default function DogProfilePage() {
                 </div>
               )}
 
+              {/* As classes .btn-* já definem o tamanho da fonte no globals.css. */}
               <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
-                <Link href={`/treinos/registro?clientId=${found.client.id}&dogId=${found.dog.id}`} className="btn-primary text-[12.5px]">
+                <Link href={`/treinos/registro?clientId=${found.client.id}&dogId=${found.dog.id}`} className="btn-primary">
                   Registrar treino
                 </Link>
-                <Link href={`/treinos?clientId=${found.client.id}&dogId=${found.dog.id}`} className="btn-secondary text-[12.5px]">
+                <Link
+                  href={`/agenda?new=true&clientId=${found.client.id}&dogId=${found.dog.id}`}
+                  className="btn-secondary"
+                >
+                  Agendar aula
+                </Link>
+                <Link href={`/treinos?clientId=${found.client.id}&dogId=${found.dog.id}`} className="btn-secondary">
                   Ver todos os treinos
                 </Link>
               </div>

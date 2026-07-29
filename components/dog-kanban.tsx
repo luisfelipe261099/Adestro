@@ -8,6 +8,8 @@ import Link from "next/link";
 import { DragEvent, useMemo, useState } from "react";
 
 import { computeDogAttention } from "@/lib/home-agenda";
+import { isOverPackage } from "@/lib/labels";
+import { useNow } from "@/lib/use-now";
 import {
   DOG_TRAINING_STATUSES,
   type DogTrainingStatus,
@@ -41,9 +43,10 @@ export function DogKanban({ searchTerm }: { searchTerm: string }) {
   const [dropTarget, setDropTarget] = useState<DogTrainingStatus | null>(null);
   const [saveError, setSaveError] = useState("");
 
+  const now = useNow();
   const items = useMemo(
-    () => computeDogAttention(clients, events, sessions, new Date().getTime()),
-    [clients, events, sessions],
+    () => computeDogAttention(clients, events, sessions, now),
+    [clients, events, sessions, now],
   );
 
   const filtered = useMemo(() => {
@@ -174,16 +177,27 @@ export function DogKanban({ searchTerm }: { searchTerm: string }) {
 
                       {item.sessionsTotal > 0 && (
                         <div className="mt-2">
-                          <div className="flex items-center justify-between text-[10.5px] text-[var(--muted)]">
-                            <span>
-                              Sessão {item.sessionCount}/{item.sessionsTotal}
+                          <div className="flex items-center justify-between gap-2 text-[11.5px]">
+                            <span className="font-medium text-[var(--foreground)]">
+                              {item.sessionCount}/{item.sessionsTotal} aulas
                             </span>
-                            <span>{item.phaseLabel}</span>
+                            {/* Aviso quando o aluno já teve mais aulas do que o
+                                pacote contratado — é hora de renovar ou cobrar. */}
+                            {isOverPackage(item.sessionCount, item.sessionsTotal) ? (
+                              <span className="rounded bg-[var(--warning-bg)] px-1.5 py-0.5 text-[10.5px] font-semibold text-[var(--warning)]">
+                                passou do pacote
+                              </span>
+                            ) : null}
                           </div>
                           <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-2)]">
                             <div
-                              className="h-full rounded-full bg-[var(--accent)]"
-                              style={{ width: `${item.progressPct}%` }}
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${item.progressPct}%`,
+                                background: isOverPackage(item.sessionCount, item.sessionsTotal)
+                                  ? "var(--warning)"
+                                  : "var(--accent)",
+                              }}
                             />
                           </div>
                         </div>

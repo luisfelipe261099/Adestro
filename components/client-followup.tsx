@@ -50,14 +50,14 @@ export function ClientFollowup() {
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Acompanhamento dos clientes</h2>
-          <p className="text-[11.5px] text-[var(--muted)]">Adesão às tarefas e quem está sem responder</p>
+          <p className="text-[12.5px] text-[var(--muted)]">Adesão às tarefas e quem está sem responder</p>
         </div>
         {rows.length > 0 ? (
-          <span className="text-[11px] font-medium text-[var(--muted)]">
+          <span className="text-[12.5px] font-medium text-[var(--muted)]">
             {rows.length} {rows.length === 1 ? "cliente" : "clientes"}
           </span>
         ) : (
-          <span className="text-[11px] font-medium text-[var(--success)]">Tudo em dia</span>
+          <span className="text-[12.5px] font-medium text-[var(--success)]">Tudo em dia</span>
         )}
       </header>
 
@@ -85,13 +85,13 @@ export function ClientFollowup() {
                           style={{ width: `${r.adesao}%` }}
                         />
                       </div>
-                      <span className="text-[10.5px] text-[var(--muted)]">
+                      <span className="text-[12.5px] text-[var(--muted)]">
                         {r.done}/{r.total} tarefas · {r.adesao}%
                       </span>
                     </div>
                   </div>
                   <span
-                    className={`whitespace-nowrap text-[11px] font-medium ${
+                    className={`whitespace-nowrap text-[12.5px] font-medium ${
                       danger ? "text-[var(--danger)]" : "text-[var(--muted-strong)]"
                     }`}
                   >
