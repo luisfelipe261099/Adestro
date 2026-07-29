@@ -9,6 +9,17 @@ export function dogCountLabel(count: number): string {
 }
 
 /**
+ * Plural escrito por extenso: `plural(3, "cliente", "clientes")` → "3 clientes".
+ *
+ * Existe porque o padrão `cliente{n === 1 ? "" : "es"}` produzia "clientees", e
+ * `cão{...}"es"` produzia "cãoes". Passar as duas formas inteiras elimina a
+ * classe de erro — foi exatamente disso que o cliente reclamou.
+ */
+export function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
+/**
  * Nome do plano pronto para exibir.
  *
  * Os planos são cadastrados com nomes livres e muitos já começam com "Plano"

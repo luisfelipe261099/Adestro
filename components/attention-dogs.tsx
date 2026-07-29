@@ -11,6 +11,7 @@ import Link from "next/link";
 import { IconChevronRight } from "@/components/icons";
 import { useAppStore } from "@/lib/app-store";
 import { computeDogAttention, type AttentionLevel, type DogAttention } from "@/lib/home-agenda";
+import { isOverPackage, packageProgressLabel, plural } from "@/lib/labels";
 import { useNow } from "@/lib/use-now";
 
 const DEFAULT_DOG_PHOTO = "/images/dog-default-bolt.svg";
@@ -112,10 +113,24 @@ export function AttentionDogs() {
                           {item.clientName}
                           {item.dog.breed ? ` · ${item.dog.breed}` : ""}
                         </p>
+                        {/* Mesmo formato do quadro kanban: "4/8 aulas" e o aviso
+                            de excedente. O rótulo de fase ("Formado") saiu — o
+                            cliente pediu, e ele repetia o que a barra já diz. */}
                         <p className="truncate text-[12px] text-[var(--muted)]">
-                          {item.sessionsTotal > 0
-                            ? `Sessão ${item.sessionCount}/${item.sessionsTotal} · ${item.phaseLabel}`
-                            : `${item.sessionCount} ${item.sessionCount === 1 ? "treino registrado" : "treinos registrados"}`}
+                          {item.sessionsTotal > 0 ? (
+                            <>
+                              <span className="font-medium text-[var(--foreground)]">
+                                {packageProgressLabel(item.sessionCount, item.sessionsTotal)}
+                              </span>
+                              {isOverPackage(item.sessionCount, item.sessionsTotal) ? (
+                                <span className="ml-1.5 rounded bg-[var(--warning-bg)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--warning)]">
+                                  passou do pacote
+                                </span>
+                              ) : null}
+                            </>
+                          ) : (
+                            plural(item.sessionCount, "treino registrado", "treinos registrados")
+                          )}
                         </p>
                         {item.sessionsTotal > 0 && (
                           <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-2)]">
