@@ -10,6 +10,7 @@ import { DateField } from "@/components/date-field";
 import { EventParticipants } from "@/components/event-participants";
 import { useAppStore, type EventConflict } from "@/lib/app-store";
 import { isActiveEvent, resolveEventDate } from "@/lib/home-agenda";
+import { plural } from "@/lib/labels";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
 import { googleCalendarUrl, googleMapsLink, type IcsEvent } from "@/lib/calendar-ics";
 
@@ -535,7 +536,7 @@ export default function AgendaClientPage() {
         setPendingConflicts(null);
         setAgendaMessage(
           isCollective && collectiveDogIds.length > 0
-            ? `Turma criada com ${collectiveDogIds.length} participante(s)!`
+            ? `Turma criada com ${plural(collectiveDogIds.length, "participante", "participantes")}!`
             : "Agendamento cadastrado com sucesso!",
         );
         window.setTimeout(() => setAgendaMessage(""), 3000);

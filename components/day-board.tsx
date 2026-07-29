@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { IconChevronRight } from "@/components/icons";
 import { useAppStore } from "@/lib/app-store";
 import { IN_PROGRESS_WINDOW_MS, eventsOnDay, eventTimestamp, resolveEventDate, ymd } from "@/lib/home-agenda";
+import { plural } from "@/lib/labels";
 import { useNow } from "@/lib/use-now";
 
 type BoardCard = {
@@ -181,7 +182,7 @@ export function DayBoard() {
           </p>
         </div>
         <div className="flex flex-shrink-0 flex-col items-end gap-1">
-          <span className="text-[12.5px] font-medium text-[var(--muted)]">{totalCards} item(ns)</span>
+          <span className="text-[12.5px] font-medium text-[var(--muted)]">{plural(totalCards, "item", "itens")}</span>
           <Link
             href="/agenda?view=dia"
             className="flex items-center gap-1 text-[12.5px] font-medium text-[var(--accent-text)] hover:underline"
