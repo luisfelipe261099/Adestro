@@ -207,7 +207,7 @@ export default function PendenciasClientPage() {
 
   return (
     <AuthGuard role="trainer">
-      <main className="mx-auto w-full max-w-5xl px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-12">
+      <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-12">
         <header>
           <h1 className="text-[22px] font-semibold tracking-tight text-[var(--foreground)] sm:text-[26px]">
             Pendências
@@ -272,7 +272,7 @@ export default function PendenciasClientPage() {
           </section>
         ) : null}
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
           {groups.map((group) => (
             <section key={group.key} className="card p-4">
               <header className="flex items-start justify-between gap-3">
