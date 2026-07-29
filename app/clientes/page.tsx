@@ -2,13 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DateField } from "@/components/date-field";
 import { DogKanban } from "@/components/dog-kanban";
 import { TagsEditor } from "@/components/tags-editor";
-import { useAppStore } from "@/lib/app-store";
+import { IconUser } from "@/components/icons";
+import { dogCountLabel, planLabel as formatPlan } from "@/lib/labels";
+import { DOG_TRAINING_STATUSES, type DogTrainingStatus, useAppStore } from "@/lib/app-store";
 import { googleMapsLink } from "@/lib/calendar-ics";
 import { maskCEP, maskCPF, maskDate, maskPhone } from "@/lib/masks";
 import DOG_BREEDS from "@/lib/dog-breeds.json";
@@ -65,6 +68,18 @@ function statusStyle(status: ClientStatus): string {
   if (status === "rascunho") return "bg-amber-100 text-amber-800 border border-amber-200/50";
   return "bg-slate-100 text-slate-700";
 }
+
+// Etiqueta de FASE DO CÃO — mesma paleta do quadro kanban e da ficha, para que
+// as três telas digam a mesma coisa sobre o mesmo cão. Antes a lista de cães
+// mostrava o status do CLIENTE aqui, então o mesmo cão aparecia "Completo" no
+// quadro e "Ativo" na lista.
+const DOG_PHASE_BADGE: Record<string, string> = {
+  Ficha: "bg-slate-100 text-slate-700",
+  Ativo: "bg-sky-100 text-sky-800",
+  Completo: "bg-emerald-100 text-emerald-800",
+  Pausado: "bg-amber-100 text-amber-800",
+  Cancelado: "bg-rose-100 text-rose-800",
+};
 
 function statusLabel(status: ClientStatus): string {
   if (status === "ativos") return "Ativo";
@@ -132,12 +147,16 @@ export default function ClientsPage() {
   const events = useAppStore((state) => state.calendarEvents);
   const addClientWithDog = useAppStore((state) => state.addClientWithDog);
   const approveClient = useAppStore((state) => state.approveClient);
+  const setDogTrainingStatus = useAppStore((state) => state.setDogTrainingStatus);
   const updateClient = useAppStore((state) => state.updateClient);
   const deleteClient = useAppStore((state) => state.deleteClient);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"todos" | ClientStatus>("todos");
-  const [entityKind, setEntityKind] = useState<EntityKind>("humanos");
+  // O quadro é a visão de entrada: é onde o adestrador enxerga a carteira toda
+  // por fase de trabalho. As listas continuam a um clique.
+  const router = useRouter();
+  const [entityKind, setEntityKind] = useState<EntityKind>("quadro");
   const [showQuickFilters, setShowQuickFilters] = useState(true);
   const [sortMode, setSortMode] = useState<SortMode>("recentes");
   const [showForm, setShowForm] = useState(false);
@@ -682,6 +701,42 @@ export default function ClientsPage() {
                 className="w-full border-none bg-transparent text-[13px] text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
               />
             </label>
+
+            {/* Seletor direto por nome: quem já sabe quem procura escolhe na lista
+                em vez de digitar. Na aba Cães lista cães; nas demais, clientes. */}
+            {entityKind !== "quadro" && (
+              <select
+                value=""
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (!value) return;
+                  if (entityKind === "caes") router.push(`/caes/${value}`);
+                  else router.push(`/clientes/${value}`);
+                }}
+                aria-label={entityKind === "caes" ? "Ir para um cão" : "Ir para um cliente"}
+                className="h-10 min-w-[170px] rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 text-[13px] text-[var(--foreground)]"
+              >
+                <option value="">
+                  {entityKind === "caes" ? "Ir para um cão…" : "Ir para um cliente…"}
+                </option>
+                {entityKind === "caes"
+                  ? clients
+                      .flatMap((c) => c.dogs.map((d) => ({ id: d.id, label: `${d.name} — ${c.name}` })))
+                      .sort((a, b) => a.label.localeCompare(b.label, "pt-BR"))
+                      .map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.label}
+                        </option>
+                      ))
+                  : [...clients]
+                      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"))
+                      .map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+              </select>
+            )}
 
             {/* Filtros de status não se aplicam ao Quadro (as colunas já são as fases). */}
             {entityKind !== "quadro" && (
@@ -1305,7 +1360,10 @@ export default function ClientsPage() {
                       />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-[var(--foreground)]">{dog.name}</p>
+                      {/* O nome do cão é o caminho para a ficha dele. */}
+                      <Link href={`/caes/${dog.id}`} className="text-sm font-semibold text-[var(--foreground)] hover:underline">
+                        {dog.name}
+                      </Link>
                       <p className="text-xs text-[var(--muted)]">
                         Cliente:{" "}
                         <Link href={`/clientes/${client.id}`} className="font-medium text-[var(--foreground)] hover:underline">
@@ -1315,15 +1373,51 @@ export default function ClientsPage() {
                       </p>
                     </div>
                   </div>
-                  <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${statusStyle(status)}`}>
-                    {statusLabel(status)}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${DOG_PHASE_BADGE[dog.trainingStatus ?? "Ativo"]}`}>
+                      {dog.trainingStatus ?? "Ativo"}
+                    </span>
+                    {status !== "ativos" ? (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusStyle(status)}`}>
+                        cliente {statusLabel(status).toLowerCase()}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
+
+                {/* Trocar a fase sem precisar abrir o quadro. */}
+                <label className="mt-2 flex items-center gap-2 text-[11px] text-[var(--muted)]">
+                  Fase:
+                  <select
+                    value={dog.trainingStatus ?? "Ativo"}
+                    onChange={async (event) => {
+                      const ok = await setDogTrainingStatus(
+                        client.id,
+                        dog.id,
+                        event.target.value as DogTrainingStatus,
+                      );
+                      setSaveMessage(
+                        ok
+                          ? `${dog.name} movido para "${event.target.value}".`
+                          : "Não foi possível mudar a fase. Tente de novo.",
+                      );
+                      window.setTimeout(() => setSaveMessage(""), 3000);
+                    }}
+                    aria-label={`Fase de ${dog.name}`}
+                    className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[11px] text-[var(--foreground)]"
+                  >
+                    {DOG_TRAINING_STATUSES.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
                 <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-[var(--muted)]">
                   <p>Idade: {dog.age || "Não informada"}</p>
                   <p>Peso: {dog.weight || "Não informado"}</p>
-                  <p>Plano: {client.plan || "Personalizado"}</p>
+                  <p>{formatPlan(client.plan)}</p>
                   <p>{client.phone || "Sem telefone"}</p>
                 </div>
 
@@ -1366,49 +1460,70 @@ export default function ClientsPage() {
                       >
                         Tarefas
                       </button>
+                      <Link
+                        href={`/agenda?new=true&clientId=${client.id}&dogId=${dog.id}`}
+                        className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
+                      >
+                        Agendar
+                      </Link>
                     </div>
                   )}
-                  <Link href="/agenda" className="text-xs font-semibold text-[var(--foreground)] whitespace-nowrap">Agendar</Link>
                 </div>
               </article>
             )) : filteredClients.map((item) => {
-              const firstDog = item.client.dogs[0];
-              const firstDogId = firstDog?.id;
+              // Só pré-seleciona o cão quando o cliente tem um só. Antes era
+              // sempre dogs[0], e as ações abriam no cão errado.
+              const soleDog = item.client.dogs.length === 1 ? item.client.dogs[0] : undefined;
+              const soleDogParam = soleDog ? `&dogId=${soleDog.id}` : "";
 
               return (
                 <article key={item.client.id} className="rounded-md border border-[var(--border)] bg-white p-3 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
-                    <Link href={`/clientes/${item.client.id}`} className="group flex items-start gap-3">
-                      <div className="relative h-11 w-11 overflow-hidden rounded-full bg-sky-100">
-                        <Image
-                          src={firstDog?.photoUrl || "/images/dog-default-bolt.svg"}
-                          alt={`Foto de ${firstDog?.name || "Pet"}`}
-                          fill
-                          sizes="44px"
-                          unoptimized
-                          onError={(event) => {
-                            event.currentTarget.src = "/images/dog-default-bolt.svg";
-                          }}
-                          className="object-cover"
-                        />
-                      </div>
+                    {/* O link do cliente e os links dos cães são irmãos, nunca
+                        aninhados: <a> dentro de <a> é HTML inválido e o clique
+                        no nome do cão acabaria abrindo a ficha do tutor. */}
+                    <div className="flex items-start gap-3">
+                      <Link
+                        href={`/clientes/${item.client.id}`}
+                        aria-label={`Abrir ficha de ${item.client.name}`}
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--muted-strong)] ring-1 ring-[var(--border)]"
+                      >
+                        <IconUser className="h-6 w-6" />
+                      </Link>
                       <div>
-                        <p className="text-sm font-semibold text-[var(--foreground)] group-hover:underline">{item.client.name}</p>
+                        <Link
+                          href={`/clientes/${item.client.id}`}
+                          className="text-sm font-semibold text-[var(--foreground)] hover:underline"
+                        >
+                          {item.client.name}
+                        </Link>
                         <p className="text-xs text-[var(--muted)]">
-                          {firstDog ? `${firstDog.name} • ${firstDog.breed}` : "Sem cão cadastrado"}
+                          {item.client.dogs.length > 0
+                            ? item.client.dogs.map((dog, index) => (
+                                <span key={dog.id}>
+                                  {index > 0 ? " · " : ""}
+                                  <Link
+                                    href={`/caes/${dog.id}`}
+                                    className="font-medium text-[var(--foreground)] hover:underline"
+                                  >
+                                    {dog.name}
+                                  </Link>
+                                </span>
+                              ))
+                            : "Sem cão cadastrado"}
                         </p>
                       </div>
-                    </Link>
+                    </div>
                     <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${statusStyle(item.status)}`}>
                       {statusLabel(item.status)}
                     </span>
                   </div>
 
                   <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-[var(--muted)]">
-                    <p>Plano: {item.client.plan || "Personalizado"}</p>
+                    <p>{formatPlan(item.client.plan)}</p>
                     <p>{item.client.propertyType || "Não informado"}</p>
                     <p>{item.client.phone || "Sem telefone"}</p>
-                    <p>{item.client.dogs.length} cão(ões)</p>
+                    <p>{dogCountLabel(item.client.dogs.length)}</p>
                   </div>
 
                   <div className="mt-2 relative">
@@ -1442,7 +1557,7 @@ export default function ClientsPage() {
                           Ver cliente
                         </Link>
                         <Link
-                          href={firstDogId ? `/treinos?clientId=${item.client.id}&dogId=${firstDogId}` : "/treinos"}
+                          href={`/treinos?clientId=${item.client.id}${soleDogParam}`}
                           className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
                         >
                           Histórico
@@ -1463,6 +1578,12 @@ export default function ClientsPage() {
                         >
                           Editar
                         </Link>
+                        <Link
+                          href={`/portal?clientId=${item.client.id}`}
+                          className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--foreground)] hover:bg-slate-50 transition whitespace-nowrap"
+                        >
+                          Portal
+                        </Link>
                         <button
                           type="button"
                           onClick={() => {
@@ -1479,7 +1600,6 @@ export default function ClientsPage() {
                         </button>
                       </div>
                     )}
-                    <Link href="/portal" className="text-xs font-semibold text-[var(--foreground)] whitespace-nowrap">Portal</Link>
                   </div>
                 </article>
               );

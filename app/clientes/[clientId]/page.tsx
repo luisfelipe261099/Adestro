@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { IconUser } from "@/components/icons";
+import { dogCountLabel, isOverPackage, packageProgressLabel, planLabel } from "@/lib/labels";
 import { TagsEditor } from "@/components/tags-editor";
 import { type DogTrainingStatus, useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
@@ -156,8 +158,27 @@ export default function ClientProfilePage() {
     return { paid: sum("Pago"), pending: sum("Pendente"), overdue: sum("Atrasado") };
   }, [contracts]);
 
+  // Treinos realizados por cão, para mostrar "4/8 aulas" na ficha.
+  const sessionsByDog = useMemo(() => {
+    const map = new Map<string, number>();
+    const bump = (dogId?: string | null) => {
+      if (!dogId) return;
+      map.set(dogId, (map.get(dogId) ?? 0) + 1);
+    };
+    for (const session of sessions) {
+      bump(session.dogId);
+      for (const dogSession of session.dogSessions ?? []) {
+        if (dogSession.dogId && dogSession.dogId !== session.dogId) bump(dogSession.dogId);
+      }
+    }
+    return map;
+  }, [sessions]);
+
   const isDraft = /rascunho/i.test(client?.status ?? "");
-  const firstDog = client?.dogs[0];
+  // Só pré-seleciona o cão quando não há ambiguidade. Antes usava dogs[0], e
+  // com dois cães as ações abriam sempre no primeiro do cadastro.
+  const soleDog = client?.dogs.length === 1 ? client.dogs[0] : undefined;
+  const soleDogParam = soleDog ? `&dogId=${soleDog.id}` : "";
   const doneTasks = clientTasks.filter((t) => t.completed).length;
 
   return (
@@ -184,15 +205,10 @@ export default function ClientProfilePage() {
             <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-start gap-4">
-                  <div className="relative h-16 w-16 overflow-hidden rounded-full bg-sky-100">
-                    <Image
-                      src={firstDog?.photoUrl || "/images/dog-default-bolt.svg"}
-                      alt={`Foto de ${firstDog?.name || "cão"}`}
-                      fill
-                      sizes="64px"
-                      unoptimized
-                      className="object-cover"
-                    />
+                  {/* Avatar humano: esta ficha é da PESSOA. Antes mostrava a foto
+                      do primeiro cão, o que fazia o tutor parecer o cachorro. */}
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--muted-strong)] ring-1 ring-[var(--border)]">
+                    <IconUser className="h-8 w-8" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -206,7 +222,7 @@ export default function ClientProfilePage() {
                       </span>
                     </div>
                     <p className="mt-0.5 text-[12.5px] text-[var(--muted)]">
-                      {client.dogs.length} cão(ões) · Plano {client.plan || "Personalizado"}
+                      {dogCountLabel(client.dogs.length)} · {planLabel(client.plan)}
                     </p>
                     <div className="mt-2 relative">
                       <TagsEditor clientId={client.id} initialTags={client.tags ?? []} />
@@ -223,16 +239,19 @@ export default function ClientProfilePage() {
                   >
                     💬 WhatsApp
                   </a>
-                  <Link href="/agenda?new=true" className="btn-secondary text-[12px]">
+                  {/* Todas as ações carregam o cliente desta ficha. O cão só é
+                      pré-selecionado quando é o único — com vários, quem escolhe
+                      é o adestrador, e não a ordem do cadastro. */}
+                  <Link href={`/agenda?new=true&clientId=${client.id}${soleDogParam}`} className="btn-secondary text-[12px]">
                     📆 Agendar aula
                   </Link>
-                  <Link href="/treinos/registro" className="btn-secondary text-[12px]">
+                  <Link href={`/treinos/registro?clientId=${client.id}${soleDogParam}`} className="btn-secondary text-[12px]">
                     📝 Registrar treino
                   </Link>
-                  <Link href="/portal" className="btn-secondary text-[12px]">
+                  <Link href={`/portal?clientId=${client.id}`} className="btn-secondary text-[12px]">
                     🔗 Portal
                   </Link>
-                  <Link href="/financeiro?vender=true" className="btn-secondary text-[12px]">
+                  <Link href={`/financeiro?vender=true&clienteId=${client.id}`} className="btn-secondary text-[12px]">
                     💰 Vender pacote
                   </Link>
                   <Link href={`/clientes/${client.id}/editar`} className="btn-secondary text-[12px]">
@@ -278,6 +297,10 @@ export default function ClientProfilePage() {
                 ) : (
                   client.dogs.map((dog) => {
                     const phase = (dog.trainingStatus ?? "Ativo") as DogTrainingStatus;
+                    const done = sessionsByDog.get(dog.id) ?? 0;
+                    const total = dog.sessionsTotal ?? 0;
+                    const progress = packageProgressLabel(done, total);
+                    const overPackage = isOverPackage(done, total);
                     return (
                       <Link
                         key={dog.id}
@@ -306,6 +329,30 @@ export default function ClientProfilePage() {
                             {dog.age ? ` · ${dog.age}` : ""}
                             {dog.weight ? ` · ${dog.weight}` : ""}
                           </p>
+                          {/* Pacote contratado: quantas aulas já foram dadas. */}
+                          {progress ? (
+                            <div className="mt-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[11.5px] font-semibold text-[var(--foreground)]">{progress}</span>
+                                {overPackage ? (
+                                  <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-[var(--warning)] bg-[var(--warning-bg)]">
+                                    passou do pacote
+                                  </span>
+                                ) : null}
+                              </div>
+                              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-2)]">
+                                <div
+                                  className="h-full rounded-full"
+                                  style={{
+                                    width: `${Math.min(100, Math.round((done / total) * 100))}%`,
+                                    background: overPackage ? "var(--warning)" : "var(--accent)",
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="mt-0.5 text-[11.5px] text-[var(--muted)]">Sem pacote contratado</p>
+                          )}
                           <p className="mt-0.5 text-[11px] font-medium text-[var(--muted)]">Ver ficha completa →</p>
                         </div>
                       </Link>
@@ -321,7 +368,7 @@ export default function ClientProfilePage() {
                 title="Próximas aulas"
                 subtitle="Agendamentos futuros e recorrências deste cliente"
                 action={
-                  <Link href="/agenda" className="text-[11.5px] font-semibold text-[var(--foreground)] hover:underline">
+                  <Link href={`/agenda?view=semana`} className="text-[11.5px] font-semibold text-[var(--foreground)] hover:underline">
                     Agenda →
                   </Link>
                 }
@@ -329,7 +376,7 @@ export default function ClientProfilePage() {
                 {clientEvents.length === 0 ? (
                   <div className="rounded-md border border-dashed border-[var(--border)] p-4 text-center">
                     <p className="text-[12px] text-[var(--muted)]">Nenhuma aula futura agendada.</p>
-                    <Link href="/agenda?new=true" className="btn-primary mt-2 inline-flex text-[12px]">
+                    <Link href={`/agenda?new=true&clientId=${client.id}${soleDogParam}`} className="btn-primary mt-2 inline-flex text-[12px]">
                       + Agendar aula
                     </Link>
                   </div>
@@ -455,7 +502,7 @@ export default function ClientProfilePage() {
                 subtitle={`${clientSessions.length} registro(s) no total`}
                 action={
                   <Link
-                    href={`/treinos?clientId=${client.id}${firstDog ? `&dogId=${firstDog.id}` : ""}`}
+                    href={`/treinos?clientId=${client.id}${soleDogParam}`}
                     className="text-[11.5px] font-semibold text-[var(--foreground)] hover:underline"
                   >
                     Histórico →
@@ -465,7 +512,7 @@ export default function ClientProfilePage() {
                 {clientSessions.length === 0 ? (
                   <div className="rounded-md border border-dashed border-[var(--border)] p-4 text-center">
                     <p className="text-[12px] text-[var(--muted)]">Nenhum treino registrado ainda.</p>
-                    <Link href="/treinos/registro" className="btn-primary mt-2 inline-flex text-[12px]">
+                    <Link href={`/treinos/registro?clientId=${client.id}${soleDogParam}`} className="btn-primary mt-2 inline-flex text-[12px]">
                       + Registrar treino
                     </Link>
                   </div>
@@ -500,7 +547,7 @@ export default function ClientProfilePage() {
                 title="Portal do cliente"
                 subtitle={`Tarefas de casa: ${doneTasks}/${clientTasks.length} concluída(s)`}
                 action={
-                  <Link href="/portal" className="text-[11.5px] font-semibold text-[var(--foreground)] hover:underline">
+                  <Link href={`/portal?clientId=${client.id}`} className="text-[11.5px] font-semibold text-[var(--foreground)] hover:underline">
                     Portal →
                   </Link>
                 }

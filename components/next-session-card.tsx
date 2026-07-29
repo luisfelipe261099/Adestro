@@ -6,7 +6,8 @@ import Link from "next/link";
 
 import { IconArrowRight, IconClock, IconDog, IconPlus, IconWhatsApp } from "@/components/icons";
 import { useAppStore } from "@/lib/app-store";
-import { eventTimestamp, parsePlanTotal, relativeDayLabel } from "@/lib/home-agenda";
+import { absoluteDayLabel, parsePlanTotal, pickNextSession, relativeDayLabel } from "@/lib/home-agenda";
+import { useNow } from "@/lib/use-now";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
 
 const DEFAULT_DOG_PHOTO = "/images/dog-default-bolt.svg";
@@ -28,18 +29,12 @@ export function NextSessionCard() {
   const events = useAppStore((state) => state.calendarEvents);
   const clients = useAppStore((state) => state.clients);
   const trainerName = useAppStore((state) => state.trainerName);
+  const now = useNow();
 
-  // A próxima sessão = evento futuro mais próximo. Incluímos sessões iniciadas há
-  // até 90min para que a aula "em andamento" continue sendo o foco da tela.
-  const next = useMemo(() => {
-    const now = new Date().getTime();
-    return (
-      events
-        .map((event) => ({ event, ts: eventTimestamp(event.day, event.time) }))
-        .filter((item) => item.ts >= now - 90 * 60_000)
-        .sort((a, b) => a.ts - b.ts)[0]?.event ?? null
-    );
-  }, [events]);
+  // A próxima sessão = evento ATIVO futuro mais próximo. Seletor compartilhado
+  // com o cabeçalho do dashboard — antes eram duas cópias da mesma lógica, e
+  // ambas elegiam aulas canceladas como "a próxima".
+  const next = useMemo(() => pickNextSession(events, now), [events, now]);
 
   if (!next) {
     return (
@@ -55,12 +50,12 @@ export function NextSessionCard() {
           </div>
           <div>
             <p className="text-[15px] font-semibold text-[var(--foreground)]">Nenhuma sessão agendada</p>
-            <p className="text-[12.5px] text-[var(--muted)]">
+            <p className="text-[13.5px] text-[var(--muted)]">
               Quando você agendar uma aula, ela aparece aqui com as ações rápidas.
             </p>
           </div>
         </div>
-        <Link href="/agenda?new=true" className="btn-primary mt-4 inline-flex w-fit text-[12.5px]">
+        <Link href="/agenda?new=true" className="btn-primary mt-4 inline-flex w-fit">
           <IconPlus className="h-3.5 w-3.5" />
           Criar agendamento
         </Link>
@@ -79,6 +74,15 @@ export function NextSessionCard() {
   const trainingType = dog?.trainingTypes?.[0] || next.plan || null;
   const badge = statusBadge(next.status);
   const dayLabel = relativeDayLabel(next.day);
+  const dayDate = absoluteDayLabel(next.day);
+  // "Hoje"/"Amanhã" ganham cor de destaque; datas mais distantes ficam neutras,
+  // senão tudo vira alerta e nada chama atenção.
+  const dayTone =
+    dayLabel === "Hoje"
+      ? "badge badge-success"
+      : dayLabel === "Amanhã"
+        ? "badge badge-info"
+        : "badge";
   const waUrl = buildWaUrl(
     client?.phone,
     waTemplates.lembreteTreino({ cao: next.dog, hora: next.time, adestrador: trainerName || "Adestrador" }),
@@ -90,7 +94,9 @@ export function NextSessionCard() {
       <span aria-hidden className="absolute inset-y-0 left-0 w-1.5 bg-[var(--accent)]" />
 
       <div className="flex items-center justify-between">
-        <span className="text-eyebrow flex items-center gap-1.5 text-[var(--accent-text)]">
+        {/* .text-eyebrow declara `color: var(--muted)` fora de @layer e vence
+            qualquer utility de cor — daí o style inline. */}
+        <span className="text-eyebrow flex items-center gap-1.5" style={{ color: "var(--accent-text)" }}>
           <IconClock className="h-3.5 w-3.5" />
           Próxima sessão
         </span>
@@ -112,38 +118,52 @@ export function NextSessionCard() {
           />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-[26px] font-bold leading-none tracking-tight text-[var(--foreground)]">
               {next.time}
             </span>
-            <span className="text-[13px] font-medium text-[var(--muted)]">{dayLabel}</span>
+            <span className={`${dayTone} h-6 px-2 text-[13px] font-semibold uppercase tracking-wide`}>
+              {dayLabel}
+            </span>
+            {dayDate ? (
+              <span className="text-[13px] font-medium text-[var(--muted)]">{dayDate}</span>
+            ) : null}
           </div>
           <p className="mt-1.5 truncate text-[16px] font-semibold text-[var(--foreground)]">
             {next.dog}
             {dog?.breed ? <span className="font-normal text-[var(--muted)]"> · {dog.breed}</span> : null}
             {dog?.age ? <span className="font-normal text-[var(--muted)]"> · {dog.age}</span> : null}
           </p>
-          <p className="mt-0.5 truncate text-[12.5px] text-[var(--muted)]">{next.client}</p>
-          <p className="mt-0.5 truncate text-[12.5px] text-[var(--muted)]">
+          <p className="mt-0.5 truncate text-[13.5px] text-[var(--muted)]">{next.client}</p>
+          <p className="mt-0.5 truncate text-[13.5px] text-[var(--muted)]">
             {sessionLabel ?? "Sessão avulsa"}
             {trainingType ? <span> · Foco: {trainingType}</span> : null}
           </p>
         </div>
       </div>
 
+      {/* As classes .btn-* definem o tamanho da fonte no globals.css e, por
+          estarem fora de @layer, vencem qualquer utility do Tailwind aqui. */}
       <div className="mt-5 flex flex-wrap items-center gap-2">
-        <Link href={registroHref} className="btn-primary text-[12.5px]">
+        <Link href={registroHref} className="btn-primary">
           <IconArrowRight className="h-3.5 w-3.5" />
           Registrar sessão
         </Link>
-        <Link href={next.dogId ? `/caes/${next.dogId}` : "/clientes"} className="btn-secondary text-[12.5px]">
-          Ver ficha do cão
-        </Link>
-        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary text-[12.5px]">
+        {/* Aula coletiva nasce sem cão vinculado — sem dogId não há perfil. */}
+        {next.dogId ? (
+          <Link href={`/caes/${next.dogId}`} className="btn-secondary">
+            Perfil e histórico de treinos
+          </Link>
+        ) : (
+          <Link href="/clientes" className="btn-secondary">
+            Ver clientes da turma
+          </Link>
+        )}
+        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
           <IconWhatsApp className="h-3.5 w-3.5" />
           Enviar WhatsApp
         </a>
-        <Link href="/agenda" className="btn-secondary text-[12.5px]">
+        <Link href="/agenda?view=dia" className="btn-secondary">
           Remarcar
         </Link>
       </div>
