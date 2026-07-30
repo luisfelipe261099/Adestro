@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { ClientInvitePanel } from "@/components/client-invite-panel";
 import { DateField } from "@/components/date-field";
 import { DogKanban } from "@/components/dog-kanban";
 import { TagsEditor } from "@/components/tags-editor";
@@ -643,6 +644,7 @@ export default function ClientsPage() {
               >
                 + Novo cliente
               </button>
+              <ClientInvitePanel />
             </div>
           </div>
         </header>
