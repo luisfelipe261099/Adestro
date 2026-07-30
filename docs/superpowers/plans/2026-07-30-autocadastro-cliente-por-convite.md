@@ -10,6 +10,27 @@
 
 **Spec:** `docs/superpowers/specs/2026-07-30-autocadastro-cliente-por-convite-design.md`
 
+## Estado da execução (30/07/2026)
+
+Tasks 1 a 8 implementadas e commitadas em `feat/autocadastro-convite` (`904bd50`..`8064cd5`),
+mais `c7e4e11` (header parava de oferecer login de adestrador ao tutor).
+
+Verde: `npm run check:invite`, `npm run check:home`, `npx tsc --noEmit` (exit 0) e
+`npm run build:local`.
+
+**Task 9 não executada — sem banco.** O `.env` do repositório é dummy por design
+(aponta para `127.0.0.1:4000`, onde nada escuta) e a máquina não tem MySQL, Docker,
+`tiup` nem a credencial do TiDB Cloud. Consequência que importa mais que o teste:
+
+> O `prisma db push` da Task 2 **nunca alcançou um banco real**. `prisma generate`
+> rodou (por isso os tipos existem e o `tsc` passa), mas gerar o client não cria
+> tabela. A tabela `ClientInvite` não existe no banco que a Vercel usa — deployar
+> assim derruba `/api/client-invites` com *table doesn't exist*.
+> É a mesma falha registrada em `STATUS_IMPLEMENTACAO_DIRETORIA.md:231`.
+
+Antes de qualquer deploy: aplicar o schema no banco de produção e só então
+percorrer a Task 9.
+
 ## Global Constraints
 
 - Português do Brasil em toda string visível ao usuário, incluindo mensagens de erro.
@@ -64,7 +85,7 @@
   - `getInviteExpiryDate(days?: number): Date`
   - `clientInviteSchema` (zod) com `{ clientName: string; dogName: string; phone?: string; email?: string; breed?: string }`
 
-- [ ] **Step 1: Escrever o teste que falha**
+- [x] **Step 1: Escrever o teste que falha**
 
 Criar `scripts/check-client-invite.mts`:
 
@@ -204,7 +225,7 @@ assert.equal(
 console.log("check-client-invite: OK");
 ```
 
-- [ ] **Step 2: Rodar para ver falhar**
+- [x] **Step 2: Rodar para ver falhar**
 
 ```bash
 node --experimental-strip-types scripts/check-client-invite.mts
@@ -212,7 +233,7 @@ node --experimental-strip-types scripts/check-client-invite.mts
 
 Esperado: FALHA com `Cannot find module '../lib/client-invite.ts'`.
 
-- [ ] **Step 3: Implementar `lib/client-invite.ts`**
+- [x] **Step 3: Implementar `lib/client-invite.ts`**
 
 ```ts
 // Convite de autocadastro: o adestrador gera o link, o tutor se cadastra sozinho.
@@ -266,7 +287,7 @@ export function canReenterInvite(invite: InviteLifecycle, nowMs: number = Date.n
 }
 ```
 
-- [ ] **Step 4: Adicionar o schema em `lib/validators.ts`**
+- [x] **Step 4: Adicionar o schema em `lib/validators.ts`**
 
 Inserir depois de `csvImportRowSchema` e antes do bloco de `export type`:
 
@@ -286,7 +307,7 @@ E, junto dos demais type exports:
 export type ClientInviteInput = z.infer<typeof clientInviteSchema>;
 ```
 
-- [ ] **Step 5: Adicionar o script no `package.json`**
+- [x] **Step 5: Adicionar o script no `package.json`**
 
 Em `"scripts"`, depois de `"check:home"`:
 
@@ -294,7 +315,7 @@ Em `"scripts"`, depois de `"check:home"`:
 "check:invite": "node --experimental-strip-types scripts/check-client-invite.mts"
 ```
 
-- [ ] **Step 6: Rodar e ver passar**
+- [x] **Step 6: Rodar e ver passar**
 
 ```bash
 npm run check:invite
@@ -302,7 +323,7 @@ npm run check:invite
 
 Esperado: `check-client-invite: OK`, sem nenhum `AssertionError`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/client-invite.ts lib/validators.ts scripts/check-client-invite.mts package.json
@@ -320,7 +341,7 @@ git commit -m "feat(convite): logica pura e validacao do convite de autocadastro
 - Consumes: nada de Task 1 (independente)
 - Produces: `prisma.clientInvite` com campos `id, trainerId, label, tokenHash, tokenPrefix, expiresAt, revokedAt, clientId, createdAt, updatedAt`; `clientProfile.invite`; `trainer.clientInvites`
 
-- [ ] **Step 1: Confirmar que o banco é o local**
+- [x] **Step 1: Confirmar que o banco é o local**
 
 ```bash
 grep -o '@[^/]*' .env | head -1
@@ -328,7 +349,7 @@ grep -o '@[^/]*' .env | head -1
 
 Esperado: `@127.0.0.1:4000`. **Se apontar para qualquer host remoto, pare e pergunte** — `db push` altera o schema direto, sem migration versionada.
 
-- [ ] **Step 2: Adicionar o model**
+- [x] **Step 2: Adicionar o model**
 
 No fim de `prisma/schema.prisma`:
 
@@ -372,7 +393,7 @@ Em `model ClientProfile`, junto de `portalAccessLink`:
   invite           ClientInvite?
 ```
 
-- [ ] **Step 3: Aplicar no banco local e gerar o client**
+- [x] **Step 3: Aplicar no banco local e gerar o client**
 
 ```bash
 npx prisma db push && npx prisma generate
@@ -380,7 +401,7 @@ npx prisma db push && npx prisma generate
 
 Esperado: `Your database is now in sync with your Prisma schema.` e `Generated Prisma Client`.
 
-- [ ] **Step 4: Verificar que o client TypeScript enxerga o model**
+- [x] **Step 4: Verificar que o client TypeScript enxerga o model**
 
 ```bash
 npx tsc --noEmit -p tsconfig.json 2>&1 | head -20
@@ -388,7 +409,7 @@ npx tsc --noEmit -p tsconfig.json 2>&1 | head -20
 
 Esperado: nenhum erro novo. (Se o projeto já tiver erros pré-existentes, comparar com a saída antes da mudança.)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add prisma/schema.prisma
@@ -407,7 +428,7 @@ git commit -m "feat(convite): model ClientInvite"
 - Produces: `GET /api/client-invites` → `{ invites: InviteItem[] }`; `POST` → `{ invite: InviteItem, shareUrl: string }`; `PATCH` → `{ ok: true }`.
   `InviteItem = { id, label, tokenPrefix, status, expiresAt, clientId, clientName, createdAt }`
 
-- [ ] **Step 1: Escrever a rota**
+- [x] **Step 1: Escrever a rota**
 
 ```ts
 import { headers } from "next/headers";
@@ -590,7 +611,7 @@ export async function PATCH(request: Request) {
 }
 ```
 
-- [ ] **Step 2: Conferir a assinatura de `audit()`**
+- [x] **Step 2: Conferir a assinatura de `audit()`**
 
 ```bash
 sed -n 1,45p lib/audit.ts
@@ -598,7 +619,7 @@ sed -n 1,45p lib/audit.ts
 
 Ajustar a chamada de `audit({...})` acima para bater exatamente com o type `AuditEntry` (nomes de campo e valores aceitos em `AuditAction`). Se `"create"` não existir no union, usar o valor equivalente que existir.
 
-- [ ] **Step 3: Verificar tipos**
+- [x] **Step 3: Verificar tipos**
 
 ```bash
 npx tsc --noEmit -p tsconfig.json 2>&1 | grep -i "client-invites" | head
@@ -606,7 +627,7 @@ npx tsc --noEmit -p tsconfig.json 2>&1 | grep -i "client-invites" | head
 
 Esperado: nenhuma linha.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add app/api/client-invites/route.ts
@@ -624,7 +645,7 @@ git commit -m "feat(convite): API de convites do adestrador"
 - Consumes: `canReenterInvite`, `getInviteStatus` (Task 1); `clientInviteSchema`, `badRequest` (`lib/validators.ts`); `prisma.clientInvite` (Task 2); `PORTAL_LINK_DEFAULT_DAYS`, `buildPortalToken`, `getPortalExpiryDate`, `getTokenPrefix`, `hashPortalToken` (`lib/portal-access.ts`); `getClientKey`, `rateLimit` (`lib/rate-limit.ts`); `sendPush` (`lib/push.ts`)
 - Produces: `GET` → `{ trainerName, status, alreadyUsed }`; `POST` → `{ portalUrl }`
 
-- [ ] **Step 1: Escrever a rota**
+- [x] **Step 1: Escrever a rota**
 
 ```ts
 import { headers } from "next/headers";
@@ -824,7 +845,7 @@ async function notifyTrainer(trainerId: string, clientName: string, dogName: str
 }
 ```
 
-- [ ] **Step 2: Conferir os nomes reais de `PushSubscription` e do payload**
+- [x] **Step 2: Conferir os nomes reais de `PushSubscription` e do payload**
 
 ```bash
 sed -n 207,225p prisma/schema.prisma
@@ -833,7 +854,7 @@ sed -n 1,40p lib/push.ts
 
 Ajustar `notifyTrainer` para bater com os campos reais do model (`endpoint`, `p256dh`, `auth` podem ter outros nomes) e com o type `WebPushPayload`.
 
-- [ ] **Step 3: Verificar tipos**
+- [x] **Step 3: Verificar tipos**
 
 ```bash
 npx tsc --noEmit -p tsconfig.json 2>&1 | grep -i "invite" | head
@@ -841,7 +862,7 @@ npx tsc --noEmit -p tsconfig.json 2>&1 | grep -i "invite" | head
 
 Esperado: nenhuma linha.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add "app/api/invite/[token]/route.ts"
@@ -861,7 +882,7 @@ git commit -m "feat(convite): API publica do convite com transacao e reentrada"
 - Consumes: `GET`/`POST /api/invite/[token]` (Task 4)
 - Produces: rota `/convite/<token>` navegável
 
-- [ ] **Step 1: Server component `app/convite/[token]/page.tsx`**
+- [x] **Step 1: Server component `app/convite/[token]/page.tsx`**
 
 ```tsx
 import { InviteClient } from "./invite-client";
@@ -874,7 +895,7 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
 }
 ```
 
-- [ ] **Step 2: Client component `app/convite/[token]/invite-client.tsx`**
+- [x] **Step 2: Client component `app/convite/[token]/invite-client.tsx`**
 
 ```tsx
 "use client";
@@ -1010,7 +1031,7 @@ export function InviteClient({ token }: { token: string }) {
 }
 ```
 
-- [ ] **Step 3: Conferir as classes utilitárias**
+- [x] **Step 3: Conferir as classes utilitárias**
 
 ```bash
 grep -n "\.input\|\.btn-primary" app/globals.css | head
@@ -1018,7 +1039,7 @@ grep -n "\.input\|\.btn-primary" app/globals.css | head
 
 Se `.input` não existir, copiar as classes que `app/cadastro/cadastro-client.tsx` usa nos campos e trocar acima. Não inventar classe nova.
 
-- [ ] **Step 4: Botão "Deixar para depois" no onboarding**
+- [x] **Step 4: Botão "Deixar para depois" no onboarding**
 
 Em `portal-onboarding-client.tsx`, ao lado do botão de enviar, um link para o portal sem `/onboarding`:
 
@@ -1030,7 +1051,7 @@ Em `portal-onboarding-client.tsx`, ao lado do botão de enviar, um link para o p
 
 Usar o mesmo nome de prop do token que o componente já recebe.
 
-- [ ] **Step 5: Verificar tipos e build**
+- [x] **Step 5: Verificar tipos e build**
 
 ```bash
 npx tsc --noEmit -p tsconfig.json 2>&1 | grep -iE "convite|onboarding" | head
@@ -1038,7 +1059,7 @@ npx tsc --noEmit -p tsconfig.json 2>&1 | grep -iE "convite|onboarding" | head
 
 Esperado: nenhuma linha.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add "app/convite" "app/portal/cliente/[token]/onboarding/portal-onboarding-client.tsx"
@@ -1057,7 +1078,7 @@ git commit -m "feat(convite): tela publica de autocadastro"
 - Consumes: `/api/client-invites` (Task 3); `buildWaUrl` de `lib/whatsapp.ts`
 - Produces: `<ClientInvitePanel />`, sem props
 
-- [ ] **Step 1: Criar o componente**
+- [x] **Step 1: Criar o componente**
 
 ```tsx
 "use client";
@@ -1218,7 +1239,7 @@ export function ClientInvitePanel() {
 }
 ```
 
-- [ ] **Step 2: Conferir a assinatura de `buildWaUrl`**
+- [x] **Step 2: Conferir a assinatura de `buildWaUrl`**
 
 ```bash
 sed -n 43,53p lib/whatsapp.ts
@@ -1226,7 +1247,7 @@ sed -n 43,53p lib/whatsapp.ts
 
 Se `buildWaUrl` não aceitar telefone indefinido, montar a URL do WhatsApp sem número (`https://wa.me/?text=...`) usando o mesmo `encodeURIComponent` que o helper usa.
 
-- [ ] **Step 3: Plugar em `app/clientes/page.tsx`**
+- [x] **Step 3: Plugar em `app/clientes/page.tsx`**
 
 Importar no topo:
 
@@ -1240,7 +1261,7 @@ E renderizar dentro do mesmo `<div>` dos botões do header (por volta da linha 6
 <ClientInvitePanel />
 ```
 
-- [ ] **Step 4: Verificar tipos**
+- [x] **Step 4: Verificar tipos**
 
 ```bash
 npx tsc --noEmit -p tsconfig.json 2>&1 | grep -iE "invite-panel|clientes/page" | head
@@ -1248,7 +1269,7 @@ npx tsc --noEmit -p tsconfig.json 2>&1 | grep -iE "invite-panel|clientes/page" |
 
 Esperado: nenhuma linha.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/client-invite-panel.tsx app/clientes/page.tsx
@@ -1269,7 +1290,7 @@ git commit -m "feat(convite): painel de convites na tela de clientes"
 - Consumes: `checkLimit` (`lib/plan-limits.ts`)
 - Produces: `PATCH /api/clients` com `{ id, action: "approve" }` → `{ ok: true }` ou 402 `PLAN_LIMIT`
 
-- [ ] **Step 1: Contagem passa a ignorar Rascunho**
+- [x] **Step 1: Contagem passa a ignorar Rascunho**
 
 Em `app/api/clients/route.ts:154` e no ponto equivalente de `import-csv/route.ts`, trocar:
 
@@ -1287,7 +1308,7 @@ const currentClientCount = await prisma.clientProfile.count({
 });
 ```
 
-- [ ] **Step 2: Endpoint de aprovação**
+- [x] **Step 2: Endpoint de aprovação**
 
 Conferir primeiro se `app/api/clients/route.ts` já tem `PATCH`:
 
@@ -1343,7 +1364,7 @@ export async function PATCH(request: Request) {
 
 Se `PATCH` já existir, acrescentar o ramo `action === "approve"` dentro dele em vez de duplicar a função.
 
-- [ ] **Step 3: Grupo em Pendências**
+- [x] **Step 3: Grupo em Pendências**
 
 Em `pendencias-client.tsx`, dentro do `useMemo` dos `groups`, depois do bloco `pendingReports`:
 
@@ -1383,7 +1404,7 @@ grep -n "export function Icon" components/icons.tsx | head -20
 
 Usar um que exista; não inventar.
 
-- [ ] **Step 4: Botão aprovar**
+- [x] **Step 4: Botão aprovar**
 
 Em `app/clientes/page.tsx`, no ponto que já trata `client.status === "Rascunho"` (por volta da linha 378), acrescentar o botão que chama:
 
@@ -1397,7 +1418,7 @@ await fetch("/api/clients", {
 
 Tratar o 402: mostrar a mensagem de `error` vinda da resposta, que já explica o limite do plano.
 
-- [ ] **Step 5: Verificar tipos e testes**
+- [x] **Step 5: Verificar tipos e testes**
 
 ```bash
 npm run check:invite && npm run check:home && npx tsc --noEmit -p tsconfig.json 2>&1 | head -20
@@ -1405,7 +1426,7 @@ npm run check:invite && npm run check:home && npx tsc --noEmit -p tsconfig.json 
 
 Esperado: os dois checks passam, e nenhum erro novo de tipo.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/api/clients app/pendencias app/clientes
@@ -1425,15 +1446,15 @@ git commit -m "feat(convite): aprovacao do rascunho e limite de plano por client
 - Consumes: âncora `data-tour="client-invite"` criada na Task 6
 - Produces: nada consumido por outras tasks
 
-- [ ] **Step 1: Guia do adestrador**
+- [x] **Step 1: Guia do adestrador**
 
 Em `app/tutorial/page.tsx`, na seção de fluxo e no mapa de telas, descrever: gerar convite em Clientes → mandar o link → o tutor preenche → o cadastro chega como rascunho → conferir e aprovar. Seguir a estrutura de seções que o arquivo já usa.
 
-- [ ] **Step 2: Guia do cliente**
+- [x] **Step 2: Guia do cliente**
 
 Em `app/tutorial/cliente/page.tsx`, explicar que o primeiro acesso pode vir por um link de convite, que o cadastro leva menos de um minuto e que a ficha completa pode ser preenchida depois.
 
-- [ ] **Step 3: Passo do tour**
+- [x] **Step 3: Passo do tour**
 
 Em `components/product-tour.tsx`, acrescentar em `TRAINER_STEPS`, no formato exato dos passos existentes:
 
@@ -1447,7 +1468,7 @@ Em `components/product-tour.tsx`, acrescentar em `TRAINER_STEPS`, no formato exa
 
 Conferir os nomes de campo reais lendo um passo existente antes de escrever.
 
-- [ ] **Step 4: Rodar o build**
+- [x] **Step 4: Rodar o build**
 
 ```bash
 npm run build:local
@@ -1455,7 +1476,7 @@ npm run build:local
 
 Esperado: build conclui sem erro. (`build` normal roda `prisma db push` — usar `build:local`.)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/tutorial components/product-tour.tsx
