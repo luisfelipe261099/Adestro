@@ -100,13 +100,25 @@ INVITE_MAX_DAYS = 30
 
 normalizeInviteDays(value?: number): number
 
-getInviteStatus({ revokedAt, expiresAt, clientId }):
-  "Revogado" | "Expirado" | "Usado" | "Pendente"
+getInviteStatus({ revokedAt, expiresAt, clientId }, nowMs?):
+  "Revogado" | "Usado" | "Expirado" | "Pendente"
+
+canReenterInvite({ revokedAt, expiresAt, clientId }, nowMs?): boolean
 ```
 
-A **ordem** de `getInviteStatus` é regra de negócio: revogado vence expirado
-(revogar foi decisão do adestrador; dizer "expirado" sugeriria que basta
-esperar), e ambos vencem usado. Mesma ordem do `getPortalLinkStatus` existente.
+A **ordem** de `getInviteStatus` é regra de negócio, nesta sequência:
+
+1. `Revogado` vence tudo — foi decisão explícita do adestrador, e dizer
+   "expirado" sugeriria que basta esperar ou reabrir.
+2. `Usado` vence `Expirado` — o convite converteu em cliente, que é o desfecho
+   de sucesso. Mostrar "Expirado" num convite que virou cadastro leria como
+   falha.
+3. `Expirado` vence `Pendente`.
+
+`canReenterInvite` é outra pergunta e por isso é outra função: exige
+`clientId` preenchido, **e** não revogado, **e** não expirado.
+
+Ambas recebem `nowMs` opcional para serem testáveis sem depender do relógio.
 
 `clientInviteSchema` (zod) em `lib/validators.ts`, junto dos demais:
 `clientName` e `dogName` obrigatórios; `phone`, `email`, `breed` opcionais.
