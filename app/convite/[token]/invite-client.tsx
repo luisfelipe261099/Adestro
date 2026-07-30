@@ -6,13 +6,18 @@ import { BrandMark } from "@/components/brand-mark";
 type InviteInfo = { trainerName: string; alreadyUsed: boolean };
 
 function Shell({ children }: { children: React.ReactNode }) {
+  // A largura fica no filho, e nao no <main>: globals.css tem
+  // `#__next, main { max-width: 100% }` FORA de @layer, e no Tailwind 4 uma
+  // regra sem layer vence as utilities — um max-w-* aqui seria ignorado.
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5 py-10">
-      <div className="mb-6 flex items-center gap-2">
-        <BrandMark />
-        <span className="text-sm font-semibold">Adestro</span>
+    <main className="flex min-h-dvh flex-col justify-center px-5 py-10">
+      <div className="mx-auto w-full max-w-md">
+        <div className="mb-6 flex items-center gap-2">
+          <BrandMark />
+          <span className="text-sm font-semibold">Adestro</span>
+        </div>
+        {children}
       </div>
-      {children}
     </main>
   );
 }
