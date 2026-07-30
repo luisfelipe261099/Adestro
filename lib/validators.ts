@@ -53,6 +53,16 @@ export const csvImportRowSchema = z.object({
   notes: z.string().trim().max(500).optional(),
 });
 
+// Passo 1 do autocadastro por convite: só o essencial para o adestrador ter o
+// contato. O resto o tutor preenche na ficha completa, logo em seguida.
+export const clientInviteSchema = z.object({
+  clientName: z.string().trim().min(1, "Informe seu nome").max(120),
+  phone: z.string().trim().max(20).optional(),
+  email: z.string().email("E-mail inválido").max(120).optional().or(z.literal("").transform(() => undefined)),
+  dogName: z.string().trim().min(1, "Informe o nome do cão").max(80),
+  breed: z.string().trim().max(80).optional(),
+});
+
 export type ConfirmPresenceInput = z.infer<typeof confirmPresenceSchema>;
 export type PortalTaskUpdateInput = z.infer<typeof portalTaskUpdateSchema>;
 export type PortalFeedbackInput = z.infer<typeof portalFeedbackSchema>;
@@ -60,6 +70,7 @@ export type NpsResponseInput = z.infer<typeof npsResponseSchema>;
 export type TrainerSettingsInput = z.infer<typeof trainerSettingsSchema>;
 export type PushSubscriptionInput = z.infer<typeof pushSubscriptionSchema>;
 export type CsvImportRowInput = z.infer<typeof csvImportRowSchema>;
+export type ClientInviteInput = z.infer<typeof clientInviteSchema>;
 
 // Helper para retornar erro padronizado quando o schema falha.
 export function badRequest(message: string, details?: unknown) {
