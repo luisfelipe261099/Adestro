@@ -283,7 +283,7 @@ type AppState = {
     recurrence?: string;
     allowOverlap?: boolean;
   }) => Promise<AddEventResult>;
-  approveClient: (clientId: string) => Promise<boolean>;
+  approveClient: (clientId: string) => Promise<{ ok: true } | { ok: false; error: string }>;
   clearAppData: () => void;
   loadFromDB: () => Promise<void>;
 };
@@ -1007,11 +1007,16 @@ export const useAppStore = create<AppState>()(
             body: JSON.stringify({ clientId, status: "Ativo" }),
           });
 
-          if (!response.ok) return false;
+          if (!response.ok) {
+            // Devolve o motivo: aprovar pode esbarrar no limite do plano (402),
+            // e falhar em silêncio deixaria o adestrador clicando sem entender.
+            const data = await response.json().catch(() => ({}));
+            return { ok: false as const, error: data.error ?? "Não foi possível aprovar o cadastro." };
+          }
           await get().loadFromDB();
-          return true;
+          return { ok: true as const };
         } catch {
-          return false;
+          return { ok: false as const, error: "Falha de conexão ao aprovar o cadastro." };
         }
       },
       updateClient: async (payload) => {

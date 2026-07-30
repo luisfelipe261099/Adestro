@@ -46,7 +46,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nenhuma linha valida no CSV. Cabecalho esperado: name,phone,email,dogName,dogBreed,notes" }, { status: 400 });
   }
 
-  const currentClientCount = await prisma.clientProfile.count({ where: { trainerId: trainer.id } });
+  // Rascunho (cadastro por convite ainda não aprovado) não ocupa vaga no plano.
+  const currentClientCount = await prisma.clientProfile.count({
+    where: { trainerId: trainer.id, status: { not: "Rascunho" } },
+  });
   const created: string[] = [];
   const skipped: Array<{ row: number; reason: string }> = [];
 

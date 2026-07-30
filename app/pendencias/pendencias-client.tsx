@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { AuthGuard } from "@/components/auth-guard";
-import { IconAlert, IconCalendar, IconChevronRight, IconDollar, IconDog, IconReport } from "@/components/icons";
+import { IconAlert, IconCalendar, IconChevronRight, IconDollar, IconDog, IconReport, IconUser } from "@/components/icons";
 import { useAppStore } from "@/lib/app-store";
 import {
   computeDogAttention,
@@ -159,7 +159,28 @@ export default function PendenciasClientPage() {
         href: "/relatorios",
       }));
 
+    // 5) Cadastros que chegaram pelo link de convite e ninguém conferiu ainda.
+    const pendingClients = clients
+      .filter((c) => (c.status ?? "") === "Rascunho")
+      .map((c) => ({
+        key: `cadastro-${c.id}`,
+        title: c.name,
+        detail: "Cadastro preenchido pelo próprio tutor. Confira os dados e aprove.",
+        actionLabel: "Abrir cadastro",
+        href: `/clientes/${c.id}`,
+      }));
+
     return [
+      {
+        key: "cadastros",
+        title: "Cadastros aguardando aprovação",
+        what: "Tutores que preencheram a ficha pelo link de convite e ainda não foram aprovados.",
+        why: "Enquanto não aprovar, o cliente não entra na sua carteira nem aparece nos relatórios.",
+        Icon: IconUser,
+        tone: "text-[var(--accent)]",
+        items: pendingClients,
+        emptyLabel: "Nenhum cadastro esperando aprovação.",
+      },
       {
         key: "treinos",
         title: "Treinos sem registro",
