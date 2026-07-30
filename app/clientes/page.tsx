@@ -1432,11 +1432,13 @@ export default function ClientsPage() {
                     <button
                       type="button"
                       onClick={async () => {
-                        const ok = await approveClient(client.id);
-                        if (ok) {
-                          setSaveMessage("Ficha de onboarding de " + client.name + " aprovada com sucesso!");
-                          window.setTimeout(() => setSaveMessage(""), 4000);
-                        }
+                        const result = await approveClient(client.id);
+                        setSaveMessage(
+                          result.ok
+                            ? "Ficha de onboarding de " + client.name + " aprovada com sucesso!"
+                            : result.error,
+                        );
+                        window.setTimeout(() => setSaveMessage(""), 5000);
                       }}
                       className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-amber-700 hover:bg-amber-100 transition-colors"
                     >
@@ -1544,11 +1546,13 @@ export default function ClientsPage() {
                       <button
                         type="button"
                         onClick={async () => {
-                          const ok = await approveClient(item.client.id);
-                          if (ok) {
-                            setSaveMessage("Ficha de onboarding de " + item.client.name + " aprovada com sucesso!");
-                            window.setTimeout(() => setSaveMessage(""), 4000);
-                          }
+                          const result = await approveClient(item.client.id);
+                          setSaveMessage(
+                            result.ok
+                              ? "Ficha de onboarding de " + item.client.name + " aprovada com sucesso!"
+                              : result.error,
+                          );
+                          window.setTimeout(() => setSaveMessage(""), 5000);
                         }}
                         className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-amber-700 hover:bg-amber-100 transition-colors"
                       >

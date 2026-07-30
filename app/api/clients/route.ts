@@ -150,8 +150,12 @@ export async function POST(request: Request) {
   const trainer = await ensureTrainer(session.user.id);
   if (!trainer) return NextResponse.json({ error: "Adestrador não encontrado" }, { status: 404 });
 
-  // Enforcement de limite de clientes por plano (módulo 1 §SaaS)
-  const currentClientCount = await prisma.clientProfile.count({ where: { trainerId: trainer.id } });
+  // Enforcement de limite de clientes por plano (módulo 1 §SaaS).
+  // Rascunho é cadastro que o tutor preencheu pelo convite e o adestrador ainda
+  // não aprovou: não ocupa vaga. Quem cobra o limite é a aprovação (ver PATCH).
+  const currentClientCount = await prisma.clientProfile.count({
+    where: { trainerId: trainer.id, status: { not: "Rascunho" } },
+  });
   const limitCheck = checkLimit({
     plan: trainer.plan,
     resource: "client",
@@ -357,10 +361,37 @@ export async function PATCH(request: Request) {
   // Confirma que o cliente pertence a este adestrador (segurança).
   const owned = await prisma.clientProfile.findFirst({
     where: { id: body.clientId, trainerId: trainer.id },
-    select: { id: true },
+    select: { id: true, status: true },
   });
   if (!owned) {
     return NextResponse.json({ error: "Cliente não encontrado" }, { status: 404 });
+  }
+
+  // Aprovar um cadastro que chegou pelo convite: Rascunho não ocupa vaga no
+  // plano, então é aqui que o limite é cobrado. A checagem fica no PATCH e não
+  // num endpoint próprio de "aprovar" para valer por qualquer caminho da UI.
+  const isApproving =
+    owned.status === "Rascunho" && body.status !== undefined && body.status !== "Rascunho";
+  if (isApproving) {
+    const activeCount = await prisma.clientProfile.count({
+      where: { trainerId: trainer.id, status: { not: "Rascunho" } },
+    });
+    const limitCheck = checkLimit({
+      plan: trainer.plan,
+      resource: "client",
+      currentCount: activeCount,
+    });
+    if (!limitCheck.ok) {
+      return NextResponse.json(
+        {
+          error: limitCheck.reason,
+          code: "PLAN_LIMIT",
+          limit: limitCheck.limit,
+          current: limitCheck.current,
+        },
+        { status: 402 },
+      );
+    }
   }
 
   try {
