@@ -106,7 +106,7 @@ export default function AuditPage() {
           </header>
 
           <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 text-[12px] font-bold">
-            {["", "client", "session", "contract", "invoice", "settings", "template", "portal-link", "csv", "export"].map((scope) => (
+            {["", "client", "session", "contract", "invoice", "settings", "template", "portal-link", "invite", "csv", "export"].map((scope) => (
               <button
                 key={scope}
                 type="button"

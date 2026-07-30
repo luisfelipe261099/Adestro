@@ -19,6 +19,8 @@ export type AuditAction =
   | "template.updated"
   | "portal-link.created"
   | "portal-link.revoked"
+  | "invite.created"
+  | "invite.revoked"
   | "csv.imported"
   | "export.lgpd"
   | "session.nps";
