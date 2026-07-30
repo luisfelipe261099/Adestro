@@ -99,6 +99,9 @@ export function SiteHeader() {
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
   const isPublicPage = pathname === "/" || pathname === "/cadastro" || isLoginPage;
+  // Convite e portal são telas do tutor, não vitrine do produto: "Entrar" e
+  // "Criar conta grátis" levariam ele ao cadastro de adestrador.
+  const isTutorPage = pathname.startsWith("/convite/") || pathname.startsWith("/portal");
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [secondaryOpen, setSecondaryOpen] = useState(false);
@@ -272,7 +275,7 @@ export function SiteHeader() {
               >
                 Sair
               </button>
-            ) : !isLoginPage ? (
+            ) : !isLoginPage && !isTutorPage ? (
               <>
                 <Link href="/login" className="btn-secondary text-[12.5px]">
                   Entrar
