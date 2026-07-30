@@ -4,6 +4,17 @@ import { PageShell } from "@/components/page-shell";
 
 const clientSteps = [
   {
+    title: "Fazer seu cadastro pelo link de convite",
+    goal: "Entrar no sistema do adestrador sem precisar de conta nem senha.",
+    details: [
+      "O adestrador manda um link de convite. Abra e preencha cinco campos: seu nome, WhatsApp, e-mail, nome e raça do cão.",
+      "Ao continuar, a ficha completa do cão abre em seguida — vacinas, rotina, temperamento e objetivos.",
+      "Sem tempo agora? Toque em 'Deixar para depois'. Seu cadastro já está salvo e você completa quando puder.",
+      "Ao terminar, guarde o link do seu portal. Se perder, reabra o link do convite nos primeiros dias que ele te leva de volta.",
+      "O convite vence (7 dias, em geral) e serve uma vez. Depois disso, peça um link novo ao adestrador.",
+    ],
+  },
+  {
     title: "Entrar no portal",
     goal: "Acessar o acompanhamento do cão com segurança.",
     details: [
@@ -88,6 +99,14 @@ const clientFaq = [
   {
     q: "O link parou de funcionar",
     a: "O link pode ter expirado ou sido renovado. Peça um novo ao adestrador pelo WhatsApp.",
+  },
+  {
+    q: "Fechei a página logo depois do cadastro e perdi o link do portal",
+    a: "Abra de novo o link de convite que você recebeu: enquanto ele estiver válido, leva direto ao seu portal. Se já tiver vencido, peça um link novo ao adestrador.",
+  },
+  {
+    q: "Me cadastrei e o adestrador disse que não apareceu",
+    a: "Todo cadastro feito pelo convite chega como rascunho e precisa da conferência do adestrador. Assim que ele aprovar, tudo passa a funcionar normalmente.",
   },
   {
     q: "Funciona no celular?",

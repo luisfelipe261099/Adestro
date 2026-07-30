@@ -116,6 +116,15 @@ export const TRAINER_STEPS: TourStep[] = [
     placement: "top",
   },
   {
+    id: "client-invite",
+    route: "/clientes",
+    selector: '[data-tour="client-invite"]',
+    title: "Deixe o tutor se cadastrar",
+    description:
+      "Em vez de digitar o cadastro, gere um link e mande no WhatsApp. O tutor preenche os próprios dados e o cão, e o cadastro chega aqui como rascunho esperando sua aprovação — nada entra na carteira sem você conferir.",
+    placement: "bottom",
+  },
+  {
     id: "treinos",
     route: "/treinos",
     selector: '[data-tour="treinos-feed"]',
