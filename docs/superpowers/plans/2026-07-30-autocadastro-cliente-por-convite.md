@@ -12,24 +12,47 @@
 
 ## Estado da execução (30/07/2026)
 
-Tasks 1 a 8 implementadas e commitadas em `feat/autocadastro-convite` (`904bd50`..`8064cd5`),
-mais `c7e4e11` (header parava de oferecer login de adestrador ao tutor).
+Tasks 1 a 8 implementadas, mergeadas na `master` e **em produção** (`a1d519c`).
 
-Verde: `npm run check:invite`, `npm run check:home`, `npx tsc --noEmit` (exit 0) e
+Verde local: `npm run check:invite`, `npm run check:home`, `npx tsc --noEmit` (exit 0),
 `npm run build:local`.
 
-**Task 9 não executada — sem banco.** O `.env` do repositório é dummy por design
-(aponta para `127.0.0.1:4000`, onde nada escuta) e a máquina não tem MySQL, Docker,
-`tiup` nem a credencial do TiDB Cloud. Consequência que importa mais que o teste:
+**Sobre o schema em produção:** não é preciso rodar `db push` à mão. O `build` do
+`package.json` — que é o que a Vercel executa, já que `vercel.json` só define crons —
+é `prisma generate && prisma db push --skip-generate && next build`. O próprio deploy
+aplica o schema. Confirmado depois de subir: `GET /api/invite/<token de 44 chars>`
+devolve **404**, não 500, provando que a query em `ClientInvite` executou contra uma
+tabela existente. (Localmente não há banco algum: o `.env` do repo é dummy de
+propósito e a máquina não tem MySQL/Docker/`tiup`.)
 
-> O `prisma db push` da Task 2 **nunca alcançou um banco real**. `prisma generate`
-> rodou (por isso os tipos existem e o `tsc` passa), mas gerar o client não cria
-> tabela. A tabela `ClientInvite` não existe no banco que a Vercel usa — deployar
-> assim derruba `/api/client-invites` com *table doesn't exist*.
-> É a mesma falha registrada em `STATUS_IMPLEMENTACAO_DIRETORIA.md:231`.
+### Task 9 — verificado em produção, com uma lacuna
 
-Antes de qualquer deploy: aplicar o schema no banco de produção e só então
-percorrer a Task 9.
+Feito sem credencial, em `https://adestro.vercel.app`:
+
+| Verificação | Resultado |
+|---|---|
+| `GET /api/invite/<44 chars>` (executa query em `ClientInvite`) | 404 + mensagem correta — tabela existe |
+| `POST /api/invite/<44 chars>` | 404 + mensagem correta |
+| `GET /convite/<token>` renderiza "Convite indisponível" | 200 |
+| `GET /api/client-invites` sem sessão | 401 "Não autenticado" |
+| Header não oferece mais "Entrar"/"Criar conta grátis" ao tutor | confirmado |
+| Regressão: `/`, `/login`, `/cadastro`, `/tutorial`, `/tutorial/cliente`, `/portal/cliente/*` | todos 200 |
+
+**Lacuna:** o lado do adestrador (gerar convite em `/clientes`, aprovar o rascunho,
+grupo em `/pendencias`) **não foi verificado** — exige login, e digitar senha em
+formulário é vedado ao agente. Percorrer os passos 1, 6 e 7 da Task 9 continua
+pendente e depende de uma pessoa logada.
+
+### Achado fora do escopo: `max-w-*` não funciona em `<main>`
+
+`app/globals.css:239` tem `#__next, main { max-width: 100% }` **fora de `@layer`**. No
+Tailwind 4 uma regra sem layer vence as utilities (cascata de layers, não de
+especificidade), então todo `max-w-*` aplicado direto num `<main>` é ignorado — são 15
+telas, incluindo `/login`, que abre o formulário com 1590px num monitor de 1600px.
+
+A tela de convite foi corrigida localmente (`a1d519c`, largura movida para um filho).
+O caso geral **não** foi mexido: seria reposicionar 15 telas de produção de uma vez,
+e a maioria não é verificável sem login. Decisão do dono do projeto.
 
 ## Global Constraints
 
