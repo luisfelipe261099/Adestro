@@ -121,6 +121,7 @@ model Trainer {
   portalTasks     PortalTask[]
   portalFeedbacks PortalFeedback[]
   portalAccessLinks PortalAccessLink[]
+  clientInvites     ClientInvite[]
   clientGamifications ClientGamification[]
   renewals        SubscriptionRenewal[]
   
@@ -187,6 +188,7 @@ model ClientProfile {
   portalTasks     PortalTask[]
   portalFeedbacks PortalFeedback[]
   portalAccessLink PortalAccessLink?
+  invite           ClientInvite?
   gamification    ClientGamification?
   clientContracts ClientContract[]
 
@@ -613,4 +615,30 @@ model EvolutionReport {
 
   @@index([trainerId])
   @@index([dogId])
+}
+
+// ─── Convite de autocadastro ──────────────────────────────────────────────────
+// O adestrador gera o link, o tutor se cadastra sozinho. Model separado do
+// PortalAccessLink de propósito: aquele é 1 link ↔ 1 cliente que já existe;
+// este é 1 link ↔ 0-ou-1 cadastro futuro.
+model ClientInvite {
+  id          String   @id @default(cuid())
+  trainerId   String
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+
+  label       String?  // "Maria do Instagram" — só o adestrador vê
+  tokenHash   String   @unique
+  tokenPrefix String
+  expiresAt   DateTime
+  revokedAt   DateTime?
+
+  // Nulo = ainda não usado. Marca o estágio do convite, não o tipo da linha.
+  clientId    String?        @unique
+  client      ClientProfile? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([trainerId])
+  @@index([expiresAt])
 }
