@@ -990,6 +990,18 @@ export function PortalOnboardingClient({ token }: { token: string }) {
             )}
           </footer>
 
+          {/* Quem chega pelo convite cai aqui logo depois do cadastro. A ficha é
+              longa: sem esta saída, abandonar no meio significaria perder o
+              acesso ao portal que acabou de ser criado. */}
+          <p className="mt-3 text-center">
+            <a
+              href={`/portal/cliente/${token}${pinQuery}`}
+              className="text-xs font-medium text-[var(--muted)] underline underline-offset-2 hover:text-[var(--foreground)]"
+            >
+              Deixar para depois
+            </a>
+          </p>
+
         </form>
       </section>
     </PageShell>
