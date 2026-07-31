@@ -25,7 +25,30 @@ devolve **404**, não 500, provando que a query em `ClientInvite` executou contr
 tabela existente. (Localmente não há banco algum: o `.env` do repo é dummy de
 propósito e a máquina não tem MySQL/Docker/`tiup`.)
 
-### Task 9 — verificado em produção, com uma lacuna
+### Task 9 — concluída em 31/07/2026
+
+O bloqueio era a falta de banco local. Resolvido: `docs/desenvolvedor/ambiente-local.md`
+sobe um MariaDB em espaço de usuário, sem root e sem instalar nada no sistema. Com ele,
+o fluxo inteiro roda de verdade.
+
+A verificação virou script — `npm run check:invite:e2e` (`scripts/check-invite-e2e.mjs`),
+**49/49 passando**. Cobre os passos 1 a 7 da Task 9, os casos de erro do passo 3, o limite
+de plano nos dois pontos onde ele é cobrado, e as rotas privadas sem sessão.
+
+Percorrido também no navegador, incluindo o lado do adestrador que nunca tinha sido
+exercitado: gerar link em `/clientes` → tutor preenche em janela isolada → redirect para o
+onboarding com os dados já preenchidos → "Deixar para depois" cai no portal → o convite
+passa a dizer "Você já se cadastrou" → o rascunho aparece na lista com o selo RASCUNHO →
+"Revisar e Aprovar" muda o cliente para Ativo → o grupo "Cadastros aguardando aprovação"
+aparece em `/pendencias` com link que resolve para `/clientes/[clientId]`.
+
+Divergência encontrada entre plano e código, e o código está certo: o plano mandava
+aprovar com `{ id, action: "approve" }`, mas a implementação usa o `PATCH /api/clients`
+genérico com `{ clientId, status }` e deriva `isApproving` do status anterior. Assim o
+limite de plano vale por **qualquer** caminho que tire o cliente de Rascunho, inclusive a
+edição manual na ficha — um endpoint dedicado deixaria essa porta lateral aberta.
+
+### Registro anterior: verificado em produção, com uma lacuna
 
 Feito sem credencial, em `https://adestro.vercel.app`:
 
@@ -1512,13 +1535,13 @@ git commit -m "docs(convite): tutorial e tour do convite de autocadastro"
 
 **Files:** nenhum (verificação)
 
-- [ ] **Step 1: Subir a aplicação**
+- [x] **Step 1: Subir a aplicação**
 
 ```bash
 npm run dev
 ```
 
-- [ ] **Step 2: Percorrer o fluxo no navegador**
+- [x] **Step 2: Percorrer o fluxo no navegador**
 
 1. Logar como adestrador, abrir `/clientes`, clicar em "Convidar cliente", gerar o link.
 2. Abrir o link numa janela anônima, preencher os cinco campos, enviar.
@@ -1528,13 +1551,13 @@ npm run dev
 6. Como adestrador, confirmar o cliente como **Rascunho** em `/clientes` e o item em `/pendencias`.
 7. Aprovar e confirmar que virou **Ativo**.
 
-- [ ] **Step 3: Casos de erro**
+- [x] **Step 3: Casos de erro**
 
 - Revogar um convite pendente e abrir o link: deve dizer que foi cancelado.
 - Alterar `expiresAt` de um convite no banco para o passado e abrir: deve dizer que venceu.
 - Abrir `/convite/token-invalido`: mensagem de convite inválido.
 
-- [ ] **Step 4: Registrar o resultado**
+- [x] **Step 4: Registrar o resultado**
 
 Reportar a saída real de `npm run check:invite`, do `npm run build:local` e o que aconteceu em cada passo do navegador. Falhou, diz que falhou e mostra a saída.
 
