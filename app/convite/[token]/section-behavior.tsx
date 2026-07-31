@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ALONE_TIME_OPTIONS,
   BITE_HISTORY_OPTIONS,
   CHILDREN_OPTIONS,
   DOGS_OPTIONS,
@@ -9,17 +8,10 @@ import {
   HANDLING_OPTIONS,
   NOISE_OPTIONS,
   PEOPLE_OPTIONS,
-  PROPERTY_TYPE_OPTIONS,
   RESOURCE_GUARDING_OPTIONS,
-  TRAINING_HISTORY_OPTIONS,
   UNWANTED_BEHAVIOR_OPTIONS,
 } from "@/lib/invite-form";
-import {
-  CheckboxField,
-  ChoiceField,
-  MultiChoiceField,
-  TextAreaField,
-} from "./invite-fields";
+import { ChoiceField, MultiChoiceField, TextAreaField } from "./invite-fields";
 
 export type BehaviorSectionValue = {
   energy: string;
@@ -36,14 +28,6 @@ export type BehaviorSectionValue = {
   walks: string;
   plays: string;
   sleep: string;
-  aloneTime: string;
-  propertyType: string;
-  history: string;
-  goalObediencia: boolean;
-  goalComportamento: boolean;
-  goalPasseio: boolean;
-  goalAvancado: boolean;
-  goalReabilitacao: boolean;
 };
 
 export const emptyBehaviorSection = (): BehaviorSectionValue => ({
@@ -61,14 +45,6 @@ export const emptyBehaviorSection = (): BehaviorSectionValue => ({
   walks: "",
   plays: "",
   sleep: "",
-  aloneTime: "",
-  propertyType: "",
-  history: "",
-  goalObediencia: false,
-  goalComportamento: false,
-  goalPasseio: false,
-  goalAvancado: false,
-  goalReabilitacao: false,
 });
 
 // Monta o payload no formato que `inviteBehaviorSchema` espera. Chaves vazias
@@ -100,15 +76,6 @@ export function toBehaviorPayload(v: BehaviorSectionValue) {
       plays: v.plays,
       sleep: v.sleep,
     }),
-    environmentalAnalysis: clean({ aloneTime: v.aloneTime, history: v.history }),
-    trainingGoals: {
-      obediencia: v.goalObediencia,
-      comportamento: v.goalComportamento,
-      passeio: v.goalPasseio,
-      avancado: v.goalAvancado,
-      reabilitacao: v.goalReabilitacao,
-    },
-    ...(v.propertyType ? { propertyType: v.propertyType } : {}),
   };
 }
 
@@ -203,58 +170,6 @@ export function SectionBehavior({
         value={value.sleep}
         onChange={(v) => set("sleep", v)}
       />
-
-      <ChoiceField
-        label="Tempo que fica sozinho por dia"
-        options={ALONE_TIME_OPTIONS}
-        value={value.aloneTime}
-        onChange={(v) => set("aloneTime", v)}
-      />
-      <ChoiceField
-        label="Onde o cão vive"
-        options={PROPERTY_TYPE_OPTIONS}
-        value={value.propertyType}
-        onChange={(v) => set("propertyType", v)}
-      />
-      <ChoiceField
-        label="Já foi adestrado antes?"
-        options={TRAINING_HISTORY_OPTIONS}
-        value={value.history}
-        onChange={(v) => set("history", v)}
-      />
-
-      <fieldset>
-        <legend className="text-sm font-medium text-[var(--muted)]">
-          O que você quer alcançar com o adestramento
-        </legend>
-        <div className="mt-2 grid gap-2">
-          <CheckboxField
-            label="Obediência básica"
-            checked={value.goalObediencia}
-            onChange={(v) => set("goalObediencia", v)}
-          />
-          <CheckboxField
-            label="Correção de comportamento"
-            checked={value.goalComportamento}
-            onChange={(v) => set("goalComportamento", v)}
-          />
-          <CheckboxField
-            label="Passeio na guia"
-            checked={value.goalPasseio}
-            onChange={(v) => set("goalPasseio", v)}
-          />
-          <CheckboxField
-            label="Comandos avançados"
-            checked={value.goalAvancado}
-            onChange={(v) => set("goalAvancado", v)}
-          />
-          <CheckboxField
-            label="Reabilitação (medo, agressividade)"
-            checked={value.goalReabilitacao}
-            onChange={(v) => set("goalReabilitacao", v)}
-          />
-        </div>
-      </fieldset>
 
       <TextAreaField
         label="Observações adicionais sobre o comportamento do cão"

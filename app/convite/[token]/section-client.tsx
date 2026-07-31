@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { TextField } from "./invite-fields";
 
 export type ClientSectionValue = {
@@ -7,8 +8,6 @@ export type ClientSectionValue = {
   phone: string;
   cpf: string;
   email: string;
-  emergencyName: string;
-  emergencyPhone: string;
   address: {
     zipCode: string;
     street: string;
@@ -25,8 +24,6 @@ export const emptyClientSection = (): ClientSectionValue => ({
   phone: "",
   cpf: "",
   email: "",
-  emergencyName: "",
-  emergencyPhone: "",
   address: {
     zipCode: "",
     street: "",
@@ -38,6 +35,8 @@ export const emptyClientSection = (): ClientSectionValue => ({
   },
 });
 
+const onlyDigits = (v: string) => v.replace(/\D/g, "");
+
 export function SectionClient({
   value,
   onChange,
@@ -45,10 +44,48 @@ export function SectionClient({
   value: ClientSectionValue;
   onChange: (v: ClientSectionValue) => void;
 }) {
+  const [cepStatus, setCepStatus] = useState<"idle" | "buscando" | "erro">("idle");
+  // Guarda o último CEP consultado para o mesmo valor não disparar duas buscas
+  // quando o campo perde e recupera o foco.
+  const lastLookup = useRef("");
+
   const set = <K extends keyof ClientSectionValue>(key: K, v: ClientSectionValue[K]) =>
     onChange({ ...value, [key]: v });
   const setAddress = (key: keyof ClientSectionValue["address"], v: string) =>
     onChange({ ...value, address: { ...value.address, [key]: v } });
+
+  async function lookupCep(raw: string) {
+    const cep = onlyDigits(raw);
+    if (cep.length !== 8 || lastLookup.current === cep) return;
+    lastLookup.current = cep;
+    setCepStatus("buscando");
+    try {
+      // Pelo nosso servidor: a CSP do app não deixa o navegador falar com o
+      // ViaCEP direto (ver app/api/cep/[cep]/route.ts).
+      const res = await fetch(`/api/cep/${cep}`);
+      if (!res.ok) {
+        setCepStatus("erro");
+        return;
+      }
+      const data = await res.json();
+      setCepStatus("idle");
+      // Só preenche o que veio; o número e o complemento continuam com o tutor.
+      onChange({
+        ...value,
+        address: {
+          ...value.address,
+          zipCode: raw,
+          street: data.street || value.address.street,
+          neighborhood: data.neighborhood || value.address.neighborhood,
+          city: data.city || value.address.city,
+          state: data.state || value.address.state,
+        },
+      });
+    } catch {
+      // Sem internet ou serviço fora do ar: o tutor digita à mão, como antes.
+      setCepStatus("erro");
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -61,12 +98,6 @@ export function SectionClient({
         onChange={(v) => set("clientName", v)}
       />
       <TextField
-        label="CPF ou RG"
-        placeholder="000.000.000-00"
-        value={value.cpf}
-        onChange={(v) => set("cpf", v)}
-      />
-      <TextField
         label="Telefone / WhatsApp"
         required
         inputMode="tel"
@@ -74,6 +105,12 @@ export function SectionClient({
         placeholder="(41) 99999-8888"
         value={value.phone}
         onChange={(v) => set("phone", v)}
+      />
+      <TextField
+        label="CPF ou RG"
+        placeholder="000.000.000-00"
+        value={value.cpf}
+        onChange={(v) => set("cpf", v)}
       />
       <TextField
         label="E-mail"
@@ -84,17 +121,33 @@ export function SectionClient({
         onChange={(v) => set("email", v)}
       />
 
-      <p className="pt-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
-        Endereço residencial
-      </p>
-      <TextField
-        label="CEP"
-        inputMode="numeric"
-        autoComplete="postal-code"
-        placeholder="00000-000"
-        value={value.address.zipCode}
-        onChange={(v) => setAddress("zipCode", v)}
-      />
+      <div>
+        <label className="block">
+          <span className="text-sm font-medium text-[var(--muted)]">CEP</span>
+          <input
+            value={value.address.zipCode}
+            inputMode="numeric"
+            autoComplete="postal-code"
+            placeholder="00000-000"
+            maxLength={9}
+            onChange={(event) => {
+              const v = event.target.value;
+              setAddress("zipCode", v);
+              if (onlyDigits(v).length === 8) void lookupCep(v);
+            }}
+            onBlur={(event) => void lookupCep(event.target.value)}
+            className="input-field mt-2"
+          />
+        </label>
+        <p className="mt-1 text-xs text-[var(--muted)]">
+          {cepStatus === "buscando"
+            ? "Buscando endereço…"
+            : cepStatus === "erro"
+              ? "Não achamos esse CEP. Pode preencher o endereço à mão."
+              : "Digite o CEP e o endereço se preenche sozinho."}
+        </p>
+      </div>
+
       <TextField
         label="Rua"
         autoComplete="address-line1"
@@ -116,13 +169,13 @@ export function SectionClient({
           onChange={(v) => setAddress("complement", v)}
         />
       </div>
-      <TextField
-        label="Bairro"
-        placeholder="Centro"
-        value={value.address.neighborhood}
-        onChange={(v) => setAddress("neighborhood", v)}
-      />
-      <div className="grid grid-cols-[1fr_5rem] gap-3">
+      <div className="grid grid-cols-[1fr_1fr_5rem] gap-3">
+        <TextField
+          label="Bairro"
+          placeholder="Centro"
+          value={value.address.neighborhood}
+          onChange={(v) => setAddress("neighborhood", v)}
+        />
         <TextField
           label="Cidade"
           placeholder="Curitiba"
@@ -136,23 +189,6 @@ export function SectionClient({
           onChange={(v) => setAddress("state", v.toUpperCase().slice(0, 2))}
         />
       </div>
-
-      <p className="pt-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
-        Contato de emergência
-      </p>
-      <TextField
-        label="Nome"
-        placeholder="João Silva"
-        value={value.emergencyName}
-        onChange={(v) => set("emergencyName", v)}
-      />
-      <TextField
-        label="Telefone"
-        inputMode="tel"
-        placeholder="(41) 98888-7777"
-        value={value.emergencyPhone}
-        onChange={(v) => set("emergencyPhone", v)}
-      />
     </div>
   );
 }
