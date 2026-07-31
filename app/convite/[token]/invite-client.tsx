@@ -21,9 +21,6 @@ type Prefill = {
   phone?: string;
   email?: string;
   cpf?: string;
-  emergencyName?: string;
-  emergencyPhone?: string;
-  propertyType?: string;
   address?: Record<string, string> | null;
   dog?: Record<string, unknown> | null;
 } | null;
@@ -42,9 +39,14 @@ function Shell({ children, wide }: { children: React.ReactNode; wide?: boolean }
   // A largura fica no filho, e nao no <main>: globals.css tem
   // `#__next, main { max-width: 100% }` FORA de @layer, e no Tailwind 4 uma
   // regra sem layer vence as utilities — um max-w-* aqui seria ignorado.
+  //
+  // Centralização por `my-auto` no filho, e NÃO por `justify-center` no flex:
+  // com justify-center, conteúdo mais alto que a tela transborda para os dois
+  // lados e o topo fica inalcançável — não há como rolar até ele. Com margem
+  // automática, a margem colapsa quando não há espaço e a rolagem funciona.
   return (
-    <main className="flex min-h-dvh flex-col justify-center px-5 py-10">
-      <div className={`mx-auto w-full ${wide ? "max-w-xl" : "max-w-md"}`}>
+    <main className="flex min-h-dvh flex-col px-5 py-10">
+      <div className={`mx-auto my-auto w-full ${wide ? "max-w-xl" : "max-w-md"}`}>
         <div className="mb-6 flex items-center gap-2">
           <BrandMark />
           <span className="text-sm font-semibold">Adestro</span>
@@ -93,16 +95,12 @@ export function InviteClient({ token }: { token: string }) {
             phone: str(pre.phone),
             cpf: str(pre.cpf),
             email: str(pre.email),
-            emergencyName: str(pre.emergencyName),
-            emergencyPhone: str(pre.emergencyPhone),
             address: { ...emptyClientSection().address, ...(pre.address ?? {}) },
           });
           if (pre.dog) {
             const d = pre.dog as Record<string, unknown>;
             const temperament = (d.temperament ?? {}) as Record<string, unknown>;
             const routine = (d.routine ?? {}) as Record<string, unknown>;
-            const env = (d.environmentalAnalysis ?? {}) as Record<string, unknown>;
-            const goals = (d.trainingGoals ?? {}) as Record<string, unknown>;
 
             setDogValue({
               ...emptyDogSection(),
@@ -114,16 +112,7 @@ export function InviteClient({ token }: { token: string }) {
               sex: str(d.sex),
               castrated: !!d.castrated,
               weight: str(d.weight),
-              microchip: str(d.microchip),
-              color: str(d.color),
               preventiveCare: str(d.preventiveCare),
-              vaccines: Array.isArray(d.vaccines)
-                ? (d.vaccines as Array<Record<string, unknown>>).map((item) => ({
-                    name: str(item.name),
-                    date: str(item.date),
-                    validity: str(item.validity),
-                  }))
-                : [],
               dietRestrictions: str(d.dietRestrictions),
               healthConditions: str(d.healthConditions),
               veterinarian: str(d.veterinarian),
@@ -145,14 +134,6 @@ export function InviteClient({ token }: { token: string }) {
               walks: str(routine.walks),
               plays: str(routine.plays),
               sleep: str(routine.sleep),
-              aloneTime: str(env.aloneTime),
-              history: str(env.history),
-              propertyType: str(pre.propertyType),
-              goalObediencia: !!goals.obediencia,
-              goalComportamento: !!goals.comportamento,
-              goalPasseio: !!goals.passeio,
-              goalAvancado: !!goals.avancado,
-              goalReabilitacao: !!goals.reabilitacao,
             });
           }
         }
@@ -173,15 +154,12 @@ export function InviteClient({ token }: { token: string }) {
         phone: clientValue.phone,
         cpf: clientValue.cpf,
         email: clientValue.email,
-        emergencyName: clientValue.emergencyName,
-        emergencyPhone: clientValue.emergencyPhone,
         ...(hasAddress ? { address: clientValue.address } : {}),
       };
     }
     if (section === 2) {
       return {
         ...dogValue,
-        vaccines: dogValue.vaccines.filter((v) => v.name.trim()),
         photoUrl: dogValue.photoUrl || undefined,
         sex: dogValue.sex || undefined,
         preventiveCare: dogValue.preventiveCare || undefined,

@@ -9,8 +9,6 @@ import {
   TextField,
 } from "./invite-fields";
 
-export type Vaccine = { name: string; date: string; validity: string };
-
 export type DogSectionValue = {
   dogName: string;
   photoUrl: string;
@@ -20,10 +18,7 @@ export type DogSectionValue = {
   sex: string;
   castrated: boolean;
   weight: string;
-  microchip: string;
-  color: string;
   preventiveCare: string;
-  vaccines: Vaccine[];
   dietRestrictions: string;
   healthConditions: string;
   veterinarian: string;
@@ -38,10 +33,7 @@ export const emptyDogSection = (): DogSectionValue => ({
   sex: "",
   castrated: false,
   weight: "",
-  microchip: "",
-  color: "",
   preventiveCare: "",
-  vaccines: [],
   dietRestrictions: "",
   healthConditions: "",
   veterinarian: "",
@@ -58,12 +50,6 @@ export function SectionDog({
 }) {
   const set = <K extends keyof DogSectionValue>(key: K, v: DogSectionValue[K]) =>
     onChange({ ...value, [key]: v });
-
-  const setVaccine = (index: number, key: keyof Vaccine, v: string) =>
-    onChange({
-      ...value,
-      vaccines: value.vaccines.map((item, i) => (i === index ? { ...item, [key]: v } : item)),
-    });
 
   return (
     <div className="space-y-4">
@@ -108,25 +94,11 @@ export function SectionDog({
         onChange={(v) => set("castrated", v)}
       />
 
-      <div className="grid grid-cols-2 gap-3">
-        <TextField
-          label="Porte / peso"
-          placeholder="18 kg"
-          value={value.weight}
-          onChange={(v) => set("weight", v)}
-        />
-        <TextField
-          label="Cor"
-          placeholder="Preto e branco"
-          value={value.color}
-          onChange={(v) => set("color", v)}
-        />
-      </div>
       <TextField
-        label="Microchip"
-        placeholder="Nº do microchip"
-        value={value.microchip}
-        onChange={(v) => set("microchip", v)}
+        label="Porte / peso"
+        placeholder="18 kg"
+        value={value.weight}
+        onChange={(v) => set("weight", v)}
       />
 
       <ChoiceField
@@ -135,61 +107,6 @@ export function SectionDog({
         value={value.preventiveCare}
         onChange={(v) => set("preventiveCare", v)}
       />
-
-      <div>
-        <span className="text-sm font-medium text-[var(--muted)]">
-          Vacinas (opcional — nome, data e validade)
-        </span>
-        <div className="mt-2 space-y-2">
-          {value.vaccines.map((vaccine, index) => (
-            <div key={index} className="grid grid-cols-[1fr_auto] gap-2">
-              <div className="grid gap-2">
-                <input
-                  value={vaccine.name}
-                  placeholder="Nome (ex: V10, Antirrábica)"
-                  onChange={(e) => setVaccine(index, "name", e.target.value)}
-                  className="input-field"
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    value={vaccine.date}
-                    type="date"
-                    onChange={(e) => setVaccine(index, "date", e.target.value)}
-                    className="input-field"
-                  />
-                  <input
-                    value={vaccine.validity}
-                    type="date"
-                    onChange={(e) => setVaccine(index, "validity", e.target.value)}
-                    className="input-field"
-                  />
-                </div>
-              </div>
-              <button
-                type="button"
-                className="text-xs text-[var(--danger)]"
-                onClick={() =>
-                  onChange({ ...value, vaccines: value.vaccines.filter((_, i) => i !== index) })
-                }
-              >
-                Remover
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            className="text-xs font-semibold text-[var(--muted)] underline"
-            onClick={() =>
-              onChange({
-                ...value,
-                vaccines: [...value.vaccines, { name: "", date: "", validity: "" }],
-              })
-            }
-          >
-            + Adicionar vacina
-          </button>
-        </div>
-      </div>
 
       <TextAreaField
         label="Alergias ou restrições alimentares"

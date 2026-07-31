@@ -239,15 +239,22 @@ export async function POST(request: Request, { params }: Params) {
 
     // Voltou e reenviou a seção 1: atualiza, não duplica.
     if (invite.clientId) {
+      // Só o que veio. O tutor pode voltar e reenviar esta seção, e um campo
+      // ausente aqui significa "não perguntei", não "apague" — o adestrador
+      // pode ter preenchido esse dado à mão na ficha.
       await prisma.clientProfile.update({
         where: { id: invite.clientId },
         data: {
           name: data.clientName,
           phone: data.phone,
-          email: data.email ?? "",
-          cpf: data.cpf ?? "",
-          secondContactName: data.emergencyName ?? "",
-          secondContactPhone: data.emergencyPhone ?? "",
+          ...(data.email !== undefined ? { email: data.email } : {}),
+          ...(data.cpf !== undefined ? { cpf: data.cpf } : {}),
+          ...(data.emergencyName !== undefined
+            ? { secondContactName: data.emergencyName }
+            : {}),
+          ...(data.emergencyPhone !== undefined
+            ? { secondContactPhone: data.emergencyPhone }
+            : {}),
         },
       });
 
@@ -280,8 +287,8 @@ export async function POST(request: Request, { params }: Params) {
           phone: data.phone,
           email: data.email ?? "",
           cpf: data.cpf ?? "",
-          secondContactName: data.emergencyName ?? "",
-          secondContactPhone: data.emergencyPhone ?? "",
+          secondContactName: data.emergencyName ?? null,
+          secondContactPhone: data.emergencyPhone ?? null,
           status: "Rascunho", // aguarda aprovação do adestrador
         },
       });
@@ -328,22 +335,26 @@ export async function POST(request: Request, { params }: Params) {
       );
     }
     const data = parsed.data;
+    // Campo ausente não apaga: o formulário do convite pergunta um subconjunto,
+    // e o adestrador preenche o resto na ficha do cão.
+    const only = <T,>(v: T | undefined, key: string) =>
+      v === undefined ? {} : { [key]: v };
     const dogData = {
       name: data.dogName,
-      breed: data.breed ?? "",
-      birthDate: data.birthDate ?? "",
-      age: data.age ?? "",
-      sex: data.sex ?? null,
       castrated: data.castrated ?? false,
-      weight: data.weight ?? "",
-      microchip: data.microchip ?? "",
-      color: data.color ?? "",
-      preventiveCare: data.preventiveCare ?? null,
-      vaccines: data.vaccines ? JSON.stringify(data.vaccines) : null,
-      dietRestrictions: data.dietRestrictions ?? "",
-      healthConditions: data.healthConditions ?? "",
-      veterinarian: data.veterinarian ?? "",
-      photoUrl: data.photoUrl || null,
+      ...only(data.breed, "breed"),
+      ...only(data.birthDate, "birthDate"),
+      ...only(data.age, "age"),
+      ...only(data.sex, "sex"),
+      ...only(data.weight, "weight"),
+      ...only(data.microchip, "microchip"),
+      ...only(data.color, "color"),
+      ...only(data.preventiveCare, "preventiveCare"),
+      ...only(data.dietRestrictions, "dietRestrictions"),
+      ...only(data.healthConditions, "healthConditions"),
+      ...only(data.veterinarian, "veterinarian"),
+      ...(data.vaccines ? { vaccines: JSON.stringify(data.vaccines) } : {}),
+      ...(data.photoUrl ? { photoUrl: data.photoUrl } : {}),
     };
 
     const existing = firstDog(invite);
