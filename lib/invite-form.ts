@@ -1,14 +1,18 @@
-// Opções de toda pergunta fechada do formulário de convite.
+// O contrato do formulário de convite: o que pode ser respondido e como isso é
+// validado. Opções e schemas moram juntos porque são a mesma coisa — os schemas
+// são derivados das listas de opção logo abaixo.
 //
 // Existe como arquivo próprio porque as opções são lidas em dois lugares que não
 // se enxergam: o formulário do tutor e a tela do adestrador que mostra as
 // respostas. No onboarding do portal elas estão inline no JSX, e foi assim que
 // seis campos ficaram declarados, enviados e nunca renderizados sem ninguém ver.
 //
-// `value` é o que vai para o banco. `label` é o que o tutor lê.
-// Os dois diferem quando há valor legado a preservar: cães cadastrados antes
-// deste formulário já têm o valor antigo gravado, e a tela do adestrador
-// renderiza a string crua, sem tabela de/para.
+// Só depende de `zod`, e de propósito: `scripts/check-client-invite.mts` roda no
+// Node puro, que não resolve o alias `@/` nem import relativo sem extensão. Uma
+// dependência relativa aqui deixaria a lógica sem teste, e `.ts` explícito no
+// import quebra o `tsc` (TS5097).
+
+import { z } from "zod";
 
 export type InviteOption = { value: string; label: string };
 
@@ -119,3 +123,127 @@ export const TRAINING_HISTORY_OPTIONS: readonly InviteOption[] = [
   { value: "Já fez adestramento avançado", label: "Já fez adestramento avançado" },
   { value: "Está em adestramento com outro profissional", label: "Está com outro profissional" },
 ];
+
+// ─── Validação, por seção do formulário ──────────────────────────────────────
+
+// Base64 de uma foto já reduzida no navegador. O limite existe porque a rota é
+// pública e o banco guarda a string inteira num LongText.
+export const INVITE_PHOTO_MAX_BYTES = 2_000_000;
+
+const oneOf = (options: readonly InviteOption[]) =>
+  z.enum(optionValues(options) as [string, ...string[]]).optional();
+
+const manyOf = (options: readonly InviteOption[]) =>
+  z.array(z.enum(optionValues(options) as [string, ...string[]])).optional();
+
+const optionalText = (max: number) => z.string().trim().max(max).optional();
+
+// ── Seção 1: dados do cliente ────────────────────────────────────────────────
+export const inviteClientSchema = z.object({
+  clientName: z.string().trim().min(1, "Informe seu nome").max(120),
+  // Obrigatório: é por ele que o adestrador retoma quem abandona o formulário
+  // no meio, que é o motivo de o cadastro ser salvo já nesta seção.
+  phone: z.string().trim().min(8, "Informe seu WhatsApp").max(20),
+  cpf: optionalText(20),
+  email: z
+    .string()
+    .email("E-mail inválido")
+    .max(120)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  address: z
+    .object({
+      zipCode: optionalText(12),
+      street: optionalText(120),
+      number: optionalText(12),
+      complement: optionalText(60),
+      neighborhood: optionalText(80),
+      city: optionalText(80),
+      state: optionalText(2),
+    })
+    .optional(),
+  emergencyName: optionalText(120),
+  emergencyPhone: optionalText(20),
+});
+
+// ── Seção 2: dados do cão ────────────────────────────────────────────────────
+export const inviteDogSchema = z.object({
+  dogName: z.string().trim().min(1, "Informe o nome do cão").max(80),
+  breed: optionalText(80),
+  birthDate: optionalText(10),
+  age: optionalText(40),
+  sex: oneOf(SEX_OPTIONS),
+  castrated: z.boolean().optional(),
+  weight: optionalText(40),
+  microchip: optionalText(60),
+  color: optionalText(60),
+  preventiveCare: oneOf(PREVENTIVE_CARE_OPTIONS),
+  vaccines: z
+    .array(
+      z.object({
+        name: z.string().trim().max(80),
+        date: optionalText(10),
+        validity: optionalText(10),
+        alert: z.boolean().optional(),
+      }),
+    )
+    .max(20)
+    .optional(),
+  dietRestrictions: optionalText(500),
+  healthConditions: optionalText(500),
+  veterinarian: optionalText(200),
+  photoUrl: z
+    .string()
+    .max(INVITE_PHOTO_MAX_BYTES, "A foto é grande demais. Tente uma imagem menor.")
+    .optional(),
+});
+
+// ── Seção 3: comportamento e rotina ──────────────────────────────────────────
+// Nada aqui é obrigatório: é a seção mais longa, e barrar o envio por causa dela
+// perderia o cadastro inteiro de quem já respondeu as duas primeiras.
+export const inviteBehaviorSchema = z.object({
+  temperament: z
+    .object({
+      energy: oneOf(ENERGY_OPTIONS),
+      social: oneOf(PEOPLE_OPTIONS),
+      dogs: oneOf(DOGS_OPTIONS),
+      children: oneOf(CHILDREN_OPTIONS),
+      noise: manyOf(NOISE_OPTIONS),
+      biteHistory: oneOf(BITE_HISTORY_OPTIONS),
+      resourceGuarding: oneOf(RESOURCE_GUARDING_OPTIONS),
+      handling: oneOf(HANDLING_OPTIONS),
+      unwantedBehaviors: manyOf(UNWANTED_BEHAVIOR_OPTIONS),
+      behavior: optionalText(1000),
+      positive: optionalText(1000),
+    })
+    .optional(),
+  routine: z
+    .object({
+      alimentation: optionalText(500),
+      walks: optionalText(500),
+      plays: optionalText(500),
+      sleep: optionalText(500),
+    })
+    .optional(),
+  environmentalAnalysis: z
+    .object({
+      aloneTime: oneOf(ALONE_TIME_OPTIONS),
+      convive: optionalText(300),
+      history: oneOf(TRAINING_HISTORY_OPTIONS),
+    })
+    .optional(),
+  trainingGoals: z
+    .object({
+      obediencia: z.boolean().optional(),
+      comportamento: z.boolean().optional(),
+      passeio: z.boolean().optional(),
+      avancado: z.boolean().optional(),
+      reabilitacao: z.boolean().optional(),
+    })
+    .optional(),
+  propertyType: oneOf(PROPERTY_TYPE_OPTIONS),
+});
+
+export type InviteClientInput = z.infer<typeof inviteClientSchema>;
+export type InviteDogInput = z.infer<typeof inviteDogSchema>;
+export type InviteBehaviorInput = z.infer<typeof inviteBehaviorSchema>;
