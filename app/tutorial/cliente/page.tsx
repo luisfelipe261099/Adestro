@@ -7,9 +7,10 @@ const clientSteps = [
     title: "Fazer seu cadastro pelo link de convite",
     goal: "Entrar no sistema do adestrador sem precisar de conta nem senha.",
     details: [
-      "O adestrador manda um link de convite. Abra e preencha cinco campos: seu nome, WhatsApp, e-mail, nome e raça do cão.",
-      "Ao continuar, a ficha completa do cão abre em seguida — vacinas, rotina, temperamento e objetivos.",
-      "Sem tempo agora? Toque em 'Deixar para depois'. Seu cadastro já está salvo e você completa quando puder.",
+      "O adestrador manda um link de convite. São três partes: seus dados, os dados do cão e algumas perguntas sobre o comportamento dele.",
+      "No endereço, digite só o CEP: rua, bairro, cidade e estado se preenchem sozinhos. Você completa o número.",
+      "Cada 'Avançar' já salva. Sem tempo agora? Feche a página — ao reabrir o mesmo link, você volta exatamente onde parou, mesmo em outro celular.",
+      "As perguntas de comportamento existem para o adestrador preparar a primeira aula com segurança: como o cão reage a crianças, a barulhos, se já mordeu, se protege comida ou brinquedo.",
       "Ao terminar, guarde o link do seu portal. Se perder, reabra o link do convite nos primeiros dias que ele te leva de volta.",
       "O convite vence (7 dias, em geral) e serve uma vez. Depois disso, peça um link novo ao adestrador.",
     ],

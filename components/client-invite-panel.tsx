@@ -11,13 +11,14 @@ type Invite = {
   id: string;
   label: string | null;
   tokenPrefix: string;
-  status: "Revogado" | "Usado" | "Expirado" | "Pendente";
+  status: "Revogado" | "Usado" | "Em preenchimento" | "Expirado" | "Pendente";
   expiresAt: string;
   clientName: string | null;
 };
 
 const STATUS_TONE: Record<Invite["status"], string> = {
   Pendente: "text-[var(--accent)]",
+  "Em preenchimento": "text-[var(--accent)]",
   Usado: "text-[var(--success,var(--accent))]",
   Expirado: "text-[var(--muted)]",
   Revogado: "text-[var(--muted)]",
@@ -180,7 +181,9 @@ export function ClientInvitePanel() {
                     <span className="ml-2 text-[var(--muted)]">virou {invite.clientName}</span>
                   )}
                 </span>
-                {invite.status === "Pendente" && (
+                {/* Também em preenchimento: o adestrador precisa poder cancelar
+                    um link que alguém começou a usar indevidamente. */}
+                {(invite.status === "Pendente" || invite.status === "Em preenchimento") && (
                   <button
                     type="button"
                     onClick={() => revoke(invite.id)}
@@ -192,6 +195,11 @@ export function ClientInvitePanel() {
               </li>
             ))}
           </ul>
+
+          <p className="mt-3 text-[12px] text-[var(--muted)]">
+            <strong>Em preenchimento</strong> é quem abriu o link e ainda não terminou. O contato já
+            está salvo como rascunho em Clientes — dá para ligar sem esperar ele voltar.
+          </p>
         </div>
       )}
     </>

@@ -25,6 +25,12 @@ export type DogProfile = {
   trainingTypes: string[];
   sessionsTotal?: number; // total de sessões do(s) contrato(s) ativo(s) — p/ progresso
   trainingStatus?: DogTrainingStatus; // fase no quadro (padrão "Ativo")
+  // Respostas do formulário de convite, como JSON cru vindo do banco.
+  // Quem exibe interpreta (components/dog-behavior-card.tsx).
+  preventiveCare?: string;
+  temperament?: string;
+  routine?: string;
+  environmentalAnalysis?: string;
 };
 
 export type ClientProfile = {
@@ -1190,6 +1196,15 @@ export const useAppStore = create<AppState>()(
               trainingStatus: (DOG_TRAINING_STATUSES as string[]).includes(String(d.trainingStatus))
                 ? (String(d.trainingStatus) as DogTrainingStatus)
                 : "Ativo",
+              // JSON cru, como veio do banco. Quem exibe é que interpreta
+              // (components/dog-behavior-card.tsx) — sem isso o adestrador não
+              // enxerga nada do que o tutor respondeu no convite.
+              preventiveCare: d.preventiveCare ? String(d.preventiveCare) : undefined,
+              temperament: d.temperament ? String(d.temperament) : undefined,
+              routine: d.routine ? String(d.routine) : undefined,
+              environmentalAnalysis: d.environmentalAnalysis
+                ? String(d.environmentalAnalysis)
+                : undefined,
             })),
           }));
 

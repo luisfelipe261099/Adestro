@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AuthGuard } from "@/components/auth-guard";
 import { IconUser } from "@/components/icons";
 import { dogCountLabel, isOverPackage, packageProgressLabel, planLabel, plural } from "@/lib/labels";
+import { DogBehaviorCard } from "@/components/dog-behavior-card";
 import { TagsEditor } from "@/components/tags-editor";
 import { type DogTrainingStatus, useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
@@ -366,6 +367,13 @@ export default function ClientProfilePage() {
                   })
                 )}
               </div>
+
+              {/* Fora do card do cão de propósito: o card é um <Link>, e aninhar
+                  conteúdo aqui dentro criaria alvo clicável dentro de alvo
+                  clicável. As respostas do convite viram seção irmã. */}
+              {client.dogs.map((dog) => (
+                <DogBehaviorCard key={`comportamento-${dog.id}`} dog={dog} />
+              ))}
             </section>
 
             <div className="mt-4 grid gap-4 lg:grid-cols-2">
