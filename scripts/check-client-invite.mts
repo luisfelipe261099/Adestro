@@ -8,6 +8,15 @@ import {
   INVITE_DEFAULT_DAYS,
   INVITE_SECTION_COUNT,
 } from "../lib/client-invite.ts";
+import {
+  DOGS_OPTIONS,
+  ENERGY_OPTIONS,
+  NOISE_OPTIONS,
+  PEOPLE_OPTIONS,
+  UNWANTED_BEHAVIOR_OPTIONS,
+  isValidOption,
+  optionValues,
+} from "../lib/invite-options.ts";
 import { clientInviteSchema } from "../lib/validators.ts";
 
 const NOW = new Date(2026, 6, 30, 12, 0, 0); // quinta, 30/07/2026 12:00
@@ -225,5 +234,38 @@ assert.equal(
   false,
   "e-mail inválido falha",
 );
+
+// ── invite-options ───────────────────────────────────────────────────────────
+// Valores legados continuam ofertáveis: cães já cadastrados os têm gravados, e
+// a tela do adestrador renderiza a string crua, sem tabela de/para.
+assert.ok(isValidOption(ENERGY_OPTIONS, "Alta energia"), "valor legado de energia");
+assert.ok(isValidOption(ENERGY_OPTIONS, "Hiperativo"), "legado 'Hiperativo' = rótulo 'Muito Alto'");
+assert.ok(isValidOption(PEOPLE_OPTIONS, "Sociável com pessoas"), "valor legado com pessoas");
+assert.ok(isValidOption(DOGS_OPTIONS, "Reativo a outros cães"), "valor legado com cães");
+
+assert.equal(isValidOption(ENERGY_OPTIONS, "Altíssima"), false, "valor inventado é recusado");
+
+// Rótulos vêm do Google Forms do adestrador.
+assert.deepEqual(
+  ENERGY_OPTIONS.map((o) => o.label),
+  ["Baixo", "Médio", "Alto", "Muito Alto"],
+  "escala de energia com as palavras do formulário",
+);
+
+// Múltipla escolha: as duas listas do formulário.
+assert.equal(NOISE_OPTIONS.length, 4, "reação a barulhos tem 4 opções");
+assert.equal(UNWANTED_BEHAVIOR_OPTIONS.length, 6, "comportamentos indesejados tem 6 opções");
+
+// Nenhuma lista pode ter valor repetido: valor é o que vai para o banco.
+for (const [nome, lista] of Object.entries({
+  ENERGY_OPTIONS,
+  PEOPLE_OPTIONS,
+  DOGS_OPTIONS,
+  NOISE_OPTIONS,
+  UNWANTED_BEHAVIOR_OPTIONS,
+})) {
+  const vals = optionValues(lista);
+  assert.equal(new Set(vals).size, vals.length, `${nome} tem valor duplicado`);
+}
 
 console.log("check-client-invite: OK");
