@@ -301,6 +301,9 @@ model Dog {
   photos                 String?       @db.Text // JSON list de URLs de fotos
   videos                 String?       @db.Text // JSON list de URLs de vídeos
   vaccines               String?       @db.LongText // JSON serializado
+  // Pergunta rápida do formulário de convite: "Em dia" | "Pendente / Incompleto".
+  // Coexiste com `vaccines`, que é a lista detalhada com datas e validade.
+  preventiveCare         String?
   dietRestrictions       String?       @db.Text
   healthConditions       String?       @db.Text
   veterinarian           String?       @db.Text // Nome + Telefone
@@ -632,7 +635,13 @@ model ClientInvite {
   expiresAt   DateTime
   revokedAt   DateTime?
 
-  // Nulo = ainda não usado. Marca o estágio do convite, não o tipo da linha.
+  // Nulo = o tutor começou o formulário e não terminou. Distingue
+  // "Em preenchimento" de "Usado"; clientId sozinho não distingue, porque é
+  // gravado já ao fim da primeira seção.
+  completedAt DateTime?
+
+  // Nulo = ninguém abriu o formulário ainda. Marca o estágio do convite, não o
+  // tipo da linha.
   clientId    String?        @unique
   client      ClientProfile? @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
