@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { BrandMark } from "@/components/brand-mark";
 import { INVITE_SECTION_COUNT } from "@/lib/client-invite";
 import {
   ClientSectionValue,
@@ -46,13 +45,9 @@ function Shell({ children, wide }: { children: React.ReactNode; wide?: boolean }
   // automática, a margem colapsa quando não há espaço e a rolagem funciona.
   return (
     <main className="flex min-h-dvh flex-col px-5 py-10">
-      <div className={`mx-auto my-auto w-full ${wide ? "max-w-xl" : "max-w-md"}`}>
-        <div className="mb-6 flex items-center gap-2">
-          <BrandMark />
-          <span className="text-sm font-semibold">Adestro</span>
-        </div>
-        {children}
-      </div>
+      {/* Sem logo aqui: o header do app ja mostra a marca, e repetir dava dois
+          "Adestro" empilhados na mesma dobra. */}
+      <div className={`mx-auto my-auto w-full ${wide ? "max-w-xl" : "max-w-md"}`}>{children}</div>
     </main>
   );
 }
@@ -277,7 +272,7 @@ export function InviteClient({ token }: { token: string }) {
         </div>
         <div className="mt-2 h-1 w-full rounded-full bg-[var(--border)]">
           <div
-            className="h-1 rounded-full bg-[var(--accent)] transition-all"
+            className="h-1 rounded-full bg-[var(--accent-text)] transition-all"
             style={{ width: `${(step / INVITE_SECTION_COUNT) * 100}%` }}
           />
         </div>

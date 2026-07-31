@@ -244,6 +244,16 @@ body {
    valendo como padrao onde nao ha max-w-*. */
 @layer base {
   #__next, main { max-width: 100%; }
+
+  /* Rádio e checkbox nativos herdavam `accent-color: auto`, então o estado
+     marcado saía no azul do navegador — e no tema escuro o controle ficava um
+     círculo cinza claro, sem relação com a paleta. `--accent-text` é o accent
+     legível sobre o fundo de cada tema (quase preto no claro, quase branco no
+     escuro), que é exatamente o que um controle marcado precisa ser. */
+  input[type="radio"],
+  input[type="checkbox"] {
+    accent-color: var(--accent-text);
+  }
 }
 
 @supports (padding: max(0px)) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { TextField } from "./invite-fields";
+import { TextField, maskCep, maskDocumento, maskPhone } from "./invite-fields";
 
 export type ClientSectionValue = {
   clientName: string;
@@ -103,12 +103,14 @@ export function SectionClient({
         inputMode="tel"
         autoComplete="tel"
         placeholder="(41) 99999-8888"
+        mask={maskPhone}
         value={value.phone}
         onChange={(v) => set("phone", v)}
       />
       <TextField
         label="CPF ou RG"
         placeholder="000.000.000-00"
+        mask={maskDocumento}
         value={value.cpf}
         onChange={(v) => set("cpf", v)}
       />
@@ -131,7 +133,7 @@ export function SectionClient({
             placeholder="00000-000"
             maxLength={9}
             onChange={(event) => {
-              const v = event.target.value;
+              const v = maskCep(event.target.value);
               setAddress("zipCode", v);
               if (onlyDigits(v).length === 8) void lookupCep(v);
             }}
