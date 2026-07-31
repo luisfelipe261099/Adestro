@@ -27,8 +27,19 @@
 | Arquivo | Responsabilidade |
 |---|---|
 | `lib/client-invite.ts` (modificar) | Status com `completedAt`, `getInviteResumeStep` |
-| `lib/invite-options.ts` (criar) | Opções de toda pergunta fechada: valor gravado + rótulo visível |
-| `lib/validators.ts` (modificar) | Um schema zod por seção |
+| `lib/invite-form.ts` (criar) | Opções de toda pergunta fechada **e** os schemas zod derivados delas |
+| `lib/validators.ts` (modificar) | Perde o `clientInviteSchema`, que fica sem consumidor |
+
+> **Correção feita na execução (31/07):** o plano original punha as opções em
+> `lib/invite-options.ts` e os schemas em `lib/validators.ts`. Não fecha. O
+> `check:invite` roda no Node puro, que não resolve o alias `@/` nem import
+> relativo sem extensão; e import com `.ts` explícito quebra o `tsc` (TS5097,
+> `moduleResolution: "bundler"` sem `allowImportingTsExtensions`). Com os schemas
+> em `validators.ts`, ou eles ficavam sem teste, ou o typecheck quebrava.
+> Os dois viraram `lib/invite-form.ts`, que depende só de `zod` — e são a mesma
+> coisa de qualquer forma, já que os schemas derivam das listas de opção.
+> Onde o plano disser `@/lib/invite-options` ou `@/lib/validators` para os
+> schemas do convite, leia `@/lib/invite-form`.
 | `prisma/schema.prisma` (modificar) | `ClientInvite.completedAt`, `Dog.preventiveCare` |
 | `app/api/invite/[token]/route.ts` (modificar) | `GET` com `resumeStep`/`prefill`; `POST` por seção |
 | `app/convite/[token]/invite-client.tsx` (modificar) | Orquestra as seções, retomada e envio |

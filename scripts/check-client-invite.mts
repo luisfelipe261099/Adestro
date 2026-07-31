@@ -14,10 +14,12 @@ import {
   NOISE_OPTIONS,
   PEOPLE_OPTIONS,
   UNWANTED_BEHAVIOR_OPTIONS,
+  inviteBehaviorSchema,
+  inviteClientSchema,
+  inviteDogSchema,
   isValidOption,
   optionValues,
-} from "../lib/invite-options.ts";
-import { clientInviteSchema } from "../lib/validators.ts";
+} from "../lib/invite-form.ts";
 
 const NOW = new Date(2026, 6, 30, 12, 0, 0); // quinta, 30/07/2026 12:00
 const nowMs = NOW.getTime();
@@ -200,39 +202,103 @@ assert.ok(
   "padrão de 7 dias fica acima de 6 dias de folga",
 );
 
-// ── clientInviteSchema ───────────────────────────────────────────────────────
-const ok = clientInviteSchema.safeParse({
-  clientName: "Maria Silva",
-  phone: "41999998888",
-  email: "maria@exemplo.com",
-  dogName: "Bolt",
-  breed: "Border Collie",
-});
-assert.equal(ok.success, true, "payload completo passa");
-
-const minimo = clientInviteSchema.safeParse({ clientName: "Maria", dogName: "Bolt" });
-assert.equal(minimo.success, true, "só os obrigatórios passa");
-
+// ── Seção 1: cliente ─────────────────────────────────────────────────────────
 assert.equal(
-  clientInviteSchema.safeParse({ dogName: "Bolt" }).success,
-  false,
-  "sem nome do cliente falha",
+  inviteClientSchema.safeParse({ clientName: "Maria Silva", phone: "41999998888" }).success,
+  true,
+  "nome e telefone bastam",
 );
 assert.equal(
-  clientInviteSchema.safeParse({ clientName: "Maria" }).success,
+  inviteClientSchema.safeParse({ clientName: "Maria Silva" }).success,
   false,
-  "sem nome do cão falha",
+  "sem telefone falha — é por ele que o adestrador retoma o lead",
 );
 assert.equal(
-  clientInviteSchema.safeParse({ clientName: "  ", dogName: "Bolt" }).success,
+  inviteClientSchema.safeParse({ clientName: "  ", phone: "41999998888" }).success,
   false,
   "nome só com espaço falha",
 );
 assert.equal(
-  clientInviteSchema.safeParse({ clientName: "Maria", dogName: "Bolt", email: "nao-e-email" })
-    .success,
+  inviteClientSchema.safeParse({
+    clientName: "Maria",
+    phone: "41999998888",
+    email: "nao-e-email",
+  }).success,
   false,
   "e-mail inválido falha",
+);
+assert.equal(
+  inviteClientSchema.safeParse({ clientName: "Maria", phone: "41999998888", email: "" }).success,
+  true,
+  "e-mail em branco é ausência, não erro",
+);
+assert.equal(
+  inviteClientSchema.safeParse({
+    clientName: "Maria",
+    phone: "41999998888",
+    address: {
+      zipCode: "80000-000",
+      street: "Rua A",
+      number: "10",
+      city: "Curitiba",
+      state: "PR",
+    },
+    emergencyName: "João",
+    emergencyPhone: "41988887777",
+  }).success,
+  true,
+  "endereço e contato de emergência passam",
+);
+
+// ── Seção 2: cão ─────────────────────────────────────────────────────────────
+assert.equal(inviteDogSchema.safeParse({ dogName: "Bolt" }).success, true, "só o nome basta");
+assert.equal(inviteDogSchema.safeParse({ dogName: "  " }).success, false, "nome em branco falha");
+assert.equal(
+  inviteDogSchema.safeParse({ dogName: "Bolt", sex: "Hermafrodita" }).success,
+  false,
+  "sexo fora da lista falha",
+);
+assert.equal(
+  inviteDogSchema.safeParse({ dogName: "Bolt", preventiveCare: "Em dia", castrated: true }).success,
+  true,
+  "vacinação e castração passam",
+);
+assert.equal(
+  inviteDogSchema.safeParse({ dogName: "Bolt", photoUrl: "x".repeat(2_000_001) }).success,
+  false,
+  "foto acima de 2 MB é recusada — a rota é pública",
+);
+
+// ── Seção 3: comportamento ───────────────────────────────────────────────────
+assert.equal(
+  inviteBehaviorSchema.safeParse({
+    temperament: {
+      energy: "Alta energia",
+      children: "Tolerante com crianças",
+      noise: ["Fica ansioso com barulhos", "Se esconde com barulhos"],
+      biteHistory: "Sem histórico de mordida",
+      unwantedBehaviors: ["Puxa muito a guia"],
+    },
+    routine: { alimentation: "2x ao dia", sleep: "Cama na sala", walks: "1x", plays: "Bolinha" },
+    environmentalAnalysis: { history: "Nunca foi adestrado" },
+  }).success,
+  true,
+  "payload completo de comportamento passa",
+);
+assert.equal(
+  inviteBehaviorSchema.safeParse({}).success,
+  true,
+  "seção 3 inteira é opcional: nenhuma pergunta de comportamento é obrigatória",
+);
+assert.equal(
+  inviteBehaviorSchema.safeParse({ temperament: { energy: "Altíssima" } }).success,
+  false,
+  "valor fora da lista falha",
+);
+assert.equal(
+  inviteBehaviorSchema.safeParse({ temperament: { noise: ["Barulho inventado"] } }).success,
+  false,
+  "item inválido na múltipla escolha falha",
 );
 
 // ── invite-options ───────────────────────────────────────────────────────────
