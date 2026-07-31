@@ -61,6 +61,7 @@ type InviteRow = {
   expiresAt: Date;
   revokedAt: Date | null;
   clientId: string | null;
+  completedAt: Date | null;
   createdAt: Date;
   client: { name: string } | null;
 };
@@ -72,6 +73,7 @@ const SELECT = {
   expiresAt: true,
   revokedAt: true,
   clientId: true,
+  completedAt: true,
   createdAt: true,
   client: { select: { name: true } },
 } as const;
@@ -85,6 +87,7 @@ function toItem(invite: InviteRow) {
       revokedAt: invite.revokedAt,
       expiresAt: invite.expiresAt,
       clientId: invite.clientId,
+      completedAt: invite.completedAt,
     }),
     expiresAt: invite.expiresAt,
     clientId: invite.clientId,
