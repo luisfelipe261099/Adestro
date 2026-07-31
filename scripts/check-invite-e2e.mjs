@@ -124,42 +124,147 @@ const info = await infoRes.json();
 check("GET público responde 200", infoRes.status === 200, `HTTP ${infoRes.status}`);
 check("mostra o nome do adestrador", info.trainerName === "Adestrador de Teste", info.trainerName);
 check("não vaza dado de cliente", !("clientId" in info), Object.keys(info).join(","));
+check("abre na seção 1", info.resumeStep === 1, `resumeStep=${info.resumeStep}`);
+check("sem prefill antes de começar", info.prefill === null);
 check("a tela /convite/<token> renderiza", (await anon(`/convite/${token}`)).status === 200);
 
-// ── Passo 3: o tutor envia a ficha ───────────────────────────────────────────
-const submitRes = await anon(`/api/invite/${token}`, post({
-  clientName: "Maria Silva",
-  phone: "41999998888",
-  email: "maria@exemplo.com",
-  dogName: "Bolt",
-  breed: "Border Collie",
+// ── Seção 1: cria o cadastro. A partir daqui o lead está capturado ──────────
+const s1 = await anon(`/api/invite/${token}`, post({
+  section: 1,
+  data: {
+    clientName: "Maria Silva",
+    phone: "41999998888",
+    email: "maria@exemplo.com",
+    cpf: "000.000.000-00",
+    address: {
+      zipCode: "80000-000", street: "Rua das Flores", number: "10",
+      neighborhood: "Centro", city: "Curitiba", state: "PR",
+    },
+  },
 }));
-const submit = await submitRes.json();
-check("POST público cria o cadastro", submitRes.status === 200, `HTTP ${submitRes.status}`);
-check("devolve portalUrl", submit.portalUrl?.includes("/portal/cliente/"));
+check("seção 1 responde 200", s1.status === 200, `HTTP ${s1.status}`);
 
-const invite = await prisma.clientInvite.findUnique({
+const afterS1 = await prisma.clientInvite.findUnique({
+  where: { id: gen.invite.id },
+  include: { client: { include: { dogs: true, addresses: true } } },
+});
+check("seção 1 já cria o cliente como Rascunho", afterS1.client?.status === "Rascunho", afterS1.client?.status);
+check("telefone gravado — é por ele que o adestrador retoma", afterS1.client?.phone === "41999998888");
+check("endereço gravado", afterS1.client?.addresses?.[0]?.city === "Curitiba");
+check("nenhum cão criado ainda", afterS1.client?.dogs?.length === 0, `${afterS1.client?.dogs?.length} cão(es)`);
+check("convite ainda não está concluído", afterS1.completedAt === null);
+check("telefone é obrigatório na seção 1", (await anon(`/api/invite/${token}`, post({
+  section: 1, data: { clientName: "Sem Telefone" },
+}))).status === 400);
+
+// ── Abandono e retomada: o motivo de existir o status novo ──────────────────
+const meio = await (await anon(`/api/invite/${token}`)).json();
+check("abandonou na seção 2: status Em preenchimento", meio.status === "Em preenchimento", meio.status);
+check("retoma na seção 2", meio.resumeStep === 2, `resumeStep=${meio.resumeStep}`);
+check("NÃO mostra 'você já se cadastrou'", meio.alreadyUsed === false, String(meio.alreadyUsed));
+check("prefill devolve o que já foi digitado", meio.prefill?.clientName === "Maria Silva", meio.prefill?.clientName);
+check("prefill traz o endereço", meio.prefill?.address?.city === "Curitiba");
+check("prefill não inventa cão", meio.prefill?.dog === null);
+
+// ── Seção 2: o cão ─────────────────────────────────────────────────────────
+const s2 = await anon(`/api/invite/${token}`, post({
+  section: 2,
+  data: {
+    dogName: "Bolt", breed: "Border Collie", sex: "Macho", castrated: true,
+    weight: "18 kg", preventiveCare: "Em dia",
+    healthConditions: "Nenhuma", veterinarian: "Dra. Ana — 41977776666",
+  },
+}));
+check("seção 2 responde 200", s2.status === 200, `HTTP ${s2.status}`);
+const meio2 = await (await anon(`/api/invite/${token}`)).json();
+check("retoma na seção 3 depois do cão", meio2.resumeStep === 3, `resumeStep=${meio2.resumeStep}`);
+check("prefill traz o cão", meio2.prefill?.dog?.dogName === "Bolt", meio2.prefill?.dog?.dogName);
+
+// Reenvio de seção não pode apagar o que o adestrador preencheu à mão.
+const dogAntes = (await prisma.clientProfile.findUnique({
+  where: { id: afterS1.clientId }, include: { dogs: true },
+})).dogs[0];
+await prisma.dog.update({ where: { id: dogAntes.id }, data: { microchip: "982000123456789" } });
+await anon(`/api/invite/${token}`, post({ section: 2, data: { dogName: "Bolt" } }));
+const dogDepois = await prisma.dog.findUnique({ where: { id: dogAntes.id } });
+check("reenviar seção não apaga campo que ela não pergunta", dogDepois.microchip === "982000123456789", dogDepois.microchip);
+
+// ── Seção 3: comportamento; fecha o convite ────────────────────────────────
+const s3 = await anon(`/api/invite/${token}`, post({
+  section: 3,
+  data: {
+    temperament: {
+      energy: "Alta energia", social: "Sociável com pessoas", dogs: "Reativo a outros cães",
+      children: "Tolerante com crianças",
+      noise: ["Fica ansioso com barulhos", "Se esconde com barulhos"],
+      biteHistory: "Sem histórico de mordida",
+      resourceGuarding: "Protege recursos",
+      handling: "Aceita manipulação com restrições",
+      unwantedBehaviors: ["Puxa muito a guia", "Latidos em excesso"],
+      behavior: "Late no portão",
+    },
+    routine: {
+      alimentation: "Ração seca 2x ao dia",
+      walks: "Duas voltas no quarteirão",
+      plays: "Bolinha e mordedor",
+      sleep: "Cama na sala",
+    },
+  },
+}));
+const s3body = await s3.json();
+check("seção 3 responde 200", s3.status === 200, `HTTP ${s3.status}`);
+check("conclusão devolve portalUrl", s3body.portalUrl?.includes("/portal/cliente/"));
+
+const done = await prisma.clientInvite.findUnique({
   where: { id: gen.invite.id },
   include: { client: { include: { dogs: true } } },
 });
-check("cliente criado como Rascunho", invite.client?.status === "Rascunho", invite.client?.status);
-check("dados do tutor gravados", invite.client?.name === "Maria Silva" && invite.client?.phone === "41999998888");
-check("cão criado na mesma transação", invite.client?.dogs?.[0]?.name === "Bolt", invite.client?.dogs?.[0]?.name);
-check("PortalAccessLink criado na transação", !!(await prisma.portalAccessLink.findUnique({ where: { clientId: invite.clientId } })));
+check("convite marcado como concluído", !!done.completedAt);
+const dogRow = done.client.dogs[0];
+const temperament = JSON.parse(dogRow.temperament);
+const routine = JSON.parse(dogRow.routine);
 
-// ── Passo 4: o destino do redirect existe ────────────────────────────────────
-const portalToken = submit.portalUrl.split("/portal/cliente/")[1];
-check("ficha de onboarding abre", (await anon(`/portal/cliente/${portalToken}/onboarding`)).status === 200);
-check("portal do cliente abre (Deixar para depois)", (await anon(`/portal/cliente/${portalToken}`)).status === 200);
+check("convivência com crianças gravada", temperament.children === "Tolerante com crianças");
+check("reação a barulhos gravada como lista", Array.isArray(temperament.noise) && temperament.noise.length === 2);
+check("histórico de mordida gravado", temperament.biteHistory === "Sem histórico de mordida");
+check("proteção de recursos gravada", temperament.resourceGuarding === "Protege recursos");
+check("aceita manipulação gravada", temperament.handling === "Aceita manipulação com restrições");
+check("comportamentos indesejados gravados como lista", temperament.unwantedBehaviors?.length === 2);
+check("vacinação/antipulgas gravada", dogRow.preventiveCare === "Em dia");
 
-// ── Passo 5: reentrada ───────────────────────────────────────────────────────
-const info2 = await (await anon(`/api/invite/${token}`)).json();
-check("convite usado vira alreadyUsed", info2.alreadyUsed === true);
-check("status do convite vira Usado", info2.status === "Usado", info2.status);
+// Os tres campos que existiam mortos desde sempre.
+check("rotina de sono deixou de ser vazia", routine.sleep === "Cama na sala", routine.sleep);
+check("rotina de passeios deixou de ser vazia", !!routine.walks, routine.walks);
+check("rotina de brincadeiras deixou de ser vazia", !!routine.plays, routine.plays);
+
+// ── Passo 4: o destino do redirect existe ──────────────────────────────────
+const portalToken = s3body.portalUrl.split("/portal/cliente/")[1];
+check("portal do cliente abre", (await anon(`/portal/cliente/${portalToken}`)).status === 200);
+
+// ── Passo 5: só depois de concluir é que vira reentrada ─────────────────────
+const fim = await (await anon(`/api/invite/${token}`)).json();
+check("convite concluído vira Usado", fim.status === "Usado", fim.status);
+check("agora sim alreadyUsed", fim.alreadyUsed === true);
 const reenter = await (await anon(`/api/invite/${token}`, { method: "POST" })).json();
 check("reentrada emite portal novo", reenter.portalUrl?.includes("/portal/cliente/"));
-check("token do portal foi rotacionado", reenter.portalUrl !== submit.portalUrl);
+check("token do portal foi rotacionado", reenter.portalUrl !== s3body.portalUrl);
 check("reentrada não duplica cliente", (await prisma.clientProfile.count({ where: { name: "Maria Silva" } })) === 1);
+
+// ── Seção fora de ordem ────────────────────────────────────────────────────
+const orfao = await (await req("/api/client-invites", post({ label: "fora de ordem" }))).json();
+const orfaoToken = orfao.shareUrl.split("/convite/")[1];
+const pulou = await anon(`/api/invite/${orfaoToken}`, post({ section: 2, data: { dogName: "Rex" } }));
+check("seção 2 sem seção 1 devolve 409", pulou.status === 409, `HTTP ${pulou.status}`);
+
+// ── Consulta de CEP pelo servidor (a CSP bloqueia o navegador) ──────────────
+const cepOk = await anon("/api/cep/01310100");
+check("proxy de CEP responde 200", cepOk.status === 200, `HTTP ${cepOk.status}`);
+check("proxy de CEP devolve o endereço", (await cepOk.json()).city === "São Paulo");
+check("CEP malformado devolve 400", (await anon("/api/cep/123")).status === 400);
+
+// Convite usado acima; a partir daqui o teste do adestrador usa o cliente criado.
+const invite = done;
+
 
 // ── Passos 6 e 7: o adestrador vê e aprova ───────────────────────────────────
 const clients = await (await req("/api/clients")).json();
@@ -206,7 +311,18 @@ check("POST /api/client-invites sem sessão devolve 401", (await anon("/api/clie
 
 const freshGen = await (await req("/api/client-invites", post({ label: "validacao" }))).json();
 const freshToken = freshGen.shareUrl.split("/convite/")[1];
-check("nome em branco é recusado com 400", (await anon(`/api/invite/${freshToken}`, post({ clientName: "  ", dogName: "Bolt" }))).status === 400);
+check("nome em branco é recusado com 400", (await anon(`/api/invite/${freshToken}`, post({
+  section: 1, data: { clientName: "  ", phone: "41999998888" },
+}))).status === 400);
+// Seção inexistente num convite que ninguém começou cai na guarda do clientId
+// antes de chegar em "passo inválido". A precedência é essa de propósito: a
+// instrução útil é "comece pelo primeiro passo", não "passo inválido".
+const secaoInvalida = await anon(`/api/invite/${freshToken}`, post({ section: 9, data: {} }));
+check("seção inexistente é recusada", secaoInvalida.status === 409, `HTTP ${secaoInvalida.status}`);
+check(
+  "e a mensagem manda começar do começo",
+  (await secaoInvalida.json()).error?.includes("primeiro passo"),
+);
 check("convite segue utilizável após payload inválido", (await (await anon(`/api/invite/${freshToken}`)).json()).status === "Pendente");
 
 // ── Limite de plano: rascunho não ocupa vaga, a aprovação é que cobra ────────
@@ -234,7 +350,9 @@ await prisma.clientProfile.delete({ where: { id: victim1.id } }); // 2 ativos
 const cotaGen = await (await req("/api/client-invites", post({ label: "com vaga" }))).json();
 check("com vaga livre o convite é gerado", !!cotaGen.shareUrl);
 const cotaToken = cotaGen.shareUrl.split("/convite/")[1];
-check("tutor consegue se cadastrar", (await anon(`/api/invite/${cotaToken}`, post({ clientName: "Tutor Cota", dogName: "Rex" }))).status === 200);
+check("tutor consegue se cadastrar", (await anon(`/api/invite/${cotaToken}`, post({
+  section: 1, data: { clientName: "Tutor Cota", phone: "41911112222" },
+}))).status === 200);
 
 const ativos = await prisma.clientProfile.count({ where: { trainerId: trainer.id, status: { not: "Rascunho" } } });
 const rascunhos = await prisma.clientProfile.count({ where: { trainerId: trainer.id, status: "Rascunho" } });
