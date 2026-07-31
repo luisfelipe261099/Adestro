@@ -236,7 +236,15 @@ body {
 	input, select, textarea { font-size: 16px; }
 }
 
-#__next, main { max-width: 100%; }
+/* Em @layer base pelo mesmo motivo do `a {}` logo abaixo: sem layer, esta regra
+   vencia todo max-w-* do Tailwind v4 aplicado a <main> — e sao ~15 telas que
+   usam `<main class="mx-auto w-full max-w-7xl …">`. O efeito era o conteudo
+   abrir de ponta a ponta no desktop (o formulario do /login com 1590px numa
+   tela de 1600px). Em @layer base a utility volta a vencer, e o 100% segue
+   valendo como padrao onde nao ha max-w-*. */
+@layer base {
+  #__next, main { max-width: 100%; }
+}
 
 @supports (padding: max(0px)) {
 	body { padding-bottom: env(safe-area-inset-bottom); }
