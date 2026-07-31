@@ -121,7 +121,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="client-invite"]',
     title: "Deixe o tutor se cadastrar",
     description:
-      "Em vez de digitar o cadastro, gere um link e mande no WhatsApp. O tutor preenche os próprios dados e o cão, e o cadastro chega aqui como rascunho esperando sua aprovação — nada entra na carteira sem você conferir.",
+      "Em vez de digitar o cadastro, gere um link e mande no WhatsApp. O tutor preenche a ficha inteira — dados dele, do cão e o comportamento — e cada passo já salva: quem parar no meio aparece como 'Em preenchimento', com o contato já disponível aqui. O cadastro chega como rascunho esperando sua aprovação.",
     placement: "bottom",
   },
   {

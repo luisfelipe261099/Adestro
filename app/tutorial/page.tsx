@@ -28,9 +28,11 @@ const trainerFlow: FlowStep[] = [
     title: "1) Cadastrar cliente e cão",
     why: "Base de todo o acompanhamento — todo registro futuro liga aqui.",
     how: [
-      "Sem digitar nada: em /clientes toque em 'Convidar cliente', gere o link e mande no WhatsApp. O tutor preenche os próprios dados e o cão.",
-      "O convite vale 7 dias por padrão (1 a 30, você escolhe) e serve para um cadastro. Enquanto ninguém usar, dá pra revogar.",
+      "Sem digitar nada: em /clientes toque em 'Convidar cliente', gere o link e mande no WhatsApp. O tutor preenche a ficha inteira — dados dele, do cão e o comportamento.",
+      "São três seções e cada 'Avançar' já salva. Quem parar no meio aparece como 'Em preenchimento' na lista de convites, e o contato dele já está em Clientes como rascunho: dá pra ligar sem esperar ele voltar.",
+      "O convite vale 7 dias por padrão (1 a 30, você escolhe) e serve para um cadastro. Dá pra revogar enquanto não estiver concluído.",
       "O cadastro chega como rascunho e aparece em /pendencias. Confira e toque em 'Revisar e Aprovar' — só então ele entra na sua carteira e conta no limite do plano.",
+      "As respostas de comportamento (crianças, barulhos, mordidas, proteção de recursos, manipulação) ficam na ficha do cliente, com as de risco no topo. Leia antes da primeira aula.",
       "Prefere digitar? Em /clientes toque em '+' e preencha cliente, endereços (com link pro Google Maps) e ficha completa do cão.",
       "Vacinas têm alerta de vencimento automático. Temperamento, rotinas e objetivos viram contexto pra IA.",
       "Para quem já é cliente, o link de onboarding do portal continua valendo pra ele completar a ficha (modo rascunho até você aprovar).",
