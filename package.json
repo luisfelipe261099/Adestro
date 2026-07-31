@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "eslint",
     "check:home": "node --experimental-strip-types scripts/check-home-agenda.mts",
-    "check:invite": "node --experimental-strip-types scripts/check-client-invite.mts"
+    "check:invite": "node --experimental-strip-types scripts/check-client-invite.mts",
+    "check:invite:e2e": "node scripts/check-invite-e2e.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
