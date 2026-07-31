@@ -74,6 +74,10 @@ type PortalData = {
       weight: string | null;
       photoUrl: string | null;
       trainingTypes: string;
+      // Usado só para saber se a ficha de comportamento já foi respondida —
+      // quem chega pelo convite completo já respondeu, e repetir a pergunta
+      // aqui é pedir de novo o que a pessoa acabou de dar.
+      temperament: string | null;
     }>;
   };
   events: PortalEvent[];
@@ -275,6 +279,17 @@ export function PortalPublicClient({ token }: { token: string }) {
   }, [token, pinQuery, pinRequired]);
 
   const featuredDog = data?.client.dogs[0];
+
+  // Ficha considerada preenchida quando existe temperamento gravado — é o que o
+  // convite completo grava na última seção. JSON vazio ("{}") não conta.
+  const fichaPreenchida = (data?.client.dogs ?? []).some((d) => {
+    if (!d.temperament) return false;
+    try {
+      return Object.keys(JSON.parse(d.temperament) ?? {}).length > 0;
+    } catch {
+      return false;
+    }
+  });
   const featuredDogPhoto = photoLoadFailed ? "/images/dog-default-bolt.svg" : featuredDog?.photoUrl || "/images/dog-default-bolt.svg";
 
   useEffect(() => {
@@ -643,19 +658,30 @@ export function PortalPublicClient({ token }: { token: string }) {
           />
         ) : null}
 
-        {/* Banner de Onboarding/Atualização cadastral */}
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-300">
-          <div className="flex-1">
-            <h3 className="font-semibold text-sm">📋 Ficha de Acompanhamento do Cão</h3>
-            <p className="text-xs text-amber-800 mt-0.5">Preencha ou atualize as informações de saúde, rotina e temperamento do seu cão para personalizar as aulas.</p>
+        {/* Só aparece se a ficha ainda estiver vazia. Quem entrou pelo convite
+            completo já respondeu tudo isso, e o banner incondicional fazia o
+            portal repedir e-mail, CPF e endereço que a pessoa acabou de digitar.
+            Cores por variável de tema: amber-50 fixo virava um bloco claro e
+            berrante no modo escuro. */}
+        {!fichaPreenchida && (
+          <div className="flex flex-col justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--surface-2)] p-4 shadow-sm animate-in fade-in duration-300 sm:flex-row sm:items-center">
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-[var(--foreground)]">
+                📋 Ficha de Acompanhamento do Cão
+              </h3>
+              <p className="mt-0.5 text-xs text-[var(--muted)]">
+                Conte a rotina, a saúde e o temperamento do seu cão para o adestrador
+                personalizar as aulas.
+              </p>
+            </div>
+            <Link
+              href={`/portal/cliente/${token}/onboarding${pinQuery}`}
+              className="btn-primary whitespace-nowrap text-xs"
+            >
+              Preencher ficha
+            </Link>
           </div>
-          <Link
-            href={`/portal/cliente/${token}/onboarding${pinQuery}`}
-            className="inline-flex h-9 items-center justify-center rounded-md bg-amber-600 px-4 text-xs font-semibold text-white hover:bg-amber-700 whitespace-nowrap shadow-sm transition"
-          >
-            Preencher Ficha
-          </Link>
-        </div>
+        )}
 
         <article data-tour="cliente-dog" className="rounded-lg border border-[var(--border)] bg-slate-950 p-5 text-white shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">

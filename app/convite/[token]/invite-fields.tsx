@@ -8,6 +8,39 @@ import type { InviteOption } from "@/lib/invite-form";
 // marcação de cada input dentro delas produziria o mesmo arquivo de mil linhas
 // que hoje esconde seis campos mortos no onboarding do portal.
 
+// ── Máscaras ─────────────────────────────────────────────────────────────────
+// Formatam enquanto a pessoa digita. Guardam o valor já formatado, que é o que
+// o resto do app usa: o formulário manual do adestrador também grava
+// "(41) 99999-8888", e `buildWaUrl` tira os símbolos na hora de montar o link.
+
+const digitos = (v: string) => v.replace(/\D/g, "");
+
+export function maskPhone(v: string): string {
+  const d = digitos(v).slice(0, 11);
+  if (!d) return "";
+  if (d.length <= 2) return `(${d}`;
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+export function maskCep(v: string): string {
+  const d = digitos(v).slice(0, 8);
+  return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d;
+}
+
+// O campo é "CPF ou RG", e RG varia por estado e às vezes tem letra. Só aplica
+// a máscara de CPF enquanto o que foi digitado for numérico — do contrário
+// mascarar destruiria um RG válido.
+export function maskDocumento(v: string): string {
+  if (/[a-zA-Z]/.test(v)) return v.slice(0, 20);
+  const d = digitos(v).slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
 export function TextField({
   label,
   value,
@@ -17,6 +50,8 @@ export function TextField({
   inputMode,
   autoComplete,
   placeholder,
+  mask,
+  hint,
 }: {
   label: string;
   value: string;
@@ -26,6 +61,8 @@ export function TextField({
   inputMode?: "tel" | "email" | "text" | "numeric";
   autoComplete?: string;
   placeholder?: string;
+  mask?: (v: string) => string;
+  hint?: string;
 }) {
   return (
     <label className="block">
@@ -40,9 +77,10 @@ export function TextField({
         inputMode={inputMode}
         autoComplete={autoComplete}
         placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => onChange(mask ? mask(event.target.value) : event.target.value)}
         className="input-field mt-2"
       />
+      {hint && <span className="mt-1 block text-xs text-[var(--muted)]">{hint}</span>}
     </label>
   );
 }
@@ -95,6 +133,7 @@ export function ChoiceField({
             <input
               type="radio"
               name={name}
+              className="h-4 w-4 shrink-0"
               checked={value === option.value}
               onChange={() => onChange(option.value)}
             />
@@ -125,6 +164,7 @@ export function MultiChoiceField({
           <label key={option.value} className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
+              className="h-4 w-4 shrink-0"
               checked={values.includes(option.value)}
               onChange={(event) =>
                 onChange(
@@ -153,7 +193,12 @@ export function CheckboxField({
 }) {
   return (
     <label className="flex items-center gap-2 text-sm">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <input
+        type="checkbox"
+        className="h-4 w-4 shrink-0"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
       {label}
     </label>
   );
