@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { hashPortalToken, isPortalPinValid, isPortalTokenActive } from "@/lib/portal-access";
+import { isTaskCompletedToday, isTaskDueToday, parseCompletions } from "@/lib/portal-tasks-shared";
 import { prisma } from "@/lib/prisma";
 import {
   applyAction,
@@ -116,9 +117,16 @@ async function persistRaw(trainerId: string, clientId: string, raw: RawGamificat
 }
 
 async function countCompletedTasks(trainerId: string, clientId: string): Promise<number> {
-  return prisma.portalTask.count({
-    where: { trainerId, clientId, completed: true },
+  // "once": o flag basta. Recorrente: conta 1 por DIA concluído no histórico —
+  // senão a tarefa diária só pontua uma vez na vida.
+  const tasks = await prisma.portalTask.findMany({
+    where: { trainerId, clientId },
+    select: { completed: true, recurrence: true, completions: true },
   });
+  return tasks.reduce((total, task) => {
+    if (!task.recurrence || task.recurrence === "once") return total + (task.completed ? 1 : 0);
+    return total + parseCompletions(task.completions).length;
+  }, 0);
 }
 
 async function countFeedbacks(trainerId: string, clientId: string): Promise<number> {
@@ -130,10 +138,10 @@ async function countFeedbacks(trainerId: string, clientId: string): Promise<numb
 async function taskMatchesState(trainerId: string, clientId: string, taskId: string, completed: boolean): Promise<boolean> {
   const task = await prisma.portalTask.findFirst({
     where: { id: taskId, trainerId, clientId },
-    select: { completed: true },
+    select: { completed: true, recurrence: true, completions: true },
   });
 
-  return Boolean(task && task.completed === completed);
+  return Boolean(task && isTaskCompletedToday(task) === completed);
 }
 
 async function getClientName(clientId: string): Promise<string | null> {
@@ -225,8 +233,11 @@ async function evaluateStreak(raw: RawGamification, trainerId: string, clientId:
     where: { trainerId, clientId },
   });
 
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((t) => t.completed).length;
+  // Só tarefas que valem para hoje entram na meta, e "concluída" é POR DIA —
+  // o flag cru do banco deixava a taxa em 100% para sempre.
+  const dueTasks = tasks.filter((t) => isTaskDueToday(t));
+  const totalTasks = dueTasks.length;
+  const completedTasks = dueTasks.filter((t) => isTaskCompletedToday(t)).length;
   const streakTolerance = raw.streakTolerance ?? 100;
   const lastStreakUpdateDate = raw.lastStreakUpdateDate ?? "";
 

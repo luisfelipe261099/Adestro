@@ -142,12 +142,14 @@ export async function POST(request: Request) {
           for (const taskText of ds.nextTasks) {
             const textStr = typeof taskText === "string" ? taskText : "";
             if (textStr.trim()) {
+              // Dedup por título, SEM filtrar por completed: uma tarefa diária
+              // com completed=true de ontem é a mesma tarefa — filtrar por
+              // completed:false criava uma duplicata a cada novo registro.
               const existingTask = await prisma.portalTask.findFirst({
                 where: {
                   trainerId: trainer.id,
                   clientId: dog.clientId,
                   title: textStr.trim(),
-                  completed: false,
                 },
               });
               if (!existingTask) {
@@ -173,6 +175,7 @@ export async function POST(request: Request) {
                     completed: false,
                     recurrence,
                     weekdays: recurrence === "weekly" ? JSON.stringify(weekdays) : null,
+                    completions: "[]",
                   },
                 });
               }

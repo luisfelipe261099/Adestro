@@ -94,9 +94,32 @@ export function ClientInvitePanel() {
         Convidar cliente
       </button>
 
+      {/* Modal por cima da tela: antes o painel abria inline dentro do header
+          (w-full num flex-wrap), empurrando a página inteira para baixo — era a
+          "tela confusa" relatada ao clicar em Convidar cliente. */}
       {open && (
-        <div className="mt-3 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-4">
-          <p className="text-[13px] text-[var(--muted)]">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+          onClick={() => setOpen(false)}
+        >
+        <div
+          className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xl sm:rounded-2xl"
+          onClick={(event) => event.stopPropagation()}
+          role="dialog"
+          aria-label="Convidar cliente"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-base font-semibold text-[var(--foreground)]">Convidar cliente</h3>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--muted)] hover:bg-[var(--surface-2)]"
+              aria-label="Fechar"
+            >
+              ×
+            </button>
+          </div>
+          <p className="mt-1 text-[13px] text-[var(--muted)]">
             Gere um link e mande para o tutor. Ele preenche os próprios dados e o cadastro chega
             aqui como rascunho, esperando sua aprovação.
           </p>
@@ -200,6 +223,7 @@ export function ClientInvitePanel() {
             <strong>Em preenchimento</strong> é quem abriu o link e ainda não terminou. O contato já
             está salvo como rascunho em Clientes — dá para ligar sem esperar ele voltar.
           </p>
+        </div>
         </div>
       )}
     </>

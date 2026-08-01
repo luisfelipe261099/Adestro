@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { applyTaskToggle, serializeTaskForToday } from "@/lib/portal-tasks-shared";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/portal-tasks
@@ -21,7 +22,8 @@ export async function GET(request: Request) {
     orderBy: { createdAt: "asc" },
   });
 
-  return NextResponse.json(tasks);
+  // Tarefa recorrente "reinicia" a cada dia: completed = concluída HOJE.
+  return NextResponse.json(tasks.map((task) => serializeTaskForToday(task)));
 }
 
 // POST /api/portal-tasks
@@ -79,7 +81,7 @@ export async function POST(request: Request) {
   return NextResponse.json(task, { status: 201 });
 }
 
-// PATCH /api/portal-tasks – alterna completed
+// PATCH /api/portal-tasks – alterna completed (recorrente: marca a data de HOJE)
 export async function PATCH(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
@@ -89,9 +91,14 @@ export async function PATCH(request: Request) {
 
   const body = await request.json() as { id: string; completed: boolean };
 
+  const task = await prisma.portalTask.findFirst({ where: { id: body.id, trainerId: trainer.id } });
+  if (!task) return NextResponse.json({ ok: false }, { status: 404 });
+
+  // Mesma regra do portal público: em tarefa recorrente o toggle mexe no
+  // histórico de conclusões, nunca "conclui para sempre".
   const updated = await prisma.portalTask.updateMany({
-    where: { id: body.id, trainerId: trainer.id },
-    data: { completed: body.completed },
+    where: { id: task.id, trainerId: trainer.id },
+    data: applyTaskToggle(task, body.completed),
   });
 
   return NextResponse.json({ ok: updated.count > 0 });

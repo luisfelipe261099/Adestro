@@ -18,12 +18,39 @@ type PortalTask = {
   id: string;
   title: string;
   description: string | null;
-  completed: boolean;
+  completed: boolean; // a API já devolve "concluída HOJE" para recorrentes
   evidenceUrl: string | null;
   recurrence?: string | null;   // once | daily | weekly
   weekdays?: string | null;     // JSON [0..6]
   completions?: string | null;  // JSON ["YYYY-MM-DD", ...]
+  isDueToday?: boolean;         // semanal fora do dia marcado vem false
 };
+
+// Data local de hoje ("YYYY-MM-DD") — mesmo formato gravado em completions.
+function todayLocalKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
+// Atualização otimista de uma tarefa recorrente: além do flag, mexe no
+// histórico de conclusões para a trilha de 7 dias reagir na hora do clique.
+function toggleTaskLocally(task: PortalTask, completed: boolean): PortalTask {
+  if (!task.recurrence || task.recurrence === "once") return { ...task, completed };
+  const today = todayLocalKey();
+  let completions: string[] = [];
+  try {
+    const parsed = JSON.parse(task.completions ?? "[]");
+    if (Array.isArray(parsed)) completions = parsed.map(String);
+  } catch {
+    completions = [];
+  }
+  if (completed) {
+    if (!completions.includes(today)) completions = [...completions, today];
+  } else {
+    completions = completions.filter((d) => d !== today);
+  }
+  return { ...task, completed, completions: JSON.stringify(completions) };
+}
 
 type PortalFeedback = {
   id: string;
@@ -333,7 +360,7 @@ export function PortalPublicClient({ token }: { token: string }) {
 
     setData({
       ...data,
-      tasks: data.tasks.map((item) => (item.id === task.id ? { ...item, completed: nextCompleted } : item)),
+      tasks: data.tasks.map((item) => (item.id === task.id ? toggleTaskLocally(item, nextCompleted) : item)),
     });
 
     try {
@@ -360,7 +387,7 @@ export function PortalPublicClient({ token }: { token: string }) {
     } catch {
       setData({
         ...data,
-        tasks: data.tasks.map((item) => (item.id === task.id ? { ...item, completed: task.completed } : item)),
+        tasks: data.tasks.map((item) => (item.id === task.id ? task : item)),
       });
     } finally {
       setUpdatingTaskId("");
@@ -546,7 +573,9 @@ export function PortalPublicClient({ token }: { token: string }) {
     );
   }
 
-  const completedTasks = data.tasks.filter((task) => task.completed).length;
+  // Só as tarefas que valem para HOJE contam (semanal fora do dia fica de fora).
+  const dueTasks = data.tasks.filter((task) => task.isDueToday !== false);
+  const completedTasks = dueTasks.filter((task) => task.completed).length;
   const scoreStars = latestSessionScore ? Math.round(Math.min(Math.max(latestSessionScore.score, 0), 10) / 2) : 0;
   const nextEvent = data.events[0];
   const latestSession = data.sessions[0];
@@ -752,7 +781,7 @@ export function PortalPublicClient({ token }: { token: string }) {
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <div className="rounded-md bg-white/10 p-4">
               <p className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Tarefas</p>
-              <p className="mt-2 text-2xl font-semibold">{completedTasks}/{data.tasks.length}</p>
+              <p className="mt-2 text-2xl font-semibold">{completedTasks}/{dueTasks.length}</p>
             </div>
             <div className="rounded-md bg-white/10 p-4">
               <p className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Próxima aula</p>
@@ -800,10 +829,13 @@ export function PortalPublicClient({ token }: { token: string }) {
 
         <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
           <article data-tour="cliente-tasks" className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Tarefas de casa</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Tarefas de hoje</p>
+            <p className="mt-0.5 text-[12px] text-[var(--muted)]">
+              As tarefas recorrentes reiniciam a cada dia — o histórico da semana fica nos círculos abaixo de cada uma.
+            </p>
             <div className="mt-4 space-y-3">
-              {data.tasks.length === 0 ? <p className="text-sm text-[var(--muted)]">Sem tarefas registradas para este caso.</p> : null}
-              {data.tasks.map((task) => (
+              {dueTasks.length === 0 ? <p className="text-sm text-[var(--muted)]">Sem tarefas para hoje.</p> : null}
+              {dueTasks.map((task) => (
                 <div key={task.id} className="flex flex-col gap-3 rounded-md border border-[var(--border)] bg-white p-4">
                   <div className="flex items-start gap-3">
                     <button

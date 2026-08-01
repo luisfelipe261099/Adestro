@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { isPortalPinValid, isPortalTokenActive, hashPortalToken } from "@/lib/portal-access";
+import { serializeTaskForToday } from "@/lib/portal-tasks-shared";
 import { prisma } from "@/lib/prisma";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { badRequest, portalFeedbackSchema, portalTaskUpdateSchema } from "@/lib/validators";
@@ -184,7 +185,9 @@ export async function GET(_request: Request, { params }: Params) {
         dogSessions: filteredDogSessions,
       };
     }),
-    tasks,
+    // Tarefa recorrente "reinicia" a cada dia: `completed` aqui significa
+    // "concluída HOJE" (derivado do histórico), nunca o flag cru do banco.
+    tasks: tasks.map((task) => serializeTaskForToday(task)),
     feedbacks,
     linkMeta: {
       expiresAt: link.expiresAt,

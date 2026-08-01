@@ -258,6 +258,11 @@ export default function TrainingPage() {
   const focusDogId = searchParams.get("dogId") ?? "";
   const [feedFilter, setFeedFilter] = useState<FeedFilter>(focusDogId ? "all" : "today");
   const [feedDogId, setFeedDogId] = useState(focusDogId);
+  // Eixo da tela: "caes" = prontuário (status de cada cão em treinamento);
+  // "linha" = linha do tempo das aulas. Quem chega pedindo um cão específico
+  // quer o histórico dele, então cai direto na linha do tempo.
+  const [viewAxis, setViewAxis] = useState<"caes" | "linha">(focusDogId ? "linha" : "caes");
+  const [phaseFilter, setPhaseFilter] = useState<string>("Todas");
   const [showQuickFilters, setShowQuickFilters] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -344,6 +349,48 @@ export default function TrainingPage() {
     });
     return map;
   }, [clients]);
+
+  // Prontuário: um card por cão, com fase, nº de sessões e última aula.
+  const dogsInTraining = useMemo(() => {
+    const sessionCount = new Map<string, number>();
+    const lastDate = new Map<string, string>();
+    for (const session of feedSessions) {
+      const ids = new Set<string>();
+      if (session.dogId) ids.add(session.dogId);
+      for (const ds of session.dogSessions ?? []) ids.add(ds.dogId);
+      for (const id of ids) {
+        sessionCount.set(id, (sessionCount.get(id) ?? 0) + 1);
+        if (!lastDate.has(id)) lastDate.set(id, session.date); // feedSessions já vem em ordem desc
+      }
+    }
+    const phaseOrder: Record<string, number> = { Ativo: 0, Ficha: 1, Pausado: 2, Completo: 3, Cancelado: 4 };
+    return clients
+      .flatMap((client) =>
+        client.dogs.map((dog) => ({
+          dogId: dog.id,
+          name: dog.name,
+          breed: dog.breed,
+          photoUrl: dog.photoUrl,
+          clientId: client.id,
+          clientName: client.name,
+          phase: dog.trainingStatus ?? "Ativo",
+          sessions: sessionCount.get(dog.id) ?? 0,
+          lastDate: lastDate.get(dog.id) ?? "",
+        })),
+      )
+      .sort(
+        (a, b) => (phaseOrder[a.phase] ?? 9) - (phaseOrder[b.phase] ?? 9) || a.name.localeCompare(b.name),
+      );
+  }, [clients, feedSessions]);
+
+  const filteredDogs = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return dogsInTraining.filter((dog) => {
+      if (phaseFilter !== "Todas" && dog.phase !== phaseFilter) return false;
+      if (term && !`${dog.name} ${dog.clientName} ${dog.breed}`.toLowerCase().includes(term)) return false;
+      return true;
+    });
+  }, [dogsInTraining, phaseFilter, searchTerm]);
 
   const filteredFeed = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -633,6 +680,30 @@ export default function TrainingPage() {
               </article>
             </section>
 
+            {/* Eixo da tela: prontuário por cão (o "cérebro" do negócio) ou linha
+                do tempo das aulas (a lógica temporal fica com a Agenda). */}
+            <section className="mt-3 grid grid-cols-2 gap-2">
+              {(
+                [
+                  { value: "caes", label: "🐕 Por cão (prontuário)" },
+                  { value: "linha", label: "🕒 Linha do tempo" },
+                ] as const
+              ).map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setViewAxis(option.value)}
+                  className={`rounded-md border px-3 py-2 text-[12.5px] font-semibold transition-colors ${
+                    viewAxis === option.value
+                      ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
+                      : "border-[var(--border)] bg-white text-[var(--muted)]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </section>
+
             <section className="mt-3 flex gap-2">
               <label className="flex flex-1 items-center gap-2 rounded-md border border-[var(--border)] bg-white px-3 py-2 text-[var(--muted)]">
                 <TinyIcon name="search" />
@@ -653,6 +724,116 @@ export default function TrainingPage() {
               </button>
             </section>
 
+            {/* ── VISÃO POR CÃO (prontuário) ─────────────────────────────── */}
+            {viewAxis === "caes" ? (
+              <>
+                <section className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                  {["Todas", "Ficha", "Ativo", "Pausado", "Completo", "Cancelado"].map((phase) => {
+                    const count =
+                      phase === "Todas"
+                        ? dogsInTraining.length
+                        : dogsInTraining.filter((dog) => dog.phase === phase).length;
+                    if (phase !== "Todas" && count === 0) return null;
+                    return (
+                      <button
+                        key={phase}
+                        type="button"
+                        onClick={() => setPhaseFilter(phase)}
+                        className={`whitespace-nowrap rounded-full px-4 py-1.5 text-[12px] font-semibold ${
+                          phaseFilter === phase
+                            ? "bg-[var(--accent)] text-white"
+                            : "border border-[var(--border)] bg-white text-[var(--muted)]"
+                        }`}
+                      >
+                        {phase} ({count})
+                      </button>
+                    );
+                  })}
+                </section>
+
+                <section className="mt-3 grid gap-2.5 sm:grid-cols-2">
+                  {filteredDogs.map((dog) => (
+                    <article key={dog.dogId} className="rounded-md border border-[var(--border)] bg-white p-3">
+                      <div className="flex items-start gap-2.5">
+                        <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-full bg-[var(--surface-2)]">
+                          <Image
+                            src={dog.photoUrl || "/images/dog-default-bolt.svg"}
+                            alt={`Foto de ${dog.name}`}
+                            fill
+                            sizes="44px"
+                            unoptimized
+                            onError={(event) => {
+                              event.currentTarget.src = "/images/dog-default-bolt.svg";
+                            }}
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <Link
+                              href={`/caes/${dog.dogId}`}
+                              className="truncate text-sm font-semibold text-[var(--foreground)] hover:underline"
+                            >
+                              {dog.name}
+                            </Link>
+                            <span
+                              className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[12px] font-semibold ${
+                                PHASE_BADGE[dog.phase] ?? "bg-[var(--surface-2)] text-[var(--foreground)]"
+                              }`}
+                            >
+                              {dog.phase}
+                            </span>
+                          </div>
+                          <p className="truncate text-[12px] text-[var(--muted)]">
+                            {dog.clientName}
+                            {dog.breed ? ` • ${dog.breed}` : ""}
+                          </p>
+                          <p className="mt-1 text-[12.5px] text-[var(--muted-strong)]">
+                            <strong className="text-[var(--foreground)]">{dog.sessions}</strong>{" "}
+                            {dog.sessions === 1 ? "sessão" : "sessões"}
+                            {dog.lastDate ? ` · última em ${dog.lastDate}` : " · nenhuma aula ainda"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2.5 grid grid-cols-3 gap-2 text-[12px]">
+                        <Link
+                          href={`/caes/${dog.dogId}`}
+                          className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 font-semibold text-[var(--foreground)]"
+                        >
+                          Prontuário
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setViewAxis("linha");
+                            setFeedDogId(dog.dogId);
+                            setFeedFilter("all");
+                          }}
+                          className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-[var(--foreground)]"
+                        >
+                          Histórico
+                        </button>
+                        <Link
+                          href={`/treinos/registro?clientId=${dog.clientId}&dogId=${dog.dogId}`}
+                          className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] px-2 py-1.5 font-semibold text-white"
+                        >
+                          Registrar
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
+                  {filteredDogs.length === 0 ? (
+                    <article className="rounded-md border border-dashed border-[var(--border)] bg-white p-4 text-xs text-[var(--muted)] sm:col-span-2">
+                      Nenhum cão nesta fase.
+                    </article>
+                  ) : null}
+                </section>
+              </>
+            ) : null}
+
+            {/* ── VISÃO LINHA DO TEMPO ───────────────────────────────────── */}
+            {viewAxis === "linha" ? (
+            <>
             {/* Recorte por cão visível e removível — filtro escondido engana tanto
                 quanto lista sem filtro nenhum. */}
             {feedDogId ? (
@@ -990,6 +1171,8 @@ export default function TrainingPage() {
                 )
               ) : null}
             </section>
+            </>
+            ) : null}
 
             <section id="registro-rapido" className="mt-4 rounded-md border border-[var(--border)] bg-[#f1f8fe] p-3">
               <div className="flex items-center justify-between gap-3">

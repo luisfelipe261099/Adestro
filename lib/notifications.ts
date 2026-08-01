@@ -92,6 +92,7 @@ export function useNotifications(): NotificationSummary {
   const events = useAppStore((state) => state.calendarEvents);
   const sessions = useAppStore((state) => state.trainingSessions);
   const feedbacks = useAppStore((state) => state.portalFeedbacks);
+  const clients = useAppStore((state) => state.clients);
   const readIds = useSyncExternalStore(subscribeReadIds, getReadIdsSnapshot, getReadIdsServerSnapshot);
 
   const markRead = useCallback((id: string) => {
@@ -135,6 +136,20 @@ export function useNotifications(): NotificationSummary {
       });
     }
 
+    // 2.5) Cadastros que chegaram pelo convite (leads aguardando aprovação).
+    // Sem isso o adestrador não ficava sabendo que a pessoa respondeu.
+    const draftClients = clients.filter((client) => client.status === "Rascunho");
+    for (const client of draftClients.slice(0, 4)) {
+      items.push({
+        id: `lead-${client.id}`,
+        type: "portal",
+        icon: "🐶",
+        title: "Cadastro respondido pelo convite",
+        detail: `${client.name} preencheu a ficha — revise e aprove.`,
+        href: `/clientes/${client.id}`,
+      });
+    }
+
     // 3) Feedbacks recentes do tutor (mensagens novas)
     const tutorFeedbacks = feedbacks.filter((f) => f.author === "Tutor").slice(0, 3);
     for (const fb of tutorFeedbacks) {
@@ -166,7 +181,7 @@ export function useNotifications(): NotificationSummary {
     }
 
     return items;
-  }, [events, sessions, feedbacks]);
+  }, [events, sessions, feedbacks, clients]);
 
   return useMemo(() => {
     const items = unfiltered.filter((item) => !readIds.includes(item.id));

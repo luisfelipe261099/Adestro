@@ -48,6 +48,7 @@ const clientSteps = [
     goal: "Mostrar ao adestrador que a prática foi feita.",
     details: [
       "Depois de realizar o exercício, marque a tarefa como concluída.",
+      "Tarefas diárias reiniciam no dia seguinte: concluir hoje não deixa a tarefa marcada para sempre — os círculos da semana mostram em quais dias você praticou.",
       "Se quiser, envie uma foto do treino junto — o adestrador adora ver.",
       "Se não conseguiu fazer, deixe para concluir apenas quando realmente praticar.",
       "Esse registro ajuda o adestrador a decidir o próximo passo da aula.",

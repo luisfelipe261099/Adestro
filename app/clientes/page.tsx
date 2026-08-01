@@ -19,7 +19,19 @@ import DOG_BREEDS from "@/lib/dog-breeds.json";
 
 type ClientStatus = "ativos" | "inativos" | "rascunho";
 type SortMode = "recentes" | "nome";
-type EntityKind = "humanos" | "caes" | "quadro";
+type EntityKind = "humanos" | "caes" | "quadro" | "leads";
+
+// Convite como o GET /api/client-invites devolve (status já derivado).
+type InviteItem = {
+  id: string;
+  label: string | null;
+  tokenPrefix: string;
+  status: "Revogado" | "Usado" | "Em preenchimento" | "Expirado" | "Pendente";
+  expiresAt: string;
+  clientId: string | null;
+  clientName: string | null;
+  createdAt: string;
+};
 
 function parseBrazilianDate(date: string): number {
   const [day, month, year] = date.split("/").map(Number);
@@ -163,16 +175,42 @@ export default function ClientsPage() {
   const [showForm, setShowForm] = useState(false);
 
   // ?new=true (vindo do dashboard/card Próxima ação) abre o cadastro direto.
+  // ?status=rascunho (push de "novo cadastro pelo convite") abre a aba Leads.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("new") !== "true") return;
+    const wantsNew = params.get("new") === "true";
+    const wantsLeads = params.get("status") === "rascunho";
+    if (!wantsNew && !wantsLeads) return;
     const id = window.setTimeout(() => {
-      setShowForm(true);
-      setEntityKind("humanos");
+      if (wantsNew) {
+        setShowForm(true);
+        setEntityKind("humanos");
+      } else {
+        setEntityKind("leads");
+      }
     }, 0);
     return () => window.clearTimeout(id);
   }, []);
+
+  // Convites (aba Leads): carrega quando a aba abre.
+  const [invites, setInvites] = useState<InviteItem[]>([]);
+  const [invitesLoaded, setInvitesLoaded] = useState(false);
+  useEffect(() => {
+    if (entityKind !== "leads") return;
+    let cancelled = false;
+    fetch("/api/client-invites")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setInvites(Array.isArray(data.invites) ? data.invites : []);
+        setInvitesLoaded(true);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [entityKind]);
 
   // Exclusão de cliente (destrutiva): pede confirmação com aviso do que cascata.
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; dogsCount: number } | null>(null);
@@ -686,6 +724,22 @@ export default function ClientsPage() {
             >
               Quadro
             </button>
+            <button
+              type="button"
+              onClick={() => setEntityKind("leads")}
+              className={`rounded-md px-5 py-2 text-[13px] font-semibold transition ${
+                entityKind === "leads"
+                  ? "bg-[var(--accent)] text-white shadow-sm"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              Leads
+              {clients.some((c) => c.status === "Rascunho") ? (
+                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[11px] font-bold text-white">
+                  {clients.filter((c) => c.status === "Rascunho").length}
+                </span>
+              ) : null}
+            </button>
           </div>
 
           {/* Busca (larga) + filtros de status (sem destaque, ao lado) */}
@@ -706,7 +760,7 @@ export default function ClientsPage() {
 
             {/* Seletor direto por nome: quem já sabe quem procura escolhe na lista
                 em vez de digitar. Na aba Cães lista cães; nas demais, clientes. */}
-            {entityKind !== "quadro" && (
+            {(entityKind === "humanos" || entityKind === "caes") && (
               <select
                 value=""
                 onChange={(event) => {
@@ -742,8 +796,8 @@ export default function ClientsPage() {
               </select>
             )}
 
-            {/* Filtros de status não se aplicam ao Quadro (as colunas já são as fases). */}
-            {entityKind !== "quadro" && (
+            {/* Filtros de status não se aplicam ao Quadro nem aos Leads. */}
+            {(entityKind === "humanos" || entityKind === "caes") && (
               <div className="tabs">
                 {[
                   { value: "todos", label: "Todos" },
@@ -1306,6 +1360,129 @@ export default function ClientsPage() {
             </section>
           )}
 
+          {/* Quadro de LEADS: cadastros vindos do convite + convites em aberto,
+              separados da carteira para não poluir a lista de clientes. */}
+          {entityKind === "leads" && (
+            <section className="mt-3 space-y-4">
+              {(() => {
+                const draftClients = clients.filter((c) => c.status === "Rascunho");
+                const inProgressClientIds = new Set(
+                  invites.filter((i) => i.status === "Em preenchimento" && i.clientId).map((i) => i.clientId as string),
+                );
+                const awaitingApproval = draftClients.filter((c) => !inProgressClientIds.has(c.id));
+                const inProgress = invites.filter((i) => i.status === "Em preenchimento");
+                const pendingInvites = invites.filter((i) => i.status === "Pendente");
+
+                return (
+                  <>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[12.5px] text-[var(--muted)]">
+                        Quem ainda não virou cliente: cadastros aguardando sua aprovação e convites em aberto.
+                      </p>
+                      <ClientInvitePanel />
+                    </div>
+
+                    {/* 1. Cadastros completos aguardando aprovação */}
+                    <div className="card card-accent card-accent-orange p-4">
+                      <h2 className="text-[14px] font-semibold text-[var(--foreground)]">
+                        Aguardando aprovação ({awaitingApproval.length})
+                      </h2>
+                      <p className="text-[12.5px] text-[var(--muted)]">
+                        O tutor preencheu a ficha pelo convite. Revise e aprove para virar cliente ativo.
+                      </p>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        {awaitingApproval.length === 0 ? (
+                          <p className="text-[12.5px] text-[var(--muted)] sm:col-span-2">Nenhum cadastro esperando revisão.</p>
+                        ) : (
+                          awaitingApproval.map((client) => (
+                            <article key={client.id} className="rounded-md border border-[var(--border)] bg-white p-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="truncate text-sm font-semibold text-[var(--foreground)]">{client.name}</p>
+                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[12px] font-semibold text-amber-800">
+                                  Rascunho
+                                </span>
+                              </div>
+                              <p className="mt-0.5 text-[12px] text-[var(--muted)]">
+                                {client.phone || "Sem telefone"}
+                                {client.dogs.length ? ` · ${dogCountLabel(client.dogs.length)}` : ""}
+                              </p>
+                              <div className="mt-2 flex gap-2">
+                                <Link href={`/clientes/${client.id}`} className="btn-secondary text-[12px]">
+                                  Revisar cadastro
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() => approveClient(client.id)}
+                                  className="btn-primary text-[12px]"
+                                >
+                                  Aprovar
+                                </button>
+                              </div>
+                            </article>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 2. Em preenchimento */}
+                    <div className="card card-accent card-accent-sky p-4">
+                      <h2 className="text-[14px] font-semibold text-[var(--foreground)]">
+                        Em preenchimento ({inProgress.length})
+                      </h2>
+                      <p className="text-[12.5px] text-[var(--muted)]">
+                        Abriram o link e pararam no meio. O contato já está salvo — dá para ligar sem esperar.
+                      </p>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        {inProgress.length === 0 ? (
+                          <p className="text-[12.5px] text-[var(--muted)] sm:col-span-2">Ninguém preenchendo agora.</p>
+                        ) : (
+                          inProgress.map((invite) => (
+                            <article key={invite.id} className="rounded-md border border-[var(--border)] bg-white p-3">
+                              <p className="truncate text-sm font-semibold text-[var(--foreground)]">
+                                {invite.clientName ?? invite.label ?? `Convite ${invite.tokenPrefix}`}
+                              </p>
+                              <p className="mt-0.5 text-[12px] text-[var(--muted)]">Começou e não terminou o formulário.</p>
+                              {invite.clientId ? (
+                                <Link href={`/clientes/${invite.clientId}`} className="btn-secondary mt-2 inline-flex text-[12px]">
+                                  Ver contato salvo
+                                </Link>
+                              ) : null}
+                            </article>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 3. Convites pendentes */}
+                    <div className="card card-accent card-accent-purple p-4">
+                      <h2 className="text-[14px] font-semibold text-[var(--foreground)]">
+                        Convites aguardando resposta ({pendingInvites.length})
+                      </h2>
+                      <div className="mt-2 space-y-1.5">
+                        {!invitesLoaded ? (
+                          <p className="text-[12.5px] text-[var(--muted)]">Carregando convites…</p>
+                        ) : pendingInvites.length === 0 ? (
+                          <p className="text-[12.5px] text-[var(--muted)]">
+                            Nenhum convite em aberto. Use o botão “Convidar cliente” acima para gerar um link.
+                          </p>
+                        ) : (
+                          pendingInvites.map((invite) => (
+                            <p key={invite.id} className="text-[12.5px] text-[var(--foreground)]">
+                              <strong>{invite.label ?? `Convite ${invite.tokenPrefix}`}</strong>
+                              <span className="ml-2 text-[var(--muted)]">
+                                expira em {new Date(invite.expiresAt).toLocaleDateString("pt-BR")}
+                              </span>
+                            </p>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </section>
+          )}
+
           {/* Quadro kanban dos cães (arrastar entre fases) */}
           {entityKind === "quadro" && (
             <section className="mt-3">
@@ -1319,7 +1496,7 @@ export default function ClientsPage() {
           {/* Listagem de Clientes — coluna única no celular; a partir de lg vira
               grade, porque os cards ocupavam a largura toda com o conteúdo
               preso à esquerda e o resto vazio. */}
-          {entityKind !== "quadro" && (
+          {(entityKind === "humanos" || entityKind === "caes") && (
           <section data-tour="clients-list" className="mt-3 grid grid-cols-1 items-start gap-3 lg:grid-cols-2">
             {filteredClients.length === 0 ? (
               clients.length === 0 ? (

@@ -38,6 +38,7 @@ const trainerFlow: FlowStep[] = [
       "Para quem já é cliente, o link de onboarding do portal continua valendo pra ele completar a ficha (modo rascunho até você aprovar).",
       "Tags (VIP, Inadimplente, Filhote, Sênior, etc) ajudam a filtrar — pode editar inline no card.",
       "Precisa remover alguém? O card do cliente tem opção de excluir com confirmação — agendamentos e registros órfãos somem junto.",
+      "A aba Leads em /clientes separa quem ainda não é cliente: cadastros do convite aguardando aprovação, formulários em preenchimento e convites em aberto. Quando alguém responde o convite, o sininho avisa.",
     ],
     shortcut: "Atalho: Ctrl+K → 'Novo cliente'",
   },
@@ -80,7 +81,8 @@ const trainerFlow: FlowStep[] = [
     why: "Feed de treinos, quadro de fases e análise comportamental mostram onde cada cão está no processo.",
     how: [
       "Clique no nome do cliente em /clientes pra abrir a página completa dele: cães, próximas aulas, treinos, financeiro e portal num lugar só.",
-      "Em /treinos veja a linha do tempo dos treinos com fotos, notas e filtros (hoje, semana, pendentes) + filtro combinado por nome do cão e do proprietário.",
+      "Em /treinos a visão 'Por cão (prontuário)' mostra cada cão em treinamento com fase, nº de sessões e última aula — clique em Prontuário, Histórico ou Registrar direto do card.",
+      "A visão 'Linha do tempo' de /treinos lista as aulas com fotos, notas e filtros (hoje, semana, pendentes) + filtro combinado por nome do cão e do proprietário.",
       "O topo de /treinos mostra o total de treinos realizados em destaque, e cada card exibe a fase do cão (Ficha, Ativo, Completo…). O botão flutuante 'Registro rápido' fica sempre à mão.",
       "Em /clientes, aba 'Quadro', arraste cada cão entre as fases do adestramento (kanban). No celular, use o seletor no card.",
       "Em /evolucao acompanhe as notas comportamentais por categoria de cada cão ao longo do tempo.",
@@ -127,7 +129,7 @@ const trainerFlow: FlowStep[] = [
 const screenMap = [
   { href: "/dashboard", label: "Hoje (Dashboard)", text: "Card 'Próxima ação' pra começar, resumo do dia, lembretes prontos pra WhatsApp e pendências." },
   { href: "/agenda", label: "Agenda", text: "Dia/Semana/Mês, recorrência, confirmação de presença e exportação de calendário." },
-  { href: "/clientes", label: "Clientes", text: "Fichas de clientes e cães, tags, onboarding e quadro kanban. Clique no cliente pra abrir a página completa dele. O botão 'Convidar cliente' gera o link pro tutor se cadastrar sozinho." },
+  { href: "/clientes", label: "Clientes", text: "Fichas de clientes e cães, tags, quadro kanban e a aba Leads (convites em aberto + cadastros aguardando aprovação, fora da carteira). O botão 'Convidar cliente' abre um modal para gerar o link de autocadastro." },
   { href: "/treinos", label: "Treinos", text: "Feed dos treinos com contador em destaque, fase de cada cão, fotos, notas e filtros por cão + proprietário." },
   { href: "/treinos/registro", label: "Registrar treino", text: "Formulário completo da sessão (A-I) com voz e IA." },
   { href: "/financeiro", label: "Financeiro", text: "Pacotes (cadastro em modal), contratos, cobranças, recibos com assinatura digital, Pix Copia e Cola e envio em PDF." },

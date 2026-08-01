@@ -112,7 +112,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="clients-list"]',
     title: "Clientes e cães",
     description:
-      "Clique no cliente pra abrir a página completa dele (dados, cães, aulas, financeiro e portal num lugar só). A aba 'Quadro' vira um kanban: arraste cada cão entre as fases do adestramento.",
+      "Clique no cliente pra abrir a página completa dele (dados, cães, aulas, financeiro e portal num lugar só). A aba 'Quadro' vira um kanban de fases, e a aba 'Leads' separa convites em aberto e cadastros aguardando aprovação — a carteira fica limpa.",
     placement: "top",
   },
   {
@@ -128,9 +128,9 @@ export const TRAINER_STEPS: TourStep[] = [
     id: "treinos",
     route: "/treinos",
     selector: '[data-tour="treinos-feed"]',
-    title: "Histórico de treinos",
+    title: "Treinos — prontuário e histórico",
     description:
-      "O total de treinos realizados fica em destaque no topo, cada card mostra a fase do cão, e dá pra filtrar por nome do cão + proprietário além de hoje/semana/pendentes. O botão flutuante 'Registro rápido' abre o registro de qualquer lugar da lista.",
+      "A visão 'Por cão' mostra cada cão em treinamento com fase e nº de sessões (o prontuário); a 'Linha do tempo' lista as aulas com filtros por cão + proprietário. O total de treinos fica em destaque e o botão flutuante 'Registro rápido' está sempre à mão.",
     placement: "bottom",
   },
   {
@@ -327,9 +327,9 @@ export const TUTOR_STEPS: TourStep[] = [
   {
     id: "cliente-tasks",
     selector: '[data-tour="cliente-tasks"]',
-    title: "Tarefas de casa",
+    title: "Tarefas de hoje",
     description:
-      "O que o adestrador passou para praticar entre as aulas. Marque conforme for fazendo.",
+      "O que o adestrador passou para praticar entre as aulas. Marque conforme for fazendo — as tarefas diárias reiniciam a cada dia, e os círculos mostram a semana.",
     placement: "top",
   },
   {
