@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { SkeletonCard, SkeletonLine } from "@/components/skeletons";
 import {
   DOG_TRAINING_STATUSES,
   type DogTrainingStatus,
@@ -44,6 +45,7 @@ export default function DogProfilePage() {
   const dogId = (params?.dogId as string) ?? "";
 
   const hydrated = useAppStore((s) => s.hydrated);
+  const dataLoaded = useAppStore((s) => s.dataLoaded);
   const clients = useAppStore((s) => s.clients);
   const trainingSessions = useAppStore((s) => s.trainingSessions);
   const updateClient = useAppStore((s) => s.updateClient);
@@ -110,8 +112,17 @@ export default function DogProfilePage() {
           </Link>
         </div>
 
-        {!hydrated ? (
-          <p className="text-sm text-[var(--muted)]">Carregando ficha…</p>
+        {!hydrated || (!dataLoaded && !found) ? (
+          /* Segura o skeleton até a sincronização terminar — antes disso a
+             carteira ainda está vazia e "não encontrado" seria mentira. */
+          <div className="space-y-4" aria-busy="true" aria-label="Carregando ficha do cão">
+            <SkeletonCard rows={4} />
+            <div className="space-y-2">
+              <SkeletonLine className="h-4 w-44" />
+              <SkeletonCard rows={2} />
+              <SkeletonCard rows={2} />
+            </div>
+          </div>
         ) : !found ? (
           <div className="rounded-lg border border-[var(--border)] bg-white p-6">
             <p className="text-sm text-[var(--foreground)]">Cão não encontrado.</p>
@@ -280,7 +291,7 @@ export default function DogProfilePage() {
                     return (
                       <Link
                         key={session.id}
-                        href={`/treinos/registro?sessionId=${session.id}`}
+                        href={`/treinos/registro?sessionId=${session.id}&dogId=${dogId}`}
                         className="block rounded-md border border-[var(--border)] bg-white p-3 transition hover:border-[var(--border-strong)]"
                       >
                         <div className="flex items-center justify-between gap-3">

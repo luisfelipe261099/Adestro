@@ -220,21 +220,31 @@ export default function RegistroTreinoClientPage() {
   // tarefas da Seção "Planejamento da próxima"). Vira sugestão de 1 clique.
   // Derivação simples — o React Compiler memoiza sozinho.
   const lastPlan = (() => {
-    if (!selectedDogId) return null;
+    // Usa o cão efetivamente exibido no formulário (selectedDog tem fallback),
+    // não o state cru — que fica vazio em alguns fluxos de navegação e fazia o
+    // card do pré-treino sumir ou mostrar o plano de outro cão.
+    const planDogId = selectedDog?.id;
+    if (!planDogId) return null;
     const toTime = (date: string) => {
       const [d, m, y] = (date ?? "").split("/").map(Number);
       return d && m && y ? new Date(y, m - 1, d).getTime() : 0;
     };
     const past = trainingSessions
-      .filter((s) => s.dogId === selectedDogId || (s.dogSessions ?? []).some((ds) => ds.dogId === selectedDogId))
+      .filter(
+        (s) =>
+          s.id !== editingId && // a própria sessão em edição não é "última aula"
+          (s.dogId === planDogId || (s.dogSessions ?? []).some((ds) => ds.dogId === planDogId)),
+      )
       .sort((a, b) => toTime(b.date) - toTime(a.date));
     for (const s of past) {
-      const ds = (s.dogSessions ?? []).find((item) => item.dogId === selectedDogId);
+      const ds = (s.dogSessions ?? []).find((item) => item.dogId === planDogId);
       if (!ds) continue;
       const focus = ds.nextFocus?.trim() ?? "";
       const cmds = (ds.nextCommands ?? []).filter(Boolean);
       const tasks = (ds.nextTasks ?? []).filter(Boolean);
-      if (focus || cmds.length || tasks.length) return { date: s.date, focus, commands: cmds, tasks };
+      if (focus || cmds.length || tasks.length) {
+        return { sessionId: s.id, dogId: planDogId, date: s.date, focus, commands: cmds, tasks };
+      }
     }
     return null;
   })();
@@ -287,10 +297,24 @@ export default function RegistroTreinoClientPage() {
         setTitle(found.title || "Sessão prática estruturada");
         setSessionDate(toInputDate(found.date));
         setSessionLocation(found.location ?? "");
-        if (found.clientId) setSelectedClientId(found.clientId);
-        if (found.dogId) setSelectedDogId(found.dogId);
 
-        const ds = found.dogSessions?.[0];
+        // Cão alvo: o pedido na URL ganha (aula coletiva aberta pela ficha de um
+        // cão específico); senão o da sessão; senão o do primeiro registro.
+        const belongsToSession =
+          requestedDogId &&
+          (found.dogId === requestedDogId || (found.dogSessions ?? []).some((d) => d.dogId === requestedDogId));
+        const targetDogId = belongsToSession
+          ? requestedDogId
+          : found.dogId ?? found.dogSessions?.[0]?.dogId ?? "";
+
+        // Cliente: o da sessão; senão o dono do cão. Sem esse fallback o form
+        // caía no primeiro cliente da lista ("cliente aleatório").
+        const ownerId =
+          found.clientId ?? clients.find((c) => c.dogs.some((d) => d.id === targetDogId))?.id;
+        if (ownerId) setSelectedClientId(ownerId);
+        if (targetDogId) setSelectedDogId(targetDogId);
+
+        const ds = (found.dogSessions ?? []).find((d) => d.dogId === targetDogId) ?? found.dogSessions?.[0];
         if (ds) {
           setActivities(
             (ds.activities ?? []).map((a, i) => ({
@@ -869,13 +893,21 @@ export default function RegistroTreinoClientPage() {
                         {lastPlan.commands.length ? <li>• Comandos: {lastPlan.commands.join(", ")}</li> : null}
                         {lastPlan.tasks.length ? <li>• Tarefas que o tutor praticou em casa: {lastPlan.tasks.join(", ")}</li> : null}
                       </ul>
-                      <button
-                        type="button"
-                        onClick={importLastPlan}
-                        className="mt-2 rounded-full bg-[var(--card-purple)] px-3 py-1 text-[12px] font-bold text-white hover:opacity-90"
-                      >
-                        Usar este plano nesta sessão →
-                      </button>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={importLastPlan}
+                          className="rounded-full bg-[var(--card-purple)] px-3 py-1 text-[12px] font-bold text-white hover:opacity-90"
+                        >
+                          Usar este plano nesta sessão →
+                        </button>
+                        <Link
+                          href={`/treinos/registro?sessionId=${lastPlan.sessionId}&dogId=${lastPlan.dogId}`}
+                          className="rounded-full border border-[var(--card-purple-border)] px-3 py-1 text-[12px] font-bold text-[var(--card-purple)] hover:opacity-80"
+                        >
+                          Abrir a aula de origem
+                        </Link>
+                      </div>
                     </div>
                   ) : null}
 

@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { SkeletonCard } from "@/components/skeletons";
 import { useAppStore } from "@/lib/app-store";
 import { behaviorLabel } from "@/lib/behavior";
 
@@ -39,6 +40,15 @@ const MAX_THUMB_KB = 40;
 const MAX_TOTAL_MEDIA_KB = 750;
 const MAX_DIMENSION = 1280;
 const THUMB_MAX_DIMENSION = 320;
+
+// Cor da etiqueta de fase do cão, alinhada às colunas do quadro kanban.
+const PHASE_BADGE: Record<string, string> = {
+  Ficha: "bg-slate-100 text-slate-700",
+  Ativo: "bg-sky-100 text-sky-800",
+  Completo: "bg-emerald-100 text-emerald-800",
+  Pausado: "bg-amber-100 text-amber-800",
+  Cancelado: "bg-rose-100 text-rose-800",
+};
 
 function createDraftTrainingNote(block = "Guia"): DraftTrainingNote {
   return {
@@ -231,6 +241,7 @@ export default function TrainingPage() {
   const clients = useAppStore((state) => state.clients);
   const trainingSessions = useAppStore((state) => state.trainingSessions);
   const addTrainingSession = useAppStore((state) => state.addTrainingSession);
+  const dataLoaded = useAppStore((state) => state.dataLoaded);
 
   const initialClientId = searchParams.get("clientId") ?? clients[0]?.id ?? "";
   const initialDogId = searchParams.get("dogId") ?? clients[0]?.dogs[0]?.id ?? "";
@@ -238,6 +249,9 @@ export default function TrainingPage() {
   const [selectedClientId, setSelectedClientId] = useState(initialClientId);
   const [selectedDogId, setSelectedDogId] = useState(initialDogId);
   const [searchTerm, setSearchTerm] = useState("");
+  // Filtro combinado: nome do cão E nome do proprietário (seleção via datalist).
+  const [dogNameFilter, setDogNameFilter] = useState("");
+  const [ownerNameFilter, setOwnerNameFilter] = useState("");
   // Quem chega por "Histórico" de um cão específico quer o histórico DELE,
   // inteiro — não o feed do dia de todos os cães. Sem isso o botão parecia
   // levar a uma lista aleatória.
@@ -301,7 +315,10 @@ export default function TrainingPage() {
   );
 
   const dogDirectory = useMemo(() => {
-    const map = new Map<string, { name: string; breed: string; photoUrl?: string; clientName: string }>();
+    const map = new Map<
+      string,
+      { name: string; breed: string; photoUrl?: string; clientName: string; trainingStatus?: string }
+    >();
 
     clients.forEach((client) => {
       client.dogs.forEach((dog) => {
@@ -310,6 +327,7 @@ export default function TrainingPage() {
           breed: dog.breed,
           photoUrl: dog.photoUrl,
           clientName: client.name,
+          trainingStatus: dog.trainingStatus,
         });
       });
     });
@@ -357,6 +375,21 @@ export default function TrainingPage() {
       });
     }
 
+    // Filtro combinado cão + proprietário (AND): usa o nome gravado na sessão
+    // com fallback no diretório, porque sessões antigas podem ter os campos vazios.
+    const normalizedDogFilter = dogNameFilter.trim().toLowerCase();
+    const normalizedOwnerFilter = ownerNameFilter.trim().toLowerCase();
+    if (normalizedDogFilter || normalizedOwnerFilter) {
+      nextSessions = nextSessions.filter((session) => {
+        const meta = session.dogId ? dogDirectory.get(session.dogId) : undefined;
+        const dogName = (session.dogName || meta?.name || "").toLowerCase();
+        const ownerName = (session.clientName || meta?.clientName || "").toLowerCase();
+        if (normalizedDogFilter && !dogName.includes(normalizedDogFilter)) return false;
+        if (normalizedOwnerFilter && !ownerName.includes(normalizedOwnerFilter)) return false;
+        return true;
+      });
+    }
+
     if (!normalizedSearch) return nextSessions;
 
     return nextSessions.filter((session) => {
@@ -371,7 +404,7 @@ export default function TrainingPage() {
 
       return haystack.includes(normalizedSearch);
     });
-  }, [feedFilter, feedSessions, searchTerm, feedDogId, dogDirectory]);
+  }, [feedFilter, feedSessions, searchTerm, feedDogId, dogDirectory, dogNameFilter, ownerNameFilter]);
 
   function handleOpenWhatsApp(phone?: string, dogName?: string) {
     const normalizedPhone = (phone ?? "").replace(/\D/g, "");
@@ -540,7 +573,15 @@ export default function TrainingPage() {
   return (
     <AuthGuard role="trainer">
       <main className="page">
-        {clients.length === 0 ? (
+        {!dataLoaded && clients.length === 0 ? (
+          /* Primeira sincronização ainda em andamento: mostra skeleton em vez
+             de afirmar que não há registros. */
+          <div className="space-y-3" aria-busy="true" aria-label="Carregando treinos">
+            <SkeletonCard rows={2} />
+            <SkeletonCard rows={3} />
+            <SkeletonCard rows={3} />
+          </div>
+        ) : clients.length === 0 ? (
           <section className="rounded-lg border border-dashed border-[var(--border)] bg-white p-8 text-center">
             <p className="text-lg font-semibold text-[var(--foreground)]">Nenhum cliente cadastrado</p>
             <p className="mt-2 text-sm text-[var(--muted)]">Cadastre um cliente e seu cão para começar os registros.</p>
@@ -569,6 +610,28 @@ export default function TrainingPage() {
                 <TinyIcon name="plus" />
               </button>
             </header>
+
+            {/* Contagem de treinos realizados em destaque */}
+            <section className="mt-3 grid grid-cols-2 gap-2">
+              <article className="stat-card stat-card-blue">
+                <p className="text-[12px] font-bold uppercase tracking-wide" style={{ color: "var(--c)" }}>
+                  Treinos realizados
+                </p>
+                <p className="mt-1 text-[26px] font-extrabold leading-none tracking-tight text-[var(--foreground)]">
+                  {trainingSessions.length}
+                </p>
+                <p className="mt-1 text-[12px] font-medium text-[var(--muted-strong)]">registrados no total</p>
+              </article>
+              <article className="stat-card stat-card-sky">
+                <p className="text-[12px] font-bold uppercase tracking-wide" style={{ color: "var(--c)" }}>
+                  No filtro atual
+                </p>
+                <p className="mt-1 text-[26px] font-extrabold leading-none tracking-tight text-[var(--foreground)]">
+                  {filteredFeed.length}
+                </p>
+                <p className="mt-1 text-[12px] font-medium text-[var(--muted-strong)]">{feedTitle.toLowerCase()}</p>
+              </article>
+            </section>
 
             <section className="mt-3 flex gap-2">
               <label className="flex flex-1 items-center gap-2 rounded-md border border-[var(--border)] bg-white px-3 py-2 text-[var(--muted)]">
@@ -607,6 +670,40 @@ export default function TrainingPage() {
                 </span>
               </div>
             ) : null}
+
+            {/* Filtro combinado por nome do cão + nome do proprietário */}
+            <section className={`mt-3 grid gap-2 sm:grid-cols-2 ${showQuickFilters ? "" : "hidden"}`}>
+              <label className="grid gap-1">
+                <span className="text-[12px] font-medium text-[var(--muted)]">Nome do cão</span>
+                <input
+                  value={dogNameFilter}
+                  onChange={(event) => setDogNameFilter(event.target.value)}
+                  list="feed-dog-names"
+                  placeholder="Todos os cães"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
+                />
+                <datalist id="feed-dog-names">
+                  {clients.flatMap((client) => client.dogs.map((dog) => (
+                    <option key={dog.id} value={dog.name} />
+                  )))}
+                </datalist>
+              </label>
+              <label className="grid gap-1">
+                <span className="text-[12px] font-medium text-[var(--muted)]">Nome do proprietário</span>
+                <input
+                  value={ownerNameFilter}
+                  onChange={(event) => setOwnerNameFilter(event.target.value)}
+                  list="feed-owner-names"
+                  placeholder="Todos os proprietários"
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
+                />
+                <datalist id="feed-owner-names">
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.name} />
+                  ))}
+                </datalist>
+              </label>
+            </section>
 
             <section className={`mt-3 flex gap-2 overflow-x-auto pb-1 ${showQuickFilters ? "" : "hidden"}`}>
               {[
@@ -675,7 +772,7 @@ export default function TrainingPage() {
                         </div>
                         <div>
                           <Link
-                            href={`/treinos/registro?sessionId=${session.id}`}
+                            href={`/treinos/registro?sessionId=${session.id}${session.dogId ? `&dogId=${session.dogId}` : ""}`}
                             className="text-sm font-semibold text-[var(--foreground)] hover:underline"
                           >
                             {dogName}
@@ -688,10 +785,15 @@ export default function TrainingPage() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <span className="rounded-full bg-[var(--surface-2)] px-2 py-1 text-[12px] font-semibold text-[var(--foreground)]">
-                          Registrado
+                        {/* Prontuário primeiro: a fase do cão importa mais que o carimbo "Registrado". */}
+                        <span
+                          className={`rounded-full px-2 py-1 text-[12px] font-semibold ${
+                            PHASE_BADGE[dogMeta?.trainingStatus ?? ""] ?? "bg-[var(--surface-2)] text-[var(--foreground)]"
+                          }`}
+                        >
+                          {dogMeta?.trainingStatus ?? "Registrado"}
                         </span>
-                        <span className="text-[12px] text-[var(--muted)]">{session.date}</span>
+                        <span className="text-[14px] font-semibold text-[var(--foreground)]">{session.date}</span>
                       </div>
                     </div>
 
@@ -855,7 +957,7 @@ export default function TrainingPage() {
                         {isExpanded ? "Recolher" : "Ver ficha completa"}
                       </button>
                       <Link
-                        href={`/treinos/registro?sessionId=${session.id}`}
+                        href={`/treinos/registro?sessionId=${session.id}${session.dogId ? `&dogId=${session.dogId}` : ""}`}
                         className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-[var(--foreground)]"
                       >
                         <TinyIcon name="list" />
@@ -875,13 +977,21 @@ export default function TrainingPage() {
               })}
 
               {!filteredFeed.length ? (
-                <article className="rounded-md border border-dashed border-[var(--border)] bg-white p-4 text-xs text-[var(--muted)]">
-                  Nenhum treino encontrado para este filtro.
-                </article>
+                !dataLoaded ? (
+                  /* Ainda sincronizando: skeleton em vez de "nenhum treino". */
+                  <div className="space-y-2.5" aria-busy="true">
+                    <SkeletonCard rows={2} />
+                    <SkeletonCard rows={2} />
+                  </div>
+                ) : (
+                  <article className="rounded-md border border-dashed border-[var(--border)] bg-white p-4 text-xs text-[var(--muted)]">
+                    Nenhum treino encontrado para este filtro.
+                  </article>
+                )
               ) : null}
             </section>
 
-            <section className="mt-4 rounded-md border border-[var(--border)] bg-[#f1f8fe] p-3">
+            <section id="registro-rapido" className="mt-4 rounded-md border border-[var(--border)] bg-[#f1f8fe] p-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-[var(--foreground)]">Registro guiado da aula</p>
@@ -896,6 +1006,23 @@ export default function TrainingPage() {
                 </button>
               </div>
             </section>
+
+            {/* Botão flutuante: registro rápido sempre à mão, mesmo no meio da lista.
+                bottom maior no mobile para não brigar com a navegação inferior. */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowForm(true);
+                window.setTimeout(() => {
+                  document.getElementById("registro-rapido")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 50);
+              }}
+              className="fixed bottom-20 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105 lg:bottom-6"
+              aria-label="Abrir registro rápido de treino"
+            >
+              <TinyIcon name="plus" />
+              Registro rápido
+            </button>
 
             {showForm ? (
               <article className="mt-3 rounded-md border border-[var(--border)] bg-white p-3">

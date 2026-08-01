@@ -45,7 +45,7 @@ export function UpcomingSessions() {
   const total = groups.reduce((sum, group) => sum + group.items.length, 0);
 
   return (
-    <section className="card p-4">
+    <section className="card card-accent card-accent-sky p-4">
       <header className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-[14px] font-semibold text-[var(--foreground)]">Próximas aulas</h2>

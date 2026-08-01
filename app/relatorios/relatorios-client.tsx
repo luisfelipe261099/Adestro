@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
 import { useAppStore } from "@/lib/app-store";
-import { MonthlyComparison } from "@/components/monthly-comparison";
+import { SessionComparison } from "@/components/session-comparison";
 import { MonthlyReport } from "@/components/monthly-report";
 
 type GeneratedReport = {
@@ -558,10 +558,11 @@ export default function RelatoriosClientPage() {
             </div>
           ) : null}
 
-          {/* Comparativo mês vs mês — só faz sentido quando há um cão selecionado */}
+          {/* Comparativo por SESSÃO (ex.: Sessão 1 vs Sessão 4) com gráfico de
+              progressão — substitui a antiga comparação por período/mês. */}
           {selectedDogId ? (
             <div className="mt-4">
-              <MonthlyComparison
+              <SessionComparison
                 dogId={selectedDogId}
                 dogName={clientDogs.find((d) => d.id === selectedDogId)?.name ?? "Cão"}
               />

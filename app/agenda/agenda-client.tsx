@@ -7,6 +7,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DateField } from "@/components/date-field";
+import { TimeSelect } from "@/components/time-select";
 import { EventParticipants } from "@/components/event-participants";
 import { useAppStore, type EventConflict } from "@/lib/app-store";
 import { isActiveEvent, resolveEventDate } from "@/lib/home-agenda";
@@ -117,6 +118,59 @@ function TinyIcon({ name }: { name: "back" | "plus" | "filter" | "play" | "notes
       <path d="M7 18h10a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3h-1l-1.2-2H9.2L8 6H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3Z" stroke="currentColor" strokeWidth="1.7" />
       <circle cx="12" cy="12" r="2.2" stroke="currentColor" strokeWidth="1.7" />
     </svg>
+  );
+}
+
+type DayListEvent = { id: string; time: string; dog: string; client: string; status: string };
+
+// Lista expandida do dia clicado no calendário: separa o que já foi realizado
+// do que ainda está agendado para aquela data.
+function SelectedDayEvents({ date, events }: { date: Date; events: DayListEvent[] }) {
+  const realizados = events.filter((e) => e.status === "Confirmado");
+  const cancelados = events.filter((e) => e.status === "Cancelado");
+  const agendados = events.filter((e) => e.status !== "Confirmado" && e.status !== "Cancelado");
+  const groups = [
+    { title: "Agendados", items: agendados },
+    { title: "Realizados", items: realizados },
+    { title: "Cancelados", items: cancelados },
+  ].filter((group) => group.items.length > 0);
+
+  return (
+    <section className="mt-3 rounded-md border border-[var(--border)] bg-[var(--surface)] p-3 shadow-sm">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+        Atendimentos em {date.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+      </h3>
+      {groups.length === 0 ? (
+        <p className="mt-2 text-xs italic text-[var(--muted)]">Nenhum atendimento para este dia.</p>
+      ) : (
+        groups.map((group) => (
+          <div key={group.title} className="mt-2.5">
+            <p className="text-[12px] font-semibold text-[var(--muted)]">
+              {group.title} ({group.items.length})
+            </p>
+            <div className="mt-1 space-y-1.5">
+              {group.items.map((e) => (
+                <div
+                  key={e.id}
+                  className="flex flex-wrap items-center justify-between gap-1 rounded-md border border-slate-100 bg-slate-50 p-2 text-xs"
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className={`h-2 w-2 flex-shrink-0 rounded-full ${timelineDot(e.status as EventStatus)}`} />
+                    <span className="font-bold text-[var(--foreground)]">{e.time}</span>
+                    <span className="truncate font-medium text-slate-800">
+                      {e.dog} • {e.client}
+                    </span>
+                  </div>
+                  <span className={`rounded-full px-1.5 py-0.5 text-[12px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
+                    {statusLabel(e.status as EventStatus)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+    </section>
   );
 }
 
@@ -783,13 +837,7 @@ export default function AgendaClientPage() {
 
                   <label className="grid gap-1">
                     <span className="text-[12px] font-medium text-[var(--muted)]">Horário</span>
-                    <input
-                      type="time"
-                      value={time}
-                      onChange={(event) => setTime(event.target.value)}
-                      className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                      required
-                    />
+                    <TimeSelect value={time} onChange={setTime} required />
                   </label>
                 </div>
 
@@ -934,7 +982,7 @@ export default function AgendaClientPage() {
                   <p className={`text-2xl font-extrabold ${eventsForSelectedDay.length > 0 ? "text-[var(--card-blue)]" : "text-[var(--muted)]"}`}>
                     {eventsForSelectedDay.length}
                   </p>
-                  <p className="text-[12px] font-semibold text-[var(--muted)]">📅 Aulas no dia</p>
+                  <p className="text-[12px] font-semibold text-[var(--muted)]">📅 Atendimento(s) no dia</p>
                 </article>
                 <article
                   className={`rounded-md border p-2.5 text-center ${
@@ -1139,7 +1187,8 @@ export default function AgendaClientPage() {
           {/* VIEW: WEEKLY GRID LIST */}
           {/* ======================================= */}
           {viewMode === "semana" && (
-            /* Celular: lista vertical (como antes). Desktop: 7 colunas lado a lado. */
+            <>
+            {/* Celular: lista vertical (como antes). Desktop: 7 colunas lado a lado. */}
             <section className="mt-3 grid grid-cols-1 gap-2.5 lg:grid-cols-7">
               {weekDates.map((dayDate) => {
                 const dayEvents = getEventsForGridDate(dayDate)
@@ -1199,6 +1248,10 @@ export default function AgendaClientPage() {
                 );
               })}
             </section>
+
+            {/* Lista expandida do dia clicado na semana */}
+            <SelectedDayEvents date={currentDate} events={eventsForSelectedDay} />
+            </>
           )}
 
           {/* ======================================= */}
@@ -1256,28 +1309,8 @@ export default function AgendaClientPage() {
                 })}
               </div>
 
-              {/* Selected date events preview */}
-              <div className="mt-3.5 border-t border-slate-100 pt-3.5 px-1.5 pb-1">
-                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Aulas em {currentDate.toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}:
-                </h3>
-                <div className="mt-2 space-y-1.5">
-                  {eventsForSelectedDay.map(e => (
-                    <div key={e.id} className="flex justify-between items-center text-xs p-2 bg-slate-50 border border-slate-100 rounded-md">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-[var(--foreground)]">{e.time}</span>
-                        <span className="text-slate-800 font-medium">{e.dog} • {e.client}</span>
-                      </div>
-                      <span className={`px-1.5 py-0.5 rounded-full text-[12px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
-                        {statusLabel(e.status as EventStatus)}
-                      </span>
-                    </div>
-                  ))}
-                  {eventsForSelectedDay.length === 0 && (
-                    <p className="text-xs text-[var(--muted)] italic">Nenhum evento para este dia.</p>
-                  )}
-                </div>
-              </div>
+              {/* Lista expandida do dia clicado no mês */}
+              <SelectedDayEvents date={currentDate} events={eventsForSelectedDay} />
 
             </section>
           )}
@@ -1326,12 +1359,7 @@ export default function AgendaClientPage() {
                 </div>
                 <div className="grid gap-1">
                   <label className="text-[12px] font-medium text-[var(--muted)]">Novo horário</label>
-                  <input
-                    type="time"
-                    value={reschedTime}
-                    onChange={(e) => setReschedTime(e.target.value)}
-                    className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
-                  />
+                  <TimeSelect value={reschedTime} onChange={setReschedTime} />
                 </div>
               </div>
               <div className="mt-5 flex gap-2">

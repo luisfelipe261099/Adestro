@@ -29,6 +29,7 @@ type BusinessSettings = {
   businessAddress: string;
   businessHours: string;
   logoUrl: string;
+  signatureUrl: string;
 };
 
 const DEFAULT_BUSINESS: BusinessSettings = {
@@ -37,6 +38,7 @@ const DEFAULT_BUSINESS: BusinessSettings = {
   businessAddress: "",
   businessHours: "",
   logoUrl: "",
+  signatureUrl: "",
 };
 
 export default function ConfiguracoesPage() {
@@ -80,6 +82,7 @@ export default function ConfiguracoesPage() {
           businessAddress: data.businessAddress ?? "",
           businessHours: data.businessHours ?? "",
           logoUrl: data.logoUrl ?? "",
+          signatureUrl: data.signatureUrl ?? "",
         });
       } catch {
         // mantém defaults
@@ -180,6 +183,17 @@ export default function ConfiguracoesPage() {
     }
     const reader = new FileReader();
     reader.onload = () => setBusiness((b) => ({ ...b, logoUrl: String(reader.result) }));
+    reader.readAsDataURL(file);
+  }
+
+  async function handleSignatureUpload(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 1_500_000) {
+      setAlertsError("Assinatura muito grande. Use uma imagem de até 1.5MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setBusiness((b) => ({ ...b, signatureUrl: String(reader.result) }));
     reader.readAsDataURL(file);
   }
 
@@ -404,6 +418,37 @@ export default function ConfiguracoesPage() {
                   {business.logoUrl && (
                     <button type="button" onClick={() => setBusiness((b) => ({ ...b, logoUrl: "" }))} className="text-[12px] text-rose-600">
                       Remover logo
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Assinatura digital: entra automaticamente no rodapé do recibo. */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-16 w-32 items-center justify-center overflow-hidden rounded-md border border-sky-200 bg-white">
+                  {business.signatureUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={business.signatureUrl} alt="Assinatura" className="h-full w-full object-contain" />
+                  ) : (
+                    <span className="text-[12px] text-[var(--muted)]">Sem assinatura</span>
+                  )}
+                </div>
+                <div className="grid gap-1">
+                  <label className="cursor-pointer rounded-full border border-sky-300 bg-white px-3 py-1.5 text-[12px] font-semibold text-sky-800">
+                    Enviar assinatura
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleSignatureUpload(e.target.files[0])}
+                    />
+                  </label>
+                  <p className="text-[12px] text-sky-800">
+                    Foto ou digitalização da sua assinatura (fundo claro). Aparece no recibo.
+                  </p>
+                  {business.signatureUrl && (
+                    <button type="button" onClick={() => setBusiness((b) => ({ ...b, signatureUrl: "" }))} className="text-[12px] text-rose-600">
+                      Remover assinatura
                     </button>
                   )}
                 </div>

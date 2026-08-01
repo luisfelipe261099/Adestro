@@ -17,6 +17,7 @@ type SettingsPayload = {
   businessAddress?: string;
   businessHours?: string;
   logoUrl?: string;
+  signatureUrl?: string;
 };
 
 const FALLBACK_ACTIVITIES = [
@@ -93,6 +94,8 @@ export async function GET() {
     businessAddress: trainer.businessAddress ?? "",
     businessHours: trainer.businessHours ?? "",
     logoUrl: trainer.logoUrl ?? "",
+    signatureUrl: trainer.signatureUrl ?? "",
+    trainerName: trainer.name,
   });
 }
 
@@ -147,6 +150,10 @@ export async function PATCH(request: Request) {
   if (body.logoUrl !== undefined && typeof body.logoUrl === "string" && body.logoUrl.length <= 2_000_000) {
     data.logoUrl = body.logoUrl;
   }
+  // Assinatura do recibo — mesma estratégia do logo (data URL em LongText).
+  if (body.signatureUrl !== undefined && typeof body.signatureUrl === "string" && body.signatureUrl.length <= 2_000_000) {
+    data.signatureUrl = body.signatureUrl;
+  }
 
   const updated = await prisma.trainer.update({
     where: { id: trainer.id },
@@ -166,5 +173,7 @@ export async function PATCH(request: Request) {
     businessAddress: updated.businessAddress ?? "",
     businessHours: updated.businessHours ?? "",
     logoUrl: updated.logoUrl ?? "",
+    signatureUrl: updated.signatureUrl ?? "",
+    trainerName: updated.name,
   });
 }

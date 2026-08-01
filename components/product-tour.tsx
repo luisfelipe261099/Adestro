@@ -85,7 +85,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="bell"]',
     title: "Sininho de notificações",
     description:
-      "Pendências em tempo real: presenças aguardando confirmação, treinos sem registro, mensagens novas do portal, cobranças vencendo. O badge mostra a contagem.",
+      "Pendências em tempo real: presenças aguardando confirmação, treinos sem registro, mensagens novas do portal, cobranças vencendo. O badge mostra a contagem — abrir uma notificação marca como lida e ela some da lista.",
     placement: "bottom",
   },
   {
@@ -103,7 +103,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="agenda-tabs"]',
     title: "Agenda — semana, dia e mês",
     description:
-      "Abre na semana com o HOJE destacado em azul. Cada aula tem WhatsApp, confirmação de presença, mapa e exportação pro Google/Apple Calendar. Turmas coletivas escolhem os cães participantes já na criação.",
+      "Abre na semana com o HOJE destacado em azul. Clique num dia pra ver a lista de atendimentos dele logo abaixo (agendados e realizados). Os horários são escolhidos em blocos de 15 minutos. Cada aula tem WhatsApp, confirmação de presença, mapa e exportação pro Google/Apple Calendar.",
     placement: "bottom",
   },
   {
@@ -130,7 +130,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="treinos-feed"]',
     title: "Histórico de treinos",
     description:
-      "Linha do tempo de tudo que foi feito, com fotos, notas e filtros (hoje, semana, pendentes). Daqui você abre o registro guiado de qualquer aula.",
+      "O total de treinos realizados fica em destaque no topo, cada card mostra a fase do cão, e dá pra filtrar por nome do cão + proprietário além de hoje/semana/pendentes. O botão flutuante 'Registro rápido' abre o registro de qualquer lugar da lista.",
     placement: "bottom",
   },
   {
@@ -182,7 +182,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="finance-tabs"]',
     title: "Financeiro completo",
     description:
-      "Pacotes, cobranças, extrato e recibos com Pix Copia e Cola. Receba por Pix, dinheiro ou cartão (com taxa da maquininha e valor líquido calculado).",
+      "Pacotes (cadastro num modal, sem trocar de tela), cobranças, extrato e recibos com Pix Copia e Cola. O recibo sai com sua assinatura digital e vai pro cliente como arquivo PDF pelo WhatsApp.",
     placement: "bottom",
   },
   {
@@ -190,7 +190,7 @@ export const TRAINER_STEPS: TourStep[] = [
     route: "/relatorios",
     title: "Relatórios mensais",
     description:
-      "O rascunho aparece sozinho no início do mês. Você revisa a análise da IA, escolhe as fotos, aprova e envia em PDF. Tem comparativo mês vs mês pra mostrar a evolução.",
+      "O rascunho aparece sozinho no início do mês. Você revisa a análise da IA, escolhe as fotos, aprova e envia em PDF. Tem a evolução por sessão (ex.: Sessão 1 vs Sessão 4) com gráfico de progressão.",
     fullScreen: true,
   },
   {
@@ -199,7 +199,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="settings-alerts"]',
     title: "Do seu jeito",
     description:
-      "Horários dos lembretes, notificações push no celular, importação de clientes (CSV/ClickUp) e tema claro/escuro (botão ☀️/🌙 no topo de qualquer tela).",
+      "Horários dos lembretes, notificações push, dados do negócio (logo e assinatura que entram no recibo), importação de clientes (CSV/ClickUp) e tema claro/escuro (botão ☀️/🌙 no topo de qualquer tela).",
     placement: "top",
   },
   {

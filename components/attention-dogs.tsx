@@ -52,7 +52,7 @@ export function AttentionDogs() {
   const remaining = needAttention.length - shown.length;
 
   return (
-    <section className="card p-4">
+    <section className="card card-accent card-accent-orange p-4">
       <header className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-[14px] font-semibold text-[var(--foreground)]">Foco nos cães</h2>

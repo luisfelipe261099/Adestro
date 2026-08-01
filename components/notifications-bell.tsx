@@ -16,7 +16,7 @@ const TYPE_LABEL: Record<NotificationType | "all", string> = {
 };
 
 export function NotificationsBell() {
-  const { total, items, byType } = useNotifications();
+  const { total, items, byType, markRead, markAllRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<NotificationType | "all">("all");
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -60,14 +60,25 @@ export function NotificationsBell() {
                 {total === 0 ? "Tudo em dia" : `${total} ${total === 1 ? "item pendente" : "itens pendentes"}`}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--muted)] hover:bg-[var(--surface-2)]"
-              aria-label="Fechar"
-            >
-              <IconClose className="h-3.5 w-3.5" />
-            </button>
+            <div className="flex items-center gap-1">
+              {total > 0 ? (
+                <button
+                  type="button"
+                  onClick={markAllRead}
+                  className="rounded-md px-2 py-1 text-[12px] font-medium text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]"
+                >
+                  Marcar todas como lidas
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--muted)] hover:bg-[var(--surface-2)]"
+                aria-label="Fechar"
+              >
+                <IconClose className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </header>
 
           {total > 0 ? (
@@ -103,7 +114,11 @@ export function NotificationsBell() {
                 <li key={item.id} className="border-b border-[var(--border)] last:border-0">
                   <Link
                     href={item.href}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      // Abrir a notificação marca como lida: ela some da lista e do badge.
+                      markRead(item.id);
+                      setOpen(false);
+                    }}
                     className="block px-3 py-2.5 transition-colors hover:bg-[var(--surface-2)]"
                   >
                     <p className="truncate text-[13px] font-medium text-[var(--foreground)]">{item.title}</p>

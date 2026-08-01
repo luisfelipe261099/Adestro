@@ -199,6 +199,9 @@ export type AddEventResult =
 
 type AppState = {
   hydrated: boolean;
+  /** true depois que a primeira sincronização com o banco terminou (com ou sem erro).
+      Telas usam isso para segurar o estado "sem registros" enquanto os dados chegam. */
+  dataLoaded: boolean;
   dataLoadError: string | null;
   isAuthenticated: boolean;
   userRole: UserRole;
@@ -552,6 +555,7 @@ export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       hydrated: false,
+      dataLoaded: false,
       dataLoadError: null,
       isAuthenticated: false,
       userRole: "trainer",
@@ -1121,6 +1125,7 @@ export const useAppStore = create<AppState>()(
           set((state) => ({
             ...getDemoStatePatch(state),
             dataLoadError: null,
+            dataLoaded: true,
           }));
           return;
         }
@@ -1140,6 +1145,7 @@ export const useAppStore = create<AppState>()(
           if (!clientsRes.ok || !sessionsRes.ok || !eventsRes.ok || !paymentsRes.ok) {
             set({
               dataLoadError: "Nao foi possivel sincronizar os dados agora. Verifique sua conexao e tente novamente.",
+              dataLoaded: true,
             });
             return;
           }
@@ -1208,19 +1214,42 @@ export const useAppStore = create<AppState>()(
             })),
           }));
 
-          const trainingSessions: TrainingSession[] = (rawSessions as Array<Record<string, unknown>>).map((s) => ({
-            id:         String(s.id),
-            number:     Number(s.number ?? 1),
-            date:       String(s.date),
-            title:      String(s.title),
-            clientId:   s.clientId ? String(s.clientId) : undefined,
-            clientName: String(s.clientName ?? ""),
-            dogId:      s.dogId ? String(s.dogId) : undefined,
-            dogName:    String(s.dogName ?? ""),
-            notes:      Array.isArray(s.notes) ? (s.notes as TrainingNote[]) : [],
-            media:      Array.isArray(s.media) ? (s.media as TrainingMediaItem[]) : [],
-            dogSessions: Array.isArray(s.dogSessions) ? (s.dogSessions as DogTrainingSession[]) : [],
-          }));
+          // O banco não guarda clientId na sessão — deriva do dono do cão (cada
+          // cão pertence a um único cliente). Sem isso, a tela de edição caía no
+          // primeiro cliente da lista ("cliente aleatório" ao abrir um treino).
+          const clientIdByDogId = new Map<string, string>();
+          const clientIdByName = new Map<string, string>();
+          for (const client of clients) {
+            clientIdByName.set(client.name, client.id);
+            for (const dog of client.dogs) clientIdByDogId.set(dog.id, client.id);
+          }
+          const resolveSessionClientId = (s: Record<string, unknown>, dogSessions: DogTrainingSession[]) => {
+            if (s.clientId) return String(s.clientId);
+            if (s.dogId && clientIdByDogId.has(String(s.dogId))) return clientIdByDogId.get(String(s.dogId));
+            for (const ds of dogSessions) {
+              const owner = clientIdByDogId.get(ds.dogId);
+              if (owner) return owner;
+            }
+            if (s.clientName && clientIdByName.has(String(s.clientName))) return clientIdByName.get(String(s.clientName));
+            return undefined;
+          };
+
+          const trainingSessions: TrainingSession[] = (rawSessions as Array<Record<string, unknown>>).map((s) => {
+            const dogSessions = Array.isArray(s.dogSessions) ? (s.dogSessions as DogTrainingSession[]) : [];
+            return {
+              id:         String(s.id),
+              number:     Number(s.number ?? 1),
+              date:       String(s.date),
+              title:      String(s.title),
+              clientId:   resolveSessionClientId(s, dogSessions),
+              clientName: String(s.clientName ?? ""),
+              dogId:      s.dogId ? String(s.dogId) : undefined,
+              dogName:    String(s.dogName ?? ""),
+              notes:      Array.isArray(s.notes) ? (s.notes as TrainingNote[]) : [],
+              media:      Array.isArray(s.media) ? (s.media as TrainingMediaItem[]) : [],
+              dogSessions,
+            };
+          });
 
           const calendarEvents: CalendarEvent[] = (rawEvents as Array<Record<string, unknown>>).map((e) => ({
             id:            String(e.id),
@@ -1293,6 +1322,7 @@ export const useAppStore = create<AppState>()(
             portalFeedbacks,
             trainerRenewalHistory,
             dataLoadError: null,
+            dataLoaded: true,
             activePlan: dbPlanName,
             trainerSubscription: {
               ...state.trainerSubscription,
@@ -1305,6 +1335,7 @@ export const useAppStore = create<AppState>()(
         } catch {
           set({
             dataLoadError: "Falha ao carregar os dados da conta. Tente novamente em instantes.",
+            dataLoaded: true,
           });
         }
       },

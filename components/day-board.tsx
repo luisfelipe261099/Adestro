@@ -170,7 +170,7 @@ export function DayBoard() {
   const totalCards = todo.length + doing.length + done.length;
 
   return (
-    <section className="card p-4">
+    <section className="card card-accent card-accent-blue p-4">
       <header className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-[14px] font-semibold text-[var(--foreground)]">

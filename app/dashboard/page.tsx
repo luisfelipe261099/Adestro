@@ -303,14 +303,14 @@ export default function DashboardPage() {
           ))}
         </section>
 
-        {/* Próximas aulas — lista da semana em ordem crescente de data/hora */}
-        <div className="mt-4">
-          <UpcomingSessions />
-        </div>
-
         {/* Quadro do dia — kanban de status das aulas (integra com o foco do dia) */}
         <div className="mt-4" id="quadro-do-dia">
           <DayBoard />
+        </div>
+
+        {/* Próximas aulas — lista da semana em ordem crescente de data/hora */}
+        <div className="mt-4">
+          <UpcomingSessions />
         </div>
 
         {/* Foco nos cães + Prioridades da semana */}

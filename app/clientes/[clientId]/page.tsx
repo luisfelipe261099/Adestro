@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { IconUser } from "@/components/icons";
+import { SkeletonCard } from "@/components/skeletons";
 import { dogCountLabel, isOverPackage, packageProgressLabel, planLabel, plural } from "@/lib/labels";
 import { DogBehaviorCard } from "@/components/dog-behavior-card";
 import { TagsEditor } from "@/components/tags-editor";
@@ -94,6 +95,7 @@ export default function ClientProfilePage() {
   const clientId = (params?.clientId as string) ?? "";
 
   const hydrated = useAppStore((s) => s.hydrated);
+  const dataLoaded = useAppStore((s) => s.dataLoaded);
   const clients = useAppStore((s) => s.clients);
   const events = useAppStore((s) => s.calendarEvents);
   const sessions = useAppStore((s) => s.trainingSessions);
@@ -191,8 +193,13 @@ export default function ClientProfilePage() {
           </Link>
         </div>
 
-        {!hydrated ? (
-          <p className="text-sm text-[var(--muted)]">Carregando ficha…</p>
+        {!hydrated || (!dataLoaded && !client) ? (
+          /* Segura o skeleton até a primeira sincronização terminar — antes
+             disso a carteira está vazia e "não encontrado" seria prematuro. */
+          <div className="space-y-4" aria-busy="true" aria-label="Carregando ficha do cliente">
+            <SkeletonCard rows={4} />
+            <SkeletonCard rows={3} />
+          </div>
         ) : !client ? (
           <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
             <p className="text-sm text-[var(--foreground)]">Cliente não encontrado.</p>
@@ -443,17 +450,18 @@ export default function ClientProfilePage() {
                 ) : (
                   <>
                     <div className="grid grid-cols-3 gap-2 text-center">
+                      {/* Mesma hierarquia tipográfica do quadro do Financeiro. */}
                       <div className="rounded-md bg-emerald-50 p-2">
                         <p className="text-[12px] font-bold uppercase text-emerald-700">Pago</p>
-                        <p className="text-[13px] font-semibold text-emerald-800">{brl(invoiceTotals.paid)}</p>
+                        <p className="text-xl font-bold text-emerald-800">{brl(invoiceTotals.paid)}</p>
                       </div>
                       <div className="rounded-md bg-amber-50 p-2">
                         <p className="text-[12px] font-bold uppercase text-amber-700">Pendente</p>
-                        <p className="text-[13px] font-semibold text-amber-800">{brl(invoiceTotals.pending)}</p>
+                        <p className="text-xl font-bold text-amber-800">{brl(invoiceTotals.pending)}</p>
                       </div>
                       <div className="rounded-md bg-rose-50 p-2">
                         <p className="text-[12px] font-bold uppercase text-rose-700">Em atraso</p>
-                        <p className="text-[13px] font-semibold text-rose-800">{brl(invoiceTotals.overdue)}</p>
+                        <p className="text-xl font-bold text-rose-800">{brl(invoiceTotals.overdue)}</p>
                       </div>
                     </div>
                     <ul className="mt-3 space-y-2">

@@ -95,6 +95,7 @@ model Trainer {
   businessAddress   String?  @db.Text
   businessHours     String?          // ex: "Seg-Sex 8h-18h"
   logoUrl           String?  @db.LongText // base64 (mesma estratégia das demais mídias)
+  signatureUrl      String?  @db.LongText // base64 — imagem da assinatura usada no recibo
 
   // Configurações de alertas (módulo 10.3 - configurações operacionais)
   reminderHoursBefore       Int @default(24)

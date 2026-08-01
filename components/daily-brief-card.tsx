@@ -82,7 +82,7 @@ export function DailyBriefCard() {
 
   if (items.length === 0) {
     return (
-      <div className="card p-4">
+      <div className="card card-accent card-accent-green p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-[14px] font-semibold text-[var(--foreground)]">Prioridades</h2>
           <span className="text-[12px] text-[var(--success)]">Tudo em dia</span>
@@ -96,7 +96,7 @@ export function DailyBriefCard() {
   }
 
   return (
-    <div className="card p-4">
+    <div className="card card-accent card-accent-green p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-[14px] font-semibold text-[var(--foreground)]">Prioridades</h2>
         <span className="text-[12px] font-medium text-[var(--muted)]">

@@ -46,6 +46,8 @@ const trainerFlow: FlowStep[] = [
     why: "A agenda mostra cada atendimento, sincroniza com Google/Apple Calendar e organiza a confirmação de presença.",
     how: [
       "Em /agenda escolha Dia, Semana ou Mês. O '+' superior cria agendamento novo.",
+      "Clique em qualquer dia da semana ou do mês: abre logo abaixo a lista de atendimentos daquele dia, separando agendados e realizados.",
+      "O horário é escolhido em blocos de 15 em 15 minutos (00, 15, 30, 45) — sem horários quebrados.",
       "Cada card de evento tem 6 ações: ✅ Confirmação WhatsApp, 💬 WhatsApp geral, 📍 Mapa, 📆 Google Calendar, .ics (Apple), 📝 Registrar.",
       "Recorrência semanal/quinzenal gera a série de eventos automaticamente.",
       "Quando o cliente clica em ✅ pelo portal, o status muda pra 'Confirmado' e aparece no seu sininho.",
@@ -78,7 +80,8 @@ const trainerFlow: FlowStep[] = [
     why: "Feed de treinos, quadro de fases e análise comportamental mostram onde cada cão está no processo.",
     how: [
       "Clique no nome do cliente em /clientes pra abrir a página completa dele: cães, próximas aulas, treinos, financeiro e portal num lugar só.",
-      "Em /treinos veja a linha do tempo dos treinos com fotos, notas e filtros (hoje, semana, pendentes).",
+      "Em /treinos veja a linha do tempo dos treinos com fotos, notas e filtros (hoje, semana, pendentes) + filtro combinado por nome do cão e do proprietário.",
+      "O topo de /treinos mostra o total de treinos realizados em destaque, e cada card exibe a fase do cão (Ficha, Ativo, Completo…). O botão flutuante 'Registro rápido' fica sempre à mão.",
       "Em /clientes, aba 'Quadro', arraste cada cão entre as fases do adestramento (kanban). No celular, use o seletor no card.",
       "Em /evolucao acompanhe as notas comportamentais por categoria de cada cão ao longo do tempo.",
       "A ficha do cão (/caes/[id]) reúne tudo: vacinas, histórico de sessões, comandos e evolução.",
@@ -99,9 +102,11 @@ const trainerFlow: FlowStep[] = [
     title: "7) Operar financeiro + emitir recibo",
     why: "Pacote → contrato → cobranças automáticas → recibo com Pix Copia e Cola embutido.",
     how: [
-      "Em /financeiro cadastre pacotes (sessões, valor, fracionamento, validade).",
-      "Vender pacote gera contrato e cobranças automaticamente — os contratos ativos ficam listados em /planos-treino.",
+      "Em /financeiro cadastre pacotes (sessões, valor, fracionamento) num modal rápido, sem sair da tela em que você está.",
+      "Vender pacote gera contrato e cobranças automaticamente — pelo botão 💰 na lista de pacotes, pelo 'Vender pacote' na ficha do cliente (já vem com o cliente selecionado) ou pelo botão do topo. Os contratos ativos ficam em /planos-treino.",
       "No recibo, se sua chave Pix estiver configurada, gera o BR Code Copia e Cola — o cliente cola no banco e pronto.",
+      "Salve a imagem da sua assinatura em /configuracoes → Dados do negócio: ela entra automaticamente no rodapé do recibo, com seu nome embaixo.",
+      "O botão WhatsApp do recibo agora envia o ARQUIVO PDF: no celular compartilha direto; no computador baixa o PDF e abre a conversa pra anexar.",
       "Botão 💬 Lembrar em cada cobrança abre WhatsApp com texto pronto (cobrança pendente ou em atraso).",
       "Cron diário às 07h gera os lembretes do dia automaticamente.",
     ],
@@ -113,7 +118,7 @@ const trainerFlow: FlowStep[] = [
       "Em /relatorios o rascunho aparece automaticamente no início do mês.",
       "Edite seções, selecione fotos, ajuste a análise gerada pela IA.",
       "Toque 'Aprovar e Gerar PDF' → 'Imprimir / PDF' do browser.",
-      "Use 'Comparativo mês vs mês' pra mostrar evolução em sessões, comandos médios, % atividades e NPS.",
+      "Use 'Evolução por sessão' pra comparar duas sessões (ex.: Sessão 1 vs Sessão 4) e ver o gráfico de progressão de comandos, comportamento e % de atividades.",
     ],
   },
 ];
@@ -123,17 +128,17 @@ const screenMap = [
   { href: "/dashboard", label: "Hoje (Dashboard)", text: "Card 'Próxima ação' pra começar, resumo do dia, lembretes prontos pra WhatsApp e pendências." },
   { href: "/agenda", label: "Agenda", text: "Dia/Semana/Mês, recorrência, confirmação de presença e exportação de calendário." },
   { href: "/clientes", label: "Clientes", text: "Fichas de clientes e cães, tags, onboarding e quadro kanban. Clique no cliente pra abrir a página completa dele. O botão 'Convidar cliente' gera o link pro tutor se cadastrar sozinho." },
-  { href: "/treinos", label: "Treinos", text: "Feed dos treinos realizados com fotos, notas e filtros." },
+  { href: "/treinos", label: "Treinos", text: "Feed dos treinos com contador em destaque, fase de cada cão, fotos, notas e filtros por cão + proprietário." },
   { href: "/treinos/registro", label: "Registrar treino", text: "Formulário completo da sessão (A-I) com voz e IA." },
-  { href: "/financeiro", label: "Financeiro", text: "Pacotes, contratos, cobranças, recibos com Pix Copia e Cola." },
-  { href: "/relatorios", label: "Relatórios", text: "Relatório mensal com análise IA, fotos e comparativo mês a mês." },
+  { href: "/financeiro", label: "Financeiro", text: "Pacotes (cadastro em modal), contratos, cobranças, recibos com assinatura digital, Pix Copia e Cola e envio em PDF." },
+  { href: "/relatorios", label: "Relatórios", text: "Relatório mensal com análise IA, fotos e evolução por sessão com gráfico." },
   { href: "/portal", label: "Portal do cliente", text: "Links únicos de acesso do tutor, tarefas e gamificação." },
   { href: "/chat", label: "Chat", text: "Conversa em tempo real com os tutores." },
   { href: "/ia", label: "Assistente IA", text: "Conversas com a IA para casos complexos, fora do contexto de uma sessão." },
   { href: "/evolucao", label: "Evolução", text: "Notas comportamentais por categoria de cada cão ao longo do tempo." },
   { href: "/planos-treino", label: "Planos de treino", text: "Pacotes e contratos de sessões ativos por cliente." },
   { href: "/planos", label: "Meu plano", text: "Sua assinatura do Adestro: plano, pagamento e limites." },
-  { href: "/configuracoes", label: "Configurações", text: "Alertas, notificações push, tema escuro, importação CSV e export LGPD." },
+  { href: "/configuracoes", label: "Configurações", text: "Alertas, notificações push, tema escuro, dados do negócio (logo e assinatura do recibo), importação CSV e export LGPD." },
 ];
 
 const featureHighlights = [
@@ -145,7 +150,7 @@ const featureHighlights = [
   {
     icon: "🔔",
     title: "Sininho com badge dinâmico",
-    text: "Conta pendências reais (confirmações aguardando, treinos sem registro, mensagens novas, relatórios pra aprovar). Filtros por tipo.",
+    text: "Conta pendências reais (confirmações aguardando, treinos sem registro, mensagens novas, relatórios pra aprovar). Filtros por tipo. Ao abrir uma notificação ela é marcada como lida e some — e dá pra marcar todas de uma vez.",
   },
   {
     icon: "☀️",

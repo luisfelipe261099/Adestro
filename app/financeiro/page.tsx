@@ -8,6 +8,7 @@ import { useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
 import { buildPixPayload, isPixKey } from "@/lib/pix";
 import { copyToClipboard } from "@/lib/native-share";
+import { buildReceiptPdf, receiptPdfFileName } from "@/lib/receipt-pdf";
 
 type PackageInfo = {
   id: string;
@@ -145,6 +146,46 @@ export default function FinanceiroPage() {
     }
   }
 
+  // Identidade do negócio no recibo (nome, documento, logo e assinatura).
+  const [businessProfile, setBusinessProfile] = useState({
+    businessName: "",
+    businessDocument: "",
+    logoUrl: "",
+    signatureUrl: "",
+    trainerName: "",
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/trainer/settings", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setBusinessProfile({
+          businessName: data.businessName ?? "",
+          businessDocument: data.businessDocument ?? "",
+          logoUrl: data.logoUrl ?? "",
+          signatureUrl: data.signatureUrl ?? "",
+          trainerName: data.trainerName ?? "",
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Venda a partir da lista de pacotes: pré-seleciona o pacote, abre o checkout
+  // na aba Faturamento e rola suavemente até o formulário de venda.
+  function handleSellPackage(pkgId: string) {
+    selectPackageForSale(pkgId);
+    setActiveTab("dashboard");
+    setShowContractForm(true);
+    window.setTimeout(() => {
+      contractFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+  }
+
   // Estado do Recibo
   const [receiptClient, setReceiptClient] = useState("");
   const [receiptDog, setReceiptDog] = useState("");
@@ -274,21 +315,76 @@ export default function FinanceiroPage() {
     window.open(buildWaUrl(client.phone, message), "_blank", "noopener,noreferrer");
   };
 
-  // Handler: Enviar recibo via WhatsApp
-  const handleSendReceiptViaWhats = () => {
+  // Monta o PDF do recibo com os dados atuais da tela.
+  const buildCurrentReceiptPdf = async () => {
+    const bytes = await buildReceiptPdf({
+      number: receiptNumber,
+      clientName: receiptClient,
+      dogName: receiptDog,
+      service: receiptService,
+      amount: receiptAmount.toFixed(2),
+      method: receiptMethod,
+      dateLabel: new Date().toLocaleDateString("pt-BR"),
+      businessName: businessProfile.businessName || undefined,
+      businessDocument: businessProfile.businessDocument || undefined,
+      trainerName: businessProfile.trainerName || trainerName || undefined,
+      logoUrl: businessProfile.logoUrl || undefined,
+      signatureUrl: businessProfile.signatureUrl || undefined,
+    });
+    // Cópia para ArrayBuffer "puro" — o TS trata Uint8Array<ArrayBufferLike>
+    // como incompatível com BlobPart quando o buffer pode ser SharedArrayBuffer.
+    const buffer = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(buffer).set(bytes);
+    return new File([buffer], receiptPdfFileName(receiptNumber, receiptClient), { type: "application/pdf" });
+  };
+
+  // Handler: Enviar recibo via WhatsApp — agora com o ARQUIVO PDF.
+  // 1) Celular: compartilha o PDF direto (Web Share API) — dá para escolher o
+  //    WhatsApp e o arquivo vai anexado.
+  // 2) Desktop/sem suporte: baixa o PDF e abre a conversa com a mensagem,
+  //    para o adestrador anexar o arquivo recém-baixado.
+  const handleSendReceiptViaWhats = async () => {
     const client = clients.find((c) => c.name === receiptClient);
     if (!client?.phone) {
       setError("Cliente sem WhatsApp cadastrado para envio do recibo.");
       return;
     }
-    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    setError("");
+
     const message = waTemplates.reciboPagamento({
       tutor: receiptClient,
       valor: receiptAmount.toFixed(2),
       servico: receiptService,
-      link: `${baseUrl}/financeiro`,
     });
-    window.open(buildWaUrl(client.phone, message), "_blank", "noopener,noreferrer");
+
+    try {
+      const file = await buildCurrentReceiptPdf();
+
+      const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
+      if (typeof nav.share === "function" && nav.canShare?.({ files: [file] })) {
+        try {
+          await nav.share({ files: [file], text: message, title: `Recibo — ${receiptClient}` });
+          return;
+        } catch (shareErr) {
+          // Usuário cancelou o compartilhamento: não faz fallback nem mostra erro.
+          if ((shareErr as DOMException)?.name === "AbortError") return;
+        }
+      }
+
+      // Fallback: baixa o PDF e abre o WhatsApp com a mensagem.
+      const url = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setMessage(`PDF "${file.name}" baixado — anexe o arquivo na conversa que vai abrir.`);
+      window.open(buildWaUrl(client.phone, message), "_blank", "noopener,noreferrer");
+    } catch {
+      setError("Não foi possível gerar o PDF do recibo. Tente novamente.");
+    }
   };
 
   // Handler: Atualizar Status da Fatura (Liquidar)
@@ -415,7 +511,7 @@ export default function FinanceiroPage() {
                       <p className="mt-1 text-xl font-bold text-emerald-950">R$ {stats.metrics.received.toFixed(2)}</p>
                       <span className="text-[12px] text-emerald-700">Parcelas quitadas</span>
                     </article>
-                    <article className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-3.5">
+                    <article className="rounded-md border border-sky-100 bg-sky-50/50 p-3.5">
                       <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-sky-800">A Receber</span>
                       <p className="mt-1 text-xl font-bold text-sky-950">R$ {stats.metrics.pending.toFixed(2)}</p>
                       <span className="text-[12px] text-sky-700">Faturas em aberto</span>
@@ -470,12 +566,12 @@ export default function FinanceiroPage() {
                       <h4 className="text-xs font-bold text-[var(--foreground)]">Nova Venda de Pacote</h4>
                       {packages.length === 0 ? (
                         <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] leading-relaxed text-amber-900">
-                          Você ainda não criou nenhum pacote de aulas. Primeiro cadastre o pacote (nome,
-                          nº de sessões, valor e parcelamento) na aba <b>Pacotes</b> — depois é só vender
+                          Você ainda não criou nenhum pacote de aulas. Cadastre o pacote (nome,
+                          nº de sessões, valor e parcelamento) sem sair desta tela — depois é só vender
                           aqui que contrato e cobranças saem automáticos.{" "}
                           <button
                             type="button"
-                            onClick={() => setActiveTab("pacotes")}
+                            onClick={() => setShowPackageForm(true)}
                             className="font-bold underline"
                           >
                             Criar pacote agora →
@@ -620,7 +716,7 @@ export default function FinanceiroPage() {
                         </p>
                         <button
                           type="button"
-                          onClick={() => setActiveTab("pacotes")}
+                          onClick={() => setShowPackageForm(true)}
                           className="btn-primary mt-3 text-[12.5px]"
                         >
                           Criar primeiro pacote
@@ -662,88 +758,25 @@ export default function FinanceiroPage() {
                     </button>
                   </div>
 
-                  {showPackageForm && (
-                    <form onSubmit={handleCreatePackage} className="grid gap-3 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-4 animate-in slide-in-from-top-4 duration-200">
-                      <h4 className="text-xs font-bold text-[var(--foreground)]">Configurar Novo Pacote</h4>
-                      
-                      <input
-                        type="text"
-                        required
-                        placeholder="Nome do pacote (ex: Pacote Básico 4 aulas)"
-                        value={newPkgName}
-                        onChange={(e) => setNewPkgName(e.target.value)}
-                        className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
-                      />
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
-                          Sessões
-                          <input
-                            type="number"
-                            min={1}
-                            required
-                            value={newPkgSessions}
-                            onChange={(e) => setNewPkgSessions(Number(e.target.value))}
-                            className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
-                          />
-                        </label>
-
-                        <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
-                          Valor Cobrado (R$)
-                          <input
-                            type="number"
-                            min={1}
-                            required
-                            value={newPkgAmount}
-                            onChange={(e) => setNewPkgAmount(Number(e.target.value))}
-                            className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
-                          />
-                        </label>
-                      </div>
-
-                      <div className="rounded-md bg-white p-3 border border-slate-100">
-                        <label className="flex items-center gap-2 text-xs font-semibold text-slate-800 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={newPkgFractioned}
-                            onChange={(e) => setNewPkgFractioned(e.target.checked)}
-                            className="rounded border-[var(--border)] text-[var(--foreground)]"
-                          />
-                          Cobrança Fracionada (Parcelado)
-                        </label>
-
-                        {newPkgFractioned && (
-                          <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)] mt-2">
-                            Cobrar a cada X sessões
-                            <input
-                              type="number"
-                              min={1}
-                              value={newPkgFractionSessions}
-                              onChange={(e) => setNewPkgFractionSessions(Number(e.target.value))}
-                              className="rounded-md border border-[var(--border)] bg-slate-50 px-3 py-1.5 text-xs outline-none"
-                            />
-                          </label>
-                        )}
-                      </div>
-
-                      <button type="submit" className="pc-primary-action rounded-md py-2 text-xs font-bold mt-1">
-                        Salvar Serviço
-                      </button>
-                    </form>
-                  )}
-
                   <div className="grid gap-2">
                     {packages.map((pkg) => (
-                      <article key={pkg.id} className="rounded-md border border-slate-100 bg-white p-3.5 flex items-center justify-between text-xs shadow-xs">
+                      <article key={pkg.id} className="rounded-md border border-slate-100 bg-white p-3.5 flex items-center justify-between gap-3 text-xs shadow-xs">
                         <div>
                           <h4 className="font-bold text-slate-900">{pkg.name}</h4>
                           <p className="mt-1 text-[12px] text-[var(--muted)]">
                             {pkg.sessionsCount} sessões • Cobrança parcelada: {pkg.isFractioned ? `A cada ${pkg.fractionSessions} aulas` : "Não"}
                           </p>
                         </div>
-                        <div className="text-right">
+                        <div className="flex flex-col items-end gap-1.5 text-right">
                           <p className="text-sm font-bold text-[var(--foreground)]">R$ {pkg.amount.toFixed(2)}</p>
                           <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[12px] font-bold text-sky-800">{pkg.status}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleSellPackage(pkg.id)}
+                            className="rounded-full bg-[var(--accent)] px-3 py-1 text-[12px] font-bold text-white"
+                          >
+                            💰 Vender pacote
+                          </button>
                         </div>
                       </article>
                     ))}
@@ -853,6 +886,9 @@ export default function FinanceiroPage() {
                                 placeholder="Ex: 4,99"
                                 className="rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 outline-none"
                               />
+                              <span className="text-[12px] font-normal normal-case text-sky-800">
+                                Deixar em branco caso as taxas sejam repassadas.
+                              </span>
                             </label>
                             <div className="grid gap-1 text-[12px] font-bold uppercase text-sky-900">
                               Valor líquido recebido
@@ -939,18 +975,19 @@ export default function FinanceiroPage() {
                       )}
                     </div>
 
+                    {/* Mesma tipografia do quadro principal de Faturamento (rótulo 12px + valor text-xl). */}
                     <div className="grid gap-2 sm:grid-cols-3">
                       <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3">
-                        <p className="text-[12px] font-bold uppercase text-emerald-700">Recebido</p>
-                        <p className="mt-1 text-lg font-bold text-emerald-800">R$ {totalRecebido.toFixed(2)}</p>
+                        <p className="text-[12px] font-bold uppercase tracking-[0.19em] text-emerald-700">Recebido</p>
+                        <p className="mt-1 text-xl font-bold text-emerald-800">R$ {totalRecebido.toFixed(2)}</p>
                       </div>
                       <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
-                        <p className="text-[12px] font-bold uppercase text-amber-700">Pendente</p>
-                        <p className="mt-1 text-lg font-bold text-amber-800">R$ {totalPendente.toFixed(2)}</p>
+                        <p className="text-[12px] font-bold uppercase tracking-[0.19em] text-amber-700">Pendente</p>
+                        <p className="mt-1 text-xl font-bold text-amber-800">R$ {totalPendente.toFixed(2)}</p>
                       </div>
                       <div className="rounded-md border border-rose-200 bg-rose-50 p-3">
-                        <p className="text-[12px] font-bold uppercase text-rose-700">Em atraso</p>
-                        <p className="mt-1 text-lg font-bold text-rose-800">R$ {totalAtraso.toFixed(2)}</p>
+                        <p className="text-[12px] font-bold uppercase tracking-[0.19em] text-rose-700">Em atraso</p>
+                        <p className="mt-1 text-xl font-bold text-rose-800">R$ {totalAtraso.toFixed(2)}</p>
                       </div>
                     </div>
 
@@ -1060,8 +1097,22 @@ export default function FinanceiroPage() {
                       {/* Recibo Layout para Impressão */}
                       <div id="printable-receipt" className="border-2 border-dashed border-[#145a82]/40 bg-white p-6 rounded-md">
                         <div className="border-b border-slate-100 pb-3.5 text-center">
+                          {businessProfile.logoUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={businessProfile.logoUrl}
+                              alt="Logo do negócio"
+                              className="mx-auto mb-2 h-12 w-auto object-contain"
+                            />
+                          ) : null}
                           <h3 className="text-lg font-bold text-[var(--foreground)]">RECIBO DE PAGAMENTO</h3>
                           <p className="text-[12px] font-semibold text-[var(--muted)] uppercase tracking-wider">Recibo Nº {receiptNumber}</p>
+                          {businessProfile.businessName ? (
+                            <p className="mt-0.5 text-[12px] text-[var(--muted)]">
+                              {businessProfile.businessName}
+                              {businessProfile.businessDocument ? ` · ${businessProfile.businessDocument}` : ""}
+                            </p>
+                          ) : null}
                         </div>
 
                         <div className="space-y-3.5 text-xs text-slate-800 mt-4 leading-relaxed">
@@ -1109,11 +1160,30 @@ export default function FinanceiroPage() {
                         ) : null}
 
                         <div className="mt-8 border-t border-slate-100 pt-5 flex flex-col items-center justify-center text-[12px] text-[var(--muted)]">
+                          {/* Assinatura gravada nas Configurações entra automática no recibo. */}
+                          {businessProfile.signatureUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={businessProfile.signatureUrl}
+                              alt="Assinatura do adestrador"
+                              className="mb-1 h-14 w-auto max-w-[220px] object-contain"
+                            />
+                          ) : null}
                           <div className="h-0.5 w-36 bg-slate-200 mb-1" />
                           <p>Assinatura do Adestrador Canino</p>
-                          <p className="mt-0.5 font-bold text-slate-900">Adestro CRM</p>
+                          <p className="mt-0.5 font-bold text-slate-900">
+                            {businessProfile.trainerName || trainerName || businessProfile.businessName || "Adestrador"}
+                          </p>
                         </div>
                       </div>
+
+                      {/* Fora do #printable-receipt para não sair na impressão/PDF. */}
+                      {!businessProfile.signatureUrl ? (
+                        <p className="text-[12px] text-[var(--muted)]">
+                          Dica: salve a imagem da sua assinatura em Configurações → Dados do negócio para ela
+                          aparecer automaticamente aqui no recibo.
+                        </p>
+                      ) : null}
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
                         <button
@@ -1144,6 +1214,103 @@ export default function FinanceiroPage() {
               )}
             </>
           )}
+
+        {/* Modal de cadastro rápido de pacote — abre sobre qualquer aba, sem
+            redirecionar (usado pelo "+ Novo Pacote" e pelos atalhos de venda). */}
+        {showPackageForm && (
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+            onClick={() => setShowPackageForm(false)}
+          >
+            <div
+              className="w-full max-w-md rounded-t-2xl bg-[var(--surface)] p-5 shadow-xl sm:rounded-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-semibold text-[var(--foreground)]">Novo pacote de serviços</h3>
+                  <p className="mt-0.5 text-xs text-[var(--muted)]">
+                    Cadastre sem sair da tela atual — o pacote fica disponível na hora para a venda.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPackageForm(false)}
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--muted)] hover:bg-[var(--surface-2)]"
+                  aria-label="Fechar"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleCreatePackage} className="mt-4 grid gap-3">
+                <input
+                  type="text"
+                  required
+                  placeholder="Nome do pacote (ex: Pacote Básico 4 aulas)"
+                  value={newPkgName}
+                  onChange={(e) => setNewPkgName(e.target.value)}
+                  className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none focus:border-sky-400"
+                />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                    Sessões
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={newPkgSessions}
+                      onChange={(e) => setNewPkgSessions(Number(e.target.value))}
+                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
+                    />
+                  </label>
+
+                  <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                    Valor Cobrado (R$)
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={newPkgAmount}
+                      onChange={(e) => setNewPkgAmount(Number(e.target.value))}
+                      className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-xs outline-none"
+                    />
+                  </label>
+                </div>
+
+                <div className="rounded-md bg-white p-3 border border-slate-100">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newPkgFractioned}
+                      onChange={(e) => setNewPkgFractioned(e.target.checked)}
+                      className="rounded border-[var(--border)] text-[var(--foreground)]"
+                    />
+                    Cobrança Fracionada (Parcelado)
+                  </label>
+
+                  {newPkgFractioned && (
+                    <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)] mt-2">
+                      Cobrar a cada X sessões
+                      <input
+                        type="number"
+                        min={1}
+                        value={newPkgFractionSessions}
+                        onChange={(e) => setNewPkgFractionSessions(Number(e.target.value))}
+                        className="rounded-md border border-[var(--border)] bg-slate-50 px-3 py-1.5 text-xs outline-none"
+                      />
+                    </label>
+                  )}
+                </div>
+
+                <button type="submit" className="pc-primary-action rounded-md py-2 text-xs font-bold mt-1">
+                  Salvar Serviço
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </AuthGuard>
   );

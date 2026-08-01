@@ -437,6 +437,27 @@ body {
 	border-radius: 0.5rem;
 }
 
+/* Quadros com cor de identidade (TDAH-friendly): borda mais presente + faixa
+   superior colorida para o olho separar um bloco do outro sem ler o título. */
+.card-accent {
+	position: relative;
+	overflow: hidden;
+	border-width: 2px;
+	border-color: var(--c-border, var(--border));
+}
+.card-accent::before {
+	content: "";
+	position: absolute;
+	left: 0; right: 0; top: 0;
+	height: 4px;
+	background: var(--c, var(--accent));
+}
+.card-accent-blue   { --c: var(--card-blue);   --c-border: var(--card-blue-border); }
+.card-accent-sky    { --c: var(--card-sky);    --c-border: var(--card-sky-border); }
+.card-accent-green  { --c: var(--card-green);  --c-border: var(--card-green-border); }
+.card-accent-orange { --c: var(--card-orange); --c-border: var(--card-orange-border); }
+.card-accent-purple { --c: var(--card-purple); --c-border: var(--card-purple-border); }
+
 .kbd {
 	display: inline-flex;
 	align-items: center;

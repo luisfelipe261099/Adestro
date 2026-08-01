@@ -46,7 +46,7 @@ export function ClientFollowup() {
   }
 
   return (
-    <section className="card p-4">
+    <section className="card card-accent card-accent-purple p-4">
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-[13.5px] font-semibold text-[var(--foreground)]">Acompanhamento dos clientes</h2>
