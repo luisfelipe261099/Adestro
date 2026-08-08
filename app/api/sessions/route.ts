@@ -40,6 +40,7 @@ export async function GET() {
         ...ds,
         activities: JSON.parse(ds.activities || "[]"),
         commands: JSON.parse(ds.commands || "[]"),
+        exercises: JSON.parse(ds.exercises || "[]"),
         media: JSON.parse(ds.media || "[]"),
         nextCommands: JSON.parse(ds.nextCommands || "[]"),
         nextTasks: JSON.parse(ds.nextTasks || "[]"),
@@ -78,6 +79,7 @@ export async function POST(request: Request) {
       dogId: string;
       activities?: unknown[];
       commands?: unknown[];
+      exercises?: unknown[];
       description?: string;
       privateNotes?: string;
       aiSummary?: string;
@@ -120,6 +122,7 @@ export async function POST(request: Request) {
           dogId: ds.dogId,
           activities: JSON.stringify(ds.activities ?? []),
           commands: JSON.stringify(ds.commands ?? []),
+          exercises: JSON.stringify(ds.exercises ?? []),
           description: ds.description ?? "",
           privateNotes: ds.privateNotes ?? "",
           aiSummary: ds.aiSummary ?? "",
@@ -226,6 +229,7 @@ export async function PATCH(request: Request) {
       dogId: string;
       activities?: unknown[];
       commands?: unknown[];
+      exercises?: unknown[];
       description?: string;
       privateNotes?: string;
       aiSummary?: string;
@@ -275,6 +279,7 @@ export async function PATCH(request: Request) {
           dogId: ds.dogId,
           activities: JSON.stringify(ds.activities ?? []),
           commands: JSON.stringify(ds.commands ?? []),
+          exercises: JSON.stringify(ds.exercises ?? []),
           description: ds.description ?? "",
           privateNotes: ds.privateNotes ?? "",
           aiSummary: ds.aiSummary ?? "",

@@ -8,6 +8,12 @@ import { FormEvent, useMemo, useState } from "react";
 import { AuthGuard } from "@/components/auth-guard";
 import { useAppStore } from "@/lib/app-store";
 import { behaviorLabel } from "@/lib/behavior";
+import {
+  EXERCISE_TONE_VARS,
+  categoryTone,
+  groupExercisesByCategory,
+  sessionExercisesFromParsed,
+} from "@/lib/exercise-tree";
 
 type DraftTrainingNote = {
   id: string;
@@ -654,7 +660,9 @@ export default function TrainingPage() {
                 const hasDetailedSessions = detailedSessions.length > 0;
                 // Resumo público e comandos aparecem inline — sem precisar abrir "Detalhes".
                 const publicSummary = firstDetailed?.description || firstNote?.comment || "";
-                const topCommands = (firstDetailed?.commands ?? []).slice(0, 4);
+                const topExercises = firstDetailed
+                  ? sessionExercisesFromParsed(firstDetailed).slice(0, 4)
+                  : [];
 
                 return (
                   <article key={session.id} className="rounded-md border border-[var(--border)] bg-white p-3">
@@ -701,15 +709,20 @@ export default function TrainingPage() {
                       </p>
                     )}
 
-                    {topCommands.length > 0 && (
+                    {topExercises.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
-                        {topCommands.map((cmd, idx) => (
+                        {topExercises.map((item, idx) => (
                           <span
-                            key={idx}
-                            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[12px] text-[var(--foreground)]"
+                            key={`${item.key}-${idx}`}
+                            className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12px]"
+                            style={{
+                              color: EXERCISE_TONE_VARS[categoryTone(item.categoryKey)].fg,
+                              backgroundColor: EXERCISE_TONE_VARS[categoryTone(item.categoryKey)].bg,
+                              borderColor: EXERCISE_TONE_VARS[categoryTone(item.categoryKey)].border,
+                            }}
                           >
-                            {cmd.command}
-                            <span className="text-amber-500">{"★".repeat(cmd.rating || 0)}</span>
+                            {item.name}
+                            <span className="text-amber-500">{"★".repeat(item.rating || 0)}</span>
                           </span>
                         ))}
                       </div>
@@ -721,41 +734,61 @@ export default function TrainingPage() {
                           // @ts-ignore
                           session.dogSessions.map((ds, index) => (
                             <div key={ds.id || index} className="space-y-3">
-                              {/* Seção A: Atividades */}
-                              {ds.activities && ds.activities.length > 0 && (
-                                <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">1. Atividades Trabalhadas</p>
-                                  <ul className="mt-1 space-y-1 pl-1">
-                                    {ds.activities.map((act: any, idx: number) => (
-                                      <li key={idx} className="flex items-start gap-1.5">
-                                        <span>{act.completed ? "✓" : "—"}</span>
-                                        <div>
-                                          <span className="font-semibold text-slate-800">{act.name}</span>
-                                          {act.notes && <p className="text-[12px] text-slate-500 italic mt-0.5">{act.notes}</p>}
+                              {/* Exercícios trabalhados — agrupados por categoria */}
+                              {(() => {
+                                const groups = groupExercisesByCategory(sessionExercisesFromParsed(ds));
+                                if (!groups.length) return null;
+                                return (
+                                  <div>
+                                    <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">
+                                      1. Exercícios trabalhados
+                                    </p>
+                                    <div className="mt-1.5 space-y-2">
+                                      {groups.map((group) => (
+                                        <div
+                                          key={group.categoryKey}
+                                          className="rounded-md border p-2"
+                                          style={{
+                                            backgroundColor: EXERCISE_TONE_VARS[group.tone].bg,
+                                            borderColor: EXERCISE_TONE_VARS[group.tone].border,
+                                          }}
+                                        >
+                                          <div className="flex items-center justify-between gap-2">
+                                            <span
+                                              className="text-[12px] font-bold uppercase tracking-wide"
+                                              style={{ color: EXERCISE_TONE_VARS[group.tone].fg }}
+                                            >
+                                              {group.categoryName}
+                                            </span>
+                                            <span
+                                              className="text-[12px] font-bold"
+                                              style={{ color: EXERCISE_TONE_VARS[group.tone].fg }}
+                                            >
+                                              {group.average.toFixed(1)}/5
+                                            </span>
+                                          </div>
+                                          <ul className="mt-1 space-y-1">
+                                            {group.items.map((item, idx) => (
+                                              <li key={`${item.key}-${idx}`}>
+                                                <div className="flex items-center justify-between gap-1.5">
+                                                  <span className="font-semibold text-slate-800">
+                                                    {item.name}
+                                                    <span className="ml-1 font-normal text-slate-500">· {item.areaName}</span>
+                                                  </span>
+                                                  <span className="text-amber-500">{"★".repeat(item.rating || 0)}</span>
+                                                </div>
+                                                {item.notes && (
+                                                  <p className="text-[12px] text-slate-500 italic mt-0.5">{item.notes}</p>
+                                                )}
+                                              </li>
+                                            ))}
+                                          </ul>
                                         </div>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-
-                              {/* Seção B: Comandos */}
-                              {ds.commands && ds.commands.length > 0 && (
-                                <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">2. Comandos & Evolução</p>
-                                  <ul className="mt-1 space-y-1.5 pl-1">
-                                    {ds.commands.map((cmd: any, idx: number) => (
-                                      <li key={idx}>
-                                        <div className="flex items-center gap-1.5 justify-between">
-                                          <span className="font-semibold text-slate-800">{cmd.command}</span>
-                                          <span className="text-amber-500">{"★".repeat(cmd.rating || 0)}</span>
-                                        </div>
-                                        {cmd.notes && <p className="text-[12px] text-slate-500 italic mt-0.5">{cmd.notes}</p>}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
 
                               {/* Seção C: Resumo Público */}
                               {ds.description && (

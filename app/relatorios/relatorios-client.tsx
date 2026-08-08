@@ -6,6 +6,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { useAppStore } from "@/lib/app-store";
 import { MonthlyComparison } from "@/components/monthly-comparison";
 import { MonthlyReport } from "@/components/monthly-report";
+import { EXERCISE_TONE_VARS, type ExerciseCategorySummary } from "@/lib/exercise-tree";
 
 type GeneratedReport = {
   dogName: string;
@@ -19,6 +20,8 @@ type GeneratedReport = {
   overallGrade: string;
   progressPercentage: number;
   recommendedNextSteps: string[];
+  /** Exercícios do período agrupados por categoria (gerado pela API). */
+  categoryBreakdown?: ExerciseCategorySummary[];
 };
 
 export default function RelatoriosClientPage() {
@@ -307,7 +310,53 @@ export default function RelatoriosClientPage() {
 
           {editableReport && (
             <div className="mt-6 space-y-6">
-              
+
+              {/* Exercícios do mês, agrupados por categoria — base do resumo ao tutor */}
+              {editableReport.categoryBreakdown && editableReport.categoryBreakdown.length > 0 && (
+                <div className="rounded-md border border-[var(--border)] bg-white p-4 sm:p-5">
+                  <h3 className="mb-1 text-sm font-bold text-[var(--foreground)]">Exercícios do mês por categoria</h3>
+                  <p className="mb-3 text-[12px] text-[var(--muted)]">
+                    Média das estrelas de cada exercício trabalhado no período. É o que fundamenta os destaques e as
+                    áreas a melhorar abaixo.
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {editableReport.categoryBreakdown.map((group) => (
+                      <div
+                        key={group.categoryKey}
+                        className="rounded-md border p-3"
+                        style={{
+                          backgroundColor: EXERCISE_TONE_VARS[group.tone].bg,
+                          borderColor: EXERCISE_TONE_VARS[group.tone].border,
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className="text-[12px] font-bold uppercase tracking-wide"
+                            style={{ color: EXERCISE_TONE_VARS[group.tone].fg }}
+                          >
+                            {group.categoryName}
+                          </span>
+                          <span className="text-xs font-bold" style={{ color: EXERCISE_TONE_VARS[group.tone].fg }}>
+                            {group.average.toFixed(1)}/5
+                          </span>
+                        </div>
+                        <ul className="mt-1.5 space-y-0.5">
+                          {group.exercises.map((exercise) => (
+                            <li key={exercise.name} className="flex items-center justify-between gap-2 text-[12px] text-[var(--foreground)]">
+                              <span className="truncate">
+                                {exercise.name}
+                                {exercise.count > 1 ? <span className="text-[var(--muted)]"> ×{exercise.count}</span> : null}
+                              </span>
+                              <span className="shrink-0 text-amber-500">{"★".repeat(Math.round(exercise.average))}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Seção de Edição do Relatório */}
               <div className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/30 p-4 sm:p-5">
                 <h3 className="text-sm font-bold text-[var(--foreground)] border-b border-[var(--border)] pb-2 mb-4">Ajustes Finos (Editor)</h3>

@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sessionExercisesOf } from "@/lib/exercise-tree";
 
 // Comparativo de evolução: dois meses lado a lado para um cão específico.
-// Retorna métricas agregadas (sessões, comandos médios, NPS, conclusão de tarefas).
+// Retorna métricas agregadas (sessões, média das estrelas dos exercícios, NPS,
+// proporção de exercícios com bom desempenho).
 
 function parseMonthYear(value: string): { year: number; month: number } | null {
   const monthNames = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
@@ -25,34 +27,26 @@ async function aggregateForMonth(trainerId: string, dogId: string, year: number,
       dogId,
       session: { trainerId, createdAt: { gte: start, lt: end } },
     },
-    select: { commands: true, activities: true, aiApproved: true, session: { select: { date: true } } },
+    select: {
+      exercises: true,
+      commands: true,
+      activities: true,
+      aiApproved: true,
+      session: { select: { date: true } },
+    },
   });
 
-  let totalCommands = 0;
+  let totalExercises = 0;
   let totalRatingSum = 0;
-  let totalActivities = 0;
-  let activitiesCompleted = 0;
+  let wellExecuted = 0;
 
+  // Exercícios marcados (registros antigos entram convertidos), com a estrela
+  // do próprio exercício. "Bem executado" = 4 ou 5 estrelas.
   for (const ds of dogSessions) {
-    try {
-      const commands = JSON.parse(ds.commands || "[]") as Array<{ rating?: number }>;
-      for (const cmd of commands) {
-        if (typeof cmd.rating === "number") {
-          totalCommands += 1;
-          totalRatingSum += cmd.rating;
-        }
-      }
-    } catch {
-      /* ignore */
-    }
-    try {
-      const activities = JSON.parse(ds.activities || "[]") as Array<{ completed?: boolean }>;
-      for (const act of activities) {
-        totalActivities += 1;
-        if (act.completed) activitiesCompleted += 1;
-      }
-    } catch {
-      /* ignore */
+    for (const item of sessionExercisesOf(ds)) {
+      totalExercises += 1;
+      totalRatingSum += item.rating;
+      if (item.rating >= 4) wellExecuted += 1;
     }
   }
 
@@ -65,8 +59,8 @@ async function aggregateForMonth(trainerId: string, dogId: string, year: number,
 
   return {
     sessions: dogSessions.length,
-    averageCommandRating: totalCommands === 0 ? 0 : totalRatingSum / totalCommands,
-    activitiesCompletionRate: totalActivities === 0 ? 0 : (activitiesCompleted / totalActivities) * 100,
+    averageCommandRating: totalExercises === 0 ? 0 : totalRatingSum / totalExercises,
+    activitiesCompletionRate: totalExercises === 0 ? 0 : (wellExecuted / totalExercises) * 100,
     npsAverage:
       nps.length === 0
         ? null

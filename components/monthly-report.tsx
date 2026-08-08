@@ -1,5 +1,7 @@
 import React from "react";
 
+import { EXERCISE_TONE_VARS, type ExerciseCategorySummary } from "@/lib/exercise-tree";
+
 interface MonthlyReport {
   dogName: string;
   ownerName: string;
@@ -12,6 +14,8 @@ interface MonthlyReport {
   overallGrade: string;
   progressPercentage: number;
   recommendedNextSteps: string[];
+  /** Exercícios do período agrupados por categoria. */
+  categoryBreakdown?: ExerciseCategorySummary[];
 }
 
 interface MonthlyReportProps {
@@ -79,6 +83,48 @@ export function MonthlyReport({ report, onDownloadPDF }: MonthlyReportProps) {
           />
         </div>
       </div>
+
+      {/* O que foi trabalhado — exercícios agrupados por categoria */}
+      {report.categoryBreakdown && report.categoryBreakdown.length > 0 && (
+        <div className="rounded-lg bg-white p-6 shadow">
+          <h3 className="mb-1 text-lg font-bold text-[var(--foreground)]">O que foi trabalhado</h3>
+          <p className="mb-4 text-[12px] text-[var(--muted)]">
+            Cada exercício recebe de 1 a 5 estrelas na aula. Aqui está a média do mês por categoria.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {report.categoryBreakdown.map((group) => (
+              <div
+                key={group.categoryKey}
+                className="rounded-md border p-3"
+                style={{
+                  backgroundColor: EXERCISE_TONE_VARS[group.tone].bg,
+                  borderColor: EXERCISE_TONE_VARS[group.tone].border,
+                }}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span
+                    className="text-[12px] font-bold uppercase tracking-wide"
+                    style={{ color: EXERCISE_TONE_VARS[group.tone].fg }}
+                  >
+                    {group.categoryName}
+                  </span>
+                  <span className="text-sm font-bold" style={{ color: EXERCISE_TONE_VARS[group.tone].fg }}>
+                    {group.average.toFixed(1)}/5
+                  </span>
+                </div>
+                <ul className="mt-2 space-y-1">
+                  {group.exercises.map((exercise) => (
+                    <li key={exercise.name} className="flex items-center justify-between gap-2 text-xs text-[var(--foreground)]">
+                      <span className="truncate">{exercise.name}</span>
+                      <span className="shrink-0 text-amber-500">{"★".repeat(Math.round(exercise.average))}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Destaques */}
       <div className="rounded-lg bg-green-50 p-6 shadow">

@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { isPortalPinValid, isPortalTokenActive, hashPortalToken } from "@/lib/portal-access";
 import { prisma } from "@/lib/prisma";
+import {
+  type LegacyActivity,
+  type SessionExercise,
+  parseJsonList,
+  parseSessionExercises,
+  sessionExercisesOf,
+  summarizeExercisesByCategory,
+} from "@/lib/exercise-tree";
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -122,60 +130,57 @@ export async function GET(request: Request, { params }: Params) {
       overallGrade: "C",
       progressPercentage: 50,
       recommendedNextSteps: ["Agendar treinos práticos para iniciar a evolução."],
+      categoryBreakdown: [],
     });
   }
 
-  // Agrega dados para compilar o relatório
+  // Agrega dados para compilar o relatório. A base é a lista de Exercícios
+  // marcados + nota; registros antigos são convertidos para o mesmo formato.
   let totalRating = 0;
   let ratingCount = 0;
   const highlights: string[] = [];
   const improvements: string[] = [];
   const nextObjectivesSet = new Set<string>();
   const recommendedStepsSet = new Set<string>();
+  const periodExercises: SessionExercise[] = [];
   let completedActivities = 0;
   let totalActivities = 0;
 
   filteredSessions.forEach((ds) => {
-    // 1. Processar Comandos
-    try {
-      const cmds = JSON.parse(ds.commands || "[]") as Array<{ command: string; rating: number; notes?: string }>;
-      cmds.forEach((c) => {
-        totalRating += c.rating;
-        ratingCount++;
-        
-        if (c.rating >= 4 && c.notes) {
-          highlights.push(`${c.command}: ${c.notes}`);
-        } else if (c.rating <= 2.5 && c.notes) {
-          improvements.push(`${c.command}: ${c.notes}`);
-        }
-      });
-    } catch {}
+    // 1. Exercícios trabalhados (estrela 1-5 por exercício)
+    const items = sessionExercisesOf(ds);
+    periodExercises.push(...items);
 
-    // 2. Processar Atividades
-    try {
-      const acts = JSON.parse(ds.activities || "[]") as Array<{ name: string; completed: boolean; notes?: string }>;
-      acts.forEach((a) => {
+    items.forEach((item) => {
+      totalRating += item.rating;
+      ratingCount++;
+
+      if (item.rating >= 4 && item.notes) {
+        highlights.push(`${item.name}: ${item.notes}`);
+      } else if (item.rating <= 2 && item.notes) {
+        improvements.push(`${item.name}: ${item.notes}`);
+      }
+    });
+
+    // 2. Taxa de conclusão de atividades — só existe nos registros antigos.
+    const isLegacy = parseSessionExercises(parseJsonList(ds.exercises)).length === 0;
+    if (isLegacy) {
+      parseJsonList<LegacyActivity>(ds.activities).forEach((a) => {
         totalActivities++;
-        if (a.completed) {
-          completedActivities++;
-          if (a.notes && highlights.length < 5) {
-            highlights.push(`${a.name}: ${a.notes}`);
-          }
-        } else {
-          if (a.notes && improvements.length < 5) {
-            improvements.push(`${a.name}: ${a.notes}`);
-          }
-        }
+        if (a.completed) completedActivities++;
       });
-    } catch {}
+    }
 
     // 3. Objetivos e Tarefas sugeridas
     if (ds.nextFocus) nextObjectivesSet.add(ds.nextFocus);
-    try {
-      const tasks = JSON.parse(ds.nextTasks || "[]") as string[];
-      tasks.forEach((t) => recommendedStepsSet.add(t));
-    } catch {}
+    parseJsonList<string>(ds.nextTasks).forEach((t) => recommendedStepsSet.add(t));
   });
+
+  // Resumo por Categoria — o tutor lê "Obediência 4.2/5" em vez de uma lista solta.
+  const categoryBreakdown = summarizeExercisesByCategory(periodExercises).map((group) => ({
+    ...group,
+    exercises: group.exercises.slice(0, 6),
+  }));
 
   const averageScore = ratingCount > 0 ? (totalRating / ratingCount) : 3;
   const progressPercent = totalActivities > 0 
@@ -216,5 +221,6 @@ export async function GET(request: Request, { params }: Params) {
     overallGrade: overallGrade,
     progressPercentage: progressPercent,
     recommendedNextSteps: finalSteps,
+    categoryBreakdown,
   });
 }
