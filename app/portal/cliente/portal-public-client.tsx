@@ -13,6 +13,7 @@ import { GamificationPanel } from "@/components/gamification-panel";
 import { MonthlyReport } from "@/components/monthly-report";
 import { NpsPrompt } from "@/components/nps-prompt";
 import { useGamification } from "@/lib/gamification";
+import { EXERCISE_TONE_VARS as TONE_VARS, type ExerciseCategoryGroup } from "@/lib/exercise-tree";
 
 type PortalTask = {
   id: string;
@@ -51,6 +52,8 @@ type PortalSession = {
     id: string;
     activities: Array<{ name: string; completed: boolean; notes: string }>;
     commands: Array<{ command: string; rating: number; notes: string }>;
+    // Exercícios trabalhados, já agrupados por categoria pela API.
+    exerciseGroups?: ExerciseCategoryGroup[];
     description: string;
     aiSummary: string | null;
     nextFocus: string;
@@ -968,39 +971,52 @@ export function PortalPublicClient({ token }: { token: string }) {
                         {hasDetailedSessions ? (
                           session.dogSessions!.map((ds, index) => (
                             <div key={ds.id || index} className="space-y-3.5">
-                              {/* Seção A: Atividades */}
-                              {ds.activities && ds.activities.length > 0 && (
+                              {/* Exercícios trabalhados — agrupados por categoria */}
+                              {ds.exerciseGroups && ds.exerciseGroups.length > 0 && (
                                 <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">A. Atividades Trabalhadas</p>
-                                  <ul className="mt-1 space-y-1 pl-1">
-                                    {ds.activities.map((act: any, idx: number) => (
-                                      <li key={idx} className="flex items-start gap-1.5">
-                                        <span>{act.completed ? "✅" : "❌"}</span>
-                                        <div>
-                                          <span className="font-semibold text-slate-800">{act.name}</span>
-                                          {act.notes && <p className="text-[12px] text-slate-500 italic mt-0.5">{act.notes}</p>}
+                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">
+                                    Exercícios trabalhados
+                                  </p>
+                                  <div className="mt-1.5 space-y-2">
+                                    {ds.exerciseGroups.map((group) => (
+                                      <div
+                                        key={group.categoryKey}
+                                        className="rounded-md border p-2"
+                                        style={{
+                                          backgroundColor: TONE_VARS[group.tone].bg,
+                                          borderColor: TONE_VARS[group.tone].border,
+                                        }}
+                                      >
+                                        <div className="flex items-center justify-between gap-2">
+                                          <span
+                                            className="text-[12px] font-bold uppercase tracking-wide"
+                                            style={{ color: TONE_VARS[group.tone].fg }}
+                                          >
+                                            {group.categoryName}
+                                          </span>
+                                          <span className="text-[12px] font-bold" style={{ color: TONE_VARS[group.tone].fg }}>
+                                            {group.average.toFixed(1)}/5
+                                          </span>
                                         </div>
-                                      </li>
+                                        <ul className="mt-1 space-y-1">
+                                          {group.items.map((item, idx) => (
+                                            <li key={`${item.key}-${idx}`}>
+                                              <div className="flex items-center justify-between gap-1.5">
+                                                <span className="font-semibold text-slate-800">
+                                                  {item.name}
+                                                  <span className="ml-1 font-normal text-slate-500">· {item.areaName}</span>
+                                                </span>
+                                                <span className="text-amber-500">{"★".repeat(item.rating || 0)}</span>
+                                              </div>
+                                              {item.notes && (
+                                                <p className="text-[12px] text-slate-500 italic mt-0.5">{item.notes}</p>
+                                              )}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
                                     ))}
-                                  </ul>
-                                </div>
-                              )}
-
-                              {/* Seção B: Comandos */}
-                              {ds.commands && ds.commands.length > 0 && (
-                                <div>
-                                  <p className="font-bold text-[var(--foreground)] uppercase tracking-[0.08em] text-[12px]">B. Comandos de Obediência</p>
-                                  <ul className="mt-1 space-y-1.5 pl-1">
-                                    {ds.commands.map((cmd: any, idx: number) => (
-                                      <li key={idx}>
-                                        <div className="flex items-center gap-1.5 justify-between">
-                                          <span className="font-semibold text-slate-800">{cmd.command}</span>
-                                          <span className="text-amber-500">{"★".repeat(cmd.rating || 0)}</span>
-                                        </div>
-                                        {cmd.notes && <p className="text-[12px] text-slate-500 italic mt-0.5">{cmd.notes}</p>}
-                                      </li>
-                                    ))}
-                                  </ul>
+                                  </div>
                                 </div>
                               )}
 

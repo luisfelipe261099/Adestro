@@ -185,7 +185,84 @@ GET /api/trainer/plan?clientId=client_001&limit=10&offset=0
 
 ---
 
-### 3. Análise de IA
+### 3. Catálogo de Exercícios
+
+Árvore usada no registro de treino: **Categoria > Área > Exercício**. A avaliação
+por estrelas (1-5) fica no exercício (3º nível). O catálogo padrão vive em
+`lib/exercise-tree.ts` e é semeado no banco na primeira leitura; cada adestrador
+pode criar exercícios próprios dentro de uma Área.
+
+#### Listar catálogo
+
+```http
+GET /api/exercises
+```
+
+**Response:**
+```json
+{
+  "categories": [
+    {
+      "key": "obediencia",
+      "name": "Obediência",
+      "tone": "sky",
+      "order": 1,
+      "areas": [
+        {
+          "key": "obediencia.chamado",
+          "name": "Chamado",
+          "order": 3,
+          "exercises": [
+            { "id": "clx...", "key": "obediencia.chamado.recall", "name": "Recall", "order": 0 }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Exercícios criados pelo adestrador vêm com `"custom": true`. Se o banco estiver
+indisponível, a resposta traz a árvore padrão com `"fallback": true`.
+
+#### Criar exercício ("+ Outro")
+
+```http
+POST /api/exercises
+Content-Type: application/json
+
+{ "areaKey": "manejo.rotina", "name": "Não subir no sofá" }
+```
+
+**Response (201):**
+```json
+{
+  "exercise": {
+    "id": "clx...",
+    "key": "manejo.rotina.custom-nao-subir-no-sofa",
+    "name": "Não subir no sofá",
+    "areaKey": "manejo.rotina",
+    "areaName": "Rotina",
+    "categoryKey": "manejo",
+    "categoryName": "Manejo & Rotina"
+  }
+}
+```
+
+Nome repetido na mesma Área devolve o exercício existente — não duplica.
+
+#### Arquivar exercício próprio
+
+```http
+DELETE /api/exercises?id=clx...
+```
+
+Só arquiva exercícios criados pelo próprio adestrador; itens do catálogo padrão
+retornam `404`.
+
+---
+
+### 4. Análise de IA
 
 #### Analisar Sessão
 
@@ -235,7 +312,7 @@ GET /api/ia/analyze-session?session_id=session_001
 
 ---
 
-### 4. Gamificação
+### 5. Gamificação
 
 #### Obter Pontos do Usuário
 
@@ -298,7 +375,7 @@ Content-Type: application/json
 
 ---
 
-### 5. Portais
+### 6. Portais
 
 #### Portal Público do Tutor
 

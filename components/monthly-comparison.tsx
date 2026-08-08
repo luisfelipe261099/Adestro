@@ -141,28 +141,28 @@ export function MonthlyComparison({ dogId, dogName }: { dogId: string; dogName: 
           <div className="grid grid-cols-3 gap-2 rounded-md bg-white p-3 text-center">
             <div>
               <p className="text-2xl font-bold text-emerald-950">{data.monthA.averageCommandRating.toFixed(1)}<span className="text-sm text-emerald-600">/5</span></p>
-              <p className="text-[12px] text-[var(--muted)]">Comando médio</p>
+              <p className="text-[12px] text-[var(--muted)]">Exercício médio</p>
             </div>
             <div className="flex flex-col items-center justify-center">
               <span className={`text-[12px] font-bold ${deltaColor(data.delta.averageCommandRating)}`}>{delta(data.delta.averageCommandRating)}</span>
             </div>
             <div>
               <p className="text-2xl font-bold text-emerald-950">{data.monthB.averageCommandRating.toFixed(1)}<span className="text-sm text-emerald-600">/5</span></p>
-              <p className="text-[12px] text-[var(--muted)]">Comando médio</p>
+              <p className="text-[12px] text-[var(--muted)]">Exercício médio</p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 rounded-md bg-white p-3 text-center">
             <div>
               <p className="text-2xl font-bold text-emerald-950">{data.monthA.activitiesCompletionRate.toFixed(0)}<span className="text-sm text-emerald-600">%</span></p>
-              <p className="text-[12px] text-[var(--muted)]">Atividades feitas</p>
+              <p className="text-[12px] text-[var(--muted)]">Exercícios 4★+</p>
             </div>
             <div className="flex flex-col items-center justify-center">
               <span className={`text-[12px] font-bold ${deltaColor(data.delta.activitiesCompletionRate)}`}>{delta(data.delta.activitiesCompletionRate)}pp</span>
             </div>
             <div>
               <p className="text-2xl font-bold text-emerald-950">{data.monthB.activitiesCompletionRate.toFixed(0)}<span className="text-sm text-emerald-600">%</span></p>
-              <p className="text-[12px] text-[var(--muted)]">Atividades feitas</p>
+              <p className="text-[12px] text-[var(--muted)]">Exercícios 4★+</p>
             </div>
           </div>
 

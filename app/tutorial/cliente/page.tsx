@@ -58,6 +58,9 @@ const clientSteps = [
     goal: "Ver o progresso do cão entre uma aula e outra.",
     details: [
       "Confira anotações, fotos e histórico das sessões registradas.",
+      "Em 'Evolução' de cada aula você vê os exercícios trabalhados agrupados por categoria (Fundamentos, Obediência, Socialização, Comportamento, Manejo & Rotina), cada um com estrelas de 1 a 5 e a média da categoria.",
+      "As estrelas são do exercício em si — 'Recall ★★☆☆☆' diz exatamente o que ainda precisa de treino, e a média da categoria mostra o quadro geral.",
+      "No relatório mensal, o bloco 'O que foi trabalhado' resume as mesmas categorias no período inteiro.",
       "O cão sobe de nível conforme pratica, e a sequência diária 🔥 mostra a constância da rotina.",
       "Complete tarefas para ganhar medalhas (badges) — é um jeito divertido de manter a família engajada.",
       "Veja quais comportamentos melhoraram e quais ainda precisam de atenção.",
@@ -114,6 +117,10 @@ const clientFaq = [
     a: "Sim, o portal foi feito para o celular. Você pode salvar o link nos favoritos ou usar 'Adicionar à tela inicial' para abrir como aplicativo.",
   },
   {
+    q: "O que significam as estrelas de cada exercício?",
+    a: "É a avaliação daquele exercício específico naquele dia: 1 estrela = está começando, 5 estrelas = o cão respondeu muito bem. Como cada exercício tem a própria nota, dá pra ver o que já está firme e o que ainda precisa de repetição em casa.",
+  },
+  {
     q: "Quem vê o que eu escrevo no chat?",
     a: "Somente o seu adestrador. As anotações técnicas confidenciais dele também não aparecem para você — cada um vê o que precisa.",
   },
@@ -139,7 +146,7 @@ export default function ClientTutorialPage() {
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Visão geral</p>
           <h2 className="mt-2 text-2xl font-semibold text-[var(--foreground)]">O portal é o caderno de treino do cliente</h2>
           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-            Ele mostra o que foi combinado com o adestrador, quais exercícios devem ser feitos em casa e como o cão está evoluindo ao longo das aulas.
+            Ele mostra o que foi combinado com o adestrador, quais exercícios foram trabalhados na aula (com estrelas por exercício), o que deve ser feito em casa e como o cão está evoluindo ao longo das aulas.
           </p>
 
           <div className="mt-5 grid gap-3">

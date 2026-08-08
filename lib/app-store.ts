@@ -3,6 +3,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import type { SessionExercise } from "@/lib/exercise-tree";
+
 type SessionStatus = "Confirmado" | "Pendente" | "Aguardando" | "Recorrente" | "Cancelado";
 type PaymentStatus = "Pago" | "Pendente";
 export type UserRole = "admin" | "trainer" | "client";
@@ -72,6 +74,8 @@ export type DogTrainingSession = {
   dogId: string;
   activities: Array<{ name: string; completed: boolean; notes: string }>;
   commands: Array<{ command: string; rating: number; notes: string }>;
+  /** Exercícios trabalhados (Categoria > Área > Exercício), com estrela 1-5. */
+  exercises?: SessionExercise[];
   description?: string;
   privateNotes?: string;
   aiSummary?: string;
@@ -250,6 +254,10 @@ type AppState = {
     dogName?: string;
     notes: TrainingNote[];
     media?: TrainingMediaItem[];
+    type?: string;
+    location?: string;
+    status?: string;
+    dogSessions?: unknown[];
   }) => Promise<boolean>;
   updateTrainingSession: (payload: {
     id: string;

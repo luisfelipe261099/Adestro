@@ -41,7 +41,7 @@ const PANELS: Array<{
   {
     key: "defaultActivities",
     title: "Atividades de treino",
-    description: "Aparecem como opções para marcar 'realizado?' na sessão (módulo 4.2 §C).",
+    description: "Legado: o registro de treino usa a árvore Categoria > Área > Exercício. O que estiver aqui continua aparecendo como 'Meus modelos salvos' no atalho do adestrador.",
     placeholder: "Ex: Aquecimento, Recall, Socialização",
     accent: "sky",
     emoji: "🏃‍♂️",
@@ -49,7 +49,7 @@ const PANELS: Array<{
   {
     key: "defaultCommands",
     title: "Comandos padrão",
-    description: "Comandos que ficam disponíveis para avaliar obediência/evolução em estrelas (módulo 4.2 §D).",
+    description: "Legado: exercícios novos são criados pelo '+ Outro' dentro da Área, direto no registro do treino. O que estiver aqui vira atalho em 'Meus modelos salvos'.",
     placeholder: "Ex: Senta, Fica, Vem, Junto",
     accent: "indigo",
     emoji: "🎯",

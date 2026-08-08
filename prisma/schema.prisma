@@ -373,10 +373,73 @@ model DogTrainingSession {
   nextTasks   String?         @db.Text     // JSON list
   behaviorScores String?      @db.Text     // JSON { categoria: nota 0-5 } — evolução comportamental
 
+  // Exercícios trabalhados (árvore Categoria > Área > Exercício), com a estrela
+  // 1-5 no exercício. Guardado como JSON com o caminho copiado (categoria/área)
+  // de propósito: o catálogo pode mudar depois e o histórico precisa continuar
+  // contando o que foi feito NAQUELE dia. O catálogo em si é relacional —
+  // models ExerciseCategory/ExerciseArea/Exercise abaixo.
+  // `activities`/`commands` continuam preenchidos como projeção de
+  // compatibilidade enquanto existirem sessões no formato antigo.
+  exercises   String?         @db.LongText // JSON list de SessionExercise
+
   createdAt   DateTime        @default(now())
 
   @@index([sessionId])
   @@index([dogId])
+}
+
+// ─── Catálogo de exercícios (Categoria > Área > Exercício) ───────────────────
+// Estrutura relacional: a avaliação por estrelas fica sempre no Exercício (3º
+// nível). O catálogo padrão é semeado a partir de lib/exercise-tree.ts; o
+// adestrador cria exercícios novos pelo "+ Outro" dentro da Área — vira linha
+// nova em `Exercise`, sem alteração de schema.
+
+model ExerciseCategory {
+  id        String   @id @default(cuid())
+  key       String   @unique          // "fundamentos"
+  name      String
+  tone      String   @default("blue") // cor do card (globals.css)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  areas ExerciseArea[]
+}
+
+model ExerciseArea {
+  id         String           @id @default(cuid())
+  categoryId String
+  category   ExerciseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  key        String           @unique  // "fundamentos.foco"
+  name       String
+  order      Int              @default(0)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  exercises Exercise[]
+
+  @@index([categoryId])
+}
+
+model Exercise {
+  id        String       @id @default(cuid())
+  areaId    String
+  area      ExerciseArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  key       String                      // "fundamentos.foco.nome"
+  name      String
+  order     Int          @default(0)
+
+  // Vazio = catálogo padrão (todo mundo vê). Preenchido = exercício criado por
+  // esse adestrador no "+ Outro", visível só para ele. String vazia em vez de
+  // NULL porque no MySQL/TiDB o índice único ignora NULLs repetidos.
+  trainerId String       @default("")
+  archived  Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([areaId, trainerId, key], map: "exercise_area_trainer_key")
+  @@index([areaId])
+  @@index([trainerId])
 }
 
 // ─── Evento de calendário ─────────────────────────────────────────────────────

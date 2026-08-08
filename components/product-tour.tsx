@@ -134,12 +134,21 @@ export const TRAINER_STEPS: TourStep[] = [
     placement: "bottom",
   },
   {
+    id: "exercicios",
+    route: "/treinos/registro",
+    selector: '[data-tour="exercise-tree"]',
+    title: "Exercícios trabalhados — 1 toque por marcação",
+    description:
+      "A árvore é Categoria > Área > Exercício, mas você não navega nela: os exercícios já vêm como botões. Toque para marcar e dê de 1 a 5 estrelas NO EXERCÍCIO. Use a busca ou os chips de categoria só quando quiser filtrar, e o “+ Outro” quando faltar algum — ele fica salvo no seu catálogo.",
+    placement: "top",
+  },
+  {
     id: "registro",
     route: "/treinos/registro",
     selector: '[data-tour="ia-chat"]',
     title: "Registro de treino + IA",
     description:
-      "O coração do sistema: o pré-treino puxa o plano combinado na última aula, você grava notas por voz, avalia comandos com estrelas e dá as notas comportamentais em 2 blocos. O ✨ chama o assistente IA.",
+      "O resto da sessão: o pré-treino puxa o plano combinado na última aula, você grava notas por voz e dá as notas comportamentais em 2 blocos. O ✨ chama o assistente IA, que já conhece os exercícios avaliados.",
     placement: "left",
   },
   {
@@ -164,7 +173,7 @@ export const TRAINER_STEPS: TourStep[] = [
     route: "/evolucao",
     title: "Evolução comportamental",
     description:
-      "As notas que você dá no registro viram gráficos por categoria: estabilidade emocional, foco, obediência, recall… É o argumento visual pro tutor renovar o pacote.",
+      "As notas que você dá no registro viram gráficos por categoria: estabilidade emocional, foco, obediência, recall… No relatório mensal, os exercícios marcados aparecem agrupados por categoria com a média das estrelas. É o argumento visual pro tutor renovar o pacote.",
     fullScreen: true,
   },
   {
@@ -337,7 +346,7 @@ export const TUTOR_STEPS: TourStep[] = [
     selector: '[data-tour="cliente-sessions"]',
     title: "Histórico de treinos",
     description:
-      "Cada aula com fotos, vídeos e avaliação. Você pode dar estrelas para cada treino.",
+      "Cada aula com fotos, vídeos e avaliação. Toque em “Evolução” para ver os exercícios trabalhados agrupados por categoria, cada um com as estrelas que o adestrador deu. Você também pode dar estrelas para cada treino.",
     placement: "top",
   },
   {

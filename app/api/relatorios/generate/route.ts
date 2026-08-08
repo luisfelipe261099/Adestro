@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  type LegacyActivity,
+  type SessionExercise,
+  parseJsonList,
+  parseSessionExercises,
+  sessionExercisesOf,
+  summarizeExercisesByCategory,
+} from "@/lib/exercise-tree";
 
 // GET /api/relatorios/generate
 export async function GET(request: Request) {
@@ -90,67 +98,58 @@ export async function GET(request: Request) {
       overallGrade: "C",
       progressPercentage: 50,
       recommendedNextSteps: ["Agendar treinos práticos para iniciar a evolução."],
+      categoryBreakdown: [],
     });
   }
 
-  // Agrega dados para compilar o relatório
+  // Agrega dados para compilar o relatório. A base é a lista de Exercícios
+  // marcados + nota; registros antigos (atividades/comandos) são convertidos
+  // para o mesmo formato, então existe um caminho só daqui pra frente.
   let totalRating = 0;
   let ratingCount = 0;
-  const commandRatings: Record<string, { total: number; count: number }> = {};
   const highlights: string[] = [];
   const improvements: string[] = [];
   const nextObjectivesSet = new Set<string>();
   const recommendedStepsSet = new Set<string>();
+  const periodExercises: SessionExercise[] = [];
   let completedActivities = 0;
   let totalActivities = 0;
 
   filteredSessions.forEach((ds) => {
-    // 1. Processar Comandos
-    try {
-      const cmds = JSON.parse(ds.commands || "[]") as Array<{ command: string; rating: number; notes?: string }>;
-      cmds.forEach((c) => {
-        totalRating += c.rating;
-        ratingCount++;
-        
-        if (!commandRatings[c.command]) {
-          commandRatings[c.command] = { total: 0, count: 0 };
-        }
-        commandRatings[c.command].total += c.rating;
-        commandRatings[c.command].count++;
+    // 1. Exercícios trabalhados (com a estrela do próprio exercício)
+    const items = sessionExercisesOf(ds);
+    periodExercises.push(...items);
 
-        if (c.rating >= 4 && c.notes) {
-          highlights.push(`${c.command}: ${c.notes}`);
-        } else if (c.rating <= 2.5 && c.notes) {
-          improvements.push(`${c.command}: ${c.notes}`);
-        }
-      });
-    } catch {}
+    items.forEach((item) => {
+      totalRating += item.rating;
+      ratingCount++;
 
-    // 2. Processar Atividades
-    try {
-      const acts = JSON.parse(ds.activities || "[]") as Array<{ name: string; completed: boolean; notes?: string }>;
-      acts.forEach((a) => {
+      if (item.rating >= 4 && item.notes) {
+        highlights.push(`${item.name}: ${item.notes}`);
+      } else if (item.rating <= 2 && item.notes) {
+        improvements.push(`${item.name}: ${item.notes}`);
+      }
+    });
+
+    // 2. Taxa de conclusão de atividades — só existe nos registros antigos.
+    const isLegacy = parseSessionExercises(parseJsonList(ds.exercises)).length === 0;
+    if (isLegacy) {
+      parseJsonList<LegacyActivity>(ds.activities).forEach((a) => {
         totalActivities++;
-        if (a.completed) {
-          completedActivities++;
-          if (a.notes && highlights.length < 5) {
-            highlights.push(`${a.name}: ${a.notes}`);
-          }
-        } else {
-          if (a.notes && improvements.length < 5) {
-            improvements.push(`${a.name}: ${a.notes}`);
-          }
-        }
+        if (a.completed) completedActivities++;
       });
-    } catch {}
+    }
 
     // 3. Objetivos e Tarefas sugeridas
     if (ds.nextFocus) nextObjectivesSet.add(ds.nextFocus);
-    try {
-      const tasks = JSON.parse(ds.nextTasks || "[]") as string[];
-      tasks.forEach((t) => recommendedStepsSet.add(t));
-    } catch {}
+    parseJsonList<string>(ds.nextTasks).forEach((t) => recommendedStepsSet.add(t));
   });
+
+  // Resumo agrupado por Categoria — vai pronto para o texto do tutor.
+  const categoryBreakdown = summarizeExercisesByCategory(periodExercises).map((group) => ({
+    ...group,
+    exercises: group.exercises.slice(0, 6),
+  }));
 
   // Cálculos finais
   const averageScore = ratingCount > 0 ? (totalRating / ratingCount) : 3; // 1 a 5 estrelas
@@ -193,5 +192,6 @@ export async function GET(request: Request) {
     overallGrade: overallGrade,
     progressPercentage: progressPercent,
     recommendedNextSteps: finalSteps,
+    categoryBreakdown,
   });
 }

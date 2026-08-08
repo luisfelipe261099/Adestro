@@ -55,10 +55,12 @@ const trainerFlow: FlowStep[] = [
     title: "3) Registrar o treino realizado",
     why: "Transforma a aula em histórico técnico — e vira insumo da IA, do relatório mensal e da nota do cliente.",
     how: [
-      "Em /treinos/registro escolha o cão e preencha as 9 seções (A-I).",
+      "Em /treinos/registro escolha o cão e preencha as 8 seções numeradas.",
+      "Seção 1 — Exercícios Trabalhados: acabou a separação atividade/comando. A árvore é Categoria > Área > Exercício (Fundamentos, Obediência, Socialização, Comportamento, Manejo & Rotina), mas na tela cada exercício é um botão: 1 toque marca.",
+      "A estrela (1-5) avalia o EXERCÍCIO, nunca a categoria ou a área. Categoria e Área são só filtro e agrupador — use a busca ou os chips coloridos quando a lista ficar longa.",
+      "Faltou algum? '+ Outro' dentro da Área cria o exercício na hora e ele fica salvo no seu catálogo para as próximas aulas.",
       "🎙️ Grave nota por voz: a Web Speech API transcreve em tempo real (Chrome, Edge, Safari iOS).",
-      "Avalie comandos com estrelas 1-5 — vira o gráfico de evolução no relatório mensal.",
-      "Para sessões coletivas, cada cão tem sub-registro independente nas seções D, E, F e H.",
+      "Para sessões coletivas, cada cão recebe seu próprio registro com os mesmos exercícios marcados.",
       "No canto direito ✨ abre o Assistente IA contextual (chat com 6 tópicos especialistas).",
     ],
     shortcut: "Atalho: clique no ✨ flutuante no canto direito",
@@ -67,10 +69,10 @@ const trainerFlow: FlowStep[] = [
     title: "4) Aprovar resumo IA + planejar próxima aula",
     why: "A IA monta um rascunho, mas só o adestrador aprova o que o cliente vai ver.",
     how: [
-      "Na Seção F após registrar, toque em 'Gerar análise IA' — o resumo aparece pra revisão.",
-      "Marque 'Aprovar e liberar para o cliente' só quando o texto refletir sua leitura técnica.",
-      "Na Seção H, defina foco da próxima sessão e tarefas pro cliente fazer em casa.",
-      "Notas confidenciais (Seção D) NUNCA são compartilhadas — só você vê.",
+      "Na Seção 4 após registrar, toque em 'Gerar Relatório e Análise IA' — o resumo aparece pra revisão. A IA lê os exercícios marcados com as estrelas e puxa os de nota baixa para o plano da próxima aula.",
+      "Marque 'Aprovar resumo da IA e dever de casa' só quando o texto refletir sua leitura técnica.",
+      "Nas Seções 6 e 7, defina o plano da próxima sessão e as tarefas pro cliente fazer em casa.",
+      "Notas privadas (Seção 3) NUNCA são compartilhadas — só você vê.",
     ],
   },
   {
@@ -81,7 +83,7 @@ const trainerFlow: FlowStep[] = [
       "Em /treinos veja a linha do tempo dos treinos com fotos, notas e filtros (hoje, semana, pendentes).",
       "Em /clientes, aba 'Quadro', arraste cada cão entre as fases do adestramento (kanban). No celular, use o seletor no card.",
       "Em /evolucao acompanhe as notas comportamentais por categoria de cada cão ao longo do tempo.",
-      "A ficha do cão (/caes/[id]) reúne tudo: vacinas, histórico de sessões, comandos e evolução.",
+      "A ficha do cão (/caes/[id]) reúne tudo: vacinas, histórico de sessões, exercícios trabalhados e evolução.",
     ],
   },
   {
@@ -113,7 +115,8 @@ const trainerFlow: FlowStep[] = [
       "Em /relatorios o rascunho aparece automaticamente no início do mês.",
       "Edite seções, selecione fotos, ajuste a análise gerada pela IA.",
       "Toque 'Aprovar e Gerar PDF' → 'Imprimir / PDF' do browser.",
-      "Use 'Comparativo mês vs mês' pra mostrar evolução em sessões, comandos médios, % atividades e NPS.",
+      "O bloco 'Exercícios do mês por categoria' sai pronto: o sistema agrupa sozinho os exercícios marcados nas aulas e mostra a média de estrelas de cada categoria.",
+      "Use 'Comparativo mês vs mês' pra mostrar evolução em sessões, exercício médio, % de exercícios 4★+ e NPS.",
     ],
   },
 ];
@@ -124,7 +127,7 @@ const screenMap = [
   { href: "/agenda", label: "Agenda", text: "Dia/Semana/Mês, recorrência, confirmação de presença e exportação de calendário." },
   { href: "/clientes", label: "Clientes", text: "Fichas de clientes e cães, tags, onboarding e quadro kanban. Clique no cliente pra abrir a página completa dele. O botão 'Convidar cliente' gera o link pro tutor se cadastrar sozinho." },
   { href: "/treinos", label: "Treinos", text: "Feed dos treinos realizados com fotos, notas e filtros." },
-  { href: "/treinos/registro", label: "Registrar treino", text: "Formulário completo da sessão (A-I) com voz e IA." },
+  { href: "/treinos/registro", label: "Registrar treino", text: "Exercícios trabalhados (Categoria > Área > Exercício) com estrela por exercício, voz e IA." },
   { href: "/financeiro", label: "Financeiro", text: "Pacotes, contratos, cobranças, recibos com Pix Copia e Cola." },
   { href: "/relatorios", label: "Relatórios", text: "Relatório mensal com análise IA, fotos e comparativo mês a mês." },
   { href: "/portal", label: "Portal do cliente", text: "Links únicos de acesso do tutor, tarefas e gamificação." },
@@ -160,7 +163,12 @@ const featureHighlights = [
   {
     icon: "✨",
     title: "Assistente IA contextual",
-    text: "Chat dentro da página de sessão. Sabe o cão, raça, comandos e descrição. Atalhos: planejamento, ansiedade, recall, latido, socialização, análise.",
+    text: "Chat dentro da página de sessão. Sabe o cão, raça, exercícios avaliados e descrição. Atalhos: planejamento, ansiedade, recall, latido, socialização, análise.",
+  },
+  {
+    icon: "🌳",
+    title: "Árvore de exercícios em 1 toque",
+    text: "Categoria > Área > Exercício no banco (relatório sai agrupado sozinho), botões diretos na tela. Nada de 3 toques por marcação — e o '+ Outro' cria exercício novo dentro da área sem esperar atualização do sistema.",
   },
   {
     icon: "🎙️",
@@ -175,7 +183,7 @@ const featureHighlights = [
   {
     icon: "📋",
     title: "Templates editáveis",
-    text: "Em /admin/templates você edita atividades, comandos padrão, tarefas do cliente e o texto de cada mensagem WhatsApp.",
+    text: "Em /admin/templates você edita tarefas do cliente e o texto de cada mensagem WhatsApp. Atividades e comandos padrão viraram legado: os exercícios saem da árvore Categoria > Área > Exercício.",
   },
   {
     icon: "🏷️",
@@ -272,7 +280,19 @@ const trainerFaq = [
   },
   {
     q: "O resumo IA saiu errado — o cliente vai ver?",
-    a: "Não. Nada gerado pela IA chega ao cliente sem sua aprovação explícita na Seção F. Edite o texto antes de aprovar.",
+    a: "Não. Nada gerado pela IA chega ao cliente sem sua aprovação explícita na Seção 4. Edite o texto antes de aprovar.",
+  },
+  {
+    q: "O exercício que eu uso não está na lista",
+    a: "Use o '+ Outro' da Área onde ele se encaixa (por exemplo, Manejo & Rotina > Rotina). O exercício é criado na hora, entra na sessão e passa a aparecer nas próximas aulas — só para você. Se preferir, busque antes pelo nome: a mesma palavra pode existir em outra categoria (Sons aparece em Socialização e em Comportamento).",
+  },
+  {
+    q: "Por que a estrela fica no exercício e não na categoria?",
+    a: "Porque 'Obediência 3/5' não diz o que treinar: a nota precisa ser do que foi feito (Recall 2/5, Senta 5/5). A média por categoria aparece sozinha no resumo e no relatório, calculada a partir dos exercícios.",
+  },
+  {
+    q: "E os treinos antigos, com atividades e comandos?",
+    a: "Continuam íntegros. Ao abrir um treino antigo para editar, os itens são convertidos em exercícios (casando pelo nome com a árvore; o que não casa vira 'Registros anteriores'). Os relatórios do histórico seguem contando normalmente.",
   },
   {
     q: "Excluí um cliente sem querer",
@@ -330,7 +350,7 @@ const adminAreas = [
   {
     href: "/admin/templates",
     title: "Templates",
-    text: "Padrões usados por todos os adestradores: atividades, comandos, tarefas do cliente e textos das mensagens de WhatsApp. Edite com cuidado — afeta todo mundo.",
+    text: "Padrões usados por todos os adestradores: tarefas do cliente e textos das mensagens de WhatsApp. Atividades e comandos ficaram como legado — os exercícios do treino vêm da árvore Categoria > Área > Exercício, e cada adestrador cria os seus pelo '+ Outro'. Edite com cuidado — afeta todo mundo.",
   },
   {
     href: "/admin/audit",
@@ -608,7 +628,7 @@ function TrainerTutorial() {
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
             O assistente cobre os 6 tópicos mais frequentes do cotidiano: planejamento, ansiedade, recall, latido,
             socialização e análise da sessão. Dentro do registro de treino ele já conhece o cão, a raça e os
-            comandos trabalhados; para casos fora de sessão, use a tela /ia.
+            exercícios trabalhados com as notas; para casos fora de sessão, use a tela /ia.
           </p>
           <div className="mt-4 grid gap-3">
             {assistantExamples.map((example) => (

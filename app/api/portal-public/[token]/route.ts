@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isPortalPinValid, isPortalTokenActive, hashPortalToken } from "@/lib/portal-access";
 import { prisma } from "@/lib/prisma";
+import { groupExercisesByCategory, sessionExercisesOf } from "@/lib/exercise-tree";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { badRequest, portalFeedbackSchema, portalTaskUpdateSchema } from "@/lib/validators";
 
@@ -166,10 +167,23 @@ export async function GET(_request: Request, { params }: Params) {
         .filter((ds) => tutorDogIds.has(ds.dogId))
         .map((ds) => {
           const approved = ds.aiApproved;
+          // Lista explícita do que o tutor pode ver. Antes o registro inteiro
+          // era espalhado aqui, e isso mandava junto `privateNotes` — que é
+          // confidencial do adestrador — na resposta da API.
           return {
-            ...ds,
+            id: ds.id,
+            sessionId: ds.sessionId,
+            dogId: ds.dogId,
+            createdAt: ds.createdAt,
+            description: ds.description,
+            nextFocus: ds.nextFocus,
+            behaviorScores: ds.behaviorScores,
+            aiApproved: ds.aiApproved,
             activities: mapSessionNotes(ds.activities),
             commands: mapSessionNotes(ds.commands),
+            // Exercícios trabalhados já agrupados por categoria — é o que o
+            // tutor lê no portal. Registro antigo entra convertido.
+            exerciseGroups: groupExercisesByCategory(sessionExercisesOf(ds)),
             media: mapSessionMedia(ds.media),
             nextCommands: mapSessionNotes(ds.nextCommands),
             aiSummary: approved ? ds.aiSummary : null,
