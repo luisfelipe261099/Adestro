@@ -24,6 +24,13 @@ export async function GET(request: Request) {
   const dogId = searchParams.get("dogId");
   const monthParam = searchParams.get("month") || new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" }); // Ex: "maio de 2026"
 
+  // Recorte por sessão: "evolução entre a sessão 1 e a 4", como o adestrador
+  // pediu. Quando vem `fromSession`, o mês é ignorado — o período passa a ser
+  // o intervalo de sessões, que é como ele conversa com o cliente.
+  const fromSession = Number(searchParams.get("fromSession"));
+  const toSession = Number(searchParams.get("toSession"));
+  const porSessao = Number.isFinite(fromSession) && fromSession > 0;
+
   if (!dogId) {
     return NextResponse.json({ error: "dogId é obrigatório" }, { status: 400 });
   }
@@ -51,9 +58,26 @@ export async function GET(request: Request) {
     orderBy: { createdAt: "desc" },
   });
 
+  // Ordem cronológica do cão: a "sessão 1" é a primeira que ele fez, não o id
+  // nem o número digitado — assim o recorte casa com o que o cliente vê.
+  const emOrdem = [...dogSessions].sort((a, b) => {
+    const t = (d?: string | null) => {
+      const v = (d ?? "").trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(v)) return new Date(v.slice(0, 10)).getTime();
+      const br = v.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+      return br ? new Date(`${br[3]}-${br[2]}-${br[1]}`).getTime() : 0;
+    };
+    return t(a.session.date) - t(b.session.date);
+  });
+
   // Filtrar as sessões do mês selecionado
   // O mês nos registros de sessões antigas pode estar em formato DD/MM/YYYY ou YYYY-MM-DD
-  const filteredSessions = dogSessions.filter((ds) => {
+  const filteredSessions = porSessao
+    ? emOrdem.slice(
+        Math.max(0, fromSession - 1),
+        Number.isFinite(toSession) && toSession >= fromSession ? toSession : undefined,
+      )
+    : dogSessions.filter((ds) => {
     const sDate = ds.session.date; // Ex: "26/05/2026" ou "2026-05-26"
     if (!sDate) return false;
     
@@ -84,12 +108,38 @@ export async function GET(request: Request) {
     return true; // Se falhar na análise estruturada, inclui por padrão
   });
 
+  // Série da evolução: uma entrada por sessão do recorte, com a média das
+  // estrelas e as notas comportamentais. É o que vira o gráfico — antes o
+  // relatório só mostrava o número inicial e o final.
+  const progressSeries = filteredSessions.map((ds, indice) => {
+    const itens = sessionExercisesOf(ds);
+    const media = itens.length ? itens.reduce((soma, i) => soma + i.rating, 0) / itens.length : 0;
+    let comportamento: Record<string, number> = {};
+    try {
+      const bruto = ds.behaviorScores ? JSON.parse(ds.behaviorScores) : null;
+      if (bruto && typeof bruto === "object") comportamento = bruto as Record<string, number>;
+    } catch {
+      comportamento = {};
+    }
+    const posicaoGeral = emOrdem.findIndex((item) => item.id === ds.id);
+    return {
+      sessao: porSessao ? fromSession + indice : posicaoGeral + 1,
+      data: ds.session.date,
+      titulo: ds.session.title,
+      media: Number(media.toFixed(2)),
+      exercicios: itens.length,
+      comportamento,
+    };
+  });
+
   // Se não houver sessões no mês, retorna um rascunho com dados iniciais vazios ou mock para adestrador editar
   if (filteredSessions.length === 0) {
     return NextResponse.json({
       dogName: dog.name,
       ownerName: dog.client.name,
       month: monthParam,
+      periodMode: porSessao ? "sessao" : "mes",
+      progressSeries: [],
       sessionsCompleted: 0,
       pointsEarned: 0,
       highlights: ["Sem sessões registradas neste período para calcular destaques."],
@@ -183,7 +233,11 @@ export async function GET(request: Request) {
   return NextResponse.json({
     dogName: dog.name,
     ownerName: dog.client.name,
-    month: monthParam,
+    month: porSessao
+      ? `Sessão ${fromSession}${Number.isFinite(toSession) && toSession > fromSession ? ` à ${toSession}` : ""}`
+      : monthParam,
+    periodMode: porSessao ? "sessao" : "mes",
+    progressSeries,
     sessionsCompleted: filteredSessions.length,
     pointsEarned: filteredSessions.length * 15 + completedActivities * 10, // gamification estimativa
     highlights: finalHighlights,

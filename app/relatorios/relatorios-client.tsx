@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
 import { useAppStore } from "@/lib/app-store";
+import { EvolutionChart, type ProgressPoint } from "@/components/evolution-chart";
 import { MonthlyComparison } from "@/components/monthly-comparison";
 import { MonthlyReport } from "@/components/monthly-report";
 import { EXERCISE_TONE_VARS, type ExerciseCategorySummary } from "@/lib/exercise-tree";
@@ -12,6 +13,10 @@ type GeneratedReport = {
   dogName: string;
   ownerName: string;
   month: string;
+  /** "mes" (padrão) ou "sessao" — recorte usado para gerar. */
+  periodMode?: "mes" | "sessao";
+  /** Uma entrada por sessão do recorte: vira o gráfico de evolução. */
+  progressSeries?: ProgressPoint[];
   sessionsCompleted: number;
   pointsEarned: number;
   highlights: string[];
@@ -42,6 +47,12 @@ export default function RelatoriosClientPage() {
   type SavedReport = { id: string; dogId: string; month: string; status: string; sentAt: string | null; updatedAt: string; content: GeneratedReport };
   const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
   const [savingReport, setSavingReport] = useState(false);
+
+  // Recorte do relatório: por mês (como era) ou por intervalo de sessões, que
+  // é como o adestrador conversa com o cliente ("da sessão 1 à 4").
+  const [modoRecorte, setModoRecorte] = useState<"mes" | "sessao">("sessao");
+  const [sessaoInicial, setSessaoInicial] = useState(1);
+  const [sessaoFinal, setSessaoFinal] = useState(4);
 
   // Options for months: current month and last 5 months
   const [monthOptions, setMonthOptions] = useState<string[]>([]);
@@ -87,8 +98,16 @@ export default function RelatoriosClientPage() {
   }, [selectedClientId, clientDogs]);
 
   async function handleGenerateReport() {
-    if (!selectedDogId || !selectedMonth) {
-      setError("Selecione um cão e o período.");
+    if (!selectedDogId) {
+      setError("Selecione um cão.");
+      return;
+    }
+    if (modoRecorte === "mes" && !selectedMonth) {
+      setError("Selecione o período.");
+      return;
+    }
+    if (modoRecorte === "sessao" && (sessaoInicial < 1 || sessaoFinal < sessaoInicial)) {
+      setError("A sessão final precisa ser igual ou maior que a inicial.");
       return;
     }
 
@@ -99,7 +118,10 @@ export default function RelatoriosClientPage() {
     setEditableReport(null);
 
     try {
-      const url = `/api/relatorios/generate?dogId=${selectedDogId}&month=${encodeURIComponent(selectedMonth)}`;
+      const url =
+        modoRecorte === "sessao"
+          ? `/api/relatorios/generate?dogId=${selectedDogId}&fromSession=${sessaoInicial}&toSession=${sessaoFinal}`
+          : `/api/relatorios/generate?dogId=${selectedDogId}&month=${encodeURIComponent(selectedMonth)}`;
       const res = await fetch(url);
       if (!res.ok) {
         throw new Error("Erro ao consultar a API de relatórios.");
@@ -280,7 +302,55 @@ export default function RelatoriosClientPage() {
                 </select>
               </label>
 
-              <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+              <div className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                Recorte
+                <div className="flex overflow-hidden rounded-md border border-[var(--border)]">
+                  {([
+                    ["sessao", "Por sessão"],
+                    ["mes", "Por período"],
+                  ] as const).map(([valor, rotulo]) => (
+                    <button
+                      key={valor}
+                      type="button"
+                      onClick={() => setModoRecorte(valor)}
+                      className={`flex-1 px-2 py-2 text-[11.5px] font-semibold normal-case transition-colors ${
+                        modoRecorte === valor
+                          ? "bg-[var(--accent)] text-white"
+                          : "bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--foreground)]"
+                      }`}
+                    >
+                      {rotulo}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {modoRecorte === "sessao" ? (
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                  Da sessão
+                  <input
+                    type="number"
+                    min={1}
+                    value={sessaoInicial}
+                    onChange={(e) => setSessaoInicial(Math.max(1, Number(e.target.value) || 1))}
+                    className="rounded-md border border-[var(--border)] bg-white px-2.5 py-2 text-xs text-[var(--foreground)] outline-none"
+                  />
+                </label>
+                <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                  Até a sessão
+                  <input
+                    type="number"
+                    min={1}
+                    value={sessaoFinal}
+                    onChange={(e) => setSessaoFinal(Math.max(1, Number(e.target.value) || 1))}
+                    className="rounded-md border border-[var(--border)] bg-white px-2.5 py-2 text-xs text-[var(--foreground)] outline-none"
+                  />
+                </label>
+              </div>
+            ) : (
+              <label className="mt-2 grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
                 Período
                 <select
                   value={selectedMonth}
@@ -292,7 +362,7 @@ export default function RelatoriosClientPage() {
                   ))}
                 </select>
               </label>
-            </div>
+            )}
 
             <button
               onClick={handleGenerateReport}
@@ -310,6 +380,13 @@ export default function RelatoriosClientPage() {
 
           {editableReport && (
             <div className="mt-6 space-y-6">
+
+              {/* Curva da evolução: o que o cliente precisa ver para entender
+                  que o trabalho andou — não só o número inicial e o final. */}
+              <EvolutionChart
+                pontos={editableReport.progressSeries ?? []}
+                dogName={editableReport.dogName}
+              />
 
               {/* Exercícios do mês, agrupados por categoria — base do resumo ao cliente */}
               {editableReport.categoryBreakdown && editableReport.categoryBreakdown.length > 0 && (
