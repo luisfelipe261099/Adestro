@@ -51,6 +51,16 @@ const TRAINER_SECONDARY: NavItem[] = [
   { href: "/tutorial", label: "Tutorial", icon: IconChat, description: "Manuais e guia rápido" },
 ];
 
+// Lista que abre na engrenagem. Leva a cada quadro da página de configurações
+// pela âncora, em vez de sempre cair no topo dela.
+const SETTINGS_MENU = [
+  { href: "/configuracoes#cadastro", label: "Meu cadastro", description: "Nome, e-mail, WhatsApp, foto e assinatura" },
+  { href: "/configuracoes#negocio", label: "Dados do negócio", description: "Nome, documento, endereço e logo" },
+  { href: "/configuracoes", label: "Alertas e operação", description: "Lembretes, resumo diário e modelos" },
+  { href: "/admin/templates", label: "Modelos", description: "Atividades, comandos e mensagens" },
+  { href: "/admin/audit", label: "Histórico de atividade", description: "O que foi criado, editado e excluído" },
+];
+
 const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Visão geral", icon: IconHome, description: "Resumo da operação" },
   { href: "/admin/adestradores", label: "Adestradores", icon: IconUsers, description: "Contas, senha e permissões" },
@@ -218,13 +228,30 @@ export function SiteHeader() {
             {isAuthenticated && userRole === "trainer" ? (
               <>
                 <NotificationsBell />
-                <Link
-                  href="/configuracoes"
-                  className="hidden h-9 w-9 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--foreground)] lg:flex"
-                  aria-label="Configurações"
-                >
-                  <IconSettings className="h-4 w-4" />
-                </Link>
+                {/* Engrenagem abre a lista das configurações em vez de mandar
+                    direto para a página — assim dá para ir ao ponto certo. */}
+                <div className="relative hidden lg:block">
+                  <details className="group">
+                    <summary
+                      className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--foreground)] marker:hidden"
+                      aria-label="Configurações"
+                    >
+                      <IconSettings className="h-4 w-4" />
+                    </summary>
+                    <div className="absolute right-0 top-11 z-50 w-64 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-lg">
+                      {SETTINGS_MENU.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="block px-3 py-2.5 text-[13px] text-[var(--foreground)] hover:bg-[var(--surface-2)]"
+                        >
+                          <span className="font-medium">{item.label}</span>
+                          <span className="block text-[12px] text-[var(--muted)]">{item.description}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </details>
+                </div>
                 <div className="relative ml-1 hidden lg:block">
                   <details className="group">
                     <summary className="flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 hover:bg-[var(--surface-2)] marker:hidden">
@@ -236,6 +263,15 @@ export function SiteHeader() {
                     </summary>
                     <div className="absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-lg">
                       <div className="border-b border-[var(--border)] px-3 py-2 text-[12px] text-[var(--muted)]">{trainerEmail}</div>
+                      {/* Editar o próprio cadastro sai do menu do nome, que é
+                          onde o adestrador procura os dados dele. */}
+                      <Link
+                        href="/configuracoes#cadastro"
+                        className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--surface-2)]"
+                      >
+                        <IconSettings className="h-4 w-4 text-[var(--muted)]" />
+                        Editar meu cadastro
+                      </Link>
                       <button
                         type="button"
                         onClick={handleLogout}

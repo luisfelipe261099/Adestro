@@ -195,12 +195,30 @@ export const TRAINER_STEPS: TourStep[] = [
     placement: "bottom",
   },
   {
+    id: "notificacoes-lidas",
+    route: "/dashboard",
+    selector: '[data-tour="bell"]',
+    title: "Sininho: leu, sumiu",
+    description:
+      "Os avisos vêm das suas pendências reais. Ao tocar em um aviso ele some daqui e te leva para a tela onde se resolve — e 'Marcar todas como lidas' limpa a lista de uma vez. A pendência em si continua em Pendências até você resolver.",
+    placement: "bottom",
+  },
+  {
     id: "relatorios",
     route: "/relatorios",
     title: "Relatórios mensais",
     description:
       "O rascunho aparece sozinho no início do mês. Você revisa a análise da IA, escolhe as fotos, aprova e envia em PDF. Tem comparativo mês vs mês pra mostrar a evolução.",
     fullScreen: true,
+  },
+  {
+    id: "meu-cadastro",
+    route: "/configuracoes",
+    selector: "#cadastro",
+    title: "Comece pelo seu cadastro",
+    description:
+      "E-mail e WhatsApp são obrigatórios: é por eles que falamos com você e que o cliente te encontra nas mensagens. A assinatura que você desenha aqui sai impressa no recibo e no contrato — e a foto aparece para o tutor no portal. Enquanto faltar algo, a home avisa.",
+    placement: "bottom",
   },
   {
     id: "configuracoes",

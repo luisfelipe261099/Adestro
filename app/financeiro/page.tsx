@@ -145,6 +145,37 @@ export default function FinanceiroPage() {
     }
   }
 
+  // Cadastro do adestrador — assina o recibo e identifica quem emitiu.
+  const [profile, setProfile] = useState({
+    name: "",
+    email: "",
+    whatsapp: "",
+    signatureUrl: "",
+    businessName: "",
+    businessDocument: "",
+  });
+
+  useEffect(() => {
+    let cancelado = false;
+    fetch("/api/trainer/settings", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d || cancelado) return;
+        setProfile({
+          name: d.name ?? "",
+          email: d.email ?? "",
+          whatsapp: d.whatsapp ?? "",
+          signatureUrl: d.signatureUrl ?? "",
+          businessName: d.businessName ?? "",
+          businessDocument: d.businessDocument ?? "",
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
   // Estado do Recibo
   const [receiptClient, setReceiptClient] = useState("");
   const [receiptDog, setReceiptDog] = useState("");
@@ -611,7 +642,16 @@ export default function FinanceiroPage() {
 
                   {/* Transações Recentes */}
                   <section className="space-y-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Cobranças Recentes</h3>
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Pagamentos a receber</h3>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("cobrancas")}
+                        className="text-[12px] font-semibold text-[var(--accent-text)] hover:underline"
+                      >
+                        Ver todas as cobranças →
+                      </button>
+                    </div>
                     {invoices.length === 0 ? (
                       <div className="rounded-md border border-dashed border-[var(--border)] bg-white p-5 text-center">
                         <p className="text-xs text-[var(--muted)]">
@@ -631,7 +671,15 @@ export default function FinanceiroPage() {
                         <div key={inv.id} className="flex justify-between items-center rounded-md border border-slate-100 bg-white p-3 text-xs">
                           <div>
                             <p className="font-semibold text-slate-900">{inv.clientName} ({inv.dogName})</p>
-                            <p className="text-[12px] text-[var(--muted)]">{inv.packageName} • Vence em {inv.dueDate}</p>
+                            {/* Vencimento em corpo maior e, quando atrasado, em
+                                vermelho com o aviso — era o que o adestrador
+                                não conseguia enxergar na lista. */}
+                            <p className="text-[12px] text-[var(--muted)]">{inv.packageName}</p>
+                            <p className={`mt-0.5 text-[13.5px] font-semibold ${
+                              inv.status === "Atrasado" ? "text-rose-600" : "text-[var(--foreground)]"
+                            }`}>
+                              {inv.status === "Atrasado" ? "⚠ Venceu em " : "Vence em "}{inv.dueDate}
+                            </p>
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-slate-900">R$ {inv.amount.toFixed(2)}</p>
@@ -1108,10 +1156,34 @@ export default function FinanceiroPage() {
                           </div>
                         ) : null}
 
+                        {/* Assinatura e identificação vêm do cadastro do
+                            adestrador (Configurações › Meu cadastro). Sem
+                            assinatura cadastrada, sobra a linha para assinar à
+                            mão — o recibo nunca sai sem quem o emitiu. */}
                         <div className="mt-8 border-t border-slate-100 pt-5 flex flex-col items-center justify-center text-[12px] text-[var(--muted)]">
-                          <div className="h-0.5 w-36 bg-slate-200 mb-1" />
+                          {profile.signatureUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={profile.signatureUrl}
+                              alt="Assinatura do adestrador"
+                              className="mb-1 h-14 object-contain"
+                            />
+                          ) : (
+                            <div className="h-0.5 w-36 bg-slate-200 mb-1" />
+                          )}
                           <p>Assinatura do Adestrador Canino</p>
-                          <p className="mt-0.5 font-bold text-slate-900">Adestro CRM</p>
+                          <p className="mt-0.5 font-bold text-slate-900">{profile.name || trainerName || "Adestrador"}</p>
+                          {profile.businessName ? (
+                            <p className="text-[12px] text-[var(--muted)]">{profile.businessName}</p>
+                          ) : null}
+                          {profile.businessDocument ? (
+                            <p className="text-[12px] text-[var(--muted)]">{profile.businessDocument}</p>
+                          ) : null}
+                          {profile.whatsapp || profile.email ? (
+                            <p className="mt-0.5 text-[12px] text-[var(--muted)]">
+                              {[profile.whatsapp, profile.email].filter(Boolean).join(" · ")}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
 

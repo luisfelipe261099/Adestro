@@ -15,6 +15,8 @@ import { dogCountLabel, planLabel as formatPlan, plural } from "@/lib/labels";
 import { DOG_TRAINING_STATUSES, type DogTrainingStatus, useAppStore } from "@/lib/app-store";
 import { googleMapsLink } from "@/lib/calendar-ics";
 import { maskCEP, maskCPF, maskDate, maskPhone } from "@/lib/masks";
+import { OptionPicker } from "@/components/option-picker";
+import { BEHAVIOR_OPTIONS, TRAINING_FOCUS_OPTIONS } from "@/lib/dog-options";
 import DOG_BREEDS from "@/lib/dog-breeds.json";
 
 type ClientStatus = "ativos" | "inativos" | "rascunho";
@@ -277,6 +279,46 @@ export default function ClientsPage() {
   const [planLabel, setPlanLabel] = useState("Plano Pro - 8 aulas");
   const [trainingTypesRaw, setTrainingTypesRaw] = useState("");
 
+  // Listas do cadastro do cão: as fixas vêm do código, as extras são do
+  // adestrador e voltam da API. O que ele cria no "+ Outros" fica salvo.
+  const [behaviorOptions, setBehaviorOptions] = useState<string[]>([]);
+  const [focusOptions, setFocusOptions] = useState<string[]>([]);
+  const [dogBehavior, setDogBehavior] = useState<string[]>([]);
+  const [trainingFocus, setTrainingFocus] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelado = false;
+    fetch("/api/trainer/settings", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d || cancelado) return;
+        setBehaviorOptions(Array.isArray(d.dogBehaviorOptions) ? d.dogBehaviorOptions : []);
+        setFocusOptions(Array.isArray(d.trainingFocusOptions) ? d.trainingFocusOptions : []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
+  // Salva a lista nova do adestrador sem travar o cadastro em andamento.
+  async function salvarOpcoes(
+    campo: "dogBehaviorOptions" | "trainingFocusOptions",
+    lista: string[],
+    aplicar: (l: string[]) => void,
+  ) {
+    aplicar(lista);
+    try {
+      await fetch("/api/trainer/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [campo]: lista }),
+      });
+    } catch {
+      // a opção continua valendo neste cadastro mesmo se o salvamento falhar
+    }
+  }
+
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   // Pós-cadastro: oferta de venda do pacote na sequência (continuidade natural).
@@ -285,6 +327,12 @@ export default function ClientsPage() {
 
   // Busca Automática de CEP — sempre dá feedback (sucesso, CEP inexistente ou
   // falha de rede); busca silenciosa parecia "botão que não funciona".
+  // A consulta vai pela rota do próprio app (/api/cep). Chamar o viacep.com.br
+  // direto do navegador não funcionava: a política de segurança do app
+  // (connect-src 'self') bloqueia domínio de terceiro, e o campo ficava sem
+  // preencher. O formulário de convite já usava a rota interna — este não.
+  //
+  // Aceita o CEP como a pessoa digitar: com traço, com ponto ou só os números.
   const handleLookupCEP = async (cepValue?: string) => {
     const cleanCEP = (cepValue ?? addrZipCode).replace(/\D/g, "");
     if (cleanCEP.length !== 8) {
@@ -295,16 +343,18 @@ export default function ClientsPage() {
     setIsCEPLoading(true);
     setCepMessage("");
     try {
-      const res = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+      const res = await fetch(`/api/cep/${cleanCEP}`);
       const data = await res.json();
-      if (!data.erro) {
-        setAddrStreet(data.logradouro || "");
-        setAddrNeighborhood(data.bairro || "");
-        setAddrCity(data.localidade || "");
-        setAddrState(data.uf || "");
+      if (res.ok) {
+        setAddrStreet(data.street || "");
+        setAddrNeighborhood(data.neighborhood || "");
+        setAddrCity(data.city || "");
+        setAddrState(data.state || "");
         setCepMessage("✓ Endereço preenchido pelo CEP.");
-      } else {
+      } else if (res.status === 404) {
         setCepMessage("CEP não encontrado — confira os números ou preencha manualmente.");
+      } else {
+        setCepMessage("Não foi possível consultar o CEP agora — preencha manualmente.");
       }
     } catch {
       setCepMessage("Não foi possível consultar o CEP agora — preencha manualmente.");
@@ -557,7 +607,13 @@ export default function ClientsPage() {
       veterinarian,
       temperament: { energy: tempEnergy, social: tempSocial, dogs: tempDogs, behavior: tempBehavior, positive: tempPositive },
       routine: { alimentation: rotAlimentation, sleep: rotSleep, walks: rotWalks, plays: rotPlays },
-      trainingGoals: { obediencia: goalsObediencia, comportamento: goalsComportamento, passeio: goalsPasseio, avancado: goalsAvancado, reabilitacao: goalsReab },
+      trainingGoals: {
+        obediencia: goalsObediencia, comportamento: goalsComportamento, passeio: goalsPasseio,
+        avancado: goalsAvancado, reabilitacao: goalsReab,
+        // Formato novo: o que foi marcado nas listas do adestrador.
+        focos: trainingFocus,
+        comportamentoGeral: dogBehavior[0] ?? "",
+      },
       environmentalAnalysis: { convive: envConvive, aloneTime: envAloneTime, history: envHistory }
     };
 
@@ -1243,28 +1299,25 @@ export default function ClientsPage() {
                       className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
 
-                    {/* Focos / Objetivos checkboxes */}
-                    <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-                      <span className="text-[12px] font-bold uppercase tracking-wider text-[var(--muted)]">Focos do Adestramento</span>
-                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input type="checkbox" checked={goalsObediencia} onChange={e => setGoalsObediencia(e.target.checked)} />
-                          Obediência Básica
-                        </label>
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input type="checkbox" checked={goalsComportamento} onChange={e => setGoalsComportamento(e.target.checked)} />
-                          Problemas Comportamentais
-                        </label>
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input type="checkbox" checked={goalsPasseio} onChange={e => setGoalsPasseio(e.target.checked)} />
-                          Passeio Estruturado
-                        </label>
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input type="checkbox" checked={goalsAvancado} onChange={e => setGoalsAvancado(e.target.checked)} />
-                          Comandos Avançados
-                        </label>
-                      </div>
-                    </div>
+                    {/* Comportamento e focos — listas do adestrador, com "+ Outros" */}
+                    <OptionPicker
+                      label="Comportamento do cão"
+                      padrao={BEHAVIOR_OPTIONS}
+                      doAdestrador={behaviorOptions}
+                      selecionados={dogBehavior}
+                      onChange={setDogBehavior}
+                      onAddOption={(lista) => salvarOpcoes("dogBehaviorOptions", lista, setBehaviorOptions)}
+                      multiplo={false}
+                    />
+
+                    <OptionPicker
+                      label="Focos do Adestramento"
+                      padrao={TRAINING_FOCUS_OPTIONS}
+                      doAdestrador={focusOptions}
+                      selecionados={trainingFocus}
+                      onChange={setTrainingFocus}
+                      onAddOption={(lista) => salvarOpcoes("trainingFocusOptions", lista, setFocusOptions)}
+                    />
                   </div>
                 )}
 
@@ -1325,7 +1378,7 @@ export default function ClientsPage() {
               clients.length === 0 ? (
                 <article className="rounded-lg border border-dashed border-[var(--border-strong)] bg-white p-8 text-center lg:col-span-2">
                   <p className="text-3xl" aria-hidden>🐾</p>
-                  <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">Comece cadastrando seu primeiro tutor</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">Comece cadastrando seu primeiro cliente</p>
                   <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-[var(--muted)]">
                     A ficha do tutor e do cão é a base de tudo: agenda, registro de treino, portal e financeiro
                     ligam nela. Leva menos de 2 minutos.
@@ -1338,7 +1391,7 @@ export default function ClientsPage() {
                     }}
                     className="btn-primary mt-4 text-[13px]"
                   >
-                    + Cadastrar primeiro tutor
+                    + Cadastrar primeiro cliente
                   </button>
                 </article>
               ) : (
