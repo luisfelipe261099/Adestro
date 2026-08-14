@@ -85,6 +85,8 @@ const trainerFlow: FlowStep[] = [
     how: [
       "Na Seção 4 após registrar, toque em 'Gerar Relatório e Análise IA' — o resumo aparece pra revisão. A IA lê os exercícios marcados com as estrelas e puxa os de nota baixa para o plano da próxima aula.",
       "Marque 'Aprovar resumo da IA e dever de casa' só quando o texto refletir sua leitura técnica.",
+      "O relatório aceita dois recortes: por período (mês) ou POR SESSÃO — 'da sessão 1 à 4' —, que é como você conversa com o cliente. Nos dois casos sai o gráfico da curva de evolução, e não só o número inicial e o final.",
+      "O recibo agora é um PDF de verdade: 'Baixar PDF' salva o arquivo e 'Enviar PDF no WhatsApp' compartilha o arquivo (no celular ele aparece direto na lista do WhatsApp). Sua assinatura, logo e documento vêm do seu cadastro.",
       "Nas Seções 6 e 7, defina o plano da próxima sessão e as tarefas pro cliente fazer em casa.",
       "Notas privadas (Seção 3) NUNCA são compartilhadas — só você vê.",
     ],
