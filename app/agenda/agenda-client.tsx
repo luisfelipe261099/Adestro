@@ -784,7 +784,7 @@ export default function AgendaClientPage() {
                   <label className="grid gap-1">
                     <span className="text-[12px] font-medium text-[var(--muted)]">Horário</span>
                     <input
-                      type="time"
+                      type="time" step={900}
                       value={time}
                       onChange={(event) => setTime(event.target.value)}
                       className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"
@@ -1099,13 +1099,13 @@ export default function AgendaClientPage() {
                 {eventsForSelectedDay.length === 0 ? (
                   <article className="rounded-md border border-dashed border-[var(--border)] bg-white p-6 text-center">
                     <p className="text-2xl" aria-hidden>🐕</p>
-                    <p className="mt-1 text-xs text-[var(--muted)]">Nenhuma aula agendada para este dia.</p>
+                    <p className="mt-1 text-xs text-[var(--muted)]">Nenhum atendimento agendado para este dia.</p>
                     <button
                       type="button"
                       onClick={() => setShowForm(true)}
                       className="btn-primary mt-3 text-[12.5px]"
                     >
-                      + Agendar aula neste dia
+                      + Agendar atendimento neste dia
                     </button>
                     {/* Mostra a próxima aula futura para o dia vazio não ser um beco */}
                     {(() => {
@@ -1175,7 +1175,7 @@ export default function AgendaClientPage() {
                         </span>
                       </div>
                       <span className={`text-[12px] font-bold ${dayEvents.length > 0 ? "text-[var(--card-blue)]" : "text-slate-400"}`}>
-                        {dayEvents.length} {dayEvents.length === 1 ? "aula" : "aulas"}
+                        {dayEvents.length} {dayEvents.length === 1 ? "atendimento" : "atendimentos"}
                       </span>
                     </header>
 
@@ -1327,7 +1327,7 @@ export default function AgendaClientPage() {
                 <div className="grid gap-1">
                   <label className="text-[12px] font-medium text-[var(--muted)]">Novo horário</label>
                   <input
-                    type="time"
+                    type="time" step={900}
                     value={reschedTime}
                     onChange={(e) => setReschedTime(e.target.value)}
                     className="rounded-md border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-sky-400"

@@ -46,6 +46,8 @@ const trainerFlow: FlowStep[] = [
       "O cadastro chega como rascunho e aparece em /pendencias. Confira e toque em 'Revisar e Aprovar' — só então ele entra na sua carteira e conta no limite do plano.",
       "As respostas de comportamento (crianças, barulhos, mordidas, proteção de recursos, manipulação) ficam na ficha do cliente, com as de risco no topo. Leia antes da primeira aula.",
       "Prefere digitar? Em /clientes toque em '+' e preencha cliente, endereços (com link pro Google Maps) e ficha completa do cão.",
+      "A idade do cão é calculada da data de nascimento e aparece completa (anos, meses e dias) em todas as fichas — filhote ganha selo próprio, porque semanas mudam o protocolo.",
+      "Comportamento e Focos do adestramento são listas suspensas: o que você escreve em '+ Outros' fica salvo na sua lista e aparece nos próximos cadastros (dá para remover o que você criou).",
       "Vacinas têm alerta de vencimento automático. Temperamento, rotinas e objetivos viram contexto pra IA.",
       "Para quem já é cliente, o link de onboarding do portal continua valendo pra ele completar a ficha (modo rascunho até você aprovar).",
       "Tags (VIP, Inadimplente, Filhote, Sênior, etc) ajudam a filtrar — pode editar inline no card.",

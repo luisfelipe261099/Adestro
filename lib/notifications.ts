@@ -4,9 +4,66 @@
 // já presentes no app-store (eventos pendentes, faturas atrasadas, treinos sem registro etc.)
 // Não usa serviço pago: tudo roda no client a partir do estado já hidratado.
 
-import { useMemo } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 import { useAppStore } from "@/lib/app-store";
+
+// Notificações são derivadas das pendências, e por isso não sumiam ao clicar:
+// enquanto o agendamento continuasse aguardando confirmação, o aviso voltava.
+// Esta camada guarda o que já foi lido (por id, no próprio aparelho) e some com
+// o aviso. O trabalho em si continua em /pendencias — o que apaga aqui é o
+// aviso, não a tarefa. Se o dado mudar, o id muda e o aviso volta.
+const LIDAS_KEY = "adestro-notificacoes-lidas";
+
+function lerLidas(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const bruto = window.localStorage.getItem(LIDAS_KEY);
+    const lista = bruto ? (JSON.parse(bruto) as unknown) : [];
+    return new Set(Array.isArray(lista) ? lista.filter((x): x is string => typeof x === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function gravarLidas(ids: Set<string>) {
+  if (typeof window === "undefined") return;
+  try {
+    // Guarda no máximo 200 ids: passa longe do uso real e não cresce sem fim.
+    window.localStorage.setItem(LIDAS_KEY, JSON.stringify([...ids].slice(-200)));
+  } catch {
+    // navegador sem armazenamento: o aviso volta na próxima visita, sem quebrar
+  }
+}
+
+// Estado das lidas vive fora do React: o servidor não tem localStorage, então
+// ele renderiza com a lista vazia e o navegador assume no primeiro acesso —
+// sem efeito que dispara re-render nem divergência entre os dois.
+const VAZIO: Set<string> = new Set();
+let cache: Set<string> | null = null;
+const ouvintes = new Set<() => void>();
+
+function snapshot(): Set<string> {
+  if (!cache) cache = lerLidas();
+  return cache;
+}
+
+function snapshotServidor(): Set<string> {
+  return VAZIO;
+}
+
+function assinar(callback: () => void): () => void {
+  ouvintes.add(callback);
+  return () => ouvintes.delete(callback);
+}
+
+function marcarLidas(ids: string[]) {
+  const proximo = new Set(snapshot());
+  for (const id of ids) proximo.add(id);
+  cache = proximo;
+  gravarLidas(proximo);
+  for (const ouvinte of ouvintes) ouvinte();
+}
 
 export type NotificationType =
   | "agenda"
@@ -30,6 +87,10 @@ export type NotificationSummary = {
   total: number;
   byType: Record<NotificationType, number>;
   items: NotificationItem[];
+  /** Marca um aviso como lido — ele some do sino. */
+  dismiss: (id: string) => void;
+  /** Marca todos os avisos visíveis como lidos. */
+  dismissAll: () => void;
 };
 
 export function useNotifications(): NotificationSummary {
@@ -37,7 +98,11 @@ export function useNotifications(): NotificationSummary {
   const sessions = useAppStore((state) => state.trainingSessions);
   const feedbacks = useAppStore((state) => state.portalFeedbacks);
 
-  return useMemo(() => {
+  const lidas = useSyncExternalStore(assinar, snapshot, snapshotServidor);
+
+  const dismiss = useCallback((id: string) => marcarLidas([id]), []);
+
+  const todos = useMemo(() => {
     const items: NotificationItem[] = [];
 
     // 1) Agendamentos pendentes de confirmação
@@ -103,15 +168,21 @@ export function useNotifications(): NotificationSummary {
       });
     }
 
-    const byType: Record<NotificationType, number> = {
-      agenda: 0,
-      treinos: 0,
-      financeiro: 0,
-      relatorios: 0,
-      portal: 0,
-    };
-    for (const item of items) byType[item.type] += 1;
-
-    return { total: items.length, byType, items };
+    return items;
   }, [events, sessions, feedbacks]);
+
+  const items = useMemo(() => todos.filter((item) => !lidas.has(item.id)), [todos, lidas]);
+
+  const dismissAll = useCallback(() => marcarLidas(items.map((item) => item.id)), [items]);
+
+  const byType: Record<NotificationType, number> = {
+    agenda: 0,
+    treinos: 0,
+    financeiro: 0,
+    relatorios: 0,
+    portal: 0,
+  };
+  for (const item of items) byType[item.type] += 1;
+
+  return { total: items.length, byType, items, dismiss, dismissAll };
 }

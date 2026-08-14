@@ -11,6 +11,8 @@ type SettingsPayload = {
   defaultActivities?: string[];
   defaultCommands?: string[];
   defaultTutorTasks?: string[];
+  dogBehaviorOptions?: string[];
+  trainingFocusOptions?: string[];
   // Cadastro pessoal do adestrador
   name?: string;
   email?: string;
@@ -98,6 +100,9 @@ async function serialize(trainer: NonNullable<TrainerRow>, loginEmail?: string |
     defaultActivities: parseList(trainer.defaultActivities, FALLBACK_ACTIVITIES),
     defaultCommands: parseList(trainer.defaultCommands, FALLBACK_COMMANDS),
     defaultTutorTasks: parseList(trainer.defaultTutorTasks, FALLBACK_TASKS),
+    // Listas do cadastro do cão criadas pelo adestrador (o padrão vem do código).
+    dogBehaviorOptions: parseList(trainer.dogBehaviorOptions, []),
+    trainingFocusOptions: parseList(trainer.trainingFocusOptions, []),
     businessName: trainer.businessName ?? "",
     businessDocument: trainer.businessDocument ?? "",
     businessAddress: trainer.businessAddress ?? "",
@@ -157,6 +162,10 @@ export async function PATCH(request: Request) {
   if (commandsJson !== undefined) data.defaultCommands = commandsJson;
   const tasksJson = sanitizeList(body.defaultTutorTasks);
   if (tasksJson !== undefined) data.defaultTutorTasks = tasksJson;
+  const behaviorJson = sanitizeList(body.dogBehaviorOptions);
+  if (behaviorJson !== undefined) data.dogBehaviorOptions = behaviorJson;
+  const focusJson = sanitizeList(body.trainingFocusOptions);
+  if (focusJson !== undefined) data.trainingFocusOptions = focusJson;
 
   // Dados do negócio — texto curto trimado; logo é base64 limitado a ~1.5MB.
   const trimField = (v: unknown, max: number): string | undefined =>

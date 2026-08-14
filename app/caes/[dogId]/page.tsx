@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { formatDogAge, isPuppy } from "@/lib/dog-age";
 import {
   DOG_TRAINING_STATUSES,
   type DogTrainingStatus,
@@ -58,6 +59,11 @@ export default function DogProfilePage() {
     }
     return null;
   }, [clients, dogId]);
+
+  // Idade completa (anos, meses e dias), calculada da data de nascimento. O
+  // campo `age` digitado à mão fica de reserva para cadastros antigos.
+  const idadeCompleta = formatDogAge(found?.dog.birthDate, found?.dog.age);
+  const filhote = isPuppy(found?.dog.birthDate);
 
   // Histórico: sessões deste cão (campo direto ou dentro de dogSessions), mais recentes primeiro.
   const history = useMemo(
@@ -144,8 +150,13 @@ export default function DogProfilePage() {
                       <h1 className="text-display">{found.dog.name}</h1>
                       <p className="mt-1 text-subtitle">
                         {found.dog.breed || "Raça não informada"}
-                        {found.dog.age ? ` · ${found.dog.age}` : ""}
+                        {idadeCompleta ? ` · ${idadeCompleta}` : ""}
                         {found.dog.weight ? ` · ${found.dog.weight}` : ""}
+                        {filhote ? (
+                          <span className="ml-2 rounded-full border border-[var(--card-orange-border)] bg-[var(--card-orange-bg)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[var(--card-orange)]">
+                            Filhote
+                          </span>
+                        ) : null}
                       </p>
                       <p className="mt-1 text-[12.5px] text-[var(--muted)]">
                         Cliente:{" "}
@@ -268,7 +279,7 @@ export default function DogProfilePage() {
               <div className="mt-3 space-y-2.5">
                 {history.length === 0 ? (
                   <div className="rounded-md border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
-                    Nenhum treino registrado ainda para {found.dog.name}.
+                    {hydrated ? `Nenhum treino registrado ainda para ${found.dog.name}.` : "Carregando histórico…"}
                   </div>
                 ) : (
                   history.map((session) => {

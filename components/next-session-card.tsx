@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { IconArrowRight, IconClock, IconDog, IconPlus, IconWhatsApp } from "@/components/icons";
+import { formatDogAge } from "@/lib/dog-age";
 import { useAppStore } from "@/lib/app-store";
 import { absoluteDayLabel, parsePlanTotal, pickNextSession, relativeDayLabel } from "@/lib/home-agenda";
 import { useNow } from "@/lib/use-now";
@@ -72,6 +73,8 @@ export function NextSessionCard() {
       : `Sessão ${next.sessionNumber}`
     : null;
   const trainingType = dog?.trainingTypes?.[0] || next.plan || null;
+  // Idade sempre calculada da data de nascimento — em filhote a semana conta.
+  const idadeDoCao = formatDogAge(dog?.birthDate, dog?.age);
   const badge = statusBadge(next.status);
   const dayLabel = relativeDayLabel(next.day);
   const dayDate = absoluteDayLabel(next.day);
@@ -132,7 +135,7 @@ export function NextSessionCard() {
           <p className="mt-1.5 truncate text-[16px] font-semibold text-[var(--foreground)]">
             {next.dog}
             {dog?.breed ? <span className="font-normal text-[var(--muted)]"> · {dog.breed}</span> : null}
-            {dog?.age ? <span className="font-normal text-[var(--muted)]"> · {dog.age}</span> : null}
+            {idadeDoCao ? <span className="font-normal text-[var(--muted)]"> · {idadeDoCao}</span> : null}
           </p>
           <p className="mt-0.5 truncate text-[13.5px] text-[var(--muted)]">{next.client}</p>
           <p className="mt-0.5 truncate text-[13.5px] text-[var(--muted)]">

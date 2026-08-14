@@ -195,6 +195,15 @@ export const TRAINER_STEPS: TourStep[] = [
     placement: "bottom",
   },
   {
+    id: "notificacoes-lidas",
+    route: "/dashboard",
+    selector: '[data-tour="bell"]',
+    title: "Sininho: leu, sumiu",
+    description:
+      "Os avisos vêm das suas pendências reais. Ao tocar em um aviso ele some daqui e te leva para a tela onde se resolve — e 'Marcar todas como lidas' limpa a lista de uma vez. A pendência em si continua em Pendências até você resolver.",
+    placement: "bottom",
+  },
+  {
     id: "relatorios",
     route: "/relatorios",
     title: "Relatórios mensais",

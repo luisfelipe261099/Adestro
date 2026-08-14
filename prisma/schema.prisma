@@ -115,6 +115,10 @@ model Trainer {
   defaultActivities         String? @db.Text
   defaultCommands           String? @db.Text
   defaultTutorTasks         String? @db.Text
+  // Listas do cadastro do cão que o adestrador amplia pelo "Outros":
+  // comportamento e foco do adestramento. JSON de strings.
+  dogBehaviorOptions        String? @db.Text
+  trainingFocusOptions      String? @db.Text
 
   // Templates WhatsApp customizáveis (texto livre por tipo de mensagem)
   whatsappTemplates         String? @db.Text  // JSON: { agendamento: "...", lembrete: "...", ... }
