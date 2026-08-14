@@ -25,6 +25,18 @@ type FlowStep = {
 
 const trainerFlow: FlowStep[] = [
   {
+    title: "0) Completar seu cadastro",
+    why: "É por e-mail e WhatsApp que falamos com você e que o cliente te encontra. A assinatura e o logo identificam seus documentos.",
+    how: [
+      "Vá em Configurações → Meu cadastro (ou clique no seu nome no topo → 'Editar meu cadastro'). A engrenagem também abre a lista com cada quadro.",
+      "E-mail e WhatsApp são obrigatórios: sem eles não há como te avisar de nada, e as mensagens que o cliente recebe saem sem o seu contato.",
+      "Assinatura: desenhe com o dedo/mouse ou envie uma foto da sua assinatura em papel. Ela sai impressa no recibo e no contrato, junto do seu nome.",
+      "Foto aparece para o tutor no portal; logo e dados do negócio (nome, CPF/CNPJ) entram no cabeçalho dos documentos.",
+      "Enquanto faltar algo, a home mostra o aviso 'Complete seu cadastro' com a barra de progresso — some sozinho quando estiver tudo preenchido.",
+    ],
+    shortcut: "Atalho: menu do seu nome → Editar meu cadastro",
+  },
+  {
     title: "1) Cadastrar cliente e cão",
     why: "Base de todo o acompanhamento — todo registro futuro liga aqui.",
     how: [
@@ -136,7 +148,8 @@ const screenMap = [
   { href: "/evolucao", label: "Evolução", text: "Notas comportamentais por categoria de cada cão ao longo do tempo." },
   { href: "/planos-treino", label: "Planos de treino", text: "Pacotes e contratos de sessões ativos por cliente." },
   { href: "/planos", label: "Meu plano", text: "Sua assinatura do Adestro: plano, pagamento e limites." },
-  { href: "/configuracoes", label: "Configurações", text: "Alertas, notificações push, tema escuro, importação CSV e export LGPD." },
+  { href: "/configuracoes#cadastro", label: "Meu cadastro", text: "Nome, e-mail, WhatsApp, foto e assinatura — a assinatura sai no recibo e no contrato." },
+  { href: "/configuracoes", label: "Configurações", text: "Dados do negócio, alertas, notificações push, tema escuro, importação CSV e export LGPD." },
 ];
 
 const featureHighlights = [

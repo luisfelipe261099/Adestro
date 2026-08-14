@@ -203,6 +203,15 @@ export const TRAINER_STEPS: TourStep[] = [
     fullScreen: true,
   },
   {
+    id: "meu-cadastro",
+    route: "/configuracoes",
+    selector: "#cadastro",
+    title: "Comece pelo seu cadastro",
+    description:
+      "E-mail e WhatsApp são obrigatórios: é por eles que falamos com você e que o cliente te encontra nas mensagens. A assinatura que você desenha aqui sai impressa no recibo e no contrato — e a foto aparece para o tutor no portal. Enquanto faltar algo, a home avisa.",
+    placement: "bottom",
+  },
+  {
     id: "configuracoes",
     route: "/configuracoes",
     selector: '[data-tour="settings-alerts"]',

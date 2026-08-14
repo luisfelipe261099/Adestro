@@ -6,8 +6,11 @@ import { FormEvent, useEffect, useState } from "react";
 import { AuthGuard } from "@/components/auth-guard";
 import { PlanUsageCard } from "@/components/plan-usage-card";
 import { PushPermissionCard } from "@/components/push-permission-card";
+import { SignaturePad } from "@/components/signature-pad";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAppStore } from "@/lib/app-store";
+import { maskPhone } from "@/lib/masks";
+import { getProfileStatus } from "@/lib/trainer-profile";
 
 type AlertSettings = {
   reminderHoursBefore: number;
@@ -39,11 +42,27 @@ const DEFAULT_BUSINESS: BusinessSettings = {
   logoUrl: "",
 };
 
+type PersonalSettings = {
+  name: string;
+  email: string;
+  whatsapp: string;
+  photoUrl: string;
+  signatureUrl: string;
+};
+
+const DEFAULT_PERSONAL: PersonalSettings = {
+  name: "",
+  email: "",
+  whatsapp: "",
+  photoUrl: "",
+  signatureUrl: "",
+};
+
 export default function ConfiguracoesPage() {
   const trainerName = useAppStore((state) => state.trainerName);
-  const [displayName, setDisplayName] = useState(trainerName ?? "");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [personal, setPersonal] = useState<PersonalSettings>(DEFAULT_PERSONAL);
+  const [personalSaving, setPersonalSaving] = useState(false);
+  const [personalError, setPersonalError] = useState("");
   const [notifyEmail, setNotifyEmail] = useState(true);
   const [notifyWhats, setNotifyWhats] = useState(true);
   const [language, setLanguage] = useState("pt-BR");
@@ -68,6 +87,15 @@ export default function ConfiguracoesPage() {
         if (!response.ok) return;
         const data = await response.json();
         if (cancelled) return;
+        // O cadastro pessoal vem do servidor — antes ficava só no navegador e
+        // por isso o nome sumia a cada vez que a tela era aberta.
+        setPersonal({
+          name: data.name ?? trainerName ?? "",
+          email: data.email ?? "",
+          whatsapp: maskPhone(data.whatsapp ?? ""),
+          photoUrl: data.photoUrl ?? "",
+          signatureUrl: data.signatureUrl ?? "",
+        });
         setAlerts({
           reminderHoursBefore: data.reminderHoursBefore ?? 24,
           chargeReminderDaysBefore: data.chargeReminderDaysBefore ?? 3,
@@ -95,8 +123,50 @@ export default function ConfiguracoesPage() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSavedMessage("Preferências salvas neste dispositivo.");
-    window.setTimeout(() => setSavedMessage(""), 3000);
+    void handleSavePersonal();
+  }
+
+  async function handleSavePersonal() {
+    setPersonalSaving(true);
+    setPersonalError("");
+    try {
+      const response = await fetch("/api/trainer/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(personal),
+      });
+      if (!response.ok) throw new Error("Falha ao salvar o cadastro.");
+      const data = await response.json();
+      setPersonal({
+        name: data.name ?? "",
+        email: data.email ?? "",
+        whatsapp: maskPhone(data.whatsapp ?? ""),
+        photoUrl: data.photoUrl ?? "",
+        signatureUrl: data.signatureUrl ?? "",
+      });
+      // O cabeçalho lê o nome da store — atualiza junto para não ficar defasado.
+      useAppStore.setState({ trainerName: data.name ?? "" });
+      setSavedMessage("Cadastro salvo.");
+      window.setTimeout(() => setSavedMessage(""), 3000);
+    } catch (err) {
+      setPersonalError(err instanceof Error ? err.message : "Erro inesperado");
+    } finally {
+      setPersonalSaving(false);
+    }
+  }
+
+  // O que ainda falta preencher — mesma regra usada pelo aviso da home.
+  const profileStatus = getProfileStatus({ ...personal, ...business });
+
+  function handlePhotoUpload(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 1_500_000) {
+      setPersonalError("Foto muito grande. Use uma imagem de até 1,5 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setPersonal((p) => ({ ...p, photoUrl: String(reader.result) }));
+    reader.readAsDataURL(file);
   }
 
   async function handleImportCsv() {
@@ -193,37 +263,201 @@ export default function ConfiguracoesPage() {
             <p className="mt-1 text-xs text-[var(--muted)]">Ajuste preferências de conta, notificações e operação.</p>
           </header>
 
-          <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
-            <fieldset className="rounded-md border border-[var(--border)] bg-white p-3">
-              <legend className="px-2 text-[12px] font-semibold uppercase tracking-wide text-[var(--muted)]">Dados pessoais</legend>
-              <div className="mt-2 grid gap-2">
-                <label className="text-xs text-[var(--muted)]">
-                  Nome
+          {/* ── Meu cadastro ─────────────────────────────────────────────────
+              Primeiro quadro da página: é o que o adestrador precisa preencher
+              antes de tudo (e-mail e WhatsApp são o contato dele e do cliente).
+              Salva sozinho, sem depender do formulário de preferências. */}
+          <div className="mt-4 grid gap-3">
+            <fieldset id="cadastro" className="rounded-md border border-[var(--border)] bg-white p-3">
+              <legend className="px-2 text-[12px] font-semibold uppercase tracking-wide text-[var(--muted)]">Meu cadastro</legend>
+
+              <div className="mt-1 flex items-center justify-between gap-3">
+                <p className="text-[12px] text-[var(--muted)]">
+                  {profileStatus.complete
+                    ? "Cadastro completo."
+                    : `Faltam ${profileStatus.missing.length} de ${profileStatus.totalCount} itens.`}
+                </p>
+                <span className="text-[12px] font-semibold text-[var(--foreground)]">{profileStatus.percent}%</span>
+              </div>
+              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-2)]">
+                <div
+                  className="h-full rounded-full bg-[var(--accent)] transition-all"
+                  style={{ width: `${profileStatus.percent}%` }}
+                />
+              </div>
+
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <label className="text-xs text-[var(--muted)] sm:col-span-2">
+                  Nome completo
                   <input
-                    value={displayName}
-                    onChange={(event) => setDisplayName(event.target.value)}
+                    value={personal.name}
+                    onChange={(event) => setPersonal((p) => ({ ...p, name: event.target.value }))}
+                    placeholder="Como você assina nos documentos"
                     className="mt-1 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
                   />
                 </label>
                 <label className="text-xs text-[var(--muted)]">
-                  E-mail
+                  E-mail de contato <span className="font-semibold text-rose-600">obrigatório</span>
                   <input
                     type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                    value={personal.email}
+                    onChange={(event) => setPersonal((p) => ({ ...p, email: event.target.value }))}
+                    placeholder="voce@email.com"
                     className="mt-1 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
                   />
                 </label>
                 <label className="text-xs text-[var(--muted)]">
-                  Telefone
+                  WhatsApp <span className="font-semibold text-rose-600">obrigatório</span>
                   <input
-                    value={phone}
-                    onChange={(event) => setPhone(event.target.value)}
+                    inputMode="tel"
+                    value={personal.whatsapp}
+                    onChange={(event) => setPersonal((p) => ({ ...p, whatsapp: maskPhone(event.target.value) }))}
+                    placeholder="(11) 90000-0000"
                     className="mt-1 w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-sky-400"
                   />
                 </label>
               </div>
+
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs font-semibold text-[var(--foreground)]">Foto</p>
+                  <p className="text-[12px] text-[var(--muted)]">Aparece para o cliente no portal.</p>
+                  <div className="mt-2 flex items-center gap-3">
+                    {personal.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={personal.photoUrl}
+                        alt="Sua foto"
+                        className="h-14 w-14 rounded-full border border-[var(--border)] object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-14 w-14 items-center justify-center rounded-full border border-dashed border-[var(--border-strong)] text-[11px] text-[var(--muted)]">
+                        sem foto
+                      </span>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handlePhotoUpload(file);
+                      }}
+                      className="block w-full text-xs file:mr-2 file:rounded-lg file:border file:border-[var(--border)] file:bg-[var(--surface-2)] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-[var(--foreground)]">Assinatura</p>
+                  <p className="text-[12px] text-[var(--muted)]">Sai no recibo e no contrato do cliente.</p>
+                  <div className="mt-2">
+                    <SignaturePad
+                      value={personal.signatureUrl}
+                      onChange={(dataUrl) => setPersonal((p) => ({ ...p, signatureUrl: dataUrl }))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {personalError ? (
+                <p className="mt-2 rounded-md bg-rose-50 px-2 py-1 text-[12px] text-rose-700">{personalError}</p>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={handleSavePersonal}
+                disabled={personalSaving}
+                className="pc-primary-action mt-3 rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-50"
+              >
+                {personalSaving ? "Salvando…" : "Salvar cadastro"}
+              </button>
             </fieldset>
+
+            {/* ── Dados do negócio — logo abaixo do cadastro pessoal ────────── */}
+          <section id="negocio" className="mt-5 rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
+            <header className="border-b border-[var(--border)] pb-2">
+              <p className="text-[12px] font-bold uppercase tracking-wider text-[var(--card-sky)]">Negócio</p>
+              <h2 className="text-base font-semibold text-[var(--foreground)]">Dados do negócio</h2>
+              <p className="mt-0.5 text-[12px] text-sky-800">
+                Aparecem nos recibos e relatórios enviados aos clientes.
+              </p>
+            </header>
+            <div className="mt-3 grid gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-md border border-sky-200 bg-white">
+                  {business.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={business.logoUrl} alt="Logo" className="h-full w-full object-contain" />
+                  ) : (
+                    <span className="text-[12px] text-[var(--muted)]">Sem logo</span>
+                  )}
+                </div>
+                <div className="grid gap-1">
+                  <label className="cursor-pointer rounded-full border border-sky-300 bg-white px-3 py-1.5 text-[12px] font-semibold text-sky-800">
+                    Enviar logo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleLogoUpload(e.target.files[0])}
+                    />
+                  </label>
+                  {business.logoUrl && (
+                    <button type="button" onClick={() => setBusiness((b) => ({ ...b, logoUrl: "" }))} className="text-[12px] text-rose-600">
+                      Remover logo
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                  Nome do negócio
+                  <input
+                    value={business.businessName}
+                    onChange={(e) => setBusiness({ ...business, businessName: e.target.value })}
+                    placeholder="Ex: Adestra Pet"
+                    className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                  />
+                </label>
+                <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                  CNPJ / CPF
+                  <input
+                    value={business.businessDocument}
+                    onChange={(e) => setBusiness({ ...business, businessDocument: e.target.value })}
+                    className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                  />
+                </label>
+              </div>
+              <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                Endereço
+                <input
+                  value={business.businessAddress}
+                  onChange={(e) => setBusiness({ ...business, businessAddress: e.target.value })}
+                  className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                />
+              </label>
+              <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                Horário de funcionamento
+                <input
+                  value={business.businessHours}
+                  onChange={(e) => setBusiness({ ...business, businessHours: e.target.value })}
+                  placeholder="Ex: Seg-Sex 8h-18h"
+                  className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={handleSaveBusiness}
+                disabled={businessSaving}
+                className="justify-self-start rounded-full bg-sky-600 px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-60"
+              >
+                {businessSaving ? "Salvando..." : "Salvar dados do negócio"}
+              </button>
+            </div>
+          </section>
+
+            <form onSubmit={handleSubmit} className="grid gap-3">
 
             <fieldset className="rounded-md border border-[var(--border)] bg-white p-3">
               <legend className="px-2 text-[12px] font-semibold uppercase tracking-wide text-[var(--muted)]">Notificações</legend>
@@ -282,7 +516,8 @@ export default function ConfiguracoesPage() {
                 Voltar
               </Link>
             </div>
-          </form>
+            </form>
+          </div>
 
           {/* ── Uso do plano ─────────────────────────────────────────────────── */}
           <div className="mt-5">
@@ -372,89 +607,6 @@ export default function ConfiguracoesPage() {
             </div>
           </section>
 
-          {/* ── Dados do Negócio (módulo 10.1) ──────────────────────────────── */}
-          <section className="mt-5 rounded-md border border-sky-100 bg-sky-50/40 p-4">
-            <header className="border-b border-sky-100 pb-2">
-              <p className="text-[12px] font-bold uppercase tracking-wider text-sky-700">Negócio</p>
-              <h2 className="text-base font-semibold text-sky-950">Dados do negócio</h2>
-              <p className="mt-0.5 text-[12px] text-sky-800">
-                Aparecem nos recibos e relatórios enviados aos clientes.
-              </p>
-            </header>
-            <div className="mt-3 grid gap-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-md border border-sky-200 bg-white">
-                  {business.logoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={business.logoUrl} alt="Logo" className="h-full w-full object-contain" />
-                  ) : (
-                    <span className="text-[12px] text-[var(--muted)]">Sem logo</span>
-                  )}
-                </div>
-                <div className="grid gap-1">
-                  <label className="cursor-pointer rounded-full border border-sky-300 bg-white px-3 py-1.5 text-[12px] font-semibold text-sky-800">
-                    Enviar logo
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => e.target.files?.[0] && handleLogoUpload(e.target.files[0])}
-                    />
-                  </label>
-                  {business.logoUrl && (
-                    <button type="button" onClick={() => setBusiness((b) => ({ ...b, logoUrl: "" }))} className="text-[12px] text-rose-600">
-                      Remover logo
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid gap-2 sm:grid-cols-2">
-                <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
-                  Nome do negócio
-                  <input
-                    value={business.businessName}
-                    onChange={(e) => setBusiness({ ...business, businessName: e.target.value })}
-                    placeholder="Ex: Adestra Pet"
-                    className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
-                  />
-                </label>
-                <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
-                  CNPJ / CPF
-                  <input
-                    value={business.businessDocument}
-                    onChange={(e) => setBusiness({ ...business, businessDocument: e.target.value })}
-                    className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
-                  />
-                </label>
-              </div>
-              <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
-                Endereço
-                <input
-                  value={business.businessAddress}
-                  onChange={(e) => setBusiness({ ...business, businessAddress: e.target.value })}
-                  className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
-                />
-              </label>
-              <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
-                Horário de funcionamento
-                <input
-                  value={business.businessHours}
-                  onChange={(e) => setBusiness({ ...business, businessHours: e.target.value })}
-                  placeholder="Ex: Seg-Sex 8h-18h"
-                  className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-[var(--foreground)] outline-none"
-                />
-              </label>
-              <button
-                type="button"
-                onClick={handleSaveBusiness}
-                disabled={businessSaving}
-                className="justify-self-start rounded-full bg-sky-600 px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-60"
-              >
-                {businessSaving ? "Salvando..." : "Salvar dados do negócio"}
-              </button>
-            </div>
-          </section>
 
           {/* ── Configurações de Alertas (módulo 10.3 §8.5) ─────────────────── */}
           <section data-tour="settings-alerts" className="mt-5 rounded-md border border-amber-100 bg-amber-50/40 p-4">
