@@ -113,9 +113,27 @@ export default function FinanceiroPage() {
 
   // ?vender=true (vindo da página do cliente ou do pós-cadastro) abre a venda
   // direto; ?clienteId=... já deixa o cliente selecionado no formulário.
+  // Fatura destacada quando se chega por um link de cobrança (quadro do dia,
+  // sino, resumo diário). Sem isso o link caía no painel e o adestrador tinha
+  // de procurar de novo qual cobrança era.
+  const [faturaDestacada, setFaturaDestacada] = useState<string | null>(null);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
+
+    if (params.get("aba") === "cobrancas") {
+      setActiveTab("cobrancas");
+      const fatura = params.get("fatura");
+      if (fatura) {
+        setFaturaDestacada(fatura);
+        // Rola até ela assim que a lista existir na tela.
+        window.setTimeout(() => {
+          document.getElementById(`fatura-${fatura}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 600);
+      }
+    }
+
     if (params.get("vender") !== "true") return;
     const preselectClientId = params.get("clienteId") ?? "";
     const id = window.setTimeout(() => {
@@ -242,14 +260,67 @@ export default function FinanceiroPage() {
       });
 
       if (!res.ok) throw new Error();
+      const criado = (await res.json().catch(() => null)) as { id?: string } | null;
       setMessage("Pacote cadastrado com sucesso!");
       setShowPackageForm(false);
       setNewPkgName("");
-      loadFinancials();
+      await loadFinancials();
+      return criado?.id ?? null;
     } catch {
       setError("Falha ao salvar pacote.");
+      return null;
     }
   };
+
+  // Pacote criado sem sair da venda.
+  //
+  // Antes, quem não tinha pacote precisava sair para a aba Pacotes, criar e
+  // voltar — e voltava para o começo, perdendo a venda e o cliente escolhido.
+  // Agora o formulário abre dentro da própria venda e o pacote recém-criado já
+  // entra selecionado.
+  const [criandoPacoteNaVenda, setCriandoPacoteNaVenda] = useState(false);
+  const [pacoteInlineNome, setPacoteInlineNome] = useState("");
+  const [pacoteInlineSessoes, setPacoteInlineSessoes] = useState(8);
+  const [pacoteInlineValor, setPacoteInlineValor] = useState(0);
+  const [salvandoPacoteInline, setSalvandoPacoteInline] = useState(false);
+
+  async function criarPacoteNaVenda() {
+    if (!pacoteInlineNome.trim() || pacoteInlineValor <= 0) {
+      setError("Dê um nome e um valor ao pacote.");
+      return;
+    }
+    setSalvandoPacoteInline(true);
+    setError("");
+    try {
+      const res = await fetch("/api/finance/packages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: pacoteInlineNome.trim(),
+          sessionsCount: pacoteInlineSessoes,
+          amount: pacoteInlineValor,
+          isFractioned: false,
+          fractionSessions: 1,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      const criado = (await res.json()) as { id: string; sessionsCount: number; amount: number };
+      await loadFinancials();
+      // Já deixa selecionado: a venda continua exatamente de onde parou.
+      setSelectedPackageId(criado.id);
+      setSaleSessions(criado.sessionsCount ?? pacoteInlineSessoes);
+      setSaleAmount(criado.amount ?? pacoteInlineValor);
+      setSaleFractioned(false);
+      setSaleFractionSessions(1);
+      setCriandoPacoteNaVenda(false);
+      setPacoteInlineNome("");
+      setMessage("Pacote criado e selecionado nesta venda.");
+    } catch {
+      setError("Falha ao criar o pacote.");
+    } finally {
+      setSalvandoPacoteInline(false);
+    }
+  }
 
   // Handler: Vender Pacote (Novo Contrato)
   const handleCreateContract = async (e: React.FormEvent) => {
@@ -280,10 +351,13 @@ export default function FinanceiroPage() {
       });
 
       if (!res.ok) throw new Error();
-      setMessage("Venda registrada! Faturas geradas.");
+      // Terminada a venda, o próximo passo é cobrar: em vez de avisar e deixar
+      // o adestrador procurar, a tela já abre as cobranças recém-geradas.
+      setMessage("Venda registrada! As cobranças deste pacote estão abaixo.");
       setShowContractForm(false);
       setContractNotes("");
-      loadFinancials();
+      await loadFinancials();
+      setActiveTab("cobrancas");
     } catch {
       setError("Falha ao registrar venda de pacote.");
     }
@@ -440,26 +514,29 @@ export default function FinanceiroPage() {
                 <div className="mt-4 space-y-4 animate-in fade-in duration-200">
                   
                   {/* Grid de faturamento */}
+                  {/* Os quatro números do mês. Cores vêm dos tokens do tema —
+                      com as cores fixas do tema claro, estes cards saíam
+                      lavados (texto escuro sobre fundo escuro) no modo noite. */}
                   <div className="grid grid-cols-2 gap-3">
-                    <article className="rounded-md border border-emerald-100 bg-emerald-50/50 p-3.5">
-                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-emerald-800">Recebido</span>
-                      <p className="mt-1 text-xl font-bold text-emerald-950">R$ {stats.metrics.received.toFixed(2)}</p>
-                      <span className="text-[12px] text-emerald-700">Parcelas quitadas</span>
+                    <article className="rounded-md border border-[var(--card-green-border)] bg-[var(--card-green-bg)] p-3.5">
+                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-[var(--card-green)]">Recebido</span>
+                      <p className="mt-1 text-xl font-bold text-[var(--foreground)]">R$ {stats.metrics.received.toFixed(2)}</p>
+                      <span className="text-[12px] text-[var(--muted-strong)]">Parcelas quitadas</span>
                     </article>
-                    <article className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-3.5">
-                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-sky-800">A Receber</span>
-                      <p className="mt-1 text-xl font-bold text-sky-950">R$ {stats.metrics.pending.toFixed(2)}</p>
-                      <span className="text-[12px] text-sky-700">Faturas em aberto</span>
+                    <article className="rounded-md border border-[var(--card-sky-border)] bg-[var(--card-sky-bg)] p-3.5">
+                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-[var(--card-sky)]">A Receber</span>
+                      <p className="mt-1 text-xl font-bold text-[var(--foreground)]">R$ {stats.metrics.pending.toFixed(2)}</p>
+                      <span className="text-[12px] text-[var(--muted-strong)]">Faturas em aberto</span>
                     </article>
-                    <article className="rounded-md border border-rose-100 bg-rose-50/50 p-3.5">
-                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-rose-800">Em Atraso</span>
-                      <p className="mt-1 text-xl font-bold text-rose-950">R$ {stats.metrics.overdue.toFixed(2)}</p>
-                      <span className="text-[12px] text-rose-700">Faturas vencidas</span>
+                    <article className="rounded-md border border-[var(--card-orange-border)] bg-[var(--card-orange-bg)] p-3.5">
+                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-[var(--card-orange)]">Em Atraso</span>
+                      <p className="mt-1 text-xl font-bold text-[var(--foreground)]">R$ {stats.metrics.overdue.toFixed(2)}</p>
+                      <span className="text-[12px] text-[var(--muted-strong)]">Faturas vencidas</span>
                     </article>
-                    <article className="rounded-md border border-purple-100 bg-purple-50/50 p-3.5">
-                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-purple-800">Contratos</span>
-                      <p className="mt-1 text-xl font-bold text-purple-950">{stats.metrics.activeContracts} Ativos</p>
-                      <span className="text-[12px] text-purple-700">Pacotes ativos vendidos</span>
+                    <article className="rounded-md border border-[var(--card-purple-border)] bg-[var(--card-purple-bg)] p-3.5">
+                      <span className="text-[12px] font-bold uppercase tracking-[0.19em] text-[var(--card-purple)]">Contratos</span>
+                      <p className="mt-1 text-xl font-bold text-[var(--foreground)]">{stats.metrics.activeContracts} Ativos</p>
+                      <span className="text-[12px] text-[var(--muted-strong)]">Pacotes ativos vendidos</span>
                     </article>
                   </div>
 
@@ -560,6 +637,17 @@ export default function FinanceiroPage() {
                               <option key={p.id} value={p.id}>{p.name} (R$ {p.amount})</option>
                             ))}
                           </select>
+                          <button
+                            type="button"
+                            onClick={() => setCriandoPacoteNaVenda((v) => !v)}
+                            className="justify-self-start text-[12px] font-semibold normal-case text-[var(--accent-text)] hover:underline"
+                          >
+                            {criandoPacoteNaVenda
+                              ? "Cancelar"
+                              : packages.length === 0
+                                ? "+ Criar o primeiro pacote aqui mesmo"
+                                : "+ Criar um pacote novo aqui mesmo"}
+                          </button>
                         </label>
 
                         <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
@@ -572,6 +660,52 @@ export default function FinanceiroPage() {
                           />
                         </label>
                       </div>
+
+                      {criandoPacoteNaVenda && (
+                        <div className="grid gap-2 rounded-md border border-[var(--accent)] bg-[var(--surface)] p-3">
+                          <p className="text-[12px] font-bold uppercase text-[var(--accent-text)]">Pacote novo</p>
+                          <div className="grid gap-2 sm:grid-cols-3">
+                            <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                              Nome
+                              <input
+                                value={pacoteInlineNome}
+                                onChange={(e) => setPacoteInlineNome(e.target.value)}
+                                placeholder="Ex: Pacote Pro — 8 aulas"
+                                className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs font-normal normal-case text-[var(--foreground)] outline-none"
+                              />
+                            </label>
+                            <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                              Sessões
+                              <input
+                                type="number"
+                                min={1}
+                                value={pacoteInlineSessoes}
+                                onChange={(e) => setPacoteInlineSessoes(Number(e.target.value))}
+                                className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs font-normal text-[var(--foreground)] outline-none"
+                              />
+                            </label>
+                            <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
+                              Valor (R$)
+                              <input
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                value={pacoteInlineValor}
+                                onChange={(e) => setPacoteInlineValor(Number(e.target.value))}
+                                className="rounded-md border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs font-normal text-[var(--foreground)] outline-none"
+                              />
+                            </label>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={criarPacoteNaVenda}
+                            disabled={salvandoPacoteInline}
+                            className="justify-self-start rounded-full bg-[var(--accent)] px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-60"
+                          >
+                            {salvandoPacoteInline ? "Criando..." : "Criar e usar nesta venda"}
+                          </button>
+                        </div>
+                      )}
 
                       {selectedPackageId && (
                         <div className="grid gap-2 rounded-md border border-dashed border-[var(--border)] bg-white/60 p-2.5">
@@ -655,7 +789,7 @@ export default function FinanceiroPage() {
                     {invoices.length === 0 ? (
                       <div className="rounded-md border border-dashed border-[var(--border)] bg-white p-5 text-center">
                         <p className="text-xs text-[var(--muted)]">
-                          Nenhuma cobrança ainda. Cadastre um pacote e venda para um tutor — as cobranças
+                          Nenhuma cobrança ainda. Cadastre um pacote e venda para um cliente — as cobranças
                           (com parcelas e lembretes de WhatsApp) são geradas automaticamente.
                         </p>
                         <button
@@ -806,12 +940,25 @@ export default function FinanceiroPage() {
                   
                   <div className="space-y-2">
                     {invoices.map((inv) => (
-                      <div key={inv.id} className="rounded-md border border-slate-100 bg-white p-3.5 flex flex-col gap-2.5 shadow-xs">
+                      <div
+                        key={inv.id}
+                        id={`fatura-${inv.id}`}
+                        className={`rounded-md border bg-white p-3.5 flex flex-col gap-2.5 shadow-xs ${
+                          faturaDestacada === inv.id
+                            ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/30"
+                            : "border-slate-100"
+                        }`}
+                      >
                         <div className="flex justify-between items-start text-xs">
                           <div>
                             <p className="font-bold text-slate-900">{inv.clientName} ({inv.dogName})</p>
                             <p className="text-[12px] text-[var(--muted)] mt-0.5">{inv.packageName}</p>
-                            <p className="text-[12px] text-[var(--muted)]">Vencimento: {inv.dueDate} {inv.method && `• Pago via ${inv.method}`}</p>
+                            <p className={`text-[13px] font-semibold ${
+                              inv.status === "Atrasado" ? "text-rose-600" : "text-[var(--foreground)]"
+                            }`}>
+                              {inv.status === "Atrasado" ? "⚠ Venceu em " : "Vencimento: "}{inv.dueDate}
+                              {inv.method && ` • Pago via ${inv.method}`}
+                            </p>
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-bold text-slate-950">R$ {inv.amount.toFixed(2)}</p>
@@ -901,6 +1048,9 @@ export default function FinanceiroPage() {
                                 placeholder="Ex: 4,99"
                                 className="rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 outline-none"
                               />
+                              <span className="text-[11px] font-normal normal-case text-sky-800">
+                                Deixe em branco se a taxa é repassada ao cliente.
+                              </span>
                             </label>
                             <div className="grid gap-1 text-[12px] font-bold uppercase text-sky-900">
                               Valor líquido recebido

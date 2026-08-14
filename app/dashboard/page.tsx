@@ -142,7 +142,7 @@ export default function DashboardPage() {
   const todayEvents = useMemo(() => eventsOnDay(events, new Date(now)), [events, now]);
   const weekEvents = useMemo(() => eventsInWeek(events, new Date(now)), [events, now]);
 
-  // Aulas ainda não confirmadas pelo tutor.
+  // Aulas ainda não confirmadas pelo cliente.
   const awaitingConfirmation = useMemo(
     () => events.filter((e) => isActiveEvent(e) && (e.status === "Pendente" || e.status === "Aguardando")).length,
     [events],

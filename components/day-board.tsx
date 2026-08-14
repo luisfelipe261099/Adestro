@@ -60,25 +60,44 @@ export function DayBoard() {
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
 
+  // Cobranças e relatórios vêm do servidor, não da store.
+  //
+  // Buscar só na montagem deixava o quadro desatualizado: o roteador mantém a
+  // home montada enquanto o adestrador vai ao Financeiro dar baixa num
+  // pagamento, então ao voltar o efeito não rodava de novo e a cobrança
+  // continuava aparecendo como pendente. Agora recarrega também quando a aba
+  // volta ao foco — que é exatamente quando ele volta de outra tela.
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/api/relatorios", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
-        if (!cancelled && Array.isArray(data)) setReports(data as ReportRow[]);
-      })
-      .catch(() => undefined);
+    function carregar() {
+      fetch("/api/relatorios", { cache: "no-store" })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
+          if (!cancelled && Array.isArray(data)) setReports(data as ReportRow[]);
+        })
+        .catch(() => undefined);
 
-    fetch("/api/finance/invoices", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
-        if (!cancelled && Array.isArray(data)) setInvoices(data as InvoiceRow[]);
-      })
-      .catch(() => undefined);
+      fetch("/api/finance/invoices", { cache: "no-store" })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
+          if (!cancelled && Array.isArray(data)) setInvoices(data as InvoiceRow[]);
+        })
+        .catch(() => undefined);
+    }
+
+    carregar();
+
+    function aoVoltar() {
+      if (document.visibilityState === "visible") carregar();
+    }
+    window.addEventListener("focus", carregar);
+    document.addEventListener("visibilitychange", aoVoltar);
 
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", carregar);
+      document.removeEventListener("visibilitychange", aoVoltar);
     };
   }, []);
 
@@ -134,7 +153,9 @@ export function DayBoard() {
         label: `${inv.clientName ?? "Cliente"}${inv.dogName ? ` · ${inv.dogName}` : ""}`,
         sub: `${brl(inv.amount)} · ${overdue ? `vencida em ${inv.dueDate}` : "vence hoje"}`,
         tag: overdue ? "Em atraso" : "Cobrar",
-        href: "/financeiro",
+        // Abre a aba de cobranças já destacando esta fatura, em vez de largar
+        // o adestrador no painel para procurar de novo qual era.
+        href: `/financeiro?aba=cobrancas&fatura=${inv.id}`,
         sortKey: overdue ? 10 ** 13 : 10 ** 13 + 1,
       });
     }

@@ -109,7 +109,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
   const isPublicPage = pathname === "/" || pathname === "/cadastro" || isLoginPage;
-  // Convite e portal são telas do tutor, não vitrine do produto: "Entrar" e
+  // Convite e portal são telas do cliente, não vitrine do produto: "Entrar" e
   // "Criar conta grátis" levariam ele ao cadastro de adestrador.
   const isTutorPage = pathname.startsWith("/convite/") || pathname.startsWith("/portal");
 

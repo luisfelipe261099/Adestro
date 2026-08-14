@@ -1,5 +1,5 @@
 // Helpers para usar a Web Share API nativa do celular.
-// Tanto o portal do tutor quanto o adestrador podem compartilhar fotos/links.
+// Tanto o portal do cliente quanto o adestrador podem compartilhar fotos/links.
 
 export function canNativeShare(): boolean {
   return typeof navigator !== "undefined" && "share" in navigator;

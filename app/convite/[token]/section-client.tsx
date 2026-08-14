@@ -69,7 +69,7 @@ export function SectionClient({
       }
       const data = await res.json();
       setCepStatus("idle");
-      // Só preenche o que veio; o número e o complemento continuam com o tutor.
+      // Só preenche o que veio; o número e o complemento continuam com o cliente.
       onChange({
         ...value,
         address: {
@@ -82,7 +82,7 @@ export function SectionClient({
         },
       });
     } catch {
-      // Sem internet ou serviço fora do ar: o tutor digita à mão, como antes.
+      // Sem internet ou serviço fora do ar: o cliente digita à mão, como antes.
       setCepStatus("erro");
     }
   }
