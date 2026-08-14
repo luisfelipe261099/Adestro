@@ -7,7 +7,8 @@ import { DateField } from "@/components/date-field";
 import { useAppStore } from "@/lib/app-store";
 import { buildWaUrl, waTemplates } from "@/lib/whatsapp";
 import { buildPixPayload, isPixKey } from "@/lib/pix";
-import { copyToClipboard } from "@/lib/native-share";
+import { copyToClipboard, nativeShare } from "@/lib/native-share";
+import { buildReceiptPdf, receiptFileName, type ReceiptData } from "@/lib/receipt-pdf";
 
 type PackageInfo = {
   id: string;
@@ -171,6 +172,7 @@ export default function FinanceiroPage() {
     signatureUrl: "",
     businessName: "",
     businessDocument: "",
+    logoUrl: "",
   });
 
   useEffect(() => {
@@ -186,6 +188,7 @@ export default function FinanceiroPage() {
           signatureUrl: d.signatureUrl ?? "",
           businessName: d.businessName ?? "",
           businessDocument: d.businessDocument ?? "",
+          logoUrl: d.logoUrl ?? "",
         });
       })
       .catch(() => {});
@@ -379,21 +382,97 @@ export default function FinanceiroPage() {
     window.open(buildWaUrl(client.phone, message), "_blank", "noopener,noreferrer");
   };
 
-  // Handler: Enviar recibo via WhatsApp
-  const handleSendReceiptViaWhats = () => {
-    const client = clients.find((c) => c.name === receiptClient);
-    if (!client?.phone) {
-      setError("Cliente sem WhatsApp cadastrado para envio do recibo.");
-      return;
-    }
-    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-    const message = waTemplates.reciboPagamento({
-      tutor: receiptClient,
-      valor: receiptAmount.toFixed(2),
+  // Monta o recibo em PDF com os dados da tela e do cadastro do adestrador.
+  const [gerandoPdf, setGerandoPdf] = useState(false);
+
+  function dadosDoRecibo(): ReceiptData {
+    return {
+      numero: receiptNumber,
+      cliente: receiptClient,
+      cao: receiptDog,
       servico: receiptService,
-      link: `${baseUrl}/financeiro`,
-    });
-    window.open(buildWaUrl(client.phone, message), "_blank", "noopener,noreferrer");
+      valor: receiptAmount,
+      metodo: receiptMethod,
+      data: new Date().toLocaleDateString("pt-BR"),
+      adestrador: profile.name || trainerName || "Adestrador",
+      negocio: profile.businessName || undefined,
+      documento: profile.businessDocument || undefined,
+      contato: [profile.whatsapp, profile.email].filter(Boolean).join(" · ") || undefined,
+      assinatura: profile.signatureUrl || undefined,
+      logo: profile.logoUrl || undefined,
+    };
+  }
+
+  async function baixarReciboPdf() {
+    setGerandoPdf(true);
+    setError("");
+    try {
+      const dados = dadosDoRecibo();
+      const blob = await buildReceiptPdf(dados);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = receiptFileName(dados);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Não foi possível gerar o PDF do recibo.");
+    } finally {
+      setGerandoPdf(false);
+    }
+  }
+
+  // Handler: Enviar recibo — manda o ARQUIVO, não um link.
+  //
+  // O link antigo apontava para /financeiro, que é a página do adestrador e
+  // exige login: o cliente clicava e caía na tela de entrar. Agora o recibo vai
+  // como PDF pelo compartilhamento do celular (WhatsApp aparece na lista); no
+  // computador, onde não há compartilhamento nativo, o arquivo é baixado e o
+  // WhatsApp Web abre com a mensagem pronta para anexá-lo.
+  const handleSendReceiptViaWhats = async () => {
+    const client = clients.find((c) => c.name === receiptClient);
+    setError("");
+    setGerandoPdf(true);
+    try {
+      const dados = dadosDoRecibo();
+      const blob = await buildReceiptPdf(dados);
+      const arquivo = new File([blob], receiptFileName(dados), { type: "application/pdf" });
+      const texto = waTemplates.reciboPagamento({
+        tutor: receiptClient,
+        valor: receiptAmount.toFixed(2),
+        servico: receiptService,
+      });
+
+      const compartilhou = await nativeShare({
+        title: `Recibo ${receiptNumber}`,
+        text: texto,
+        files: [arquivo],
+      });
+      if (compartilhou) return;
+
+      // Sem compartilhamento nativo: baixa o arquivo e abre a conversa.
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = arquivo.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      if (client?.phone) {
+        window.open(buildWaUrl(client.phone, texto), "_blank", "noopener,noreferrer");
+        setMessage("Recibo baixado. Anexe o PDF na conversa que acabou de abrir.");
+      } else {
+        setMessage("Recibo baixado. O cliente está sem WhatsApp cadastrado.");
+      }
+    } catch {
+      setError("Não foi possível gerar o recibo em PDF.");
+    } finally {
+      setGerandoPdf(false);
+    }
   };
 
   // Handler: Atualizar Status da Fatura (Liquidar)
@@ -1347,17 +1426,19 @@ export default function FinanceiroPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => window.print()}
-                          className="rounded-md border border-[#145a82] bg-white py-2 text-center text-xs font-bold text-[var(--foreground)]"
+                          onClick={baixarReciboPdf}
+                          disabled={gerandoPdf}
+                          className="rounded-md border border-[#145a82] bg-white py-2 text-center text-xs font-bold text-[var(--foreground)] disabled:opacity-60"
                         >
-                          PDF
+                          {gerandoPdf ? "Gerando..." : "Baixar PDF"}
                         </button>
                         <button
                           type="button"
                           onClick={handleSendReceiptViaWhats}
-                          className="rounded-md bg-emerald-600 py-2 text-center text-xs font-bold text-white"
+                          disabled={gerandoPdf}
+                          className="rounded-md bg-emerald-600 py-2 text-center text-xs font-bold text-white disabled:opacity-60"
                         >
-                          WhatsApp
+                          {gerandoPdf ? "Gerando..." : "Enviar PDF no WhatsApp"}
                         </button>
                       </div>
                     </div>
