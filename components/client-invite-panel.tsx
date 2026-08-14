@@ -83,19 +83,34 @@ export function ClientInvitePanel() {
     setCopied(true);
   }
 
+  // O painel abre ancorado ao botão, e não como bloco de largura total dentro
+  // da linha de ações: com `w-full` num container flex ele quebrava a linha e
+  // empurrava o cabeçalho inteiro, o que dava a impressão de outra tela.
   return (
-    <>
+    <div className="relative">
       <button
         type="button"
         data-tour="client-invite"
         onClick={() => setOpen((value) => !value)}
         className="btn-secondary text-[12.5px]"
+        aria-expanded={open}
       >
         Convidar cliente
       </button>
 
       {open && (
-        <div className="mt-3 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-4">
+        <div className="absolute right-0 top-11 z-40 w-[min(26rem,calc(100vw-2rem))] rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-lg">
+          <div className="mb-2 flex items-start justify-between gap-2">
+            <h3 className="text-[13.5px] font-semibold text-[var(--foreground)]">Convidar cliente</h3>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="rounded-md px-2 text-[15px] leading-none text-[var(--muted)] hover:text-[var(--foreground)]"
+              aria-label="Fechar"
+            >
+              ×
+            </button>
+          </div>
           <p className="text-[13px] text-[var(--muted)]">
             Gere um link e mande para o cliente. Ele preenche os próprios dados e o cadastro chega
             aqui como rascunho, esperando sua aprovação.
@@ -202,6 +217,6 @@ export function ClientInvitePanel() {
           </p>
         </div>
       )}
-    </>
+    </div>
   );
 }
