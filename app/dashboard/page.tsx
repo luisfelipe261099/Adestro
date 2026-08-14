@@ -20,6 +20,7 @@ import {
   IconSparkle,
 } from "@/components/icons";
 import { NextActionCard } from "@/components/next-action-card";
+import { ProfileCompletionCard } from "@/components/profile-completion-card";
 import { NextSessionCard } from "@/components/next-session-card";
 import { TRAINER_TOUR_DONE_KEY, useTour } from "@/components/product-tour";
 import { useAppStore } from "@/lib/app-store";
@@ -263,11 +264,20 @@ export default function DashboardPage() {
               </button>
             ) : null}
             <Link
-              href="/treinos/registro"
+              href="/clientes?new=true"
               className="inline-flex h-11 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-5 text-[14px] font-semibold text-[var(--foreground)] shadow-sm transition-colors hover:bg-[var(--surface-2)]"
             >
+              <IconPlus className="h-4 w-4" />
+              Novo cliente
+            </Link>
+            {/* Registrar sessão em vermelho: é a ação que não pode ser esquecida
+                depois do atendimento, e precisa se distinguir do resto. */}
+            <Link
+              href="/treinos/registro"
+              className="inline-flex h-11 items-center gap-2 rounded-md border border-rose-600 bg-rose-600 px-5 text-[14px] font-semibold text-white shadow-sm transition-colors hover:bg-rose-700"
+            >
               <IconDog className="h-4 w-4" />
-              Registrar treino
+              Registrar sessão
             </Link>
             <Link href="/agenda?new=true" className="btn-action">
               <IconPlus className="h-4 w-4" />
@@ -275,6 +285,11 @@ export default function DashboardPage() {
             </Link>
           </div>
         </header>
+
+        {/* Cadastro do adestrador incompleto — primeira coisa da página */}
+        <div className="mt-4">
+          <ProfileCompletionCard />
+        </div>
 
         {/* Jornada inicial — 1 ação por vez até a conta engrenar (some quando completa) */}
         <NextActionCard />

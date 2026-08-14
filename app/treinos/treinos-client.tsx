@@ -235,6 +235,9 @@ async function compressTrainingImage(file: File): Promise<DraftTrainingMedia> {
 export default function TrainingPage() {
   const searchParams = useSearchParams();
   const clients = useAppStore((state) => state.clients);
+  // Antes de os dados chegarem, a tela mostrava "nenhum cliente/treino" — o
+  // adestrador lia como base vazia. Enquanto não hidratou, mostra carregamento.
+  const hydrated = useAppStore((state) => state.hydrated);
   const trainingSessions = useAppStore((state) => state.trainingSessions);
   const addTrainingSession = useAppStore((state) => state.addTrainingSession);
 
@@ -546,7 +549,11 @@ export default function TrainingPage() {
   return (
     <AuthGuard role="trainer">
       <main className="page">
-        {clients.length === 0 ? (
+        {!hydrated ? (
+          <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-8 text-center">
+            <p className="text-sm text-[var(--muted)]">Carregando seus treinos…</p>
+          </section>
+        ) : clients.length === 0 ? (
           <section className="rounded-lg border border-dashed border-[var(--border)] bg-white p-8 text-center">
             <p className="text-lg font-semibold text-[var(--foreground)]">Nenhum cliente cadastrado</p>
             <p className="mt-2 text-sm text-[var(--muted)]">Cadastre um cliente e seu cão para começar os registros.</p>
@@ -909,7 +916,7 @@ export default function TrainingPage() {
 
               {!filteredFeed.length ? (
                 <article className="rounded-md border border-dashed border-[var(--border)] bg-white p-4 text-xs text-[var(--muted)]">
-                  Nenhum treino encontrado para este filtro.
+                  {hydrated ? "Nenhum treino encontrado para este filtro." : "Carregando treinos…"}
                 </article>
               ) : null}
             </section>

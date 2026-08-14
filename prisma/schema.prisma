@@ -85,6 +85,15 @@ model Trainer {
   trialEndsAt DateTime?
   createdAt   DateTime  @default(now())
 
+  // Contato do adestrador (cadastro pessoal). Separado do e-mail de login em
+  // `User`: o login é a credencial, estes são os canais de contato que também
+  // vão para o cliente (recibo, contrato, mensagem de WhatsApp).
+  email       String?
+  whatsapp    String?
+  photoUrl    String?  @db.LongText   // base64, mesma estratégia do logo
+  // Assinatura para recibo e contrato — imagem base64 desenhada ou enviada.
+  signatureUrl String? @db.LongText
+
   // Permissão do adestrador na conta (módulo 10.2 - multi-usuário).
   // "admin" | "standard" | "viewer". Hoje é um rótulo (enforcement é follow-up).
   permission        String  @default("standard")
@@ -106,6 +115,10 @@ model Trainer {
   defaultActivities         String? @db.Text
   defaultCommands           String? @db.Text
   defaultTutorTasks         String? @db.Text
+  // Listas do cadastro do cão que o adestrador amplia pelo "Outros":
+  // comportamento e foco do adestramento. JSON de strings.
+  dogBehaviorOptions        String? @db.Text
+  trainingFocusOptions      String? @db.Text
 
   // Templates WhatsApp customizáveis (texto livre por tipo de mensagem)
   whatsappTemplates         String? @db.Text  // JSON: { agendamento: "...", lembrete: "...", ... }

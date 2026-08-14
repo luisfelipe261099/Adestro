@@ -11,6 +11,14 @@ type SettingsPayload = {
   defaultActivities?: string[];
   defaultCommands?: string[];
   defaultTutorTasks?: string[];
+  dogBehaviorOptions?: string[];
+  trainingFocusOptions?: string[];
+  // Cadastro pessoal do adestrador
+  name?: string;
+  email?: string;
+  whatsapp?: string;
+  photoUrl?: string;
+  signatureUrl?: string;
   // Dados do negócio (módulo 10.1)
   businessName?: string;
   businessDocument?: string;
@@ -72,6 +80,37 @@ async function ensureTrainer(userId: string) {
   });
 }
 
+// Resposta única de GET e PATCH: a tela recarrega o estado do que voltou daqui,
+// então as duas rotas precisam devolver exatamente os mesmos campos.
+type TrainerRow = Awaited<ReturnType<typeof ensureTrainer>>;
+
+async function serialize(trainer: NonNullable<TrainerRow>, loginEmail?: string | null) {
+  return {
+    // Cadastro pessoal. O e-mail de contato cai para o e-mail de login enquanto
+    // o adestrador não preencher um — assim a tela nunca abre vazia.
+    name: trainer.name ?? "",
+    email: trainer.email ?? loginEmail ?? "",
+    whatsapp: trainer.whatsapp ?? trainer.phone ?? "",
+    photoUrl: trainer.photoUrl ?? "",
+    signatureUrl: trainer.signatureUrl ?? "",
+    reminderHoursBefore: trainer.reminderHoursBefore,
+    chargeReminderDaysBefore: trainer.chargeReminderDaysBefore,
+    morningBriefHour: trainer.morningBriefHour,
+    defaultStreakTolerance: trainer.defaultStreakTolerance,
+    defaultActivities: parseList(trainer.defaultActivities, FALLBACK_ACTIVITIES),
+    defaultCommands: parseList(trainer.defaultCommands, FALLBACK_COMMANDS),
+    defaultTutorTasks: parseList(trainer.defaultTutorTasks, FALLBACK_TASKS),
+    // Listas do cadastro do cão criadas pelo adestrador (o padrão vem do código).
+    dogBehaviorOptions: parseList(trainer.dogBehaviorOptions, []),
+    trainingFocusOptions: parseList(trainer.trainingFocusOptions, []),
+    businessName: trainer.businessName ?? "",
+    businessDocument: trainer.businessDocument ?? "",
+    businessAddress: trainer.businessAddress ?? "",
+    businessHours: trainer.businessHours ?? "",
+    logoUrl: trainer.logoUrl ?? "",
+  };
+}
+
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
@@ -80,20 +119,7 @@ export async function GET() {
   const trainer = await ensureTrainer(session.user.id);
   if (!trainer) return NextResponse.json({ error: "Adestrador nao encontrado" }, { status: 404 });
 
-  return NextResponse.json({
-    reminderHoursBefore: trainer.reminderHoursBefore,
-    chargeReminderDaysBefore: trainer.chargeReminderDaysBefore,
-    morningBriefHour: trainer.morningBriefHour,
-    defaultStreakTolerance: trainer.defaultStreakTolerance,
-    defaultActivities: parseList(trainer.defaultActivities, FALLBACK_ACTIVITIES),
-    defaultCommands: parseList(trainer.defaultCommands, FALLBACK_COMMANDS),
-    defaultTutorTasks: parseList(trainer.defaultTutorTasks, FALLBACK_TASKS),
-    businessName: trainer.businessName ?? "",
-    businessDocument: trainer.businessDocument ?? "",
-    businessAddress: trainer.businessAddress ?? "",
-    businessHours: trainer.businessHours ?? "",
-    logoUrl: trainer.logoUrl ?? "",
-  });
+  return NextResponse.json(await serialize(trainer, session.user.email));
 }
 
 export async function PATCH(request: Request) {
@@ -136,6 +162,10 @@ export async function PATCH(request: Request) {
   if (commandsJson !== undefined) data.defaultCommands = commandsJson;
   const tasksJson = sanitizeList(body.defaultTutorTasks);
   if (tasksJson !== undefined) data.defaultTutorTasks = tasksJson;
+  const behaviorJson = sanitizeList(body.dogBehaviorOptions);
+  if (behaviorJson !== undefined) data.dogBehaviorOptions = behaviorJson;
+  const focusJson = sanitizeList(body.trainingFocusOptions);
+  if (focusJson !== undefined) data.trainingFocusOptions = focusJson;
 
   // Dados do negócio — texto curto trimado; logo é base64 limitado a ~1.5MB.
   const trimField = (v: unknown, max: number): string | undefined =>
@@ -144,27 +174,31 @@ export async function PATCH(request: Request) {
   if (body.businessDocument !== undefined) data.businessDocument = trimField(body.businessDocument, 40);
   if (body.businessAddress !== undefined) data.businessAddress = trimField(body.businessAddress, 300);
   if (body.businessHours !== undefined) data.businessHours = trimField(body.businessHours, 120);
-  if (body.logoUrl !== undefined && typeof body.logoUrl === "string" && body.logoUrl.length <= 2_000_000) {
-    data.logoUrl = body.logoUrl;
+
+  // Cadastro pessoal. Antes esta tela só guardava no navegador — por isso o
+  // nome sumia a cada visita. Agora vai para o banco como todo o resto.
+  const nome = trimField(body.name, 120);
+  if (nome !== undefined && nome.length > 0) data.name = nome;
+  if (body.email !== undefined) data.email = trimField(body.email, 160);
+  if (body.whatsapp !== undefined) {
+    const whats = trimField(body.whatsapp, 40);
+    data.whatsapp = whats;
+    // `phone` é o campo antigo, ainda lido por telas e mensagens de WhatsApp:
+    // mantido em sincronia para não haver dois telefones divergentes.
+    data.phone = whats;
   }
+
+  // Imagens em base64 (foto, assinatura, logo) — mesmo limite das demais mídias.
+  const imagem = (v: unknown): string | undefined =>
+    typeof v === "string" && v.length <= 2_000_000 ? v : undefined;
+  if (body.photoUrl !== undefined) data.photoUrl = imagem(body.photoUrl);
+  if (body.signatureUrl !== undefined) data.signatureUrl = imagem(body.signatureUrl);
+  if (body.logoUrl !== undefined) data.logoUrl = imagem(body.logoUrl);
 
   const updated = await prisma.trainer.update({
     where: { id: trainer.id },
     data,
   });
 
-  return NextResponse.json({
-    reminderHoursBefore: updated.reminderHoursBefore,
-    chargeReminderDaysBefore: updated.chargeReminderDaysBefore,
-    morningBriefHour: updated.morningBriefHour,
-    defaultStreakTolerance: updated.defaultStreakTolerance,
-    defaultActivities: parseList(updated.defaultActivities, FALLBACK_ACTIVITIES),
-    defaultCommands: parseList(updated.defaultCommands, FALLBACK_COMMANDS),
-    defaultTutorTasks: parseList(updated.defaultTutorTasks, FALLBACK_TASKS),
-    businessName: updated.businessName ?? "",
-    businessDocument: updated.businessDocument ?? "",
-    businessAddress: updated.businessAddress ?? "",
-    businessHours: updated.businessHours ?? "",
-    logoUrl: updated.logoUrl ?? "",
-  });
+  return NextResponse.json(await serialize(updated, session.user.email));
 }

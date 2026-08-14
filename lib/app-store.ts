@@ -21,7 +21,14 @@ export type DogProfile = {
   id: string;
   name: string;
   breed: string;
+  /**
+   * Texto antigo digitado à mão. Continua aqui pelos cadastros que não têm data
+   * de nascimento, mas quem exibe deve usar `formatDogAge(birthDate, age)` —
+   * este campo envelhece sozinho no banco.
+   */
   age: string;
+  /** ISO YYYY-MM-DD. Fonte da idade calculada (anos, meses e dias). */
+  birthDate?: string;
   weight: string;
   photoUrl?: string;
   trainingTypes: string[];
@@ -1194,6 +1201,10 @@ export const useAppStore = create<AppState>()(
               name:          String(d.name),
               breed:         String(d.breed ?? ""),
               age:           String(d.age ?? ""),
+              // Data de nascimento: é dela que sai a idade em anos, meses e
+              // dias. Sem trazer este campo, a tela caía no texto antigo, que
+              // não envelhece — um filhote ficava "2 meses" para sempre.
+              birthDate:     d.birthDate ? String(d.birthDate) : undefined,
               weight:        String(d.weight ?? ""),
               photoUrl:      d.photoUrl ? String(d.photoUrl) : undefined,
               trainingTypes: (() => {

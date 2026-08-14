@@ -16,7 +16,7 @@ const TYPE_LABEL: Record<NotificationType | "all", string> = {
 };
 
 export function NotificationsBell() {
-  const { total, items, byType } = useNotifications();
+  const { total, items, byType, dismiss, dismissAll } = useNotifications();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<NotificationType | "all">("all");
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -103,7 +103,12 @@ export function NotificationsBell() {
                 <li key={item.id} className="border-b border-[var(--border)] last:border-0">
                   <Link
                     href={item.href}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      // Ler o aviso o apaga do sino; a pendência em si continua
+                      // na tela para onde o link leva.
+                      dismiss(item.id);
+                      setOpen(false);
+                    }}
                     className="block px-3 py-2.5 transition-colors hover:bg-[var(--surface-2)]"
                   >
                     <p className="truncate text-[13px] font-medium text-[var(--foreground)]">{item.title}</p>
@@ -116,6 +121,18 @@ export function NotificationsBell() {
               ))
             )}
           </ul>
+
+          {items.length > 0 ? (
+            <footer className="border-t border-[var(--border)] px-3 py-2">
+              <button
+                type="button"
+                onClick={dismissAll}
+                className="w-full rounded-md px-2 py-1.5 text-[12.5px] font-semibold text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]"
+              >
+                Marcar todas como lidas
+              </button>
+            </footer>
+          ) : null}
         </div>
       ) : null}
     </div>
