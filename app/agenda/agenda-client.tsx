@@ -220,6 +220,8 @@ export default function AgendaClientPage() {
   // Data livre do formulário: permite agendar para QUALQUER dia (não só o selecionado no calendário).
   const [formDateISO, setFormDateISO] = useState(() => formatISODate(new Date()));
   const formRef = useRef<HTMLDivElement>(null);
+  // Lista de atendimentos do dia escolhido no calendário mensal.
+  const listaDoDiaRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<EventStatus>("Pendente");
   const [busyEventId, setBusyEventId] = useState<string | null>(null);
   // Participantes da turma (qual evento está com a lista aberta)
@@ -1227,7 +1229,14 @@ export default function AgendaClientPage() {
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => setCurrentDate(dayDate)}
+                      onClick={() => {
+                        setCurrentDate(dayDate);
+                        // Só marcar o dia parecia "não abrir nada": a lista fica
+                        // abaixo da grade e passava despercebida.
+                        requestAnimationFrame(() =>
+                          listaDoDiaRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }),
+                        );
+                      }}
                       className={`relative flex flex-col items-center justify-between h-12 py-1.5 rounded-md border text-center transition-all ${
                         !isCurrentMonth
                           ? "bg-slate-50/40 text-slate-300 border-transparent"
@@ -1256,25 +1265,34 @@ export default function AgendaClientPage() {
                 })}
               </div>
 
-              {/* Selected date events preview */}
-              <div className="mt-3.5 border-t border-slate-100 pt-3.5 px-1.5 pb-1">
+              {/* Atendimentos do dia selecionado — cada linha entra no atendimento */}
+              <div ref={listaDoDiaRef} className="mt-3.5 border-t border-slate-100 pt-3.5 px-1.5 pb-1">
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Aulas em {currentDate.toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}:
+                  {eventsForSelectedDay.length}{" "}
+                  {eventsForSelectedDay.length === 1 ? "atendimento" : "atendimentos"} em{" "}
+                  {currentDate.toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}
                 </h3>
                 <div className="mt-2 space-y-1.5">
                   {eventsForSelectedDay.map(e => (
-                    <div key={e.id} className="flex justify-between items-center text-xs p-2 bg-slate-50 border border-slate-100 rounded-md">
+                    <Link
+                      key={e.id}
+                      href={`/treinos/registro?clientId=${e.clientId ?? ""}&dogId=${e.dogId ?? ""}&eventId=${e.id}`}
+                      className="flex justify-between items-center text-xs p-2 bg-slate-50 border border-slate-100 rounded-md transition-colors hover:border-[var(--accent)] hover:bg-white"
+                    >
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-[var(--foreground)]">{e.time}</span>
                         <span className="text-slate-800 font-medium">{e.dog} • {e.client}</span>
                       </div>
-                      <span className={`px-1.5 py-0.5 rounded-full text-[12px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
-                        {statusLabel(e.status as EventStatus)}
+                      <span className="flex items-center gap-2">
+                        <span className={`px-1.5 py-0.5 rounded-full text-[12px] font-semibold ${statusBadge(e.status as EventStatus)}`}>
+                          {statusLabel(e.status as EventStatus)}
+                        </span>
+                        <span className="text-[12px] font-semibold text-[var(--accent-text)]">abrir →</span>
                       </span>
-                    </div>
+                    </Link>
                   ))}
                   {eventsForSelectedDay.length === 0 && (
-                    <p className="text-xs text-[var(--muted)] italic">Nenhum evento para este dia.</p>
+                    <p className="text-xs text-[var(--muted)] italic">Nenhum atendimento para este dia.</p>
                   )}
                 </div>
               </div>

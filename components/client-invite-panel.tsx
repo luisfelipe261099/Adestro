@@ -97,7 +97,7 @@ export function ClientInvitePanel() {
       {open && (
         <div className="mt-3 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-4">
           <p className="text-[13px] text-[var(--muted)]">
-            Gere um link e mande para o tutor. Ele preenche os próprios dados e o cadastro chega
+            Gere um link e mande para o cliente. Ele preenche os próprios dados e o cadastro chega
             aqui como rascunho, esperando sua aprovação.
           </p>
 

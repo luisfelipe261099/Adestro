@@ -41,7 +41,7 @@ export type Badge = {
 };
 
 export const BADGES_DEF: Omit<Badge, "unlocked">[] = [
-  // Badges de Tutor
+  // Badges de Cliente
   { id: "first_task", label: "Primeira tarefa", icon: "🎯", description: "Concluiu sua primeira tarefa de casa." },
   { id: "five_tasks", label: "Treinador dedicado", icon: "🏅", description: "Concluiu 5 tarefas." },
   { id: "ten_tasks", label: "Mestre das tarefas", icon: "🏆", description: "Concluiu 10 tarefas." },
@@ -53,7 +53,7 @@ export const BADGES_DEF: Omit<Badge, "unlocked">[] = [
   { id: "level_3", label: "Nível 3", icon: "📈", description: "Alcançou o nível 3." },
   { id: "level_5", label: "Nível 5", icon: "👑", description: "Alcançou o nível 5." },
   { id: "first_video_uploaded", label: "Primeiro vídeo enviado", icon: "🎥", description: "Adicionou o primeiro vídeo de treinamento." },
-  // Novas Badges de Tutor
+  // Novas Badges de Cliente
   { id: "consistent_trainer", label: "Treinador Consistente", icon: "🎪", description: "Completou 7 tarefas em uma semana." },
   { id: "well_behaved_dog", label: "Cão Bem Comportado", icon: "🐕‍🦺", description: "Marcou 5 treinos como sucesso." },
   { id: "community_share", label: "Influencer do Adestro", icon: "📱", description: "Compartilhou vídeo de progresso do cão." },
@@ -145,7 +145,7 @@ function computeBadges(raw: RawGamification, level: number): Badge[] {
     if (badge.id === "level_3" && level >= 3) unlocked = true;
     if (badge.id === "level_5" && level >= 5) unlocked = true;
     if (badge.id === "first_video_uploaded" && raw.watchedVideos.length >= 1) unlocked = true;
-    // Novas badges de tutor
+    // Novas badges de cliente
     if (badge.id === "consistent_trainer" && raw.weeklyTasksCompleted >= 7) unlocked = true;
     if (badge.id === "well_behaved_dog" && raw.successfulTrainings >= 5) unlocked = true;
     if (badge.id === "community_share" && raw.videosShared >= 1) unlocked = true;

@@ -311,7 +311,7 @@ export default function RelatoriosClientPage() {
           {editableReport && (
             <div className="mt-6 space-y-6">
 
-              {/* Exercícios do mês, agrupados por categoria — base do resumo ao tutor */}
+              {/* Exercícios do mês, agrupados por categoria — base do resumo ao cliente */}
               {editableReport.categoryBreakdown && editableReport.categoryBreakdown.length > 0 && (
                 <div className="rounded-md border border-[var(--border)] bg-white p-4 sm:p-5">
                   <h3 className="mb-1 text-sm font-bold text-[var(--foreground)]">Exercícios do mês por categoria</h3>

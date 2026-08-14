@@ -1,6 +1,6 @@
 "use client";
 
-// Mostra ao adestrador o que o tutor respondeu no formulário de convite.
+// Mostra ao adestrador o que o cliente respondeu no formulário de convite.
 //
 // Existe porque coletar sem exibir é pior que não coletar: foi o que aconteceu
 // com routine.sleep/walks/plays, que viajavam no payload do onboarding e nunca

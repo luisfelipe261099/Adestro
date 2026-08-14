@@ -31,7 +31,7 @@ const trainerFlow: FlowStep[] = [
       "Vá em Configurações → Meu cadastro (ou clique no seu nome no topo → 'Editar meu cadastro'). A engrenagem também abre a lista com cada quadro.",
       "E-mail e WhatsApp são obrigatórios: sem eles não há como te avisar de nada, e as mensagens que o cliente recebe saem sem o seu contato.",
       "Assinatura: desenhe com o dedo/mouse ou envie uma foto da sua assinatura em papel. Ela sai impressa no recibo e no contrato, junto do seu nome.",
-      "Foto aparece para o tutor no portal; logo e dados do negócio (nome, CPF/CNPJ) entram no cabeçalho dos documentos.",
+      "Foto aparece para o cliente no portal; logo e dados do negócio (nome, CPF/CNPJ) entram no cabeçalho dos documentos.",
       "Enquanto faltar algo, a home mostra o aviso 'Complete seu cadastro' com a barra de progresso — some sozinho quando estiver tudo preenchido.",
     ],
     shortcut: "Atalho: menu do seu nome → Editar meu cadastro",
@@ -40,7 +40,7 @@ const trainerFlow: FlowStep[] = [
     title: "1) Cadastrar cliente e cão",
     why: "Base de todo o acompanhamento — todo registro futuro liga aqui.",
     how: [
-      "Sem digitar nada: em /clientes toque em 'Convidar cliente', gere o link e mande no WhatsApp. O tutor preenche a ficha inteira — dados dele, do cão e o comportamento.",
+      "Sem digitar nada: em /clientes toque em 'Convidar cliente', gere o link e mande no WhatsApp. O cliente preenche a ficha inteira — dados dele, do cão e o comportamento.",
       "São três seções e cada 'Avançar' já salva. Quem parar no meio aparece como 'Em preenchimento' na lista de convites, e o contato dele já está em Clientes como rascunho: dá pra ligar sem esperar ele voltar.",
       "O convite vale 7 dias por padrão (1 a 30, você escolhe) e serve para um cadastro. Dá pra revogar enquanto não estiver concluído.",
       "O cadastro chega como rascunho e aparece em /pendencias. Confira e toque em 'Revisar e Aprovar' — só então ele entra na sua carteira e conta no limite do plano.",
@@ -106,7 +106,7 @@ const trainerFlow: FlowStep[] = [
     how: [
       "Em /portal gere/copie o link único do cliente e envie pelo WhatsApp (template já pronto).",
       "O cliente vê: nível do cão, streak diário 🔥, tarefas de hoje (com upload de foto), histórico, badges.",
-      "Em /chat você conversa em tempo real com os tutores — as mensagens novas aparecem no sininho.",
+      "Em /chat você conversa em tempo real com os clientes — as mensagens novas aparecem no sininho.",
       "Quando o cliente responde NPS após cada aula, você recebe a média no comparativo mensal.",
       "Banner azul de 'Confirmar presença' aparece no portal quando há evento pendente.",
     ],
@@ -115,6 +115,8 @@ const trainerFlow: FlowStep[] = [
     title: "7) Operar financeiro + emitir recibo",
     why: "Pacote → contrato → cobranças automáticas → recibo com Pix Copia e Cola embutido.",
     how: [
+      "Não tem pacote ainda? Dá para criar dentro da própria venda: o botão 'Criar um pacote novo aqui mesmo' abre os campos ali, e o pacote já entra selecionado — você não perde a venda em andamento.",
+      "Terminada a venda, a tela abre as cobranças geradas: o próximo passo (cobrar) fica na sua frente.",
       "Em /financeiro cadastre pacotes (sessões, valor, fracionamento, validade).",
       "Vender pacote gera contrato e cobranças automaticamente — os contratos ativos ficam listados em /planos-treino.",
       "No recibo, se sua chave Pix estiver configurada, gera o BR Code Copia e Cola — o cliente cola no banco e pronto.",
@@ -139,17 +141,18 @@ const trainerFlow: FlowStep[] = [
 const screenMap = [
   { href: "/dashboard", label: "Hoje (Dashboard)", text: "Card 'Próxima ação' pra começar, resumo do dia, lembretes prontos pra WhatsApp e pendências." },
   { href: "/agenda", label: "Agenda", text: "Dia/Semana/Mês, recorrência, confirmação de presença e exportação de calendário." },
-  { href: "/clientes", label: "Clientes", text: "Fichas de clientes e cães, tags, onboarding e quadro kanban. Clique no cliente pra abrir a página completa dele. O botão 'Convidar cliente' gera o link pro tutor se cadastrar sozinho." },
+  { href: "/clientes", label: "Clientes", text: "Fichas de clientes e cães, tags, onboarding e quadro kanban. Clique no cliente pra abrir a página completa dele. O botão 'Convidar cliente' gera o link pro cliente se cadastrar sozinho." },
   { href: "/treinos", label: "Treinos", text: "Feed dos treinos realizados com fotos, notas e filtros." },
   { href: "/treinos/registro", label: "Registrar treino", text: "Exercícios trabalhados (Categoria > Área > Exercício) com estrela por exercício, voz e IA." },
   { href: "/financeiro", label: "Financeiro", text: "Pacotes, contratos, cobranças, recibos com Pix Copia e Cola." },
   { href: "/relatorios", label: "Relatórios", text: "Relatório mensal com análise IA, fotos e comparativo mês a mês." },
-  { href: "/portal", label: "Portal do cliente", text: "Links únicos de acesso do tutor, tarefas e gamificação." },
-  { href: "/chat", label: "Chat", text: "Conversa em tempo real com os tutores." },
+  { href: "/portal", label: "Portal do cliente", text: "Links únicos de acesso do cliente, tarefas e gamificação." },
+  { href: "/chat", label: "Chat", text: "Conversa em tempo real com os clientes." },
   { href: "/ia", label: "Assistente IA", text: "Conversas com a IA para casos complexos, fora do contexto de uma sessão." },
   { href: "/evolucao", label: "Evolução", text: "Notas comportamentais por categoria de cada cão ao longo do tempo." },
   { href: "/planos-treino", label: "Planos de treino", text: "Pacotes e contratos de sessões ativos por cliente." },
   { href: "/planos", label: "Meu plano", text: "Sua assinatura do Adestro: plano, pagamento e limites." },
+  { href: "/clientes", label: "Leads", text: "Aba própria com as fichas de autocadastro esperando aprovação — a carteira fica só com quem já é cliente." },
   { href: "/configuracoes#cadastro", label: "Meu cadastro", text: "Nome, e-mail, WhatsApp, foto e assinatura — a assinatura sai no recibo e no contrato." },
   { href: "/configuracoes", label: "Configurações", text: "Dados do negócio, alertas, notificações push, tema escuro, importação CSV e export LGPD." },
 ];
@@ -158,7 +161,7 @@ const featureHighlights = [
   {
     icon: "🧭",
     title: "Próxima ação no Dashboard",
-    text: "Conta nova é conduzida passo a passo: tutor → aula → treino → portal. Uma ação por vez; o card some quando a jornada completa.",
+    text: "Conta nova é conduzida passo a passo: cliente → aula → treino → portal. Uma ação por vez; o card some quando a jornada completa.",
   },
   {
     icon: "🔔",
@@ -193,7 +196,7 @@ const featureHighlights = [
   {
     icon: "💬",
     title: "Chat em tempo real",
-    text: "Em /chat você conversa com os tutores. As mensagens do cliente chegam pelo portal e aparecem no sininho.",
+    text: "Em /chat você conversa com os clientes. As mensagens do cliente chegam pelo portal e aparecem no sininho.",
   },
   {
     icon: "📋",

@@ -122,7 +122,7 @@ export default function PendenciasClientPage() {
         href: `/treinos/registro?clientId=${item.clientId}&dogId=${item.dog.id}`,
       }));
 
-    // 2) Aulas que o tutor ainda não confirmou.
+    // 2) Aulas que o cliente ainda não confirmou.
     const awaiting = events
       .filter((e) => isActiveEvent(e) && (e.status === "Pendente" || e.status === "Aguardando"))
       .map((e) => ({
@@ -154,7 +154,7 @@ export default function PendenciasClientPage() {
       .map((r) => ({
         key: `relatorio-${r.id}`,
         title: `Relatório mensal ${r.month ?? ""}`.trim(),
-        detail: `Status atual: ${r.status ?? "Rascunho"}. Ainda não foi enviado ao tutor.`,
+        detail: `Status atual: ${r.status ?? "Rascunho"}. Ainda não foi enviado ao cliente.`,
         actionLabel: "Abrir relatórios",
         href: "/relatorios",
       }));
@@ -165,7 +165,7 @@ export default function PendenciasClientPage() {
       .map((c) => ({
         key: `cadastro-${c.id}`,
         title: c.name,
-        detail: "Cadastro preenchido pelo próprio tutor. Confira os dados e aprove.",
+        detail: "Cadastro preenchido pelo próprio cliente. Confira os dados e aprove.",
         actionLabel: "Abrir cadastro",
         href: `/clientes/${c.id}`,
       }));
@@ -174,7 +174,7 @@ export default function PendenciasClientPage() {
       {
         key: "cadastros",
         title: "Cadastros aguardando aprovação",
-        what: "Tutores que preencheram a ficha pelo link de convite e ainda não foram aprovados.",
+        what: "Clientes que preencheram a ficha pelo link de convite e ainda não foram aprovados.",
         why: "Enquanto não aprovar, o cliente não entra na sua carteira nem aparece nos relatórios.",
         Icon: IconUser,
         tone: "text-[var(--accent)]",
@@ -185,7 +185,7 @@ export default function PendenciasClientPage() {
         key: "treinos",
         title: "Treinos sem registro",
         what: "Aulas que já aconteceram nos últimos 7 dias, mas cujo treino não foi registrado no sistema.",
-        why: "Sem o registro, o tutor não vê a evolução no portal e o relatório mensal sai incompleto.",
+        why: "Sem o registro, o cliente não vê a evolução no portal e o relatório mensal sai incompleto.",
         Icon: IconDog,
         tone: "text-[var(--danger)]",
         items: missingRecord,
@@ -195,7 +195,7 @@ export default function PendenciasClientPage() {
         key: "confirmacoes",
         title: "Aulas aguardando confirmação",
         what: 'Agendamentos criados que continuam com status "Pendente" ou "Aguardando".',
-        why: "Aula não confirmada é a principal causa de falta. Confirme com o tutor ou cancele para liberar o horário.",
+        why: "Aula não confirmada é a principal causa de falta. Confirme com o cliente ou cancele para liberar o horário.",
         Icon: IconCalendar,
         tone: "text-[var(--warning)]",
         items: awaiting,
@@ -205,7 +205,7 @@ export default function PendenciasClientPage() {
         key: "cobrancas",
         title: "Cobranças vencidas",
         what: "Faturas de clientes cuja data de vencimento já passou e que não foram marcadas como pagas.",
-        why: "É o dinheiro que já era seu e não entrou. Marque como paga no Financeiro ou cobre o tutor.",
+        why: "É o dinheiro que já era seu e não entrou. Marque como paga no Financeiro ou cobre o cliente.",
         Icon: IconDollar,
         tone: "text-[var(--danger)]",
         items: overdue,
@@ -214,7 +214,7 @@ export default function PendenciasClientPage() {
       {
         key: "relatorios",
         title: "Relatórios a enviar",
-        what: "Relatórios mensais criados que ainda não foram enviados ao tutor.",
+        what: "Relatórios mensais criados que ainda não foram enviados ao cliente.",
         why: "O relatório é o que mostra valor ao cliente e sustenta a renovação do pacote.",
         Icon: IconReport,
         tone: "text-[var(--muted-strong)]",
