@@ -145,6 +145,37 @@ export default function FinanceiroPage() {
     }
   }
 
+  // Cadastro do adestrador — assina o recibo e identifica quem emitiu.
+  const [profile, setProfile] = useState({
+    name: "",
+    email: "",
+    whatsapp: "",
+    signatureUrl: "",
+    businessName: "",
+    businessDocument: "",
+  });
+
+  useEffect(() => {
+    let cancelado = false;
+    fetch("/api/trainer/settings", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d || cancelado) return;
+        setProfile({
+          name: d.name ?? "",
+          email: d.email ?? "",
+          whatsapp: d.whatsapp ?? "",
+          signatureUrl: d.signatureUrl ?? "",
+          businessName: d.businessName ?? "",
+          businessDocument: d.businessDocument ?? "",
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
   // Estado do Recibo
   const [receiptClient, setReceiptClient] = useState("");
   const [receiptDog, setReceiptDog] = useState("");
@@ -1108,10 +1139,34 @@ export default function FinanceiroPage() {
                           </div>
                         ) : null}
 
+                        {/* Assinatura e identificação vêm do cadastro do
+                            adestrador (Configurações › Meu cadastro). Sem
+                            assinatura cadastrada, sobra a linha para assinar à
+                            mão — o recibo nunca sai sem quem o emitiu. */}
                         <div className="mt-8 border-t border-slate-100 pt-5 flex flex-col items-center justify-center text-[12px] text-[var(--muted)]">
-                          <div className="h-0.5 w-36 bg-slate-200 mb-1" />
+                          {profile.signatureUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={profile.signatureUrl}
+                              alt="Assinatura do adestrador"
+                              className="mb-1 h-14 object-contain"
+                            />
+                          ) : (
+                            <div className="h-0.5 w-36 bg-slate-200 mb-1" />
+                          )}
                           <p>Assinatura do Adestrador Canino</p>
-                          <p className="mt-0.5 font-bold text-slate-900">Adestro CRM</p>
+                          <p className="mt-0.5 font-bold text-slate-900">{profile.name || trainerName || "Adestrador"}</p>
+                          {profile.businessName ? (
+                            <p className="text-[12px] text-[var(--muted)]">{profile.businessName}</p>
+                          ) : null}
+                          {profile.businessDocument ? (
+                            <p className="text-[12px] text-[var(--muted)]">{profile.businessDocument}</p>
+                          ) : null}
+                          {profile.whatsapp || profile.email ? (
+                            <p className="mt-0.5 text-[12px] text-[var(--muted)]">
+                              {[profile.whatsapp, profile.email].filter(Boolean).join(" · ")}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
 
