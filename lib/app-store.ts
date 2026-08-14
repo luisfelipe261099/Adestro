@@ -877,7 +877,7 @@ export const useAppStore = create<AppState>()(
         const currentEvent = get().calendarEvents.find((event) => event.id === eventId);
         if (!currentEvent) return false;
 
-        // Optimistic: nova data/hora + volta a "Pendente" (reconfirmação do tutor).
+        // Optimistic: nova data/hora + volta a "Pendente" (reconfirmação do cliente).
         set((state) => ({
           calendarEvents: state.calendarEvents.map((event) =>
             event.id === eventId ? { ...event, day, time, status: "Pendente" as SessionStatus } : event,
@@ -1217,7 +1217,7 @@ export const useAppStore = create<AppState>()(
                 : "Ativo",
               // JSON cru, como veio do banco. Quem exibe é que interpreta
               // (components/dog-behavior-card.tsx) — sem isso o adestrador não
-              // enxerga nada do que o tutor respondeu no convite.
+              // enxerga nada do que o cliente respondeu no convite.
               preventiveCare: d.preventiveCare ? String(d.preventiveCare) : undefined,
               temperament: d.temperament ? String(d.temperament) : undefined,
               routine: d.routine ? String(d.routine) : undefined,

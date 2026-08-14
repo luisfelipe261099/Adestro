@@ -27,12 +27,13 @@ type SettingsPayload = {
   logoUrl?: string;
 };
 
+// Modelos de planejamento do treino. O adestrador pediu para tirar
+// "Aquecimento" e separar "Treino de foco / Place" (que virou dois exercícios
+// distintos na árvore), e para incluir Socialização.
 const FALLBACK_ACTIVITIES = [
-  "Aquecimento",
   "Caminhada estruturada",
-  "Treino de foco / Place",
+  "Socialização",
   "Recall (volta ao chamado)",
-  "Socialização supervisionada",
   "Sessão livre / brincadeira guiada",
 ];
 

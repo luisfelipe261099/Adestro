@@ -254,7 +254,7 @@ export type ExerciseCategoryGroup = {
 };
 
 /**
- * Agrupa os exercícios marcados por Categoria — o resumo que vai pro tutor sai
+ * Agrupa os exercícios marcados por Categoria — o resumo que vai pro cliente sai
  * daqui, sem o adestrador precisar organizar nada na mão.
  */
 export function groupExercisesByCategory(
@@ -299,7 +299,7 @@ export type ExerciseCategorySummary = {
 
 /**
  * Resumo do período por categoria — é isso que o relatório mensal e o resumo
- * do tutor mostram. Junta as repetições do mesmo exercício numa média só.
+ * do cliente mostram. Junta as repetições do mesmo exercício numa média só.
  */
 export function summarizeExercisesByCategory(
   items: SessionExercise[],
@@ -383,7 +383,7 @@ export function sessionExercisesFromParsed(record: {
 }
 
 /**
- * Projeção do formato antigo (`commands`), mantida para o portal do tutor, os
+ * Projeção do formato antigo (`commands`), mantida para o portal do cliente, os
  * relatórios e a IA continuarem lendo o mesmo campo de sempre enquanto a base
  * tem sessões dos dois formatos.
  */

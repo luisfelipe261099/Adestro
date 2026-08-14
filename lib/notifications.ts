@@ -138,7 +138,7 @@ export function useNotifications(): NotificationSummary {
       });
     }
 
-    // 3) Feedbacks recentes do tutor (mensagens novas)
+    // 3) Feedbacks recentes do cliente (mensagens novas)
     const tutorFeedbacks = feedbacks.filter((f) => f.author === "Tutor").slice(0, 3);
     for (const fb of tutorFeedbacks) {
       items.push({

@@ -2,7 +2,7 @@
 //
 // O cliente pediu que o cadastro do adestrador seja prioritário no início de
 // uso: sem e-mail e WhatsApp não há como falar com ele nem repassar contato ao
-// tutor; sem assinatura e logo o recibo e o contrato saem sem identificação.
+// cliente; sem assinatura e logo o recibo e o contrato saem sem identificação.
 // Esta é a fonte única do que falta — o aviso da home, a página de
 // configurações e o recibo leem daqui, para não divergirem.
 
