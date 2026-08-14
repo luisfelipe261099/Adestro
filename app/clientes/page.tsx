@@ -1080,7 +1080,7 @@ export default function ClientsPage() {
                     <input
                       value={breed}
                       onChange={(e) => setBreed(e.target.value)}
-                      placeholder="Raça — digite para ver sugestões"
+                      placeholder="Raça — pode escrever qualquer uma (a lista é só sugestão)"
                       list="dog-breeds-list"
                       className="min-w-0 rounded-md border border-[var(--border)] px-3 py-2 text-xs outline-none focus:border-sky-400"
                     />
