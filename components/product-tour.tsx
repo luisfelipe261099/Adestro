@@ -229,6 +229,14 @@ export const TRAINER_STEPS: TourStep[] = [
     placement: "bottom",
   },
   {
+    id: "relatorio-por-sessao",
+    route: "/relatorios",
+    title: "Evolução da sessão 1 à 4",
+    description:
+      "Escolha o recorte 'Por sessão' e diga o intervalo: o relatório desenha a curva da evolução naquele trecho — média dos exercícios e os eixos comportamentais, sessão a sessão. É o argumento visual para o cliente renovar o pacote.",
+    fullScreen: true,
+  },
+  {
     id: "configuracoes",
     route: "/configuracoes",
     selector: '[data-tour="settings-alerts"]',
