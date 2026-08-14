@@ -1,4 +1,4 @@
-// Convite de autocadastro: o adestrador gera o link, o tutor se cadastra sozinho.
+// Convite de autocadastro: o adestrador gera o link, o cliente se cadastra sozinho.
 // Só lógica pura aqui — as rotas dependem disto, e isto não depende de nada.
 
 export const INVITE_DEFAULT_DAYS = 7;
@@ -70,7 +70,7 @@ export function canReenterInvite(invite: InviteLifecycle, nowMs: number = Date.n
   return invite.expiresAt.getTime() > nowMs;
 }
 
-// Em que seção o tutor volta. Cada seção deixa um rastro no banco, e é ele que
+// Em que seção o cliente volta. Cada seção deixa um rastro no banco, e é ele que
 // responde a pergunta — não um contador guardado no navegador, que se perderia
 // quando a pessoa troca de aparelho.
 export function getInviteResumeStep(progress: InviteProgress): 1 | 2 | 3 {

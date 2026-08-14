@@ -109,6 +109,8 @@ async function toCompressedMedia(file: File): Promise<TrainingMediaItem> {
 
 // Seções numeradas (1 a 8) — antes eram letras A–I.
 type AccordionSection = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
+/** `null` = todas fechadas. Ver o comentário em renderSectionHeader. */
+type AccordionState = AccordionSection | null;
 
 function todayInputValue(): string {
   const d = new Date();
@@ -171,7 +173,7 @@ export default function RegistroTreinoClientPage() {
   const [templatesMsg, setTemplatesMsg] = useState("");
 
   // Accordion de navegação
-  const [expandedSection, setExpandedSection] = useState<AccordionSection>("1");
+  const [expandedSection, setExpandedSection] = useState<AccordionState>("1");
 
   // SEÇÃO 1: Exercícios Trabalhados (Categoria > Área > Exercício)
   // A árvore vem do banco (catálogo padrão + os exercícios criados por este
@@ -246,6 +248,36 @@ export default function RegistroTreinoClientPage() {
       if (focus || cmds.length || tasks.length) return { date: s.date, focus, commands: cmds, tasks };
     }
     return null;
+  })();
+
+  // Resumo do ÚLTIMO treino realizado: o que foi trabalhado e o que o
+  // adestrador comentou. Diferente do "pré-treino" acima, que é o plano
+  // combinado para hoje — aqui é o retrato do encontro anterior, para ele
+  // chegar na aula lembrando de onde parou. Vazio na primeira sessão do cão.
+  const lastSession = (() => {
+    if (!selectedDogId) return null;
+    const toTime = (date: string) => {
+      const [d, m, y] = (date ?? "").split("/").map(Number);
+      return d && m && y ? new Date(y, m - 1, d).getTime() : 0;
+    };
+    const past = trainingSessions
+      .filter((s) => s.dogId === selectedDogId || (s.dogSessions ?? []).some((ds) => ds.dogId === selectedDogId))
+      .sort((a, b) => toTime(b.date) - toTime(a.date));
+    const ultima = past[0];
+    if (!ultima) return null;
+    const ds = (ultima.dogSessions ?? []).find((item) => item.dogId === selectedDogId);
+    const exercicios = (ds?.exercises ?? []).map((ex) => `${ex.name} (${ex.rating}/5)`);
+    const atividades = (ds?.activities ?? []).filter((a) => a.completed).map((a) => a.name);
+    const comentario =
+      ds?.description?.trim() ||
+      (ultima.notes ?? []).map((n) => n.comment).filter(Boolean).join(" ") ||
+      "";
+    return {
+      date: ultima.date,
+      title: ultima.title,
+      trabalhado: exercicios.length ? exercicios : atividades,
+      comentario,
+    };
   })();
 
   // Importa o plano da última aula: cada item vira exercício marcado (casando
@@ -691,7 +723,7 @@ export default function RegistroTreinoClientPage() {
       sessionType === "Coletivo" ? [selectedDog.id, ...collectiveDogIds] : [selectedDog.id];
 
     // `exercises` é o registro real da sessão. `commands` continua sendo
-    // gravado como projeção do mesmo conteúdo porque o portal do tutor, os
+    // gravado como projeção do mesmo conteúdo porque o portal do cliente, os
     // relatórios e a IA leem esse campo desde sempre — e a base ainda tem
     // sessões antigas nesse formato.
     const legacyCommands = toLegacyCommands(exercises);
@@ -785,7 +817,10 @@ export default function RegistroTreinoClientPage() {
     return (
       <button
         type="button"
-        onClick={() => setExpandedSection(isExpanded ? "1" : num)}
+        // Clicar no título de uma seção aberta fecha ELA. Antes voltava para a
+        // seção 1, o que jogava a página para o topo: o adestrador clicava no
+        // item 7 e via o item 1 abrir sozinho.
+        onClick={() => setExpandedSection(isExpanded ? null : num)}
         className={`flex w-full items-center justify-between gap-3 border-b px-4 py-3 text-left transition-colors ${
           isExpanded
             ? "border-[var(--accent)] border-l-4 bg-[var(--accent)] text-white"
@@ -995,8 +1030,36 @@ export default function RegistroTreinoClientPage() {
                 <div className="p-4 space-y-3" data-tour="exercise-tree">
                   <p className="text-[12px] text-[var(--muted)]">
                     Um toque marca o exercício e a <b>estrela (1-5) avalia aquele exercício</b>. Categoria e Área
-                    servem só para filtrar e agrupar — o resumo para o tutor sai agrupado por categoria sozinho.
+                    servem só para filtrar e agrupar — o resumo para o cliente sai agrupado por categoria sozinho.
                   </p>
+
+                  {/* Resumo do último treino realizado deste cão */}
+                  {lastSession ? (
+                    <div className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/50 p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-[12px] font-bold uppercase tracking-wide text-[var(--muted)]">
+                          Resumo do último treino — {lastSession.date}
+                        </p>
+                        {selectedDogId ? (
+                          <Link
+                            href={`/caes/${selectedDogId}`}
+                            className="text-[12px] font-semibold text-[var(--accent-text)] hover:underline"
+                          >
+                            Ver histórico de treinos do cão →
+                          </Link>
+                        ) : null}
+                      </div>
+                      <ul className="mt-1.5 space-y-0.5 text-[12.5px] leading-5 text-[var(--foreground)]">
+                        {lastSession.trabalhado.length ? (
+                          <li>• Trabalhado: {lastSession.trabalhado.join(", ")}</li>
+                        ) : null}
+                        {lastSession.comentario ? <li>• Comentário: {lastSession.comentario}</li> : null}
+                        {!lastSession.trabalhado.length && !lastSession.comentario ? (
+                          <li className="text-[var(--muted)]">Sessão anterior sem detalhes registrados.</li>
+                        ) : null}
+                      </ul>
+                    </div>
+                  ) : null}
 
                   {/* Pré-treino: plano combinado na última aula deste cão */}
                   {lastPlan ? (
@@ -1007,7 +1070,7 @@ export default function RegistroTreinoClientPage() {
                       <ul className="mt-1.5 space-y-0.5 text-[12.5px] leading-5 text-[var(--foreground)]">
                         {lastPlan.focus ? <li>• Foco: {lastPlan.focus}</li> : null}
                         {lastPlan.commands.length ? <li>• Exercícios: {lastPlan.commands.join(", ")}</li> : null}
-                        {lastPlan.tasks.length ? <li>• Tarefas que o tutor praticou em casa: {lastPlan.tasks.join(", ")}</li> : null}
+                        {lastPlan.tasks.length ? <li>• Tarefas que o cliente praticou em casa: {lastPlan.tasks.join(", ")}</li> : null}
                       </ul>
                       <button
                         type="button"

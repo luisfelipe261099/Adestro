@@ -1,6 +1,6 @@
 // Helpers para gerar deeplinks wa.me (sem custo, abre o WhatsApp do próprio adestrador).
 // Não usa API paga (Twilio/WhatsApp Business). O adestrador clica e o WhatsApp abre
-// já com a mensagem pronta para enviar ao tutor.
+// já com a mensagem pronta para enviar ao cliente.
 
 export type WaMessageVars = Record<string, string | number | undefined>;
 

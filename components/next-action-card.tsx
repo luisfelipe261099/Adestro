@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAppStore } from "@/lib/app-store";
 
 // Card "Próxima ação": conduz o adestrador novo pelo fluxo mínimo do sistema
-// (tutor → aula → treino → portal) mostrando UMA ação por vez. Some sozinho
+// (cliente → aula → treino → portal) mostrando UMA ação por vez. Some sozinho
 // quando a jornada inicial está completa — não incomoda quem já opera.
 
 type JourneyStep = {
@@ -21,9 +21,9 @@ const JOURNEY: JourneyStep[] = [
   {
     id: "client",
     label: "Tutor",
-    title: "Cadastre seu primeiro tutor e cão",
-    description: "Tudo no Adestro começa pela ficha do tutor e do cão — agenda, treinos e portal ligam nela.",
-    cta: "Cadastrar tutor",
+    title: "Cadastre seu primeiro cliente e cão",
+    description: "Tudo no Adestro começa pela ficha do cliente e do cão — agenda, treinos e portal ligam nela.",
+    cta: "Cadastrar cliente",
     href: "/clientes?new=true",
   },
   {
@@ -38,15 +38,15 @@ const JOURNEY: JourneyStep[] = [
     id: "session",
     label: "Treino",
     title: "Registre o primeiro treino",
-    description: "O registro vira histórico técnico, alimenta a IA e o relatório mensal do tutor.",
+    description: "O registro vira histórico técnico, alimenta a IA e o relatório mensal do cliente.",
     cta: "Registrar treino",
     href: "/treinos/registro",
   },
   {
     id: "portal",
     label: "Portal",
-    title: "Envie o portal ao tutor",
-    description: "Crie uma tarefa de casa e mande o link único — é aí que o tutor vê o valor do seu trabalho.",
+    title: "Envie o portal ao cliente",
+    description: "Crie uma tarefa de casa e mande o link único — é aí que o cliente vê o valor do seu trabalho.",
     cta: "Abrir portal",
     href: "/portal",
   },

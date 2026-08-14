@@ -208,7 +208,7 @@ export default function ClientProfilePage() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-start gap-4">
                   {/* Avatar humano: esta ficha é da PESSOA. Antes mostrava a foto
-                      do primeiro cão, o que fazia o tutor parecer o cachorro. */}
+                      do primeiro cão, o que fazia o cliente parecer o cachorro. */}
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--muted-strong)] ring-1 ring-[var(--border)]">
                     <IconUser className="h-8 w-8" />
                   </div>
@@ -569,7 +569,7 @@ export default function ClientProfilePage() {
               >
                 {clientTasks.length === 0 ? (
                   <p className="rounded-md border border-dashed border-[var(--border)] p-4 text-center text-[12px] text-[var(--muted)]">
-                    Nenhuma tarefa de casa criada — crie em Portal para engajar o tutor entre as aulas.
+                    Nenhuma tarefa de casa criada — crie em Portal para engajar o cliente entre as aulas.
                   </p>
                 ) : (
                   <ul className="space-y-1.5">

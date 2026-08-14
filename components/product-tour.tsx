@@ -58,7 +58,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="next-action"]',
     title: "Próxima ação — seu guia automático",
     description:
-      "Enquanto a conta é nova, este card mostra UMA ação por vez: cadastrar tutor → agendar aula → registrar treino → enviar portal. Complete a jornada e ele some sozinho.",
+      "Enquanto a conta é nova, este card mostra UMA ação por vez: cadastrar cliente → agendar aula → registrar treino → enviar portal. Complete a jornada e ele some sozinho.",
     placement: "bottom",
   },
   {
@@ -119,9 +119,9 @@ export const TRAINER_STEPS: TourStep[] = [
     id: "client-invite",
     route: "/clientes",
     selector: '[data-tour="client-invite"]',
-    title: "Deixe o tutor se cadastrar",
+    title: "Deixe o cliente se cadastrar",
     description:
-      "Em vez de digitar o cadastro, gere um link e mande no WhatsApp. O tutor preenche a ficha inteira — dados dele, do cão e o comportamento — e cada passo já salva: quem parar no meio aparece como 'Em preenchimento', com o contato já disponível aqui. O cadastro chega como rascunho esperando sua aprovação.",
+      "Em vez de digitar o cadastro, gere um link e mande no WhatsApp. O cliente preenche a ficha inteira — dados dele, do cão e o comportamento — e cada passo já salva: quem parar no meio aparece como 'Em preenchimento', com o contato já disponível aqui. O cadastro chega como rascunho esperando sua aprovação.",
     placement: "bottom",
   },
   {
@@ -157,15 +157,15 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: '[data-tour="portal-links"]',
     title: "Portal do cliente",
     description:
-      "Gere o link único de cada cliente e envie pelo WhatsApp. O tutor vê tarefas de casa, evolução, gamificação e confirma presença — sem precisar de login.",
+      "Gere o link único de cada cliente e envie pelo WhatsApp. O cliente vê tarefas de casa, evolução, gamificação e confirma presença — sem precisar de login.",
     placement: "bottom",
   },
   {
     id: "chat",
     route: "/chat",
-    title: "Chat com os tutores",
+    title: "Chat com os clientes",
     description:
-      "Conversa em tempo real com cada cliente. As mensagens que o tutor manda pelo portal chegam aqui — e aparecem no sininho.",
+      "Conversa em tempo real com cada cliente. As mensagens que o cliente manda pelo portal chegam aqui — e aparecem no sininho.",
     fullScreen: true,
   },
   {
@@ -173,7 +173,15 @@ export const TRAINER_STEPS: TourStep[] = [
     route: "/evolucao",
     title: "Evolução comportamental",
     description:
-      "As notas que você dá no registro viram gráficos por categoria: estabilidade emocional, foco, obediência, recall… No relatório mensal, os exercícios marcados aparecem agrupados por categoria com a média das estrelas. É o argumento visual pro tutor renovar o pacote.",
+      "As notas que você dá no registro viram gráficos por categoria: estabilidade emocional, foco, obediência, recall… No relatório mensal, os exercícios marcados aparecem agrupados por categoria com a média das estrelas. É o argumento visual pro cliente renovar o pacote.",
+    fullScreen: true,
+  },
+  {
+    id: "leads",
+    route: "/clientes",
+    title: "Leads x carteira",
+    description:
+      "Quem chega pelo link de autocadastro fica na aba Leads até você aprovar — a lista de Clientes continua limpa, só com quem já fechou. O contador ao lado do nome mostra quantas fichas esperam você.",
     fullScreen: true,
   },
   {
@@ -217,7 +225,7 @@ export const TRAINER_STEPS: TourStep[] = [
     selector: "#cadastro",
     title: "Comece pelo seu cadastro",
     description:
-      "E-mail e WhatsApp são obrigatórios: é por eles que falamos com você e que o cliente te encontra nas mensagens. A assinatura que você desenha aqui sai impressa no recibo e no contrato — e a foto aparece para o tutor no portal. Enquanto faltar algo, a home avisa.",
+      "E-mail e WhatsApp são obrigatórios: é por eles que falamos com você e que o cliente te encontra nas mensagens. A assinatura que você desenha aqui sai impressa no recibo e no contrato — e a foto aparece para o cliente no portal. Enquanto faltar algo, a home avisa.",
     placement: "bottom",
   },
   {

@@ -21,7 +21,10 @@ import DOG_BREEDS from "@/lib/dog-breeds.json";
 
 type ClientStatus = "ativos" | "inativos" | "rascunho";
 type SortMode = "recentes" | "nome";
-type EntityKind = "humanos" | "caes" | "quadro";
+// "leads" = quem ainda não virou cliente: convites em aberto, quem parou no
+// meio do autocadastro e as fichas em rascunho esperando aprovação. Fica em
+// aba separada para não poluir a carteira de quem já é cliente.
+type EntityKind = "humanos" | "caes" | "quadro" | "leads";
 
 function parseBrazilianDate(date: string): number {
   const [day, month, year] = date.split("/").map(Number);
@@ -443,6 +446,13 @@ export default function ClientsPage() {
     });
   }, [clients, sessions]);
 
+  // Leads: fichas que chegaram pelo autocadastro e ainda não foram aprovadas.
+  // Os convites em aberto ficam no painel de convites, logo acima da lista.
+  const leads = useMemo(
+    () => clientsWithMeta.filter((item) => item.status === "rascunho"),
+    [clientsWithMeta],
+  );
+
   const filteredClients = useMemo(() => {
     const search = normalizeText(searchTerm.trim());
 
@@ -742,6 +752,24 @@ export default function ClientsPage() {
             >
               Quadro
             </button>
+            <button
+              type="button"
+              onClick={() => setEntityKind("leads")}
+              className={`rounded-md px-5 py-2 text-[13px] font-semibold transition ${
+                entityKind === "leads"
+                  ? "bg-[var(--accent)] text-white shadow-sm"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              Leads
+              {leads.length > 0 ? (
+                <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
+                  entityKind === "leads" ? "bg-white/25 text-white" : "bg-[var(--card-orange-bg)] text-[var(--card-orange)]"
+                }`}>
+                  {leads.length}
+                </span>
+              ) : null}
+            </button>
           </div>
 
           {/* Busca (larga) + filtros de status (sem destaque, ao lado) */}
@@ -762,7 +790,7 @@ export default function ClientsPage() {
 
             {/* Seletor direto por nome: quem já sabe quem procura escolhe na lista
                 em vez de digitar. Na aba Cães lista cães; nas demais, clientes. */}
-            {entityKind !== "quadro" && (
+            {entityKind !== "quadro" && entityKind !== "leads" && (
               <select
                 value=""
                 onChange={(event) => {
@@ -799,7 +827,7 @@ export default function ClientsPage() {
             )}
 
             {/* Filtros de status não se aplicam ao Quadro (as colunas já são as fases). */}
-            {entityKind !== "quadro" && (
+            {entityKind !== "quadro" && entityKind !== "leads" && (
               <div className="tabs">
                 {[
                   { value: "todos", label: "Todos" },
@@ -1241,7 +1269,8 @@ export default function ClientsPage() {
                 {/* ETAPA 5: Temperamento, Rotinas e Objetivos */}
                 {formStep === 5 && (
                   <div className="grid gap-2.5 animate-in fade-in duration-200">
-                    
+                    <h3 className="text-sm font-semibold text-[var(--foreground)]">Informações sobre o cão</h3>
+
                     {/* Temperamento básico */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <label className="grid gap-1 text-[12px] font-bold uppercase text-[var(--muted)]">
@@ -1359,6 +1388,50 @@ export default function ClientsPage() {
             </section>
           )}
 
+          {/* Leads — quem ainda não virou cliente */}
+          {entityKind === "leads" && (
+            <section className="space-y-3">
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                <h2 className="text-sm font-semibold text-[var(--foreground)]">Fichas esperando sua aprovação</h2>
+                <p className="mt-1 text-[12.5px] text-[var(--muted)]">
+                  Chegaram pelo link de autocadastro. Enquanto você não aprovar, não entram na
+                  carteira nem contam no limite do plano.
+                </p>
+
+                {leads.length === 0 ? (
+                  <p className="mt-3 rounded-md border border-dashed border-[var(--border)] p-4 text-center text-[12.5px] text-[var(--muted)]">
+                    Nenhuma ficha esperando aprovação. Use “Convidar cliente” para mandar o link a um interessado.
+                  </p>
+                ) : (
+                  <ul className="mt-3 space-y-2">
+                    {leads.map(({ client }) => (
+                      <li
+                        key={client.id}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 p-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-[13.5px] font-semibold text-[var(--foreground)]">{client.name}</p>
+                          <p className="text-[12.5px] text-[var(--muted)]">
+                            {client.phone || "sem telefone"}
+                            {client.dogs.length ? ` · ${client.dogs.map((d) => d.name).join(", ")}` : " · sem cão informado"}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Link href={`/clientes/${client.id}`} className="btn-secondary text-[12px]">
+                            Ver ficha
+                          </Link>
+                          <Link href="/pendencias" className="btn-primary text-[12px]">
+                            Revisar e aprovar
+                          </Link>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
+          )}
+
           {/* Quadro kanban dos cães (arrastar entre fases) */}
           {entityKind === "quadro" && (
             <section className="mt-3">
@@ -1372,7 +1445,7 @@ export default function ClientsPage() {
           {/* Listagem de Clientes — coluna única no celular; a partir de lg vira
               grade, porque os cards ocupavam a largura toda com o conteúdo
               preso à esquerda e o resto vazio. */}
-          {entityKind !== "quadro" && (
+          {entityKind !== "quadro" && entityKind !== "leads" && (
           <section data-tour="clients-list" className="mt-3 grid grid-cols-1 items-start gap-3 lg:grid-cols-2">
             {filteredClients.length === 0 ? (
               clients.length === 0 ? (
@@ -1380,7 +1453,7 @@ export default function ClientsPage() {
                   <p className="text-3xl" aria-hidden>🐾</p>
                   <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">Comece cadastrando seu primeiro cliente</p>
                   <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-[var(--muted)]">
-                    A ficha do tutor e do cão é a base de tudo: agenda, registro de treino, portal e financeiro
+                    A ficha do cliente e do cão é a base de tudo: agenda, registro de treino, portal e financeiro
                     ligam nela. Leva menos de 2 minutos.
                   </p>
                   <button
@@ -1542,7 +1615,7 @@ export default function ClientsPage() {
                   <div className="flex items-start justify-between gap-3">
                     {/* O link do cliente e os links dos cães são irmãos, nunca
                         aninhados: <a> dentro de <a> é HTML inválido e o clique
-                        no nome do cão acabaria abrindo a ficha do tutor. */}
+                        no nome do cão acabaria abrindo a ficha do cliente. */}
                     <div className="flex items-start gap-3">
                       <Link
                         href={`/clientes/${item.client.id}`}
@@ -1893,8 +1966,22 @@ export default function ClientsPage() {
                 })()}
                 className="btn-primary text-[13px]"
               >
-                💰 Vender pacote agora
+                💰 Ir para vendas e financeiro
               </Link>
+              {/* Quem tem mais de um cão na casa cadastra os dois na sequência,
+                  sem voltar pela lista. */}
+              <button
+                type="button"
+                onClick={() => {
+                  setPostSaveClient(null);
+                  setShowForm(true);
+                  setFormStep(3);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="btn-secondary text-[13px]"
+              >
+                + Cadastrar outro cão
+              </button>
               <button
                 type="button"
                 onClick={() => setPostSaveClient(null)}

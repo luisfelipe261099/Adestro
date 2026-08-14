@@ -3,7 +3,7 @@
 // são derivados das listas de opção logo abaixo.
 //
 // Existe como arquivo próprio porque as opções são lidas em dois lugares que não
-// se enxergam: o formulário do tutor e a tela do adestrador que mostra as
+// se enxergam: o formulário do cliente e a tela do adestrador que mostra as
 // respostas. No onboarding do portal elas estão inline no JSX, e foi assim que
 // seis campos ficaram declarados, enviados e nunca renderizados sem ninguém ver.
 //
@@ -116,7 +116,7 @@ export const PROPERTY_TYPE_OPTIONS: readonly InviteOption[] = [
 ];
 
 // "Nunca foi adestrado" era o valor que o onboarding gravava em TODO cão sem
-// nunca perguntar. Vira opção de verdade, escolhida pelo tutor.
+// nunca perguntar. Vira opção de verdade, escolhida pelo cliente.
 export const TRAINING_HISTORY_OPTIONS: readonly InviteOption[] = [
   { value: "Nunca foi adestrado", label: "Nunca foi adestrado" },
   { value: "Já fez adestramento básico", label: "Já fez adestramento básico" },

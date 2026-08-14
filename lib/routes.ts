@@ -3,7 +3,7 @@ import type { UserRole } from "@/lib/app-store";
 /**
  * Página inicial (home) de cada perfil — usada no redirect pós-login e ao
  * clicar no logo. Fonte única de verdade para evitar mandar um perfil para uma
- * página cujo guard exige outro perfil (ex.: tutor caía em /portal, que é
+ * página cujo guard exige outro perfil (ex.: cliente caía em /portal, que é
  * protegido por role="trainer").
  *
  * Aceita string solta porque o role vem da sessão (NextAuth) podendo estar em
