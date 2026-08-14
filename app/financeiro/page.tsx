@@ -642,7 +642,16 @@ export default function FinanceiroPage() {
 
                   {/* Transações Recentes */}
                   <section className="space-y-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Cobranças Recentes</h3>
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Pagamentos a receber</h3>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("cobrancas")}
+                        className="text-[12px] font-semibold text-[var(--accent-text)] hover:underline"
+                      >
+                        Ver todas as cobranças →
+                      </button>
+                    </div>
                     {invoices.length === 0 ? (
                       <div className="rounded-md border border-dashed border-[var(--border)] bg-white p-5 text-center">
                         <p className="text-xs text-[var(--muted)]">
@@ -662,7 +671,15 @@ export default function FinanceiroPage() {
                         <div key={inv.id} className="flex justify-between items-center rounded-md border border-slate-100 bg-white p-3 text-xs">
                           <div>
                             <p className="font-semibold text-slate-900">{inv.clientName} ({inv.dogName})</p>
-                            <p className="text-[12px] text-[var(--muted)]">{inv.packageName} • Vence em {inv.dueDate}</p>
+                            {/* Vencimento em corpo maior e, quando atrasado, em
+                                vermelho com o aviso — era o que o adestrador
+                                não conseguia enxergar na lista. */}
+                            <p className="text-[12px] text-[var(--muted)]">{inv.packageName}</p>
+                            <p className={`mt-0.5 text-[13.5px] font-semibold ${
+                              inv.status === "Atrasado" ? "text-rose-600" : "text-[var(--foreground)]"
+                            }`}>
+                              {inv.status === "Atrasado" ? "⚠ Venceu em " : "Vence em "}{inv.dueDate}
+                            </p>
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-slate-900">R$ {inv.amount.toFixed(2)}</p>

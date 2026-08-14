@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { formatDogAge } from "@/lib/dog-age";
 import { IconUser } from "@/components/icons";
 import { dogCountLabel, isOverPackage, packageProgressLabel, planLabel, plural } from "@/lib/labels";
 import { DogBehaviorCard } from "@/components/dog-behavior-card";
@@ -333,7 +334,7 @@ export default function ClientProfilePage() {
                           </div>
                           <p className="mt-0.5 truncate text-[12.5px] text-[var(--muted)]">
                             {dog.breed || "Raça não informada"}
-                            {dog.age ? ` · ${dog.age}` : ""}
+                            {formatDogAge(dog.birthDate, dog.age) ? ` · ${formatDogAge(dog.birthDate, dog.age)}` : ""}
                             {dog.weight ? ` · ${dog.weight}` : ""}
                           </p>
                           {/* Pacote contratado: quantas aulas já foram dadas. */}
