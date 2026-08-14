@@ -97,6 +97,7 @@ export function useNotifications(): NotificationSummary {
   const events = useAppStore((state) => state.calendarEvents);
   const sessions = useAppStore((state) => state.trainingSessions);
   const feedbacks = useAppStore((state) => state.portalFeedbacks);
+  const clients = useAppStore((state) => state.clients);
 
   const lidas = useSyncExternalStore(assinar, snapshot, snapshotServidor);
 
@@ -138,7 +139,25 @@ export function useNotifications(): NotificationSummary {
       });
     }
 
-    // 3) Feedbacks recentes do cliente (mensagens novas)
+    // 3) Alguém respondeu o convite de autocadastro.
+    //
+    // A ficha chega como rascunho e fica esperando aprovação — mas nada avisava
+    // o adestrador, que só descobria ao abrir a lista por acaso.
+    const fichasNovas = clients.filter((c) => c.status === "Rascunho");
+    for (const ficha of fichasNovas.slice(0, 4)) {
+      items.push({
+        id: `lead-${ficha.id}`,
+        type: "portal",
+        icon: "📝",
+        title: `${ficha.name} preencheu o cadastro`,
+        detail: ficha.dogs.length
+          ? `Cão: ${ficha.dogs.map((d) => d.name).join(", ")} · aguardando sua aprovação`
+          : "Ficha aguardando sua aprovação",
+        href: "/pendencias",
+      });
+    }
+
+    // 4) Feedbacks recentes do cliente (mensagens novas)
     const tutorFeedbacks = feedbacks.filter((f) => f.author === "Tutor").slice(0, 3);
     for (const fb of tutorFeedbacks) {
       items.push({
@@ -152,7 +171,7 @@ export function useNotifications(): NotificationSummary {
       });
     }
 
-    // 4) Relatórios pendentes — heurística: cães com sessões mas sem aiApproved
+    // 5) Relatórios pendentes — heurística: cães com sessões mas sem aiApproved
     // (assumimos que ainda há um cache de IA aguardando aprovação)
     const sessionsAwaitingReview = sessions.filter((s) =>
       s.dogSessions?.some((ds) => ds.aiSummary && !ds.aiApproved),
@@ -169,7 +188,7 @@ export function useNotifications(): NotificationSummary {
     }
 
     return items;
-  }, [events, sessions, feedbacks]);
+  }, [events, sessions, feedbacks, clients]);
 
   const items = useMemo(() => todos.filter((item) => !lidas.has(item.id)), [todos, lidas]);
 
