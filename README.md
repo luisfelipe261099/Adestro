@@ -20,8 +20,8 @@ administrativo separado.
 | IA (opcional) | Google Gemini — sem chave, o chat cai num motor heurístico |
 | Deploy | Vercel |
 
-O gerenciador de pacotes é **pnpm** (há `pnpm-workspace.yaml` e um bloco `pnpm` no
-`package.json`). Não use npm nem yarn: geraria uma árvore de dependências diferente.
+O gerenciador de pacotes é **pnpm 9** (declarado em `packageManager`). Não use npm
+nem yarn: geraria uma árvore de dependências diferente da que foi testada.
 
 ## Rodando localmente
 
