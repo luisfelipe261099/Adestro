@@ -122,7 +122,7 @@ export async function GET() {
   });
 
   // Total de sessões por cão = soma de sessionsCount dos contratos ATIVOS.
-  // Alimenta "Sessão X de Y" e o progresso do card do cão (Fase 2 — análise GPT).
+  // Alimenta "Sessão X de Y" e o progresso do card do cão.
   const contracts = await prisma.clientContract.findMany({
     where:  { trainerId: trainer.id, status: "Ativo" },
     select: { dogId: true, sessionsCount: true },

@@ -41,7 +41,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
-tsc-check.log
-tsc-final.log
-tsc.log
+# logs e artefatos de build gerados localmente
+*.log
+build-output.log
+db-push.log
+check.txt
+
+# editores
+.idea/
+.vscode/
+*.swp

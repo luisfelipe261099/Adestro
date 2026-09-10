@@ -1,104 +1,154 @@
 # Adestro
 
-Plataforma SaaS para adestradores, feita em Next.js, com foco em operacao diaria, treino, agenda, portal do cliente e financeiro.
+Plataforma SaaS de gestão para adestradores profissionais de cães: agenda, ficha do
+cão, registro técnico do treino, evolução comportamental, financeiro com pacotes e
+portal para o dono do cão.
 
-## Documentacao de uso
-
-- Manual do adestrador: `MANUAL_ADESTRADOR.md`
-
-## Status atual
-
-- Frontend responsivo com experiencia de demo para validacao comercial.
-- Backend funcional com autenticacao real via NextAuth v5 (Credentials).
-- Persistencia real com Prisma + TiDB Cloud (MySQL compativel).
-- APIs implementadas: auth, perfil, clientes, sessoes, eventos e pagamentos.
+Aplicação web responsiva instalável como PWA, multi-adestrador, com painel
+administrativo separado.
 
 ## Stack
 
-- Next.js 16 (App Router) + TypeScript
-- Tailwind CSS 4
-- NextAuth v5
-- Prisma ORM
-- TiDB Cloud (MySQL)
-- Deploy: Vercel
+| Camada | Tecnologia |
+|---|---|
+| Framework | Next.js 16 (App Router) + React 19 + TypeScript |
+| Estilo | Tailwind CSS 4 |
+| Estado | Zustand · validação com Zod |
+| Autenticação | NextAuth v5 (JWT, provider Credentials + bcrypt) |
+| ORM / Banco | Prisma 5.22 → MySQL (compatível com TiDB Cloud) |
+| Notificações | Web Push próprio (VAPID) |
+| IA (opcional) | Google Gemini — sem chave, o chat cai num motor heurístico |
+| Deploy | Vercel |
 
-## Rotas principais
+O gerenciador de pacotes é **pnpm** (há `pnpm-workspace.yaml` e um bloco `pnpm` no
+`package.json`). Não use npm nem yarn: geraria uma árvore de dependências diferente.
 
-- / (landing)
-- /dashboard
-- /clientes
-- /treinos
-- /agenda
-- /portal
-- /financeiro
-- /admin/*
+## Rodando localmente
 
-## Setup local completo
+Requer Node.js 20+ e um MySQL acessível (local ou TiDB Cloud).
 
-1. Instalar dependencias:
-
-```powershell
+```bash
 pnpm install
-```
-
-2. Criar arquivo de ambiente:
-
-```powershell
-Copy-Item .env.example .env.local
-Copy-Item .env.local .env
-```
-
-3. Preencher `.env.local` com valores reais:
-
-- DATABASE_URL (TiDB Cloud)
-- AUTH_SECRET
-- NEXTAUTH_URL=http://localhost:3000
-- SEED_SECRET
-
-Observacao: o Prisma CLI usa `.env` para carregar variaveis em comandos como `prisma generate` e `prisma db push`.
-
-4. Gerar client do Prisma e aplicar schema no banco:
-
-```powershell
+cp .env.example .env
+# preencha o .env — no mínimo DATABASE_URL, AUTH_SECRET e NEXTAUTH_URL
 pnpm prisma generate
-pnpm prisma db push
+pnpm prisma db push        # cria/atualiza o schema no banco do DATABASE_URL
+pnpm dev                   # http://localhost:3000
 ```
 
-5. Subir a aplicacao:
+O Prisma CLI lê o arquivo `.env` (não o `.env.local`) em `prisma generate` e
+`prisma db push`. Se você usar `.env.local` para a aplicação, mantenha o `.env`
+com pelo menos o `DATABASE_URL`.
 
-```powershell
-pnpm dev
+### Variáveis de ambiente
+
+Todas estão documentadas com exemplo em [`.env.example`](.env.example).
+
+| Variável | Obrigatória | Para quê |
+|---|---|---|
+| `DATABASE_URL` | sim | String de conexão MySQL |
+| `AUTH_SECRET` | sim | Assina os JWT de sessão. `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | sim | URL pública da aplicação |
+| `CRON_SECRET` | cron | Autoriza `/api/cron/daily-brief`. **Sem ela a rota fica fechada** |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | não | Liga as notificações push |
+| `GEMINI_API_KEY` / `GEMINI_MODEL` | não | Liga a IA real no assistente |
+
+Não existe valor embutido no código para nenhum segredo: se a variável faltar, o
+recurso correspondente fica desligado ou a rota fecha, em vez de cair num padrão
+inseguro.
+
+### Primeiros dados
+
+Depois do `prisma db push`, o banco está vazio. Crie as contas de trabalho com o
+script abaixo, escolhendo você mesmo as senhas:
+
+```bash
+SEED_ADMIN_PASSWORD=... SEED_TRAINER_PASSWORD=... SEED_CLIENT_PASSWORD=... \
+  node scripts/provision-test-users.js
 ```
 
-6. Seed inicial (uma vez) para criar contas demo no banco:
+Ele cria um ADMIN, um TRAINER e um CLIENT já vinculados entre si, e imprime os
+e-mails e ids (nunca as senhas). Para uma base de demonstração mais rica — cão,
+contrato, sessões e evolução — rode depois:
 
-```powershell
-Invoke-WebRequest -Uri "http://localhost:3000/api/seed" -Method POST -Headers @{"x-seed-secret"="SEU_SEED_SECRET"}
+```bash
+SEED_TRAINER_PASSWORD=... node scripts/seed-real-trainer-sample.js
 ```
 
-## Contas demo (seed)
+As senhas vêm de variável de ambiente de propósito: não há nenhuma credencial de
+acesso versionada neste repositório, e o login não tem atalho de desenvolvimento —
+toda autenticação passa pelo banco e por bcrypt.
 
-- Adestrador: adestrador@adestro.com.br / 123456
-- Cliente: cliente@adestro.com.br / 123456
-- Admin: admin@adestro.com.br / 123456
+## Verificações
 
-## Deploy na Vercel
+```bash
+pnpm lint
+pnpm build:local        # build sem tocar no banco
+pnpm check:home         # agenda da home
+pnpm check:exercises    # árvore de exercícios
+pnpm check:invite       # autocadastro por convite
+pnpm check:invite:e2e   # ponta a ponta (exige DATABASE_URL em localhost)
+pnpm check:dog-age      # cálculo de idade do cão
+```
 
-1. Conectar repositorio na Vercel.
-2. Configurar variaveis de ambiente de producao:
+## Deploy
 
-- DATABASE_URL
-- AUTH_SECRET
-- NEXTAUTH_URL=https://seu-dominio.vercel.app
-- SEED_SECRET
+O projeto está preparado para a Vercel.
 
-3. Fazer deploy.
-4. Chamar POST `/api/seed` uma unica vez em producao com `x-seed-secret`.
+> **Atenção:** o script `build` é `prisma generate && prisma db push && next build`.
+> Todo deploy aplica o schema no banco apontado por `DATABASE_URL`. É o que dispensa
+> um passo de migração manual, mas significa que um deploy com a URL errada altera o
+> banco errado. Para compilar sem tocar no banco, use `pnpm build:local`.
 
-## Checklist rapido de validacao
+1. Conecte o repositório na Vercel.
+2. Configure as variáveis de ambiente da tabela acima no projeto.
+3. Faça o deploy — o schema é aplicado sozinho durante o build.
+4. Rode `scripts/provision-test-users.js` uma vez, localmente, com o `DATABASE_URL`
+   de produção, para criar a primeira conta de acesso.
 
-1. Login com cada perfil funciona.
-2. API de sessao responde em /api/me com usuario autenticado.
-3. Criacao e listagem em /api/clients funcionam.
-4. Treinos/eventos/pagamentos persistem no banco.
-5. Build de producao passa: `pnpm run build`.
+O `vercel.json` registra um cron diário às 10:00 UTC em `/api/cron/daily-brief`,
+que monta o resumo do dia de cada adestrador e dispara as notificações push.
+
+## Estrutura
+
+```
+app/          rotas do App Router — telas e API (app/api/**)
+components/   componentes de UI compartilhados
+lib/          domínio, acesso a dados, autenticação e utilitários
+prisma/       schema e seed
+scripts/      verificações e utilitários de manutenção
+docs/         documentação (veja abaixo)
+public/       estáticos, ícones e service worker do PWA
+```
+
+Áreas principais da aplicação: `/dashboard`, `/clientes`, `/caes`, `/agenda`,
+`/treinos`, `/evolucao`, `/planos-treino`, `/relatorios`, `/financeiro`,
+`/pendencias`, `/configuracoes`, `/ia`, `/chat`, `/tutorial`, além do portal do
+cliente em `/portal` e `/convite`, e do painel administrativo em `/admin`.
+
+## Documentação
+
+| Documento | Conteúdo |
+|---|---|
+| [`docs/ESCOPO-DO-PROJETO.md`](docs/ESCOPO-DO-PROJETO.md) | Escopo completo do produto |
+| [`docs/desenvolvedor/arquitetura.md`](docs/desenvolvedor/arquitetura.md) | Arquitetura e decisões técnicas |
+| [`docs/desenvolvedor/api-docs.md`](docs/desenvolvedor/api-docs.md) | Endpoints da API |
+| [`docs/desenvolvedor/fluxo-do-sistema.md`](docs/desenvolvedor/fluxo-do-sistema.md) | Fluxo funcional ponta a ponta |
+| [`docs/desenvolvedor/ambiente-local.md`](docs/desenvolvedor/ambiente-local.md) | Banco local e verificação ponta a ponta |
+| [`docs/usuario/guia-operacao-diaria.md`](docs/usuario/guia-operacao-diaria.md) | Como o adestrador usa no dia a dia |
+| [`docs/usuario/manual-adestrador.md`](docs/usuario/manual-adestrador.md) | Manual de referência do adestrador |
+| [`docs/usuario/manual-tutor.md`](docs/usuario/manual-tutor.md) | Manual do dono do cão (portal) |
+| [`docs/usuario/tutorial-do-sistema.md`](docs/usuario/tutorial-do-sistema.md) | Tutorial de primeiros passos |
+
+A aplicação também traz o tutorial embutido em `/tutorial` (adestrador e admin) e
+`/tutorial/cliente` (portal), além de tours guiados em `components/product-tour.tsx`.
+
+## Convenções
+
+- **O tutorial acompanha a funcionalidade.** Ao adicionar ou mudar algo visível ao
+  usuário, atualize no mesmo commit `app/tutorial/page.tsx`, e também
+  `app/tutorial/cliente/page.tsx` quando a mudança afetar o portal do cliente, e os
+  passos em `components/product-tour.tsx`. Tutorial desatualizado é pior que nenhum:
+  o usuário confia nele para descobrir o sistema.
+- Mensagens de commit em português, no formato `tipo(escopo): descrição`.
+- Nenhum segredo vai para o repositório — só para `.env`, que é ignorado pelo git.

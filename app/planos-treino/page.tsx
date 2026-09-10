@@ -1,6 +1,6 @@
 "use client";
 
-// Tela "Planos de treino" (Fase 2 — análise GPT): pacotes/contratos de sessões
+// Tela "Planos de treino": pacotes/contratos de sessões
 // dos clientes (ClientContract). Listagem; a venda é feita no Financeiro.
 import { useEffect, useState } from "react";
 

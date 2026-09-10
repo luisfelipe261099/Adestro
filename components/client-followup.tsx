@@ -1,6 +1,6 @@
 "use client";
 
-// Acompanhamento dos clientes (Fase 2 — análise GPT: "Cliente precisa fazer").
+// Acompanhamento dos clientes.
 // Mostra, por cliente com tarefas, a ADESÃO (% de tarefas concluídas) e há quantos
 // DIAS o cliente não responde (último feedback dele). Lista só quem precisa de
 // atenção (adesão < 100% ou silêncio). Tudo derivado do store — sem schema novo.

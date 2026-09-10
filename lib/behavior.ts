@@ -1,4 +1,4 @@
-// Categorias de evolução comportamental (Fase 2 — análise GPT).
+// Categorias de evolução comportamental.
 // Compartilhado entre o registro de treino, o histórico e a tela de Evolução.
 //
 // Reestruturado a pedido do adestrador: dois blocos separados (emocional vs

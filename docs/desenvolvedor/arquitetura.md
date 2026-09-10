@@ -10,12 +10,14 @@ Adestro é uma plataforma SaaS desenvolvida em Next.js para gerenciar adestrador
 
 | Camada | Tecnologia |
 |--------|-----------|
-| **Frontend** | React 18 + Next.js 14 (App Router) |
-| **Styling** | Tailwind CSS + Shadcn/ui |
+| **Frontend** | React 19 + Next.js 16 (App Router) |
+| **Styling** | Tailwind CSS 4 + design system próprio (sem biblioteca de componentes) |
+| **Estado** | Zustand · validação com Zod |
 | **Backend** | Next.js API Routes |
-| **Database** | PostgreSQL + Prisma ORM |
-| **Auth** | NextAuth.js |
-| **IA** | OpenAI GPT (integração) |
+| **Database** | MySQL (TiDB Cloud em produção) + Prisma ORM 5.22 |
+| **Auth** | NextAuth v5 — JWT, provider Credentials + bcrypt |
+| **IA** | Google Gemini (assistente de treino) |
+| **Notificações** | Web Push próprio (VAPID) |
 | **Deploy** | Vercel |
 
 ---
@@ -186,6 +188,11 @@ POST   /api/portal-public/:token/gamification     # Aplicar ação
 
 ## Modelo de Dados (Prisma)
 
+> Os trechos desta seção são ilustrativos e **não correspondem ao schema atual** —
+> alguns models mostrados aqui (`Profile`, `Training`, `Gamification`) não existem,
+> e `String[]` não é válido em MySQL. O schema real, com 26 models, está em
+> `prisma/schema.prisma`; consulte-o antes de mexer no banco.
+
 ### User
 
 ```prisma
@@ -237,20 +244,22 @@ model Training {
 
 ## Integrações
 
-### OpenAI GPT
+### Assistente de IA (Google Gemini)
 
-**Arquivo**: `lib/ai-integration.ts` (a implementar)
+**Arquivo**: `app/api/ia/session-chat/route.ts` — implementado.
+
+A rota chama a API REST do Gemini direto, sem SDK. O modelo vem de `GEMINI_MODEL`
+(padrão `gemini-2.0-flash`) e a chave de `GEMINI_API_KEY`.
 
 ```typescript
-async function analyzeWithGPT(sessionData: SessionData) {
-  const prompt = `Analise a sessão de treino: ${sessionData.trainer_notes}`;
-  const response = await openai.createChatCompletion({
-    model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
-  });
-  return response.choices[0].message.content;
-}
+const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const url =
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}` +
+  `:generateContent?key=${apiKey}`;
 ```
+
+Sem `GEMINI_API_KEY` a rota não quebra: cai num motor heurístico por palavra-chave,
+e a tela `/ia` continua funcionando com respostas mais simples.
 
 ### Email (Sendgrid)
 
@@ -310,20 +319,26 @@ async function sendReportEmail(tutorEmail: string, report: MonthlyReport) {
 
 ### Vercel
 
-```bash
-# Deploy automático ao push para main
-git push origin main
-```
+Deploy automático ao push na branch de produção. O script `build` é
+`prisma generate && prisma db push && next build`: **todo deploy aplica o schema no
+banco apontado por `DATABASE_URL`**, o que dispensa passo de migração manual mas
+significa que um deploy com a URL errada altera o banco errado.
 
 ### Variáveis de Ambiente
 
 ```env
-DATABASE_URL=
-NEXTAUTH_SECRET=
-NEXTAUTH_URL=
-OPENAI_API_KEY=
-SENDGRID_API_KEY=
+DATABASE_URL=            # obrigatória — conexão MySQL
+AUTH_SECRET=             # obrigatória — assina os JWT de sessão
+NEXTAUTH_URL=            # obrigatória — URL pública da aplicação
+CRON_SECRET=             # sem ela, /api/cron/daily-brief fica fechada
+VAPID_PUBLIC_KEY=        # opcional — notificações push
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=
+GEMINI_API_KEY=          # opcional — IA real no assistente
+GEMINI_MODEL=
 ```
+
+A lista completa, comentada, está em `.env.example`.
 
 ---
 

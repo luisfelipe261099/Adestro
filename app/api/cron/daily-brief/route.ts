@@ -23,8 +23,10 @@ function toDateString(date: Date): string {
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
   // Vercel Cron envia automaticamente Authorization: Bearer <CRON_SECRET>.
-  // Quando CRON_SECRET não está definido (dev local), permitimos qualquer chamada.
-  if (!secret) return true;
+  // Sem CRON_SECRET definido a rota fica fechada: ela devolve agenda, cobranças e
+  // telefones de todos os adestradores, então liberar chamada anônima vazaria a
+  // base inteira. Para testar localmente, defina CRON_SECRET no .env.
+  if (!secret) return false;
   const header = request.headers.get("authorization") ?? "";
   return header === `Bearer ${secret}`;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-// Tela "Evolução" (Fase 2 — análise GPT): últimas notas comportamentais de cada
+// Tela "Evolução": últimas notas comportamentais de cada
 // cão, alimentadas pela Seção 8 do registro de treino.
 import { useMemo } from "react";
 

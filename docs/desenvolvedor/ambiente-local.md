@@ -1,83 +1,78 @@
 # Ambiente local: banco e verificação ponta a ponta
 
-O `.env` do repo aponta para `mysql://dummy:...@127.0.0.1:4000/adestro` — um banco local
-que **não vem pronto**. Sem ele, qualquer rota que toque o Prisma falha, e foi por isso que
-a verificação ponta a ponta do convite de autocadastro ficou bloqueada por duas sessões.
+O Adestro não roda sem banco: qualquer rota que toque o Prisma falha se o
+`DATABASE_URL` não apontar para um MySQL acessível. Este documento mostra como
+levantar esse banco e como rodar a verificação ponta a ponta do fluxo de convite.
 
-Esta receita sobe um MariaDB **sem root** e sem instalar nada no sistema.
+## 1. Um MySQL local
 
-## 1. MariaDB em espaço de usuário
-
-```bash
-D=~/.local/share/mariadb-adestro
-mkdir -p "$D/debs" "$D/root" "$D/data" "$D/run"
-cd "$D/debs"
-apt-get download mariadb-server-core mariadb-common mariadb-client-core libmariadb3
-for f in *.deb; do dpkg-deb -x "$f" "$D/root"; done
-```
-
-Arquivo de configuração (a porta 4000 é a que o `.env` espera):
+A forma mais rápida, se você tem Docker:
 
 ```bash
-cat > "$D/my.cnf" <<EOF
-[mysqld]
-basedir  = $D/root/usr
-datadir  = $D/data
-port     = 4000
-socket   = $D/run/mysqld.sock
-pid-file = $D/run/mysqld.pid
-bind-address = 127.0.0.1
-skip-name-resolve
-lc-messages-dir = $D/root/usr/share/mariadb
-[client]
-port   = 4000
-socket = $D/run/mysqld.sock
-EOF
-
-"$D/root/usr/bin/mariadb-install-db" --defaults-file="$D/my.cnf" \
-  --basedir="$D/root/usr" --datadir="$D/data" --auth-root-authentication-method=normal
+docker run -d --name adestro-db \
+  -e MYSQL_ROOT_PASSWORD=root \
+  -e MYSQL_DATABASE=adestro \
+  -p 3306:3306 \
+  mysql:8
 ```
 
-Subir e criar o banco (a senha tem de ser a mesma do `DATABASE_URL` do `.env`):
+E no `.env`:
+
+```
+DATABASE_URL="mysql://root:root@127.0.0.1:3306/adestro"
+```
+
+Sem Docker, serve qualquer MySQL 8 ou MariaDB 10.6+ instalado pelo gerenciador de
+pacotes do sistema — basta criar o banco `adestro` e um usuário com permissão nele,
+e ajustar a URL. O projeto também roda contra o TiDB Cloud, que é o que a produção
+usava; nesse caso a URL termina em `?sslaccept=strict`.
+
+Com o banco de pé, aplique o schema:
 
 ```bash
-"$D/root/usr/sbin/mariadbd" --defaults-file="$D/my.cnf" &
-SENHA=$(grep -oP 'mysql://dummy:\K[^@]*' .env)
-"$D/root/usr/bin/mariadb" --defaults-file="$D/my.cnf" -u root -e "
-  CREATE DATABASE IF NOT EXISTS adestro CHARACTER SET utf8mb4;
-  CREATE USER IF NOT EXISTS 'dummy'@'%' IDENTIFIED BY '$SENHA';
-  GRANT ALL PRIVILEGES ON adestro.* TO 'dummy'@'%';
-  FLUSH PRIVILEGES;"
+pnpm prisma db push
 ```
 
-Aplicar o schema:
-
-```bash
-npx prisma db push
-```
+O Prisma CLI lê o arquivo `.env` (não o `.env.local`). Se você mantém as variáveis
+da aplicação no `.env.local`, deixe pelo menos o `DATABASE_URL` também no `.env`.
 
 ## 2. Subir a aplicação
 
-`npm run dev` **não funciona** neste projeto: o Turbopack não resolve `tailwindcss`
-através do symlink de `~/Adestro`. Use o build de produção, que funciona:
-
 ```bash
-npm run build:local && npm start
+pnpm dev          # http://localhost:3000
 ```
 
-(`npm run build` roda `prisma db push` antes — é o que a Vercel executa. Localmente use
-`build:local`, que pula essa etapa.)
-
-## 3. Rodar a verificação
+Se o Turbopack reclamar que não resolve `tailwindcss`, o motivo costuma ser o
+projeto estar atrás de um symlink: mova o repositório para um caminho real ou use o
+build de produção, que não depende dessa resolução:
 
 ```bash
-npm run check:invite:e2e
+pnpm build:local && pnpm start
 ```
 
-Percorre o fluxo inteiro do convite: o adestrador gera o link, o tutor se cadastra, o
-cadastro chega como rascunho, o adestrador aprova. Cobre limite de plano, revogação,
+`build:local` compila sem tocar no banco. O `build` normal roda `prisma db push`
+antes — é o que a Vercel executa no deploy, e por isso não é o que você quer rodar
+apontando para um banco que não seja o seu.
+
+## 3. Verificação ponta a ponta
+
+```bash
+pnpm check:invite:e2e
+```
+
+Percorre o fluxo inteiro do convite: o adestrador gera o link, o cliente se cadastra,
+a ficha chega como rascunho, o adestrador aprova. Cobre limite de plano, revogação,
 expiração, reentrada e as rotas privadas sem sessão.
 
 O script **apaga** clientes e convites do adestrador de teste
 (`teste.adestrador@local.test`) e por isso se recusa a rodar se o `DATABASE_URL` não
 apontar para `127.0.0.1` ou `localhost`.
+
+As demais verificações não precisam de banco e conferem regras de domínio puras:
+
+```bash
+pnpm check:home        # montagem da agenda da home
+pnpm check:exercises   # árvore Categoria > Área > Exercício
+pnpm check:invite      # validação por seção do formulário de convite
+pnpm check:dog-age     # cálculo de idade do cão em anos, meses e dias
+```

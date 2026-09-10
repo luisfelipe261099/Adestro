@@ -4,18 +4,12 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-const devDemoUsers = [
-  { id: "demo-trainer", email: "adestrador@adestro.com.br", name: "Adestrador Demo", role: "trainer" },
-  { id: "demo-client", email: "cliente@adestro.com.br", name: "Cliente Demo", role: "client" },
-  { id: "demo-admin", email: "admin@adestro.com.br", name: "Admin Demo", role: "admin" },
-];
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  secret:
-    process.env.AUTH_SECRET ??
-    process.env.NEXTAUTH_SECRET ??
-    (process.env.NODE_ENV === "development" ? "adestro-local-demo-secret" : undefined),
+  // Sem valor embutido: um segredo de assinatura de JWT versionado no repositório
+  // permitiria forjar sessão em qualquer ambiente. Defina AUTH_SECRET no .env
+  // (veja .env.example).
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   trustHost: true,
   session: { strategy: "jwt" },
   pages: {
@@ -39,13 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: { email: email.toLowerCase().trim() },
         });
 
-        if (!user) {
-          if (process.env.NODE_ENV === "development" && password === "123456") {
-            const demoUser = devDemoUsers.find((item) => item.email === email.toLowerCase().trim());
-            if (demoUser) return demoUser;
-          }
-          return null;
-        }
+        if (!user) return null;
 
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) return null;

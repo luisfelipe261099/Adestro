@@ -3,16 +3,32 @@ const { PrismaClient, UserRole } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
+// As senhas NÃO ficam no código: se estivessem versionadas, qualquer pessoa com
+// acesso ao repositório teria a senha de um ADMIN. Defina-as ao rodar:
+//
+//   SEED_ADMIN_PASSWORD=... SEED_TRAINER_PASSWORD=... SEED_CLIENT_PASSWORD=... \
+//     node scripts/provision-test-users.js
+function senhaObrigatoria(variavel) {
+  const valor = process.env[variavel];
+  if (!valor || valor.length < 8) {
+    console.error(
+      `[abortado] Defina ${variavel} com pelo menos 8 caracteres antes de rodar este script.`
+    );
+    process.exit(1);
+  }
+  return valor;
+}
+
 const USERS = {
   admin: {
     email: "juliana.admin@adestro.com.br",
-    password: "Admin@2026",
+    password: senhaObrigatoria("SEED_ADMIN_PASSWORD"),
     name: "Juliana Rocha",
     role: UserRole.ADMIN,
   },
   trainer: {
     email: "demo.real.adestrador@adestro.com.br",
-    password: "Senha@123",
+    password: senhaObrigatoria("SEED_TRAINER_PASSWORD"),
     name: "Carlos Mendes",
     role: UserRole.TRAINER,
     phone: "11976543210",
@@ -20,7 +36,7 @@ const USERS = {
   },
   client: {
     email: "fernanda.tutora@adestro.com.br",
-    password: "Tutor@2026",
+    password: senhaObrigatoria("SEED_CLIENT_PASSWORD"),
     name: "Fernanda Oliveira",
     role: UserRole.CLIENT,
   },
@@ -100,14 +116,12 @@ async function main() {
   const summary = {
     admin: {
       email: USERS.admin.email,
-      password: USERS.admin.password,
       name: USERS.admin.name,
       role: "ADMIN",
       userId: adminUser.id,
     },
     trainer: {
       email: USERS.trainer.email,
-      password: USERS.trainer.password,
       name: USERS.trainer.name,
       role: "TRAINER",
       userId: trainerUser.id,
@@ -116,7 +130,6 @@ async function main() {
     },
     client: {
       email: USERS.client.email,
-      password: USERS.client.password,
       name: USERS.client.name,
       role: "CLIENT",
       userId: clientUser.id,

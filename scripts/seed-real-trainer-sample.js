@@ -4,7 +4,15 @@ const { PrismaClient, UserRole } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const LOGIN_EMAIL = "demo.real.adestrador@adestro.com.br";
-const LOGIN_PASSWORD = "Senha@123";
+
+// Senha fora do código: versionada, ela viraria credencial pública de um usuário
+// real do banco apontado por DATABASE_URL. Rode com:
+//   SEED_TRAINER_PASSWORD=... node scripts/seed-real-trainer-sample.js
+const LOGIN_PASSWORD = process.env.SEED_TRAINER_PASSWORD;
+if (!LOGIN_PASSWORD || LOGIN_PASSWORD.length < 8) {
+  console.error("[abortado] Defina SEED_TRAINER_PASSWORD com pelo menos 8 caracteres.");
+  process.exit(1);
+}
 
 const TRAINER_NAME = "Carlos Mendes";
 const TRAINER_PHONE = "11976543210";
@@ -287,7 +295,6 @@ async function main() {
   console.log(JSON.stringify({
     login: {
       email: LOGIN_EMAIL,
-      password: LOGIN_PASSWORD,
     },
     trainer: {
       id: trainer.id,

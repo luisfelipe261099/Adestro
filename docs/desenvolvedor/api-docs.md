@@ -1,20 +1,72 @@
 # Documentação de API
 
+> **Leia isto antes de usar os exemplos.** Este documento foi escrito numa fase
+> anterior do projeto e várias seções descrevem endpoints que não existem mais ou
+> que nunca chegaram a existir com esse formato. A fonte de verdade é `app/api/**` —
+> cada pasta com um `route.ts` é uma rota, e os métodos exportados (`GET`, `POST`,
+> `PATCH`, `DELETE`) são os verbos aceitos. A seção "Rotas existentes" abaixo é a
+> lista real, conferida contra o código.
+
 ## Base URL
 
-```
-https://adestro.com/api
-```
+Não há domínio fixo. Em desenvolvimento, `http://localhost:3000/api`; em produção, o
+domínio configurado na Vercel (`NEXTAUTH_URL`).
 
 ## Autenticação
 
-Todas as requisições devem incluir o header:
+**Não existe autenticação por `Authorization: Bearer`.** As 62 rotas privadas usam a
+sessão do NextAuth, lida do cookie pelo helper `auth()`:
 
-```
-Authorization: Bearer <TOKEN>
+```typescript
+const session = await auth();
+if (!session?.user) return NextResponse.json({ error: "..." }, { status: 401 });
 ```
 
-Token obtido via `/api/auth/signin`
+Na prática isso significa que:
+
+- **do navegador**, basta estar logado — o cookie vai junto automaticamente;
+- **de fora do navegador** (curl, Postman), é preciso repassar o cookie de sessão
+  obtido no login. Um token no header é simplesmente ignorado e a resposta é 401.
+
+Duas famílias de rota fogem disso:
+
+| Família | Como autoriza |
+|---|---|
+| `/api/portal-public/[token]/*` e `/api/invite/[token]` | Token opaco na própria URL, para o dono do cão acessar sem conta |
+| `/api/cron/daily-brief` | `Authorization: Bearer <CRON_SECRET>`, enviado pelo Vercel Cron. Única rota com Bearer no projeto |
+
+## Rotas existentes
+
+Lista conferida contra `app/api/**` nesta revisão do repositório.
+
+**Sessão e conta:** `auth/[...nextauth]` · `register` · `me` · `me/export`
+
+**Operação:** `clients` · `clients/import-csv` · `clients/tags` · `client-invites` ·
+`events` · `events/participants` · `sessions` · `exercises` · `relatorios` ·
+`relatorios/compare` · `relatorios/generate`
+
+**Financeiro:** `finance/overview` · `finance/contracts` · `finance/invoices` ·
+`finance/packages` · `payments`
+
+**Adestrador:** `trainer/settings` · `trainer/plan` · `trainer/plan-status` ·
+`trainer/renewals` · `trainer/whatsapp-templates`
+
+**Portal do cliente:** `invite/[token]` · `portal-links` · `portal-tasks` ·
+`portal-feedbacks` · `portal-public/[token]` (+ `confirm`, `gamification`, `nps`,
+`onboarding`, `relatorios`)
+
+**IA:** `ia/session-chat` · `ia/analyze-session` · `chat`
+
+**Administração:** `admin/overview` · `admin/trainers` · `admin/audit`
+
+**Infra:** `push/subscribe` · `cron/daily-brief` · `cep/[cep]`
+
+> `trainer/plan` aceita `PATCH` e troca o **plano de assinatura** do adestrador
+> (Trial/Starter/Pro/Business). Não tem relação com plano de treino — este vive em
+> `sessions` e `exercises`.
+
+> Não existe rota com segmento `[id]` em `clients`: a atualização é `PATCH` e a
+> remoção é `DELETE`, ambas na própria coleção, com o id no corpo da requisição.
 
 ---
 
